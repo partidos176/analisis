@@ -409,7 +409,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>TIRO DERECHA</span>
+                    <span>RIVAL TIRO DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#eab308',
@@ -443,7 +443,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>TIRO IZQUIERDA</span>
+                    <span>RIVAL TIRO IZQUIERDA</span>
                     <span style={{
                       background: '#000000',
                       color: '#eab308',
@@ -477,7 +477,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>TIRO FRONTAL</span>
+                    <span>RIVAL TIRO FRONTAL</span>
                     <span style={{
                       background: '#000000',
                       color: '#eab308',
@@ -511,7 +511,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>FALTA DERECHA</span>
+                    <span>RIVAL FALTA DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#3b82f6',
@@ -545,7 +545,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>FALTA IZQUIERDA</span>
+                    <span>RIVAL FALTA IZQUIERDA</span>
                     <span style={{
                       background: '#000000',
                       color: '#3b82f6',
@@ -579,7 +579,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>FALTA FRONTAL</span>
+                    <span>RIVAL FALTA FRONTAL</span>
                     <span style={{
                       background: '#000000',
                       color: '#3b82f6',
@@ -613,7 +613,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>CENTRO DERECHA</span>
+                    <span>RIVAL CENTRO DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#22c55e',
@@ -647,7 +647,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>CENTRO IZQUIERDA</span>
+                    <span>RIVAL CENTRO IZQUIERDA</span>
                     <span style={{
                       background: '#000000',
                       color: '#22c55e',
@@ -681,7 +681,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>CORNER IZQUIERDA</span>
+                    <span>RIVAL CORNER IZQUIERDA</span>
                     <span style={{
                       background: '#000000',
                       color: '#ec4899',
@@ -715,7 +715,7 @@ export default function App() {
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>CORNER DERECHA</span>
+                    <span>RIVAL CORNER DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#ec4899',
