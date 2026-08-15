@@ -736,7 +736,7 @@ export default function App() {
                   flexDirection: 'column',
                   gap: '1rem',
                   alignItems: 'flex-start',
-                  marginLeft: '2rem'
+                  marginLeft: '4rem'
                 }}>
                   <button
                     onClick={() => {
