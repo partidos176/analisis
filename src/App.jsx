@@ -382,8 +382,354 @@ export default function App() {
                 flexDirection: 'row',
                 gap: '2rem'
               }}>
-                {/* Columna izquierda vacía */}
-                <div style={{ flex: 1 }}></div>
+                {/* Columna izquierda - Botones duplicados */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  alignItems: 'flex-start'
+                }}>
+                  <button
+                    onClick={() => {
+                      setTiroDerechaCount(tiroDerechaCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#eab308',
+                      color: '#000000',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>TIRO DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#eab308',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {tiroDerechaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTiroIzquierdaCount(tiroIzquierdaCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#eab308',
+                      color: '#000000',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>TIRO IZQUIERDA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#eab308',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {tiroIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTiroFrontalCount(tiroFrontalCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#eab308',
+                      color: '#000000',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>TIRO FRONTAL</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#eab308',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {tiroFrontalCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFaltaDerechaCount(faltaDerechaCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#3b82f6',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>FALTA DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#3b82f6',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {faltaDerechaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFaltaIzquierdaCount(faltaIzquierdaCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#3b82f6',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>FALTA IZQUIERDA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#3b82f6',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {faltaIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFaltaFrontalCount(faltaFrontalCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#3b82f6',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>FALTA FRONTAL</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#3b82f6',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {faltaFrontalCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCentroDerechaCount(centroDerechaCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#22c55e',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>CENTRO DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#22c55e',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {centroDerechaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCentroIzquierdaCount(centroIzquierdaCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#22c55e',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>CENTRO IZQUIERDA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#22c55e',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {centroIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCornerIzquierdaCount(cornerIzquierdaCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#ec4899',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>CORNER IZQUIERDA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#ec4899',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {cornerIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCornerDerechaCount(cornerDerechaCount + 1);
+                      setActiveTab('finalizaciones');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#ec4899',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>CORNER DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#ec4899',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {cornerDerechaCount}
+                    </span>
+                  </button>
+                </div>
                 {/* Columna derecha - Botones de acción */}
                 <div style={{
                   display: 'flex',
