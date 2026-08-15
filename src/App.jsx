@@ -972,7 +972,7 @@ export default function App() {
     );
   }
 
-  // Lista de partidos
+  // Test commit for Vercel deploy
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header style={{
