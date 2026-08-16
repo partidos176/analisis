@@ -2051,9 +2051,12 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             }}
                           >
                             <option value="">-</option>
-                            {[...new Set(players.map(p => p.name).filter(Boolean))].map(name => (
-                              <option key={name} value={name}>{name}</option>
-                            ))}
+                            <option value="JUAN">JUAN</option>
+                            <option value="PEDRO">PEDRO</option>
+                            <option value="LUIS">LUIS</option>
+                            <option value="MILLA">MILLA</option>
+                            <option value="ALEXIS">ALEXIS</option>
+                            <option value="ANTONIO">ANTONIO</option>
                           </select>
                         </div>
                         <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>por</span>
@@ -2084,9 +2087,12 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             }}
                           >
                             <option value="">-</option>
-                            {[...new Set(players.map(p => p.name).filter(Boolean))].map(name => (
-                              <option key={name} value={name}>{name}</option>
-                            ))}
+                            <option value="JUAN">JUAN</option>
+                            <option value="PEDRO">PEDRO</option>
+                            <option value="LUIS">LUIS</option>
+                            <option value="MILLA">MILLA</option>
+                            <option value="ALEXIS">ALEXIS</option>
+                            <option value="ANTONIO">ANTONIO</option>
                           </select>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', minWidth: '70px' }}>
