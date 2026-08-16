@@ -159,6 +159,42 @@ export default function App() {
     setActionLog(prev => [{ name, time: formatTime(timerSeconds), type }, ...prev]);
   };
 
+  const decrementCounter = (name) => {
+    const base = name.startsWith('RIVAL ') ? name.slice(6) : name;
+    const map = {
+      'TIRO DERECHA': setTiroDerechaCount,
+      'TIRO IZQUIERDA': setTiroIzquierdaCount,
+      'TIRO FRONTAL': setTiroFrontalCount,
+      'FALTA DERECHA': setFaltaDerechaCount,
+      'FALTA IZQUIERDA': setFaltaIzquierdaCount,
+      'FALTA FRONTAL': setFaltaFrontalCount,
+      'CENTRO DERECHA': setCentroDerechaCount,
+      'CENTRO IZQUIERDA': setCentroIzquierdaCount,
+      'CORNER IZQUIERDA': setCornerIzquierdaCount,
+      'CORNER DERECHA': setCornerDerechaCount,
+      'INICIO PROPIO': setInicioPropioCount,
+      'INICIO RIVAL': setInicioRivalCount,
+      'ON RIVAL': setOnRivalCount,
+      'ON NEUTRO': setOnNeutroCount,
+      'OFF RIVAL': setOffRivalCount,
+      'OFF NEUTRO': setOffNeutroCount,
+      'OCASION': setOcasionCount,
+      'FUERA': setFueraCount,
+      'BLOCAJE': setBlocajeCount,
+      'DESPEJE DEFENSA': setDespejeDefensaCount,
+      'DESPEJE PORTERO': setDespejePorteroCount,
+      'SAQUE DE ESQUINA': setSaqueEsquinaFueraCount,
+      'GOL': setGolCount,
+      'PENAL + GOL': setPenalCount,
+      'PENAL + FUERA': setPenalFueraCount,
+      'INFRACCION': setInfraccionCount
+    };
+    const setter = map[base];
+    if (setter) {
+      setter(prev => Math.max(0, prev - 1));
+    }
+  };
+
   const handlePrimeraParte = () => {
     setTimerSeconds(0);
     setTimerRunning(true);
@@ -1370,7 +1406,11 @@ export default function App() {
                 }}>
                   <button
                     onClick={() => {
-                      setActionLog(prev => prev.slice(1));
+                      setActionLog(prev => {
+                        if (prev.length === 0) return prev;
+                        decrementCounter(prev[0].name);
+                        return prev.slice(1);
+                      });
                     }}
                     title="Borrar primera acción"
                     style={{
