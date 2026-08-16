@@ -534,7 +534,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               justifyContent: 'center',
               gap: '2rem'
             }}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#38bdf8' }}>{currentMatch.homeTeam}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#38bdf8' }}>{currentMatch.homeTeam}</span>
+                <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golCount}</span>
+              </div>
               <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#334155' }}>vs</span>
               <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#f87171' }}>{currentMatch.awayTeam}</span>
               <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
