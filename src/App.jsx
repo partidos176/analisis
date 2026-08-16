@@ -2166,11 +2166,11 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         </div>
                         <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
                           <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Rival</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#ef4444', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{pctRival}%</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: '#22c55e', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{pctRival}%</span>
                         </div>
                         <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
                           <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Neutra</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{pctNeutro}%</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: '#22c55e', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{pctNeutro}%</span>
                         </div>
                       </div>
                     );
