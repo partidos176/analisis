@@ -248,14 +248,8 @@ export default function App() {
     setCurrentMatch(match);
   };
 
-  const handleBackToList = () => {
-    setCurrentMatch(null);
-    resetMatchData();
-  };
-
-  useEffect(() => {
-    if (!currentMatch) return;
-    const dataRef = ref(db, `matchData/${currentMatch.id}`);
+  const saveMatchData = (id) => {
+    const dataRef = ref(db, `matchData/${id}`);
     set(dataRef, {
       tiroDerechaCount,
       rivalTiroDerechaCount,
@@ -299,6 +293,19 @@ export default function App() {
       timerRunning,
       actionLog
     });
+  };
+
+  const handleBackToList = () => {
+    if (currentMatch) {
+      saveMatchData(currentMatch.id);
+    }
+    setCurrentMatch(null);
+    resetMatchData();
+  };
+
+  useEffect(() => {
+    if (!currentMatch) return;
+    saveMatchData(currentMatch.id);
   }, [currentMatch, tiroDerechaCount, rivalTiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, players, timerSeconds, timerRunning, actionLog]);
 
   const handleAceptar = () => {
