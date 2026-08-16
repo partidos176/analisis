@@ -212,7 +212,7 @@ export default function App() {
       'DESPEJE PORTERO': setDespejePorteroCount,
       'SAQUE DE ESQUINA': setSaqueEsquinaFueraCount,
       'GOL': setGolCount,
-      'PENAL + GOL': setPenalCount,
+      'PENAL': setPenalCount,
       'PENAL + FUERA': setPenalFueraCount,
       'INFRACCION': setInfraccionCount
     };
@@ -1627,10 +1627,10 @@ export default function App() {
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setActiveTab('alineacion'); } }}
+                        onClick={() => { if (logAction('PENAL', 'finalizacion')) { setPenalCount(penalCount + 1); setActiveTab('alineacion'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
-                        <span>PENAL + GOL</span>
+                        <span>PENAL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
                       </button>
                       <button
