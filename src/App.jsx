@@ -2160,15 +2160,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   </span>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
-                      <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#38bdf8' }}>{currentMatch.homeTeam}</span>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#ffffff' }}>{golCount + penalCount}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#38bdf8' }}>{golCount + penalCount}</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                       <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#334155' }}>JORNADA {currentMatch.matchday}</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
-                      <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f87171' }}>{currentMatch.awayTeam}</span>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#ffffff' }}>{golRivalCount}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#f87171' }}>{golRivalCount}</span>
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem' }}>
