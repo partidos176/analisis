@@ -71,6 +71,7 @@ export default function App() {
   const [timerInterval, setTimerInterval] = useState(null);
   const [actionLog, setActionLog] = useState([]);
   const [contadorWarning, setContadorWarning] = useState(false);
+  const [dataLoadedId, setDataLoadedId] = useState(null);
 
   useEffect(() => {
     if (!user) return;
@@ -195,7 +196,7 @@ export default function App() {
     setActiveTab('alineacion');
     resetMatchData();
     try {
-      const snap = await get(child(ref(db), `matchData/${match.id}`));
+      const snap = await get(child(ref(db), `matches/${match.id}/data`));
       if (snap.exists()) {
         const d = snap.val();
         setTiroDerechaCount(d.tiroDerechaCount ?? 0);
@@ -250,8 +251,8 @@ export default function App() {
   };
 
   const saveMatchData = (id) => {
-    const dataRef = ref(db, `matchData/${id}`);
-    set(dataRef, {
+    const dataRef = ref(db, `matches/${id}/data`);
+    return set(dataRef, {
       tiroDerechaCount,
       rivalTiroDerechaCount,
       tiroIzquierdaCount,
@@ -296,9 +297,13 @@ export default function App() {
     });
   };
 
-  const handleBackToList = () => {
+  const handleBackToList = async () => {
     if (currentMatch) {
-      saveMatchData(currentMatch.id);
+      try {
+        await saveMatchData(currentMatch.id);
+      } catch (err) {
+        console.error('Error guardando datos del partido:', err);
+      }
     }
     setCurrentMatch(null);
     resetMatchData();
