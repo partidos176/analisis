@@ -2189,7 +2189,7 @@ export default function App() {
             }}>
               <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '1rem' }}>Partidos guardados</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {matches.map((m) => (
+                {matches.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).map((m) => (
                   <div key={m.id} style={{
                     display: 'flex',
                     alignItems: 'center',
