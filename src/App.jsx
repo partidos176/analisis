@@ -55,6 +55,7 @@ export default function App() {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerInterval, setTimerInterval] = useState(null);
+  const [actionLog, setActionLog] = useState([]);
 
   useEffect(() => {
     if (!user) return;
@@ -151,6 +152,10 @@ export default function App() {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const logAction = (name) => {
+    setActionLog(prev => [{ name, time: formatTime(timerSeconds) }, ...prev]);
   };
 
   const handlePrimeraParte = () => {
@@ -400,6 +405,7 @@ export default function App() {
                     onClick={() => {
                       setTiroDerechaCount(tiroDerechaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('TIRO DERECHA');
                     }}
                     style={{
                       display: 'flex',
@@ -434,6 +440,7 @@ export default function App() {
                     onClick={() => {
                       setTiroIzquierdaCount(tiroIzquierdaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('TIRO IZQUIERDA');
                     }}
                     style={{
                       display: 'flex',
@@ -468,6 +475,7 @@ export default function App() {
                     onClick={() => {
                       setTiroFrontalCount(tiroFrontalCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('TIRO FRONTAL');
                     }}
                     style={{
                       display: 'flex',
@@ -502,6 +510,7 @@ export default function App() {
                     onClick={() => {
                       setFaltaDerechaCount(faltaDerechaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('FALTA DERECHA');
                     }}
                     style={{
                       display: 'flex',
@@ -536,6 +545,7 @@ export default function App() {
                     onClick={() => {
                       setFaltaIzquierdaCount(faltaIzquierdaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('FALTA IZQUIERDA');
                     }}
                     style={{
                       display: 'flex',
@@ -570,6 +580,7 @@ export default function App() {
                     onClick={() => {
                       setFaltaFrontalCount(faltaFrontalCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('FALTA FRONTAL');
                     }}
                     style={{
                       display: 'flex',
@@ -604,6 +615,7 @@ export default function App() {
                     onClick={() => {
                       setCentroDerechaCount(centroDerechaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('CENTRO DERECHA');
                     }}
                     style={{
                       display: 'flex',
@@ -638,6 +650,7 @@ export default function App() {
                     onClick={() => {
                       setCentroIzquierdaCount(centroIzquierdaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('CENTRO IZQUIERDA');
                     }}
                     style={{
                       display: 'flex',
@@ -672,6 +685,7 @@ export default function App() {
                     onClick={() => {
                       setCornerIzquierdaCount(cornerIzquierdaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('CORNER IZQUIERDA');
                     }}
                     style={{
                       display: 'flex',
@@ -706,6 +720,7 @@ export default function App() {
                     onClick={() => {
                       setCornerDerechaCount(cornerDerechaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('CORNER DERECHA');
                     }}
                     style={{
                       display: 'flex',
@@ -749,6 +764,7 @@ export default function App() {
                     onClick={() => {
                       setTiroDerechaCount(tiroDerechaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL TIRO DERECHA');
                     }}
                     style={{
                       display: 'flex',
@@ -783,6 +799,7 @@ export default function App() {
                     onClick={() => {
                       setTiroIzquierdaCount(tiroIzquierdaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL TIRO IZQUIERDA');
                     }}
                     style={{
                       display: 'flex',
@@ -817,6 +834,7 @@ export default function App() {
                     onClick={() => {
                       setTiroFrontalCount(tiroFrontalCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL TIRO FRONTAL');
                     }}
                     style={{
                       display: 'flex',
@@ -851,6 +869,7 @@ export default function App() {
                     onClick={() => {
                       setFaltaDerechaCount(faltaDerechaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL FALTA DERECHA');
                     }}
                     style={{
                       display: 'flex',
@@ -885,6 +904,7 @@ export default function App() {
                     onClick={() => {
                       setFaltaIzquierdaCount(faltaIzquierdaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL FALTA IZQUIERDA');
                     }}
                     style={{
                       display: 'flex',
@@ -919,6 +939,7 @@ export default function App() {
                     onClick={() => {
                       setFaltaFrontalCount(faltaFrontalCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL FALTA FRONTAL');
                     }}
                     style={{
                       display: 'flex',
@@ -953,6 +974,7 @@ export default function App() {
                     onClick={() => {
                       setCentroDerechaCount(centroDerechaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL CENTRO DERECHA');
                     }}
                     style={{
                       display: 'flex',
@@ -987,6 +1009,7 @@ export default function App() {
                     onClick={() => {
                       setCentroIzquierdaCount(centroIzquierdaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL CENTRO IZQUIERDA');
                     }}
                     style={{
                       display: 'flex',
@@ -1021,6 +1044,7 @@ export default function App() {
                     onClick={() => {
                       setCornerIzquierdaCount(cornerIzquierdaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL CORNER IZQUIERDA');
                     }}
                     style={{
                       display: 'flex',
@@ -1055,6 +1079,7 @@ export default function App() {
                     onClick={() => {
                       setCornerDerechaCount(cornerDerechaCount + 1);
                       setActiveTab('finalizaciones');
+                      logAction('RIVAL CORNER DERECHA');
                     }}
                     style={{
                       display: 'flex',
@@ -1096,6 +1121,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       setInicioPropioCount(inicioPropioCount + 1);
+                      logAction('INICIO PROPIO');
                     }}
                     style={{
                       display: 'flex',
@@ -1131,6 +1157,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       setInicioRivalCount(inicioRivalCount + 1);
+                      logAction('INICIO RIVAL');
                     }}
                     style={{
                       display: 'flex',
@@ -1168,6 +1195,7 @@ export default function App() {
                       <button
                         onClick={() => {
                           setOnRivalCount(onRivalCount + 1);
+                          logAction('ON RIVAL');
                         }}
                         style={{
                           display: 'flex',
@@ -1207,6 +1235,7 @@ export default function App() {
                       <button
                         onClick={() => {
                           setOnNeutroCount(onNeutroCount + 1);
+                          logAction('ON NEUTRO');
                         }}
                         style={{
                           display: 'flex',
@@ -1248,6 +1277,7 @@ export default function App() {
                       <button
                         onClick={() => {
                           setOffRivalCount(offRivalCount + 1);
+                          logAction('OFF RIVAL');
                         }}
                         style={{
                           display: 'flex',
@@ -1287,6 +1317,7 @@ export default function App() {
                       <button
                         onClick={() => {
                           setOffNeutroCount(offNeutroCount + 1);
+                          logAction('OFF NEUTRO');
                         }}
                         style={{
                           display: 'flex',
@@ -1325,6 +1356,46 @@ export default function App() {
                       </button>
                     </div>
                   </div>
+                </div>
+                {/* Listado de acciones */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                  minWidth: '280px',
+                  maxHeight: '500px',
+                  overflowY: 'auto',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
+                    Acciones
+                  </span>
+                  {actionLog.length === 0 && (
+                    <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
+                      Sin acciones aún
+                    </span>
+                  )}
+                  {actionLog.map((entry, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '8px',
+                      padding: '0.4rem 0.8rem'
+                    }}>
+                      <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                        {entry.name}
+                      </span>
+                      <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>
+                        {entry.time}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
