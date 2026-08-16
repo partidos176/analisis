@@ -1752,36 +1752,38 @@ export default function App() {
                           <option value="CABEZA">CABEZA</option>
                           <option value="PENAL">PENAL</option>
                         </select>
-                        <select
-                          value={g.name2}
-                          onChange={(e) => {
-                            const newGoles = [...golesList];
-                            newGoles[i] = { ...newGoles[i], name2: e.target.value };
-                            setGolesList(newGoles);
-                            if (newGoles[i].name && newGoles[i].tipo && e.target.value) { setActiveTab('acciones'); }
-                          }}
-                          style={{
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: '8px',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                            padding: '0.4rem 0.6rem',
-                            textTransform: 'uppercase',
-                            cursor: 'pointer',
-                            flex: 1
-                          }}
-                        >
-                          <option value="">-</option>
-                          <option value="JUAN">JUAN</option>
-                          <option value="PEDRO">PEDRO</option>
-                          <option value="LUIS">LUIS</option>
-                          <option value="MILLA">MILLA</option>
-                          <option value="ALEXIS">ALEXIS</option>
-                          <option value="ANTONIO">ANTONIO</option>
-                        </select>
-                        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '64px', textAlign: 'center' }}>{g.periodo}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ASISTENTE</span>
+                          <select
+                            value={g.name2}
+                            onChange={(e) => {
+                              const newGoles = [...golesList];
+                              newGoles[i] = { ...newGoles[i], name2: e.target.value };
+                              setGolesList(newGoles);
+                              if (newGoles[i].name && newGoles[i].tipo && e.target.value) { setActiveTab('acciones'); }
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="">-</option>
+                            <option value="JUAN">JUAN</option>
+                            <option value="PEDRO">PEDRO</option>
+                            <option value="LUIS">LUIS</option>
+                            <option value="MILLA">MILLA</option>
+                            <option value="ALEXIS">ALEXIS</option>
+                            <option value="ANTONIO">ANTONIO</option>
+                          </select>
+                        </div>
                         <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '48px', textAlign: 'center' }}>{g.minuto}'</span>
                       </div>
                     ))}
