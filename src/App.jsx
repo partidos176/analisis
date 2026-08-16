@@ -201,107 +201,94 @@ export default function App() {
   const handleOpenMatch = async (match) => {
     setActiveTab('alineacion');
     resetMatchData();
-    try {
-      const snap = await get(child(ref(db), `matches/${match.id}/data`));
-      if (snap.exists()) {
-        const d = snap.val();
-        setTiroDerechaCount(d.tiroDerechaCount ?? 0);
-        setRivalTiroDerechaCount(d.rivalTiroDerechaCount ?? 0);
-        setTiroIzquierdaCount(d.tiroIzquierdaCount ?? 0);
-        setTiroFrontalCount(d.tiroFrontalCount ?? 0);
-        setFaltaDerechaCount(d.faltaDerechaCount ?? 0);
-        setFaltaIzquierdaCount(d.faltaIzquierdaCount ?? 0);
-        setFaltaFrontalCount(d.faltaFrontalCount ?? 0);
-        setCentroDerechaCount(d.centroDerechaCount ?? 0);
-        setCentroIzquierdaCount(d.centroIzquierdaCount ?? 0);
-        setCornerIzquierdaCount(d.cornerIzquierdaCount ?? 0);
-        setCornerDerechaCount(d.cornerDerechaCount ?? 0);
-        setRivalTiroIzquierdaCount(d.rivalTiroIzquierdaCount ?? 0);
-        setRivalTiroFrontalCount(d.rivalTiroFrontalCount ?? 0);
-        setRivalFaltaDerechaCount(d.rivalFaltaDerechaCount ?? 0);
-        setRivalFaltaIzquierdaCount(d.rivalFaltaIzquierdaCount ?? 0);
-        setRivalFaltaFrontalCount(d.rivalFaltaFrontalCount ?? 0);
-        setRivalCentroDerechaCount(d.rivalCentroDerechaCount ?? 0);
-        setRivalCentroIzquierdaCount(d.rivalCentroIzquierdaCount ?? 0);
-        setRivalCornerIzquierdaCount(d.rivalCornerIzquierdaCount ?? 0);
-        setRivalCornerDerechaCount(d.rivalCornerDerechaCount ?? 0);
-        setInicioPropioCount(d.inicioPropioCount ?? 0);
-        setInicioRivalCount(d.inicioRivalCount ?? 0);
-        setOnRivalCount(d.onRivalCount ?? 0);
-        setOffRivalCount(d.offRivalCount ?? 0);
-        setOnNeutroCount(d.onNeutroCount ?? 0);
-        setOffNeutroCount(d.offNeutroCount ?? 0);
-        setFueraCount(d.fueraCount ?? 0);
-        setBlocajeCount(d.blocajeCount ?? 0);
-        setDespejeDefensaCount(d.despejeDefensaCount ?? 0);
-        setDespejePorteroCount(d.despejePorteroCount ?? 0);
-        setGolCount(d.golCount ?? 0);
-        setGolRivalCount(d.golRivalCount ?? 0);
-        setPenalCount(d.penalCount ?? 0);
-        setSaqueEsquinaFueraCount(d.saqueEsquinaFueraCount ?? 0);
-        setInfraccionCount(d.infraccionCount ?? 0);
-        setOcasionCount(d.ocasionCount ?? 0);
-        setGolesList(normalizeArray(d.golesList));
-        setPlayers(d.players ? normalizeArray(d.players) : Array(23).fill({ name: 'JUAN', status: '-' }));
-        setTimerSeconds(d.timerSeconds ?? 0);
-        setTimerRunning(d.timerRunning ?? false);
-        setActionLog(normalizeArray(d.actionLog));
-      } else {
-        resetMatchData();
-      }
-    } catch (err) {
-      console.error('Error cargando datos del partido:', err);
-      resetMatchData();
-    }
+    setTiroDerechaCount(match.tiroDerechaCount ?? 0);
+    setRivalTiroDerechaCount(match.rivalTiroDerechaCount ?? 0);
+    setTiroIzquierdaCount(match.tiroIzquierdaCount ?? 0);
+    setTiroFrontalCount(match.tiroFrontalCount ?? 0);
+    setFaltaDerechaCount(match.faltaDerechaCount ?? 0);
+    setFaltaIzquierdaCount(match.faltaIzquierdaCount ?? 0);
+    setFaltaFrontalCount(match.faltaFrontalCount ?? 0);
+    setCentroDerechaCount(match.centroDerechaCount ?? 0);
+    setCentroIzquierdaCount(match.centroIzquierdaCount ?? 0);
+    setCornerIzquierdaCount(match.cornerIzquierdaCount ?? 0);
+    setCornerDerechaCount(match.cornerDerechaCount ?? 0);
+    setRivalTiroIzquierdaCount(match.rivalTiroIzquierdaCount ?? 0);
+    setRivalTiroFrontalCount(match.rivalTiroFrontalCount ?? 0);
+    setRivalFaltaDerechaCount(match.rivalFaltaDerechaCount ?? 0);
+    setRivalFaltaIzquierdaCount(match.rivalFaltaIzquierdaCount ?? 0);
+    setRivalFaltaFrontalCount(match.rivalFaltaFrontalCount ?? 0);
+    setRivalCentroDerechaCount(match.rivalCentroDerechaCount ?? 0);
+    setRivalCentroIzquierdaCount(match.rivalCentroIzquierdaCount ?? 0);
+    setRivalCornerIzquierdaCount(match.rivalCornerIzquierdaCount ?? 0);
+    setRivalCornerDerechaCount(match.rivalCornerDerechaCount ?? 0);
+    setInicioPropioCount(match.inicioPropioCount ?? 0);
+    setInicioRivalCount(match.inicioRivalCount ?? 0);
+    setOnRivalCount(match.onRivalCount ?? 0);
+    setOffRivalCount(match.offRivalCount ?? 0);
+    setOnNeutroCount(match.onNeutroCount ?? 0);
+    setOffNeutroCount(match.offNeutroCount ?? 0);
+    setFueraCount(match.fueraCount ?? 0);
+    setBlocajeCount(match.blocajeCount ?? 0);
+    setDespejeDefensaCount(match.despejeDefensaCount ?? 0);
+    setDespejePorteroCount(match.despejePorteroCount ?? 0);
+    setGolCount(match.golCount ?? 0);
+    setGolRivalCount(match.golRivalCount ?? 0);
+    setPenalCount(match.penalCount ?? 0);
+    setSaqueEsquinaFueraCount(match.saqueEsquinaFueraCount ?? 0);
+    setInfraccionCount(match.infraccionCount ?? 0);
+    setOcasionCount(match.ocasionCount ?? 0);
+    setGolesList(normalizeArray(match.golesList));
+    setPlayers(match.players ? normalizeArray(match.players) : Array(23).fill({ name: 'JUAN', status: '-' }));
+    setTimerSeconds(match.timerSeconds ?? 0);
+    setTimerRunning(match.timerRunning ?? false);
+    setActionLog(normalizeArray(match.actionLog));
     setCurrentMatch(match);
   };
 
-  const saveMatchData = (id) => {
+  const saveMatchData = async (id) => {
     const matchRef = ref(db, `matches/${id}`);
-    return update(matchRef, {
-      data: {
-        tiroDerechaCount,
-        rivalTiroDerechaCount,
-        tiroIzquierdaCount,
-        tiroFrontalCount,
-        faltaDerechaCount,
-        faltaIzquierdaCount,
-        faltaFrontalCount,
-        centroDerechaCount,
-        centroIzquierdaCount,
-        cornerIzquierdaCount,
-        cornerDerechaCount,
-        rivalTiroIzquierdaCount,
-        rivalTiroFrontalCount,
-        rivalFaltaDerechaCount,
-        rivalFaltaIzquierdaCount,
-        rivalFaltaFrontalCount,
-        rivalCentroDerechaCount,
-        rivalCentroIzquierdaCount,
-        rivalCornerIzquierdaCount,
-        rivalCornerDerechaCount,
-        inicioPropioCount,
-        inicioRivalCount,
-        onRivalCount,
-        offRivalCount,
-        onNeutroCount,
-        offNeutroCount,
-        fueraCount,
-        blocajeCount,
-        despejeDefensaCount,
-        despejePorteroCount,
-        golCount,
-        golRivalCount,
-        penalCount,
-        saqueEsquinaFueraCount,
-        infraccionCount,
-        ocasionCount,
-        golesList,
-        players,
-        timerSeconds,
-        timerRunning,
-        actionLog
-      }
+    await update(matchRef, {
+      tiroDerechaCount,
+      rivalTiroDerechaCount,
+      tiroIzquierdaCount,
+      tiroFrontalCount,
+      faltaDerechaCount,
+      faltaIzquierdaCount,
+      faltaFrontalCount,
+      centroDerechaCount,
+      centroIzquierdaCount,
+      cornerIzquierdaCount,
+      cornerDerechaCount,
+      rivalTiroIzquierdaCount,
+      rivalTiroFrontalCount,
+      rivalFaltaDerechaCount,
+      rivalFaltaIzquierdaCount,
+      rivalFaltaFrontalCount,
+      rivalCentroDerechaCount,
+      rivalCentroIzquierdaCount,
+      rivalCornerIzquierdaCount,
+      rivalCornerDerechaCount,
+      inicioPropioCount,
+      inicioRivalCount,
+      onRivalCount,
+      offRivalCount,
+      onNeutroCount,
+      offNeutroCount,
+      fueraCount,
+      blocajeCount,
+      despejeDefensaCount,
+      despejePorteroCount,
+      golCount,
+      golRivalCount,
+      penalCount,
+      saqueEsquinaFueraCount,
+      infraccionCount,
+      ocasionCount,
+      golesList,
+      players,
+      timerSeconds,
+      timerRunning,
+      actionLog
     });
   };
 
@@ -319,7 +306,7 @@ export default function App() {
 
   useEffect(() => {
     if (!currentMatch) return;
-    saveMatchData(currentMatch.id);
+saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando datos del partido:', err));
   }, [currentMatch, tiroDerechaCount, rivalTiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, players, timerSeconds, timerRunning, actionLog]);
 
   const handleAceptar = () => {
