@@ -1370,9 +1370,9 @@ export default function App() {
                 }}>
                   <button
                     onClick={() => {
-                      setActionLog([]);
+                      setActionLog(prev => prev.slice(0, -1));
                     }}
-                    title="Vaciar listado"
+                    title="Borrar última acción"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
