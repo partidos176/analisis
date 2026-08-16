@@ -1387,18 +1387,19 @@ export default function App() {
                     }}
                   >
                     <svg
-                      width="26"
-                      height="26"
+                      width="30"
+                      height="30"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="#000000"
-                      strokeWidth="3"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
-                      <path d="M20 5c-8 0-14 3-14 9s6 9 14 9" />
-                      <path d="M2 12h6" />
-                      <path d="M8 8l-6 4 6 4" />
+                      <path d="M19 3C11 3 6 6 6 12s5 9 13 9" />
+                      <path d="M3 12h5" />
+                      <path d="M3 12l4-4" />
+                      <path d="M3 12l4 4" />
                     </svg>
                   </button>
                   <div style={{
