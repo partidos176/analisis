@@ -1166,47 +1166,6 @@ export default function App() {
                   <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
                     <button
                       onClick={() => {
-                        setOnNeutroCount(onNeutroCount + 1);
-                      }}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: '#dc2626',
-                        color: '#ffffff',
-                        fontWeight: 900,
-                        fontSize: '0.8rem',
-                        padding: '1rem',
-                        borderRadius: '50%',
-                        width: '75px',
-                        height: '75px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        gap: '0.2rem',
-                        cursor: 'pointer',
-                        border: 'none'
-                      }}
-                    >
-                      <span>ON</span>
-                      <span>NEUTRO</span>
-                      <span style={{
-                        background: '#ffffff',
-                        color: '#dc2626',
-                        fontWeight: 900,
-                        fontSize: '0.8rem',
-                        padding: '0.1rem 0.4rem',
-                        borderRadius: '8px',
-                        minWidth: '20px',
-                        textAlign: 'center'
-                      }}>
-                        {onNeutroCount}
-                      </span>
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => {
                         setOffNeutroCount(offNeutroCount + 1);
                       }}
                       style={{
@@ -1242,6 +1201,47 @@ export default function App() {
                         textAlign: 'center'
                       }}>
                         {offNeutroCount}
+                      </span>
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => {
+                        setOnNeutroCount(onNeutroCount + 1);
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#dc2626',
+                        color: '#ffffff',
+                        fontWeight: 900,
+                        fontSize: '0.8rem',
+                        padding: '1rem',
+                        borderRadius: '50%',
+                        width: '75px',
+                        height: '75px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        gap: '0.2rem',
+                        cursor: 'pointer',
+                        border: 'none'
+                      }}
+                    >
+                      <span>ON</span>
+                      <span>NEUTRO</span>
+                      <span style={{
+                        background: '#ffffff',
+                        color: '#dc2626',
+                        fontWeight: 900,
+                        fontSize: '0.8rem',
+                        padding: '0.1rem 0.4rem',
+                        borderRadius: '8px',
+                        minWidth: '20px',
+                        textAlign: 'center'
+                      }}>
+                        {onNeutroCount}
                       </span>
                     </button>
                   </div>
