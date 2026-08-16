@@ -1967,6 +1967,14 @@ export default function App() {
                           </select>
                         </div>
                         <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '48px', textAlign: 'center' }}>{g.minuto}'</span>
+                        <button
+                          onClick={() => {
+                            const newGoles = golesList.filter((_, idx) => idx !== i);
+                            setGolesList(newGoles);
+                            setGolCount(Math.max(0, golCount - 1));
+                          }}
+                          style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
+                        >X</button>
                       </div>
                     ) : null)}
                   </div>
@@ -2075,6 +2083,14 @@ export default function App() {
                           </select>
                         </div>
                         <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '48px', textAlign: 'center' }}>{g.minuto}'</span>
+                        <button
+                          onClick={() => {
+                            const newGoles = golesList.filter((_, idx) => idx !== i);
+                            setGolesList(newGoles);
+                            setGolRivalCount(Math.max(0, golRivalCount - 1));
+                          }}
+                          style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
+                        >X</button>
                       </div>
                     ) : null)}
                   </div>
