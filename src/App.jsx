@@ -2148,8 +2148,30 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '2rem',
-                  minHeight: '400px'
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
                 }}>
+                  {(() => {
+                    const totalPosesion = onRivalCount + offRivalCount + onNeutroCount + offNeutroCount;
+                    const pctRival = totalPosesion > 0 ? Math.round(((onRivalCount + offRivalCount) / totalPosesion) * 100) : 0;
+                    const pctNeutro = totalPosesion > 0 ? Math.round(((onNeutroCount + offNeutroCount) / totalPosesion) * 100) : 0;
+                    return (
+                      <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
+                          <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Rival</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: '#ef4444', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{pctRival}%</span>
+                          <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.75rem', textAlign: 'center' }}>{onRivalCount + offRivalCount} ({onRivalCount} ON / {offRivalCount} OFF)</span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
+                          <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Neutra</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{pctNeutro}%</span>
+                          <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.75rem', textAlign: 'center' }}>{onNeutroCount + offNeutroCount} ({onNeutroCount} ON / {offNeutroCount} OFF)</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   {(() => {
                     const acciones = [
                       'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL',
