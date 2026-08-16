@@ -1697,35 +1697,38 @@ export default function App() {
                     {golesList.map((g, i) => (
                       <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.8rem', minWidth: '20px', textAlign: 'right' }}>{i + 1}</span>
-                        <select
-                          value={g.name}
-                          onChange={(e) => {
-                            const newGoles = [...golesList];
-                            newGoles[i] = { ...newGoles[i], name: e.target.value };
-                            setGolesList(newGoles);
-                            if (e.target.value && newGoles[i].tipo && newGoles[i].name2) { setActiveTab('acciones'); }
-                          }}
-                          style={{
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: '8px',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                            padding: '0.4rem 0.6rem',
-                            textTransform: 'uppercase',
-                            cursor: 'pointer',
-                            flex: 1
-                          }}
-                        >
-                          <option value="">-</option>
-                          <option value="JUAN">JUAN</option>
-                          <option value="PEDRO">PEDRO</option>
-                          <option value="LUIS">LUIS</option>
-                          <option value="MILLA">MILLA</option>
-                          <option value="ALEXIS">ALEXIS</option>
-                          <option value="ANTONIO">ANTONIO</option>
-                        </select>
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>GOLEADOR</span>
+                          <select
+                            value={g.name}
+                            onChange={(e) => {
+                              const newGoles = [...golesList];
+                              newGoles[i] = { ...newGoles[i], name: e.target.value };
+                              setGolesList(newGoles);
+                              if (e.target.value && newGoles[i].tipo && newGoles[i].name2) { setActiveTab('acciones'); }
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="">-</option>
+                            <option value="JUAN">JUAN</option>
+                            <option value="PEDRO">PEDRO</option>
+                            <option value="LUIS">LUIS</option>
+                            <option value="MILLA">MILLA</option>
+                            <option value="ALEXIS">ALEXIS</option>
+                            <option value="ANTONIO">ANTONIO</option>
+                          </select>
+                        </div>
                         <select
                           value={g.tipo}
                           onChange={(e) => {
