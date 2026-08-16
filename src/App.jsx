@@ -1817,14 +1817,14 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, { name: '', tipo: '', name2: '', periodo, minuto: Math.floor(timerSeconds / 60) }]); } setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, { name: '', tipo: '', name2: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); } setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(golRivalCount + 1); setActiveTab('acciones'); } }}
+                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(golRivalCount + 1); setGolesList([...golesList, { name: '', tipo: '', name2: '', team: 'away', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
@@ -1857,15 +1857,22 @@ export default function App() {
                   minHeight: '400px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '1rem'
+                  gap: '1.5rem'
                 }}>
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     GOLES
                   </span>
+                  {/* LOCAL */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {golesList.map((g, i) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.3rem' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase' }}>{currentMatch?.homeTeam || 'LOCAL'}</span>
+                      <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '0.9rem', padding: '0.15rem 0.6rem', borderRadius: '8px', minWidth: '28px', textAlign: 'center' }}>{golesList.filter(g => g.team === 'home').length}</span>
+                    </div>
+                    {golesList.filter(g => g.team === 'home').length === 0 && (
+                      <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin goles</span>
+                    )}
+                    {golesList.map((g, i) => g.team === 'home' ? (
                       <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.8rem', minWidth: '20px', textAlign: 'right' }}>{i + 1}</span>
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>GOLEADOR</span>
                           <select
@@ -1961,7 +1968,115 @@ export default function App() {
                         </div>
                         <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '48px', textAlign: 'center' }}>{g.minuto}'</span>
                       </div>
-                    ))}
+                    ) : null)}
+                  </div>
+                  {/* VISITANTE */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.3rem' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#f87171', textTransform: 'uppercase' }}>{currentMatch?.awayTeam || 'VISITANTE'}</span>
+                      <span style={{ background: '#f87171', color: '#0f172a', fontWeight: 900, fontSize: '0.9rem', padding: '0.15rem 0.6rem', borderRadius: '8px', minWidth: '28px', textAlign: 'center' }}>{golesList.filter(g => g.team === 'away').length}</span>
+                    </div>
+                    {golesList.filter(g => g.team === 'away').length === 0 && (
+                      <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin goles</span>
+                    )}
+                    {golesList.map((g, i) => g.team === 'away' ? (
+                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>GOLEADOR</span>
+                          <select
+                            value={g.name}
+                            onChange={(e) => {
+                              const newGoles = [...golesList];
+                              newGoles[i] = { ...newGoles[i], name: e.target.value };
+                              setGolesList(newGoles);
+                              if (e.target.value && newGoles[i].tipo && newGoles[i].name2) { setActiveTab('acciones'); }
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="">-</option>
+                            <option value="JUAN">JUAN</option>
+                            <option value="PEDRO">PEDRO</option>
+                            <option value="LUIS">LUIS</option>
+                            <option value="MILLA">MILLA</option>
+                            <option value="ALEXIS">ALEXIS</option>
+                            <option value="ANTONIO">ANTONIO</option>
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ACCION</span>
+                          <select
+                            value={g.tipo}
+                            onChange={(e) => {
+                              const newGoles = [...golesList];
+                              newGoles[i] = { ...newGoles[i], tipo: e.target.value };
+                              setGolesList(newGoles);
+                              if (newGoles[i].name && e.target.value && newGoles[i].name2) { setActiveTab('acciones'); }
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="">-</option>
+                            <option value="PIE">PIE</option>
+                            <option value="CABEZA">CABEZA</option>
+                            <option value="PENAL">PENAL</option>
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ASISTENTE</span>
+                          <select
+                            value={g.name2}
+                            onChange={(e) => {
+                              const newGoles = [...golesList];
+                              newGoles[i] = { ...newGoles[i], name2: e.target.value };
+                              setGolesList(newGoles);
+                              if (newGoles[i].name && newGoles[i].tipo && e.target.value) { setActiveTab('acciones'); }
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="">-</option>
+                            <option value="JUAN">JUAN</option>
+                            <option value="PEDRO">PEDRO</option>
+                            <option value="LUIS">LUIS</option>
+                            <option value="MILLA">MILLA</option>
+                            <option value="ALEXIS">ALEXIS</option>
+                            <option value="ANTONIO">ANTONIO</option>
+                          </select>
+                        </div>
+                        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '48px', textAlign: 'center' }}>{g.minuto}'</span>
+                      </div>
+                    ) : null)}
                   </div>
                 </div>
               )}
