@@ -1864,10 +1864,6 @@ export default function App() {
                   </span>
                   {/* LOCAL */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.3rem' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase' }}>LOCAL</span>
-                      <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '0.9rem', padding: '0.15rem 0.6rem', borderRadius: '8px', minWidth: '28px', textAlign: 'center' }}>{golesList.filter(g => g.team === 'home').length}</span>
-                    </div>
                     {golesList.filter(g => g.team === 'home').length === 0 && (
                       <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin goles</span>
                     )}
@@ -1980,10 +1976,6 @@ export default function App() {
                   </div>
                   {/* VISITANTE */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.3rem' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#f87171', textTransform: 'uppercase' }}>VISITANTE</span>
-                      <span style={{ background: '#f87171', color: '#0f172a', fontWeight: 900, fontSize: '0.9rem', padding: '0.15rem 0.6rem', borderRadius: '8px', minWidth: '28px', textAlign: 'center' }}>{golesList.filter(g => g.team === 'away').length}</span>
-                    </div>
                     {golesList.filter(g => g.team === 'away').length === 0 && (
                       <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin goles</span>
                     )}
