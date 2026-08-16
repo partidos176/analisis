@@ -408,6 +408,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
     logAction('FIN');
   };
 
+  const handleResetContador = () => {
+    setTimerSeconds(0);
+  };
+
   useEffect(() => {
     let interval = null;
     if (timerRunning) {
@@ -550,6 +554,21 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
             >
               DATOS
             </button>
+            <button
+              onClick={() => setActiveTab('tiempojugado')}
+              style={{
+                fontWeight: 800,
+                fontSize: '1.15rem',
+                color: activeTab === 'tiempojugado' ? '#ffffff' : '#64748b',
+                borderBottom: activeTab === 'tiempojugado' ? '2px solid #ffffff' : '2px solid transparent',
+                paddingBottom: '0.2rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              TIEMPO JUGADO
+            </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
@@ -630,8 +649,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     >
                       1ª PARTE
                     </button>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'stretch' }}>
                     <button
                       onClick={handleSegundaParte}
                       style={{
@@ -650,6 +667,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     >
                       2ª PARTE
                     </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'stretch' }}>
                     <button
                       onClick={handleFin}
                       style={{
@@ -667,6 +686,24 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       }}
                     >
                       FIN
+                    </button>
+                    <button
+                      onClick={handleResetContador}
+                      style={{
+                        background: '#64748b',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        fontSize: '0.75rem',
+                        padding: '0.3rem 0.8rem',
+                        borderRadius: 'var(--radius-full)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        minWidth: '80px',
+                        textAlign: 'center',
+                        flex: 1
+                      }}
+                    >
+                      RESET
                     </button>
                   </div>
                 </div>
@@ -2274,13 +2311,105 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + matriz[a][f], 0)}</td>
                               </tr>
                             ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              {activeTab === 'tiempojugado' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  {(() => {
+                    const names = [...new Set(players.map(p => p.name).filter(Boolean))];
+                    const calcMatchMinutes = (pl, subs, durationSec) => {
+                      const minutos = {};
+                      names.forEach(n => { minutos[n] = 0; });
+                      const subsSorted = (Array.isArray(subs) ? subs : []).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
+                      names.forEach(n => {
+                        let entrySec = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular') ? 0 : null;
+                        subsSorted.forEach(s => {
+                          const subSec = (s.minuto || 0) * 60;
+                          if (s.sale === n && entrySec !== null) {
+                            minutos[n] += Math.max(0, subSec - entrySec);
+                            entrySec = null;
+                          } else if (s.entra === n) {
+                            entrySec = subSec;
+                          }
+                        });
+                        if (entrySec !== null) {
+                          minutos[n] += Math.max(0, (durationSec || 0) - entrySec);
+                        }
+                      });
+                      return minutos;
+                    };
+                    const totalMinutos = {};
+                    names.forEach(n => totalMinutos[n] = 0);
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
+                      names.forEach(n => totalMinutos[n] += mMin[n]);
+                    });
+                    const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
+                    names.forEach(n => totalMinutos[n] += liveMin[n]);
+                    const filas = Object.entries(totalMinutos).sort((a, b) => b[1] - a[1]);
+                    const titularCount = {};
+                    const suplenteCount = {};
+                    const noConvocadoCount = {};
+                    const lesionadoCount = {};
+                    const divHonorCount = {};
+                    names.forEach(n => { titularCount[n] = 0; suplenteCount[n] = 0; noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
+                    matches.forEach(m => {
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const titulars = new Set(pl.filter(p => p && p.status === 'titular').map(p => p.name).filter(Boolean));
+                      const suplentes = new Set(pl.filter(p => p && p.status === 'suplente').map(p => p.name).filter(Boolean));
+                      const noConvocados = new Set(pl.filter(p => p && p.status === 'no convocado').map(p => p.name).filter(Boolean));
+                      const lesionados = new Set(pl.filter(p => p && p.status === 'lesion').map(p => p.name).filter(Boolean));
+                      const divHonor = new Set(pl.filter(p => p && p.status === 'division honor').map(p => p.name).filter(Boolean));
+                      names.forEach(n => {
+                        if (titulars.has(n)) titularCount[n] += 1;
+                        if (suplentes.has(n)) suplenteCount[n] += 1;
+                        if (noConvocados.has(n)) noConvocadoCount[n] += 1;
+                        if (lesionados.has(n)) lesionadoCount[n] += 1;
+                        if (divHonor.has(n)) divHonorCount[n] += 1;
+                      });
+                    });
+                    return (
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                          <thead>
                             <tr>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</td>
-                              {cols.map(f => (
-                                <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{filas.reduce((sum, a) => sum + matriz[a][f], 0)}</td>
-                              ))}
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{filas.reduce((sum, a) => sum + cols.reduce((s, f) => s + matriz[a][f], 0), 0)}</td>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TITULAR</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>SUPLENTE</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>NO CONVOCADO</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>LESIONADO</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>DIV. HONOR</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>MINUTOS</th>
                             </tr>
+                          </thead>
+                          <tbody>
+                            {filas.map(([n, m]) => (
+                              <tr key={n}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{titularCount[n]}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{suplenteCount[n]}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{formatTime(m)}</td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
                       </div>
