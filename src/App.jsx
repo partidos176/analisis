@@ -1365,13 +1365,7 @@ export default function App() {
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '0.5rem',
-                  minWidth: '280px',
-                  maxHeight: '500px',
-                  overflowY: 'auto',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '1rem'
+                  minWidth: '280px'
                 }}>
                   <button
                     onClick={() => {
@@ -1407,6 +1401,17 @@ export default function App() {
                       <path d="M8 8l-6 4 6 4" />
                     </svg>
                   </button>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                    maxHeight: '500px',
+                    overflowY: 'auto',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 'var(--radius-lg)',
+                    padding: '1rem'
+                  }}>
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
                     Acciones
                   </span>
@@ -1435,6 +1440,7 @@ export default function App() {
                       )}
                     </div>
                   ))}
+                  </div>
                 </div>
               </div>
             )}
