@@ -1804,7 +1804,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, { name: '', tipo: '', name2: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); } setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setGolesList([...golesList, { name: '', tipo: '', name2: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
@@ -1849,12 +1849,12 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     GOLES
                   </span>
-                  {/* VISITANTE */}
+                  {/* TODOS LOS GOLES */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {golesList.filter(g => g.team === 'away').length === 0 && (
+                    {golesList.length === 0 && (
                       <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin goles</span>
                     )}
-                    {golesList.map((g, i) => g.team === 'away' ? (
+                    {golesList.map((g, i) => (
                       <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>GOLEADOR</span>
@@ -1954,12 +1954,16 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           onClick={() => {
                             const newGoles = golesList.filter((_, idx) => idx !== i);
                             setGolesList(newGoles);
-                            setGolRivalCount(Math.max(0, golRivalCount - 1));
+                            if (g.team === 'away') {
+                              setGolRivalCount(Math.max(0, golRivalCount - 1));
+                            } else {
+                              setGolCount(Math.max(0, golCount - 1));
+                            }
                           }}
                           style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
                         >X</button>
                       </div>
-                    ) : null)}
+                    ))}
                   </div>
                 </div>
               )}
