@@ -61,6 +61,7 @@ export default function App() {
   const [ocasionCount, setOcasionCount] = useState(0);
   const [golesList, setGolesList] = useState([]);
   const [fromRival, setFromRival] = useState(false);
+  const [periodo, setPeriodo] = useState('1ª PARTE');
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [playerStatus, setPlayerStatus] = useState('titular');
   const [players, setPlayers] = useState(Array(23).fill({ name: 'JUAN', status: '-' }));
@@ -225,12 +226,14 @@ export default function App() {
   };
 
   const handlePrimeraParte = () => {
+    setPeriodo('1ª PARTE');
     setTimerSeconds(0);
     setTimerRunning(true);
     logAction('1ª PARTE');
   };
 
   const handleSegundaParte = () => {
+    setPeriodo('2ª PARTE');
     setTimerRunning(true);
     logAction('2ª PARTE');
   };
@@ -1645,7 +1648,7 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, { name: 'JUAN', tipo: 'PIE', name2: 'JUAN' }]); } setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, { name: 'JUAN', tipo: 'PIE', name2: 'JUAN', periodo }]); } setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
@@ -1772,6 +1775,7 @@ export default function App() {
                           <option value="ALEXIS">ALEXIS</option>
                           <option value="ANTONIO">ANTONIO</option>
                         </select>
+                        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '64px', textAlign: 'center' }}>{g.periodo}</span>
                       </div>
                     ))}
                   </div>
