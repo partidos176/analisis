@@ -57,6 +57,7 @@ export default function App() {
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerInterval, setTimerInterval] = useState(null);
   const [actionLog, setActionLog] = useState([]);
+  const [contadorWarning, setContadorWarning] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -157,6 +158,11 @@ export default function App() {
 
   const logAction = (name, type = 'accion') => {
     setActionLog(prev => [{ name, time: formatTime(timerSeconds), type }, ...prev]);
+    const isTimerButton = name === '1ª PARTE' || name === '2ª PARTE' || name === 'FIN';
+    if (!timerRunning && !isTimerButton) {
+      setContadorWarning(true);
+      setTimeout(() => setContadorWarning(false), 2500);
+    }
   };
 
   const decrementCounter = (name) => {
@@ -433,6 +439,24 @@ export default function App() {
                 flexDirection: 'row',
                 gap: '2rem'
               }}>
+                {contadorWarning && (
+                  <div style={{
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    background: '#dc2626',
+                    color: '#ffffff',
+                    fontWeight: 900,
+                    fontSize: '1.5rem',
+                    padding: '1.5rem 3rem',
+                    borderRadius: '12px',
+                    zIndex: 1000,
+                    animation: 'blink 0.5s infinite'
+                  }}>
+                    INICIAR CONTADOR
+                  </div>
+                )}
                 {/* Columna izquierda - Botones de acción */}
                 <div style={{
                   display: 'flex',
