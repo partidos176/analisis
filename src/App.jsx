@@ -2089,7 +2089,33 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             ))}
                           </select>
                         </div>
-                        <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '0.85rem', minWidth: '40px', textAlign: 'center' }}>{sustituciones[row]?.minuto != null ? `${sustituciones[row].minuto}'` : ''}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: '70px' }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>MINUTO</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={sustituciones[row]?.minuto != null ? sustituciones[row].minuto : ''}
+                            onChange={(e) => {
+                              setSustituciones(prev => {
+                                const next = [...prev];
+                                next[row] = { ...(next[row] || {}), minuto: Number(e.target.value) };
+                                return next;
+                              });
+                            }}
+                            placeholder="-"
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 900,
+                              fontSize: '0.9rem',
+                              padding: '0.4rem 0.6rem',
+                              textAlign: 'center',
+                              flex: 1
+                            }}
+                          />
+                        </div>
                         <button
                           onClick={() => setSustituciones(prev => {
                             const next = [...prev];
