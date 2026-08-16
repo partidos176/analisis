@@ -2196,7 +2196,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               {cols.map(f => (
                                 <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>{f}</th>
                               ))}
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#22c55e', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -2206,15 +2206,15 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 {cols.map(f => (
                                   <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f]}</td>
                                 ))}
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#22c55e', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + matriz[a][f], 0)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + matriz[a][f], 0)}</td>
                               </tr>
                             ))}
                             <tr>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#22c55e', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</td>
                               {cols.map(f => (
-                                <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#22c55e', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{filas.reduce((sum, a) => sum + matriz[a][f], 0)}</td>
+                                <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{filas.reduce((sum, a) => sum + matriz[a][f], 0)}</td>
                               ))}
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#22c55e', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{filas.reduce((sum, a) => sum + cols.reduce((s, f) => s + matriz[a][f], 0), 0)}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{filas.reduce((sum, a) => sum + cols.reduce((s, f) => s + matriz[a][f], 0), 0)}</td>
                             </tr>
                           </tbody>
                         </table>
