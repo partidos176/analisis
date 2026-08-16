@@ -34,6 +34,15 @@ export default function App() {
   const [centroIzquierdaCount, setCentroIzquierdaCount] = useState(0);
   const [cornerIzquierdaCount, setCornerIzquierdaCount] = useState(0);
   const [cornerDerechaCount, setCornerDerechaCount] = useState(0);
+  const [rivalTiroIzquierdaCount, setRivalTiroIzquierdaCount] = useState(0);
+  const [rivalTiroFrontalCount, setRivalTiroFrontalCount] = useState(0);
+  const [rivalFaltaDerechaCount, setRivalFaltaDerechaCount] = useState(0);
+  const [rivalFaltaIzquierdaCount, setRivalFaltaIzquierdaCount] = useState(0);
+  const [rivalFaltaFrontalCount, setRivalFaltaFrontalCount] = useState(0);
+  const [rivalCentroDerechaCount, setRivalCentroDerechaCount] = useState(0);
+  const [rivalCentroIzquierdaCount, setRivalCentroIzquierdaCount] = useState(0);
+  const [rivalCornerIzquierdaCount, setRivalCornerIzquierdaCount] = useState(0);
+  const [rivalCornerDerechaCount, setRivalCornerDerechaCount] = useState(0);
   const [inicioPropioCount, setInicioPropioCount] = useState(0);
   const [inicioRivalCount, setInicioRivalCount] = useState(0);
   const [onRivalCount, setOnRivalCount] = useState(0);
@@ -169,11 +178,6 @@ export default function App() {
   };
 
   const decrementCounter = (name) => {
-    if (name === 'RIVAL TIRO DERECHA') {
-      setRivalTiroDerechaCount(prev => Math.max(0, prev - 1));
-      return;
-    }
-    const base = name.startsWith('RIVAL ') ? name.slice(6) : name;
     const map = {
       'TIRO DERECHA': setTiroDerechaCount,
       'TIRO IZQUIERDA': setTiroIzquierdaCount,
@@ -185,6 +189,16 @@ export default function App() {
       'CENTRO IZQUIERDA': setCentroIzquierdaCount,
       'CORNER IZQUIERDA': setCornerIzquierdaCount,
       'CORNER DERECHA': setCornerDerechaCount,
+      'RIVAL TIRO DERECHA': setRivalTiroDerechaCount,
+      'RIVAL TIRO IZQUIERDA': setRivalTiroIzquierdaCount,
+      'RIVAL TIRO FRONTAL': setRivalTiroFrontalCount,
+      'RIVAL FALTA DERECHA': setRivalFaltaDerechaCount,
+      'RIVAL FALTA IZQUIERDA': setRivalFaltaIzquierdaCount,
+      'RIVAL FALTA FRONTAL': setRivalFaltaFrontalCount,
+      'RIVAL CENTRO DERECHA': setRivalCentroDerechaCount,
+      'RIVAL CENTRO IZQUIERDA': setRivalCentroIzquierdaCount,
+      'RIVAL CORNER IZQUIERDA': setRivalCornerIzquierdaCount,
+      'RIVAL CORNER DERECHA': setRivalCornerDerechaCount,
       'INICIO PROPIO': setInicioPropioCount,
       'INICIO RIVAL': setInicioRivalCount,
       'ON RIVAL': setOnRivalCount,
@@ -202,7 +216,7 @@ export default function App() {
       'PENAL + FUERA': setPenalFueraCount,
       'INFRACCION': setInfraccionCount
     };
-    const setter = map[base];
+    const setter = map[name];
     if (setter) {
       setter(prev => Math.max(0, prev - 1));
     }
@@ -880,7 +894,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL TIRO IZQUIERDA')) {
-                        setTiroIzquierdaCount(tiroIzquierdaCount + 1);
+                        setRivalTiroIzquierdaCount(rivalTiroIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -910,13 +924,13 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {tiroIzquierdaCount}
+                      {rivalTiroIzquierdaCount}
                     </span>
                   </button>
                   <button
                     onClick={() => {
                       if (logAction('RIVAL TIRO FRONTAL')) {
-                        setTiroFrontalCount(tiroFrontalCount + 1);
+                        setRivalTiroFrontalCount(rivalTiroFrontalCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -946,13 +960,13 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {tiroFrontalCount}
+                      {rivalTiroFrontalCount}
                     </span>
                   </button>
                   <button
                     onClick={() => {
                       if (logAction('RIVAL FALTA DERECHA')) {
-                        setFaltaDerechaCount(faltaDerechaCount + 1);
+                        setRivalFaltaDerechaCount(rivalFaltaDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -982,13 +996,13 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {faltaDerechaCount}
+                      {rivalFaltaDerechaCount}
                     </span>
                   </button>
                   <button
                     onClick={() => {
                       if (logAction('RIVAL FALTA IZQUIERDA')) {
-                        setFaltaIzquierdaCount(faltaIzquierdaCount + 1);
+                        setRivalFaltaIzquierdaCount(rivalFaltaIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -1018,13 +1032,13 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {faltaIzquierdaCount}
+                      {rivalFaltaIzquierdaCount}
                     </span>
                   </button>
                   <button
                     onClick={() => {
                       if (logAction('RIVAL FALTA FRONTAL')) {
-                        setFaltaFrontalCount(faltaFrontalCount + 1);
+                        setRivalFaltaFrontalCount(rivalFaltaFrontalCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -1054,13 +1068,13 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {faltaFrontalCount}
+                      {rivalFaltaFrontalCount}
                     </span>
                   </button>
                   <button
                     onClick={() => {
                       if (logAction('RIVAL CENTRO DERECHA')) {
-                        setCentroDerechaCount(centroDerechaCount + 1);
+                        setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -1090,13 +1104,13 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {centroDerechaCount}
+                      {rivalCentroDerechaCount}
                     </span>
                   </button>
                   <button
                     onClick={() => {
                       if (logAction('RIVAL CENTRO IZQUIERDA')) {
-                        setCentroIzquierdaCount(centroIzquierdaCount + 1);
+                        setRivalCentroIzquierdaCount(rivalCentroIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -1126,13 +1140,13 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {centroIzquierdaCount}
+                      {rivalCentroIzquierdaCount}
                     </span>
                   </button>
                   <button
                     onClick={() => {
                       if (logAction('RIVAL CORNER IZQUIERDA')) {
-                        setCornerIzquierdaCount(cornerIzquierdaCount + 1);
+                        setRivalCornerIzquierdaCount(rivalCornerIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -1162,13 +1176,13 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {cornerIzquierdaCount}
+                      {rivalCornerIzquierdaCount}
                     </span>
                   </button>
                   <button
                     onClick={() => {
                       if (logAction('RIVAL CORNER DERECHA')) {
-                        setCornerDerechaCount(cornerDerechaCount + 1);
+                        setRivalCornerDerechaCount(rivalCornerDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -1198,7 +1212,7 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {cornerDerechaCount}
+                      {rivalCornerDerechaCount}
                     </span>
                   </button>
                 </div>
