@@ -2150,6 +2150,68 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   padding: '2rem',
                   minHeight: '400px'
                 }}>
+                  {(() => {
+                    const acciones = [
+                      'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL',
+                      'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL',
+                      'CENTRO DERECHA', 'CENTRO IZQUIERDA',
+                      'CORNER IZQUIERDA', 'CORNER DERECHA',
+                      'RIVAL TIRO DERECHA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL',
+                      'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL',
+                      'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA',
+                      'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA',
+                      'INICIO PROPIO', 'INICIO RIVAL',
+                      'ON RIVAL', 'ON NEUTRO', 'OFF RIVAL', 'OFF NEUTRO'
+                    ];
+                    const finalizaciones = [
+                      'OCASION', 'FUERA', 'BLOCAJE', 'DESPEJE DEFENSA', 'DESPEJE PORTERO',
+                      'SAQUE DE ESQUINA', 'GOL', 'GOL RIVAL', 'PENAL + FUERA', 'PENAL + GOL', 'INFRACCION'
+                    ];
+                    const matriz = {};
+                    acciones.forEach(a => matriz[a] = {});
+                    finalizaciones.forEach(f => acciones.forEach(a => matriz[a][f] = 0));
+                    let ultimaAccion = null;
+                    [...actionLog].reverse().forEach(entry => {
+                      if (entry.type === 'accion' && acciones.includes(entry.name)) {
+                        ultimaAccion = entry.name;
+                      } else if (entry.type === 'finalizacion' && finalizaciones.includes(entry.name) && ultimaAccion) {
+                        matriz[ultimaAccion][entry.name] += 1;
+                      }
+                    });
+                    const filas = acciones.filter(a => finalizaciones.some(f => matriz[a][f] > 0));
+                    const cols = finalizaciones.filter(f => acciones.some(a => matriz[a][f] > 0));
+                    if (filas.length === 0) {
+                      return (
+                        <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
+                          Sin datos aún
+                        </span>
+                      );
+                    }
+                    return (
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                          <thead>
+                            <tr>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
+                              {cols.map(f => (
+                                <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>{f}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filas.map(a => (
+                              <tr key={a}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: a.includes('RIVAL') ? '#ef4444' : '#ffffff', fontWeight: 700 }}>{a}</td>
+                                {cols.map(f => (
+                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f]}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
               {activeTab === 'alineacion' && (
