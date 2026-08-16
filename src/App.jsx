@@ -54,6 +54,7 @@ export default function App() {
   const [despejeDefensaCount, setDespejeDefensaCount] = useState(0);
   const [despejePorteroCount, setDespejePorteroCount] = useState(0);
   const [golCount, setGolCount] = useState(0);
+  const [golRivalCount, setGolRivalCount] = useState(0);
   const [penalCount, setPenalCount] = useState(0);
   const [saqueEsquinaFueraCount, setSaqueEsquinaFueraCount] = useState(0);
   const [infraccionCount, setInfraccionCount] = useState(0);
@@ -213,6 +214,7 @@ export default function App() {
       'DESPEJE PORTERO': setDespejePorteroCount,
       'SAQUE DE ESQUINA': setSaqueEsquinaFueraCount,
       'GOL': setGolCount,
+      'GOL RIVAL': setGolRivalCount,
       'PENAL + FUERA': setPenalCount,
       'INFRACCION': setInfraccionCount
     };
@@ -1648,6 +1650,13 @@ export default function App() {
                       >
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
+                      </button>
+                      <button
+                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(golRivalCount + 1); setActiveTab('goles'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>GOL RIVAL</span>
+                        <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('PENAL + FUERA', 'finalizacion')) { setPenalCount(penalCount + 1); setActiveTab('acciones'); } }}
