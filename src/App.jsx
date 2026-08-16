@@ -193,6 +193,7 @@ export default function App() {
 
   const handleOpenMatch = async (match) => {
     setActiveTab('alineacion');
+    resetMatchData();
     try {
       const snap = await get(child(ref(db), `matchData/${match.id}`));
       if (snap.exists()) {
