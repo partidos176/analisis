@@ -1966,6 +1966,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             <option value="MILLA">MILLA</option>
                             <option value="ALEXIS">ALEXIS</option>
                             <option value="ANTONIO">ANTONIO</option>
+                            <option value="SIN ASISTENCIA">SIN ASISTENCIA</option>
                           </select>
                         </div>
                         <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '48px', textAlign: 'center' }}>{g.minuto}'</span>
