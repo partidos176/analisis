@@ -2020,80 +2020,82 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     SUSTITUCIONES
                   </span>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: '150px' }}>
-                      <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>SALE</span>
-                      <select
-                        value=""
-                        onChange={(e) => {
-                          const sale = e.target.value;
-                          if (!sale) return;
-                          setSustituciones(prev => [...prev, { sale, entra: '', minuto: Math.floor(timerSeconds / 60), periodo }]);
-                        }}
-                        style={{
-                          background: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                          borderRadius: '8px',
-                          color: '#ffffff',
-                          fontWeight: 700,
-                          fontSize: '0.8rem',
-                          padding: '0.4rem 0.6rem',
-                          textTransform: 'uppercase',
-                          cursor: 'pointer',
-                          flex: 1
-                        }}
-                      >
-                        <option value="">-</option>
-                        {[...new Set(players.map(p => p.name).filter(Boolean))].map(name => (
-                          <option key={name} value={name}>{name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>por</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: '150px' }}>
-                      <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ENTRA</span>
-                      <select
-                        value=""
-                        onChange={(e) => {
-                          const entra = e.target.value;
-                          if (!entra) return;
-                          setSustituciones(prev => {
-                            const last = [...prev];
-                            const i = last.findIndex(s => !s.entra);
-                            if (i !== -1) { last[i] = { ...last[i], entra }; }
-                            return last;
-                          });
-                        }}
-                        style={{
-                          background: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                          borderRadius: '8px',
-                          color: '#ffffff',
-                          fontWeight: 700,
-                          fontSize: '0.8rem',
-                          padding: '0.4rem 0.6rem',
-                          textTransform: 'uppercase',
-                          cursor: 'pointer',
-                          flex: 1
-                        }}
-                      >
-                        <option value="">-</option>
-                        {[...new Set(players.map(p => p.name).filter(Boolean))].map(name => (
-                          <option key={name} value={name}>{name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {sustituciones.length === 0 && (
-                      <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin sustituciones</span>
-                    )}
-                    {sustituciones.map((s, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.4rem 0.8rem' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>{s.sale} → {s.entra}</span>
-                        <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '0.85rem' }}>{s.minuto}'</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {[0, 1, 2, 3, 4].map(row => (
+                      <div key={row} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem', minWidth: '24px', textAlign: 'center' }}>{row + 1}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: '150px' }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>SALE</span>
+                          <select
+                            value={sustituciones[row]?.sale || ''}
+                            onChange={(e) => {
+                              const sale = e.target.value;
+                              if (!sale) return;
+                              setSustituciones(prev => {
+                                const next = [...prev];
+                                next[row] = { ...(next[row] || {}), sale, minuto: Math.floor(timerSeconds / 60), periodo };
+                                return next;
+                              });
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="">-</option>
+                            {[...new Set(players.map(p => p.name).filter(Boolean))].map(name => (
+                              <option key={name} value={name}>{name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>por</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: '150px' }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ENTRA</span>
+                          <select
+                            value={sustituciones[row]?.entra || ''}
+                            onChange={(e) => {
+                              const entra = e.target.value;
+                              if (!entra) return;
+                              setSustituciones(prev => {
+                                const next = [...prev];
+                                next[row] = { ...(next[row] || {}), entra };
+                                return next;
+                              });
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="">-</option>
+                            {[...new Set(players.map(p => p.name).filter(Boolean))].map(name => (
+                              <option key={name} value={name}>{name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '0.85rem', minWidth: '40px', textAlign: 'center' }}>{sustituciones[row]?.minuto != null ? `${sustituciones[row].minuto}'` : ''}</span>
                         <button
-                          onClick={() => setSustituciones(sustituciones.filter((_, idx) => idx !== i))}
+                          onClick={() => setSustituciones(prev => {
+                            const next = [...prev];
+                            next[row] = {};
+                            return next;
+                          })}
                           style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
                         >X</button>
                       </div>
