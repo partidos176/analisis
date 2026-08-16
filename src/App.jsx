@@ -2165,7 +2165,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                       <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#334155' }}>JORNADA {currentMatch.matchday}</span>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#ffffff' }}>vs</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                       <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f87171' }}>{currentMatch.awayTeam}</span>
