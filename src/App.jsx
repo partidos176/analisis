@@ -1406,11 +1406,9 @@ export default function App() {
                 }}>
                   <button
                     onClick={() => {
-                      setActionLog(prev => {
-                        if (prev.length === 0) return prev;
-                        decrementCounter(prev[0].name);
-                        return prev.slice(1);
-                      });
+                      if (actionLog.length === 0) return;
+                      decrementCounter(actionLog[0].name);
+                      setActionLog(actionLog.slice(1));
                     }}
                     title="Borrar primera acción"
                     style={{
