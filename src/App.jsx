@@ -1656,9 +1656,78 @@ export default function App() {
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     GOLES
                   </span>
-                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem', textAlign: 'center' }}>
-                    Hoja de goles - en construcción
-                  </span>
+                  <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
+                    {/* Columna izquierda */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {players.slice(0, 12).map((p, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.8rem', minWidth: '20px', textAlign: 'right' }}>{i + 1}</span>
+                          <select
+                            value={p.name}
+                            onChange={(e) => {
+                              const newPlayers = [...players];
+                              newPlayers[i] = { ...newPlayers[i], name: e.target.value };
+                              setPlayers(newPlayers);
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="JUAN">JUAN</option>
+                            <option value="PEDRO">PEDRO</option>
+                            <option value="LUIS">LUIS</option>
+                            <option value="MILLA">MILLA</option>
+                            <option value="ALEXIS">ALEXIS</option>
+                            <option value="ANTONIO">ANTONIO</option>
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Columna derecha */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {players.slice(12, 23).map((p, i) => (
+                        <div key={i + 12} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.8rem', minWidth: '20px', textAlign: 'right' }}>{i + 13}</span>
+                          <select
+                            value={p.name}
+                            onChange={(e) => {
+                              const newPlayers = [...players];
+                              newPlayers[i + 12] = { ...newPlayers[i + 12], name: e.target.value };
+                              setPlayers(newPlayers);
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="JUAN">JUAN</option>
+                            <option value="PEDRO">PEDRO</option>
+                            <option value="LUIS">LUIS</option>
+                            <option value="MILLA">MILLA</option>
+                            <option value="ALEXIS">ALEXIS</option>
+                            <option value="ANTONIO">ANTONIO</option>
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
               {activeTab === 'alineacion' && (
