@@ -2181,7 +2181,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       ['SAQUE DE ESQUINA', saqueEsquinaFueraCount],
                       ['INFRACCION', infraccionCount],
                       ['OCASION', ocasionCount]
-                    ].map(([label, value]) => (
+                    ].filter(([label, value]) => value > 0).map(([label, value]) => (
                       <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>{label}</span>
                         <span style={{ fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>{value}</span>
