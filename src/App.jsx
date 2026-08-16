@@ -1809,9 +1809,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     </div>
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.1rem', color: '#38bdf8', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '0.05em' }}>
-                        {currentMatch?.homeTeam || 'C.D. TENERIFE'}
-                      </span>
                       <button
                         onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, { name: '', tipo: '', name2: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); } setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
@@ -1819,9 +1816,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.1rem', color: '#f87171', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '0.05em' }}>
-                        {currentMatch?.awayTeam || 'RIVAL'}
-                      </span>
                       <button
                         onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(golRivalCount + 1); setGolesList([...golesList, { name: '', tipo: '', name2: '', team: 'away', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
