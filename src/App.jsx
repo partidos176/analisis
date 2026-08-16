@@ -2148,56 +2148,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '2rem',
-                  minHeight: '400px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem'
+                  minHeight: '400px'
                 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem' }}>
-                    {[
-                      ['TIRO DERECHA', tiroDerechaCount],
-                      ['TIRO IZQUIERDA', tiroIzquierdaCount],
-                      ['TIRO FRONTAL', tiroFrontalCount],
-                      ['FALTA DERECHA', faltaDerechaCount],
-                      ['FALTA IZQUIERDA', faltaIzquierdaCount],
-                      ['FALTA FRONTAL', faltaFrontalCount],
-                      ['CENTRO DERECHA', centroDerechaCount],
-                      ['CENTRO IZQUIERDA', centroIzquierdaCount],
-                      ['CORNER IZQUIERDA', cornerIzquierdaCount],
-                      ['CORNER DERECHA', cornerDerechaCount],
-                      ['RIVAL TIRO DERECHA', rivalTiroDerechaCount],
-                      ['RIVAL TIRO IZQUIERDA', rivalTiroIzquierdaCount],
-                      ['RIVAL TIRO FRONTAL', rivalTiroFrontalCount],
-                      ['RIVAL FALTA DERECHA', rivalFaltaDerechaCount],
-                      ['RIVAL FALTA IZQUIERDA', rivalFaltaIzquierdaCount],
-                      ['RIVAL FALTA FRONTAL', rivalFaltaFrontalCount],
-                      ['RIVAL CENTRO DERECHA', rivalCentroDerechaCount],
-                      ['RIVAL CENTRO IZQUIERDA', rivalCentroIzquierdaCount],
-                      ['RIVAL CORNER IZQUIERDA', rivalCornerIzquierdaCount],
-                      ['RIVAL CORNER DERECHA', rivalCornerDerechaCount],
-                      ['INICIO PROPIO', inicioPropioCount],
-                      ['INICIO RIVAL', inicioRivalCount],
-                      ['ON RIVAL', onRivalCount],
-                      ['ON NEUTRO', onNeutroCount],
-                      ['OFF RIVAL', offRivalCount],
-                      ['OFF NEUTRO', offNeutroCount],
-                      ['FUERA', fueraCount],
-                      ['BLOCAJE', blocajeCount],
-                      ['DESPEJE DEFENSA', despejeDefensaCount],
-                      ['DESPEJE PORTERO', despejePorteroCount],
-                      ['GOL', golCount],
-                      ['GOL RIVAL', golRivalCount],
-                      ['PENAL + GOL', penalCount],
-                      ['SAQUE DE ESQUINA', saqueEsquinaFueraCount],
-                      ['INFRACCION', infraccionCount],
-                      ['OCASION', ocasionCount]
-                    ].filter(([label, value]) => value > 0).map(([label, value]) => (
-                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
-                        <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>{label}</span>
-                        <span style={{ fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>{value}</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
               {activeTab === 'alineacion' && (
