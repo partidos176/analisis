@@ -736,6 +736,48 @@ export default function App() {
                     </span>
                   </button>
                 </div>
+                {/* Botón ON RIVAL junto a columna central */}
+                <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center', alignItems: 'flex-start', marginLeft: '0.5rem' }}>
+                  <button
+                    onClick={() => {
+                      setOnRivalCount(onRivalCount + 1);
+                    }}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#dc2626',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.8rem',
+                      padding: '1rem',
+                      borderRadius: '50%',
+                      width: '75px',
+                      height: '75px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      gap: '0.2rem',
+                      cursor: 'pointer',
+                      border: 'none'
+                    }}
+                  >
+                    <span>ON</span>
+                    <span>RIVAL</span>
+                    <span style={{
+                      background: '#ffffff',
+                      color: '#dc2626',
+                      fontWeight: 900,
+                      fontSize: '0.8rem',
+                      padding: '0.1rem 0.4rem',
+                      borderRadius: '8px',
+                      minWidth: '20px',
+                      textAlign: 'center'
+                    }}>
+                      {onRivalCount}
+                    </span>
+                  </button>
+                </div>
                 {/* Columna derecha - Botones RIVAL */}
                 <div style={{
                   display: 'flex',
@@ -1162,47 +1204,6 @@ export default function App() {
                       {inicioRivalCount}
                     </span>
                   </button>
-                  <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => {
-                        setOnRivalCount(onRivalCount + 1);
-                      }}
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: '#dc2626',
-                        color: '#ffffff',
-                        fontWeight: 900,
-                        fontSize: '0.8rem',
-                        padding: '1rem',
-                        borderRadius: '50%',
-                        width: '75px',
-                        height: '75px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        gap: '0.2rem',
-                        cursor: 'pointer',
-                        border: 'none'
-                      }}
-                    >
-                      <span>ON</span>
-                      <span>RIVAL</span>
-                      <span style={{
-                        background: '#ffffff',
-                        color: '#dc2626',
-                        fontWeight: 900,
-                        fontSize: '0.8rem',
-                        padding: '0.1rem 0.4rem',
-                        borderRadius: '8px',
-                        minWidth: '20px',
-                        textAlign: 'center'
-                      }}>
-                        {onRivalCount}
-                      </span>
-                    </button>
-                  </div>
                   <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
                     <button
                       onClick={() => {
