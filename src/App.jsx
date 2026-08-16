@@ -530,6 +530,21 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
             >
               SUSTITUCIONES
             </button>
+            <button
+              onClick={() => setActiveTab('datos')}
+              style={{
+                fontWeight: 800,
+                fontSize: '1.15rem',
+                color: activeTab === 'datos' ? '#ffffff' : '#64748b',
+                borderBottom: activeTab === 'datos' ? '2px solid #ffffff' : '2px solid transparent',
+                paddingBottom: '0.2rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              DATOS
+            </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
@@ -2126,6 +2141,83 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         >X</button>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+              {activeTab === 'datos' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                    DATOS
+                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                      <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#38bdf8' }}>{currentMatch.homeTeam}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#ffffff' }}>{golCount + penalCount}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                      <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#334155' }}>JORNADA {currentMatch.matchday}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#ffffff' }}>vs</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                      <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f87171' }}>{currentMatch.awayTeam}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#ffffff' }}>{golRivalCount}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem' }}>
+                    {[
+                      ['TIRO DERECHA', tiroDerechaCount],
+                      ['TIRO IZQUIERDA', tiroIzquierdaCount],
+                      ['TIRO FRONTAL', tiroFrontalCount],
+                      ['FALTA DERECHA', faltaDerechaCount],
+                      ['FALTA IZQUIERDA', faltaIzquierdaCount],
+                      ['FALTA FRONTAL', faltaFrontalCount],
+                      ['CENTRO DERECHA', centroDerechaCount],
+                      ['CENTRO IZQUIERDA', centroIzquierdaCount],
+                      ['CORNER IZQUIERDA', cornerIzquierdaCount],
+                      ['CORNER DERECHA', cornerDerechaCount],
+                      ['INICIO PROPIO', inicioPropioCount],
+                      ['INICIO RIVAL', inicioRivalCount],
+                      ['ON RIVAL', onRivalCount],
+                      ['ON NEUTRO', onNeutroCount],
+                      ['OFF RIVAL', offRivalCount],
+                      ['OFF NEUTRO', offNeutroCount],
+                      ['FUERA', fueraCount],
+                      ['BLOCAJE', blocajeCount],
+                      ['DESPEJE DEFENSA', despejeDefensaCount],
+                      ['DESPEJE PORTERO', despejePorteroCount],
+                      ['GOL', golCount],
+                      ['GOL RIVAL', golRivalCount],
+                      ['PENAL + GOL', penalCount],
+                      ['SAQUE DE ESQUINA', saqueEsquinaFueraCount],
+                      ['INFRACCION', infraccionCount],
+                      ['OCASION', ocasionCount]
+                    ].map(([label, value]) => (
+                      <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
+                        <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>{label}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>SUSTITUCIONES</span>
+                    {sustituciones.filter(s => s && s.sale).length === 0 && (
+                      <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin sustituciones</span>
+                    )}
+                    {sustituciones.map((s, i) => s && s.sale ? (
+                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.4rem 0.8rem' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>{s.sale} → {s.entra || '?'}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '0.85rem' }}>{s.minuto != null ? `${s.minuto}'` : ''}</span>
+                      </div>
+                    ) : null)}
                   </div>
                 </div>
               )}
