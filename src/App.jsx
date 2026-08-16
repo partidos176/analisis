@@ -838,42 +838,6 @@ export default function App() {
                 }}>
                   <button
                     onClick={() => {
-                      if (logAction('RIVAL TIRO DERECHA')) {
-                        setTiroDerechaCount(tiroDerechaCount + 1);
-                        setActiveTab('finalizaciones');
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: '#eab308',
-                      color: '#000000',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '0.8rem 1.5rem',
-                      borderRadius: '12px',
-                      minWidth: '250px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}
-                  >
-                    <span>RIVAL TIRO DERECHA</span>
-                    <span style={{
-                      background: '#000000',
-                      color: '#eab308',
-                      fontWeight: 900,
-                      fontSize: '1rem',
-                      padding: '0.2rem 0.7rem',
-                      borderRadius: '8px',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {tiroDerechaCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
                       if (logAction('RIVAL TIRO IZQUIERDA')) {
                         setTiroIzquierdaCount(tiroIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
