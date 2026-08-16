@@ -157,12 +157,14 @@ export default function App() {
   };
 
   const logAction = (name, type = 'accion') => {
-    setActionLog(prev => [{ name, time: formatTime(timerSeconds), type }, ...prev]);
     const isTimerButton = name === '1ª PARTE' || name === '2ª PARTE' || name === 'FIN';
     if (!timerRunning && !isTimerButton) {
       setContadorWarning(true);
       setTimeout(() => setContadorWarning(false), 2500);
+      return false;
     }
+    setActionLog(prev => [{ name, time: formatTime(timerSeconds), type }, ...prev]);
+    return true;
   };
 
   const decrementCounter = (name) => {
@@ -467,9 +469,10 @@ export default function App() {
                 }}>
                   <button
                     onClick={() => {
-                      setTiroDerechaCount(tiroDerechaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('TIRO DERECHA');
+                      if (logAction('TIRO DERECHA')) {
+                        setTiroDerechaCount(tiroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -502,9 +505,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setTiroIzquierdaCount(tiroIzquierdaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('TIRO IZQUIERDA');
+                      if (logAction('TIRO IZQUIERDA')) {
+                        setTiroIzquierdaCount(tiroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -537,9 +541,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setTiroFrontalCount(tiroFrontalCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('TIRO FRONTAL');
+                      if (logAction('TIRO FRONTAL')) {
+                        setTiroFrontalCount(tiroFrontalCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -572,9 +577,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setFaltaDerechaCount(faltaDerechaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('FALTA DERECHA');
+                      if (logAction('FALTA DERECHA')) {
+                        setFaltaDerechaCount(faltaDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -607,9 +613,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setFaltaIzquierdaCount(faltaIzquierdaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('FALTA IZQUIERDA');
+                      if (logAction('FALTA IZQUIERDA')) {
+                        setFaltaIzquierdaCount(faltaIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -642,9 +649,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setFaltaFrontalCount(faltaFrontalCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('FALTA FRONTAL');
+                      if (logAction('FALTA FRONTAL')) {
+                        setFaltaFrontalCount(faltaFrontalCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -677,9 +685,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setCentroDerechaCount(centroDerechaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('CENTRO DERECHA');
+                      if (logAction('CENTRO DERECHA')) {
+                        setCentroDerechaCount(centroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -712,9 +721,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setCentroIzquierdaCount(centroIzquierdaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('CENTRO IZQUIERDA');
+                      if (logAction('CENTRO IZQUIERDA')) {
+                        setCentroIzquierdaCount(centroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -747,9 +757,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setCornerIzquierdaCount(cornerIzquierdaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('CORNER IZQUIERDA');
+                      if (logAction('CORNER IZQUIERDA')) {
+                        setCornerIzquierdaCount(cornerIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -782,9 +793,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setCornerDerechaCount(cornerDerechaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('CORNER DERECHA');
+                      if (logAction('CORNER DERECHA')) {
+                        setCornerDerechaCount(cornerDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -826,9 +838,10 @@ export default function App() {
                 }}>
                   <button
                     onClick={() => {
-                      setTiroDerechaCount(tiroDerechaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL TIRO DERECHA');
+                      if (logAction('RIVAL TIRO DERECHA')) {
+                        setTiroDerechaCount(tiroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -861,9 +874,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setTiroIzquierdaCount(tiroIzquierdaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL TIRO IZQUIERDA');
+                      if (logAction('RIVAL TIRO IZQUIERDA')) {
+                        setTiroIzquierdaCount(tiroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -896,9 +910,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setTiroFrontalCount(tiroFrontalCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL TIRO FRONTAL');
+                      if (logAction('RIVAL TIRO FRONTAL')) {
+                        setTiroFrontalCount(tiroFrontalCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -931,9 +946,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setFaltaDerechaCount(faltaDerechaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL FALTA DERECHA');
+                      if (logAction('RIVAL FALTA DERECHA')) {
+                        setFaltaDerechaCount(faltaDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -966,9 +982,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setFaltaIzquierdaCount(faltaIzquierdaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL FALTA IZQUIERDA');
+                      if (logAction('RIVAL FALTA IZQUIERDA')) {
+                        setFaltaIzquierdaCount(faltaIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -1001,9 +1018,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setFaltaFrontalCount(faltaFrontalCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL FALTA FRONTAL');
+                      if (logAction('RIVAL FALTA FRONTAL')) {
+                        setFaltaFrontalCount(faltaFrontalCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -1036,9 +1054,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setCentroDerechaCount(centroDerechaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL CENTRO DERECHA');
+                      if (logAction('RIVAL CENTRO DERECHA')) {
+                        setCentroDerechaCount(centroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -1071,9 +1090,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setCentroIzquierdaCount(centroIzquierdaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL CENTRO IZQUIERDA');
+                      if (logAction('RIVAL CENTRO IZQUIERDA')) {
+                        setCentroIzquierdaCount(centroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -1106,9 +1126,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setCornerIzquierdaCount(cornerIzquierdaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL CORNER IZQUIERDA');
+                      if (logAction('RIVAL CORNER IZQUIERDA')) {
+                        setCornerIzquierdaCount(cornerIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -1141,9 +1162,10 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setCornerDerechaCount(cornerDerechaCount + 1);
-                      setActiveTab('finalizaciones');
-                      logAction('RIVAL CORNER DERECHA');
+                      if (logAction('RIVAL CORNER DERECHA')) {
+                        setCornerDerechaCount(cornerDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -1184,8 +1206,9 @@ export default function App() {
                 }}>
                   <button
                     onClick={() => {
-                      setInicioPropioCount(inicioPropioCount + 1);
-                      logAction('INICIO PROPIO');
+                      if (logAction('INICIO PROPIO')) {
+                        setInicioPropioCount(inicioPropioCount + 1);
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -1220,8 +1243,9 @@ export default function App() {
                   </button>
                   <button
                     onClick={() => {
-                      setInicioRivalCount(inicioRivalCount + 1);
-                      logAction('INICIO RIVAL');
+                      if (logAction('INICIO RIVAL')) {
+                        setInicioRivalCount(inicioRivalCount + 1);
+                      }
                     }}
                     style={{
                       display: 'flex',
@@ -1258,8 +1282,9 @@ export default function App() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                       <button
                         onClick={() => {
-                          setOnRivalCount(onRivalCount + 1);
-                          logAction('ON RIVAL');
+                          if (logAction('ON RIVAL')) {
+                            setOnRivalCount(onRivalCount + 1);
+                          }
                         }}
                         style={{
                           display: 'flex',
@@ -1298,8 +1323,9 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => {
-                          setOnNeutroCount(onNeutroCount + 1);
-                          logAction('ON NEUTRO');
+                          if (logAction('ON NEUTRO')) {
+                            setOnNeutroCount(onNeutroCount + 1);
+                          }
                         }}
                         style={{
                           display: 'flex',
@@ -1340,8 +1366,9 @@ export default function App() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                       <button
                         onClick={() => {
-                          setOffRivalCount(offRivalCount + 1);
-                          logAction('OFF RIVAL');
+                          if (logAction('OFF RIVAL')) {
+                            setOffRivalCount(offRivalCount + 1);
+                          }
                         }}
                         style={{
                           display: 'flex',
@@ -1380,8 +1407,9 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => {
-                          setOffNeutroCount(offNeutroCount + 1);
-                          logAction('OFF NEUTRO');
+                          if (logAction('OFF NEUTRO')) {
+                            setOffNeutroCount(offNeutroCount + 1);
+                          }
                         }}
                         style={{
                           display: 'flex',
@@ -1508,7 +1536,7 @@ export default function App() {
                   {/* Botón OCASION centrado arriba */}
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <button
-                      onClick={() => { setOcasionCount(ocasionCount + 1); logAction('OCASION', 'finalizacion'); }}
+                      onClick={() => { if (logAction('OCASION', 'finalizacion')) setOcasionCount(ocasionCount + 1); }}
                       style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f97316', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '250px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                     >
                       <span>OCASION</span>
@@ -1520,35 +1548,35 @@ export default function App() {
                     {/* Columna izquierda */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { setFueraCount(fueraCount + 1); setActiveTab('acciones'); logAction('FUERA', 'finalizacion'); }}
+                        onClick={() => { if (logAction('FUERA', 'finalizacion')) { setFueraCount(fueraCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>FUERA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{fueraCount}</span>
                       </button>
                       <button
-                        onClick={() => { setBlocajeCount(blocajeCount + 1); setActiveTab('acciones'); logAction('BLOCAJE', 'finalizacion'); }}
+                        onClick={() => { if (logAction('BLOCAJE', 'finalizacion')) { setBlocajeCount(blocajeCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>BLOCAJE</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{blocajeCount}</span>
                       </button>
                       <button
-                        onClick={() => { setDespejeDefensaCount(despejeDefensaCount + 1); setActiveTab('acciones'); logAction('DESPEJE DEFENSA', 'finalizacion'); }}
+                        onClick={() => { if (logAction('DESPEJE DEFENSA', 'finalizacion')) { setDespejeDefensaCount(despejeDefensaCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>DESPEJE DEFENSA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejeDefensaCount}</span>
                       </button>
                       <button
-                        onClick={() => { setDespejePorteroCount(despejePorteroCount + 1); setActiveTab('acciones'); logAction('DESPEJE PORTERO', 'finalizacion'); }}
+                        onClick={() => { if (logAction('DESPEJE PORTERO', 'finalizacion')) { setDespejePorteroCount(despejePorteroCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>DESPEJE PORTERO</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejePorteroCount}</span>
                       </button>
                       <button
-                        onClick={() => { setSaqueEsquinaFueraCount(saqueEsquinaFueraCount + 1); setActiveTab('acciones'); logAction('SAQUE DE ESQUINA', 'finalizacion'); }}
+                        onClick={() => { if (logAction('SAQUE DE ESQUINA', 'finalizacion')) { setSaqueEsquinaFueraCount(saqueEsquinaFueraCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>SAQUE DE ESQUINA</span>
@@ -1558,28 +1586,28 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { setGolCount(golCount + 1); setActiveTab('alineacion'); logAction('GOL', 'finalizacion'); }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setActiveTab('alineacion'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { setPenalCount(penalCount + 1); setActiveTab('alineacion'); logAction('PENAL + GOL', 'finalizacion'); }}
+                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setActiveTab('alineacion'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
                       </button>
                       <button
-                        onClick={() => { setPenalFueraCount(penalFueraCount + 1); setActiveTab('acciones'); logAction('PENAL + FUERA', 'finalizacion'); }}
+                        onClick={() => { if (logAction('PENAL + FUERA', 'finalizacion')) { setPenalFueraCount(penalFueraCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + FUERA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalFueraCount}</span>
                       </button>
                       <button
-                        onClick={() => { setInfraccionCount(infraccionCount + 1); setActiveTab('acciones'); logAction('INFRACCION', 'finalizacion'); }}
+                        onClick={() => { if (logAction('INFRACCION', 'finalizacion')) { setInfraccionCount(infraccionCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>INFRACCION</span>
