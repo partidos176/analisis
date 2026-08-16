@@ -1645,7 +1645,7 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, 'JUAN']); } setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, { name: 'JUAN', tipo: 'PIE', name2: 'JUAN' }]); } setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
@@ -1695,10 +1695,61 @@ export default function App() {
                       <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.8rem', minWidth: '20px', textAlign: 'right' }}>{i + 1}</span>
                         <select
-                          value={g}
+                          value={g.name}
                           onChange={(e) => {
                             const newGoles = [...golesList];
-                            newGoles[i] = e.target.value;
+                            newGoles[i] = { ...newGoles[i], name: e.target.value };
+                            setGolesList(newGoles);
+                          }}
+                          style={{
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.8rem',
+                            padding: '0.4rem 0.6rem',
+                            textTransform: 'uppercase',
+                            cursor: 'pointer',
+                            flex: 1
+                          }}
+                        >
+                          <option value="JUAN">JUAN</option>
+                          <option value="PEDRO">PEDRO</option>
+                          <option value="LUIS">LUIS</option>
+                          <option value="MILLA">MILLA</option>
+                          <option value="ALEXIS">ALEXIS</option>
+                          <option value="ANTONIO">ANTONIO</option>
+                        </select>
+                        <select
+                          value={g.tipo}
+                          onChange={(e) => {
+                            const newGoles = [...golesList];
+                            newGoles[i] = { ...newGoles[i], tipo: e.target.value };
+                            setGolesList(newGoles);
+                          }}
+                          style={{
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.8rem',
+                            padding: '0.4rem 0.6rem',
+                            textTransform: 'uppercase',
+                            cursor: 'pointer',
+                            flex: 1
+                          }}
+                        >
+                          <option value="PIE">PIE</option>
+                          <option value="CABEZA">CABEZA</option>
+                          <option value="PENAL">PENAL</option>
+                        </select>
+                        <select
+                          value={g.name2}
+                          onChange={(e) => {
+                            const newGoles = [...golesList];
+                            newGoles[i] = { ...newGoles[i], name2: e.target.value };
                             setGolesList(newGoles);
                           }}
                           style={{
