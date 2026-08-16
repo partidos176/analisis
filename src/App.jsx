@@ -105,6 +105,7 @@ export default function App() {
       setHomeTeam('');
       setAwayTeam('');
       setMatchday('');
+      resetMatchData();
       setCurrentMatch({ id: newId, homeTeam, awayTeam, matchday: Number(matchday), homeScore: 0, awayScore: 0 });
       setActiveTab('alineacion');
     } catch (err) {
@@ -142,6 +143,52 @@ export default function App() {
     setHomeTeam('');
     setAwayTeam('');
     setMatchday('');
+  };
+
+  const resetMatchData = () => {
+    setTiroDerechaCount(0);
+    setRivalTiroDerechaCount(0);
+    setTiroIzquierdaCount(0);
+    setTiroFrontalCount(0);
+    setFaltaDerechaCount(0);
+    setFaltaIzquierdaCount(0);
+    setFaltaFrontalCount(0);
+    setCentroDerechaCount(0);
+    setCentroIzquierdaCount(0);
+    setCornerIzquierdaCount(0);
+    setCornerDerechaCount(0);
+    setRivalTiroIzquierdaCount(0);
+    setRivalTiroFrontalCount(0);
+    setRivalFaltaDerechaCount(0);
+    setRivalFaltaIzquierdaCount(0);
+    setRivalFaltaFrontalCount(0);
+    setRivalCentroDerechaCount(0);
+    setRivalCentroIzquierdaCount(0);
+    setRivalCornerIzquierdaCount(0);
+    setRivalCornerDerechaCount(0);
+    setInicioPropioCount(0);
+    setInicioRivalCount(0);
+    setOnRivalCount(0);
+    setOffRivalCount(0);
+    setOnNeutroCount(0);
+    setOffNeutroCount(0);
+    setFueraCount(0);
+    setBlocajeCount(0);
+    setDespejeDefensaCount(0);
+    setDespejePorteroCount(0);
+    setGolCount(0);
+    setGolRivalCount(0);
+    setPenalCount(0);
+    setSaqueEsquinaFueraCount(0);
+    setInfraccionCount(0);
+    setOcasionCount(0);
+    setGolesList([]);
+    setPlayers(Array(23).fill({ name: 'JUAN', status: '-' }));
+    setTimerSeconds(0);
+    setTimerRunning(false);
+    setActionLog([]);
+    setFromRival(false);
+    setPeriodo('1ª PARTE');
   };
 
   const handleOpenMatch = async (match) => {
@@ -192,56 +239,18 @@ export default function App() {
         setTimerRunning(d.timerRunning ?? false);
         setActionLog(d.actionLog ?? []);
       } else {
-        setTiroDerechaCount(0);
-        setRivalTiroDerechaCount(0);
-        setTiroIzquierdaCount(0);
-        setTiroFrontalCount(0);
-        setFaltaDerechaCount(0);
-        setFaltaIzquierdaCount(0);
-        setFaltaFrontalCount(0);
-        setCentroDerechaCount(0);
-        setCentroIzquierdaCount(0);
-        setCornerIzquierdaCount(0);
-        setCornerDerechaCount(0);
-        setRivalTiroIzquierdaCount(0);
-        setRivalTiroFrontalCount(0);
-        setRivalFaltaDerechaCount(0);
-        setRivalFaltaIzquierdaCount(0);
-        setRivalFaltaFrontalCount(0);
-        setRivalCentroDerechaCount(0);
-        setRivalCentroIzquierdaCount(0);
-        setRivalCornerIzquierdaCount(0);
-        setRivalCornerDerechaCount(0);
-        setInicioPropioCount(0);
-        setInicioRivalCount(0);
-        setOnRivalCount(0);
-        setOffRivalCount(0);
-        setOnNeutroCount(0);
-        setOffNeutroCount(0);
-        setFueraCount(0);
-        setBlocajeCount(0);
-        setDespejeDefensaCount(0);
-        setDespejePorteroCount(0);
-        setGolCount(0);
-        setGolRivalCount(0);
-        setPenalCount(0);
-        setSaqueEsquinaFueraCount(0);
-        setInfraccionCount(0);
-        setOcasionCount(0);
-        setGolesList([]);
-        setPlayers(Array(23).fill({ name: 'JUAN', status: '-' }));
-        setTimerSeconds(0);
-        setTimerRunning(false);
-        setActionLog([]);
+        resetMatchData();
       }
     } catch (err) {
       console.error('Error cargando datos del partido:', err);
+      resetMatchData();
     }
     setCurrentMatch(match);
   };
 
   const handleBackToList = () => {
     setCurrentMatch(null);
+    resetMatchData();
   };
 
   useEffect(() => {
