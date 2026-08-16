@@ -1648,7 +1648,7 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, { name: 'JUAN', tipo: 'PIE', name2: 'JUAN', periodo }]); } setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, { name: '', tipo: '', name2: '', periodo, minuto: Math.floor(timerSeconds / 60) }]); } setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
@@ -1703,6 +1703,7 @@ export default function App() {
                             const newGoles = [...golesList];
                             newGoles[i] = { ...newGoles[i], name: e.target.value };
                             setGolesList(newGoles);
+                            if (e.target.value && newGoles[i].tipo && newGoles[i].name2) { setActiveTab('acciones'); }
                           }}
                           style={{
                             background: 'var(--bg-secondary)',
@@ -1717,6 +1718,7 @@ export default function App() {
                             flex: 1
                           }}
                         >
+                          <option value="">-</option>
                           <option value="JUAN">JUAN</option>
                           <option value="PEDRO">PEDRO</option>
                           <option value="LUIS">LUIS</option>
@@ -1730,6 +1732,7 @@ export default function App() {
                             const newGoles = [...golesList];
                             newGoles[i] = { ...newGoles[i], tipo: e.target.value };
                             setGolesList(newGoles);
+                            if (newGoles[i].name && e.target.value && newGoles[i].name2) { setActiveTab('acciones'); }
                           }}
                           style={{
                             background: 'var(--bg-secondary)',
@@ -1744,6 +1747,7 @@ export default function App() {
                             flex: 1
                           }}
                         >
+                          <option value="">-</option>
                           <option value="PIE">PIE</option>
                           <option value="CABEZA">CABEZA</option>
                           <option value="PENAL">PENAL</option>
@@ -1754,6 +1758,7 @@ export default function App() {
                             const newGoles = [...golesList];
                             newGoles[i] = { ...newGoles[i], name2: e.target.value };
                             setGolesList(newGoles);
+                            if (newGoles[i].name && newGoles[i].tipo && e.target.value) { setActiveTab('acciones'); }
                           }}
                           style={{
                             background: 'var(--bg-secondary)',
@@ -1768,6 +1773,7 @@ export default function App() {
                             flex: 1
                           }}
                         >
+                          <option value="">-</option>
                           <option value="JUAN">JUAN</option>
                           <option value="PEDRO">PEDRO</option>
                           <option value="LUIS">LUIS</option>
@@ -1776,6 +1782,7 @@ export default function App() {
                           <option value="ANTONIO">ANTONIO</option>
                         </select>
                         <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '64px', textAlign: 'center' }}>{g.periodo}</span>
+                        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '48px', textAlign: 'center' }}>{g.minuto}'</span>
                       </div>
                     ))}
                   </div>
