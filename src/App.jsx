@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update } from './firebase';
 import Login from './components/Login';
 import descargaImg from './descarga.png';
@@ -144,14 +144,153 @@ export default function App() {
     setMatchday('');
   };
 
-  const handleOpenMatch = (match) => {
-    setCurrentMatch(match);
+  const handleOpenMatch = async (match) => {
     setActiveTab('alineacion');
+    try {
+      const snap = await get(child(ref(db), `matchData/${match.id}`));
+      if (snap.exists()) {
+        const d = snap.val();
+        setTiroDerechaCount(d.tiroDerechaCount ?? 0);
+        setRivalTiroDerechaCount(d.rivalTiroDerechaCount ?? 0);
+        setTiroIzquierdaCount(d.tiroIzquierdaCount ?? 0);
+        setTiroFrontalCount(d.tiroFrontalCount ?? 0);
+        setFaltaDerechaCount(d.faltaDerechaCount ?? 0);
+        setFaltaIzquierdaCount(d.faltaIzquierdaCount ?? 0);
+        setFaltaFrontalCount(d.faltaFrontalCount ?? 0);
+        setCentroDerechaCount(d.centroDerechaCount ?? 0);
+        setCentroIzquierdaCount(d.centroIzquierdaCount ?? 0);
+        setCornerIzquierdaCount(d.cornerIzquierdaCount ?? 0);
+        setCornerDerechaCount(d.cornerDerechaCount ?? 0);
+        setRivalTiroIzquierdaCount(d.rivalTiroIzquierdaCount ?? 0);
+        setRivalTiroFrontalCount(d.rivalTiroFrontalCount ?? 0);
+        setRivalFaltaDerechaCount(d.rivalFaltaDerechaCount ?? 0);
+        setRivalFaltaIzquierdaCount(d.rivalFaltaIzquierdaCount ?? 0);
+        setRivalFaltaFrontalCount(d.rivalFaltaFrontalCount ?? 0);
+        setRivalCentroDerechaCount(d.rivalCentroDerechaCount ?? 0);
+        setRivalCentroIzquierdaCount(d.rivalCentroIzquierdaCount ?? 0);
+        setRivalCornerIzquierdaCount(d.rivalCornerIzquierdaCount ?? 0);
+        setRivalCornerDerechaCount(d.rivalCornerDerechaCount ?? 0);
+        setInicioPropioCount(d.inicioPropioCount ?? 0);
+        setInicioRivalCount(d.inicioRivalCount ?? 0);
+        setOnRivalCount(d.onRivalCount ?? 0);
+        setOffRivalCount(d.offRivalCount ?? 0);
+        setOnNeutroCount(d.onNeutroCount ?? 0);
+        setOffNeutroCount(d.offNeutroCount ?? 0);
+        setFueraCount(d.fueraCount ?? 0);
+        setBlocajeCount(d.blocajeCount ?? 0);
+        setDespejeDefensaCount(d.despejeDefensaCount ?? 0);
+        setDespejePorteroCount(d.despejePorteroCount ?? 0);
+        setGolCount(d.golCount ?? 0);
+        setGolRivalCount(d.golRivalCount ?? 0);
+        setPenalCount(d.penalCount ?? 0);
+        setSaqueEsquinaFueraCount(d.saqueEsquinaFueraCount ?? 0);
+        setInfraccionCount(d.infraccionCount ?? 0);
+        setOcasionCount(d.ocasionCount ?? 0);
+        setGolesList(d.golesList ?? []);
+        setPlayers(d.players ?? Array(23).fill({ name: 'JUAN', status: '-' }));
+        setTimerSeconds(d.timerSeconds ?? 0);
+        setTimerRunning(d.timerRunning ?? false);
+        setActionLog(d.actionLog ?? []);
+      } else {
+        setTiroDerechaCount(0);
+        setRivalTiroDerechaCount(0);
+        setTiroIzquierdaCount(0);
+        setTiroFrontalCount(0);
+        setFaltaDerechaCount(0);
+        setFaltaIzquierdaCount(0);
+        setFaltaFrontalCount(0);
+        setCentroDerechaCount(0);
+        setCentroIzquierdaCount(0);
+        setCornerIzquierdaCount(0);
+        setCornerDerechaCount(0);
+        setRivalTiroIzquierdaCount(0);
+        setRivalTiroFrontalCount(0);
+        setRivalFaltaDerechaCount(0);
+        setRivalFaltaIzquierdaCount(0);
+        setRivalFaltaFrontalCount(0);
+        setRivalCentroDerechaCount(0);
+        setRivalCentroIzquierdaCount(0);
+        setRivalCornerIzquierdaCount(0);
+        setRivalCornerDerechaCount(0);
+        setInicioPropioCount(0);
+        setInicioRivalCount(0);
+        setOnRivalCount(0);
+        setOffRivalCount(0);
+        setOnNeutroCount(0);
+        setOffNeutroCount(0);
+        setFueraCount(0);
+        setBlocajeCount(0);
+        setDespejeDefensaCount(0);
+        setDespejePorteroCount(0);
+        setGolCount(0);
+        setGolRivalCount(0);
+        setPenalCount(0);
+        setSaqueEsquinaFueraCount(0);
+        setInfraccionCount(0);
+        setOcasionCount(0);
+        setGolesList([]);
+        setPlayers(Array(23).fill({ name: 'JUAN', status: '-' }));
+        setTimerSeconds(0);
+        setTimerRunning(false);
+        setActionLog([]);
+      }
+    } catch (err) {
+      console.error('Error cargando datos del partido:', err);
+    }
+    setCurrentMatch(match);
   };
 
   const handleBackToList = () => {
     setCurrentMatch(null);
   };
+
+  useEffect(() => {
+    if (!currentMatch) return;
+    const dataRef = ref(db, `matchData/${currentMatch.id}`);
+    set(dataRef, {
+      tiroDerechaCount,
+      rivalTiroDerechaCount,
+      tiroIzquierdaCount,
+      tiroFrontalCount,
+      faltaDerechaCount,
+      faltaIzquierdaCount,
+      faltaFrontalCount,
+      centroDerechaCount,
+      centroIzquierdaCount,
+      cornerIzquierdaCount,
+      cornerDerechaCount,
+      rivalTiroIzquierdaCount,
+      rivalTiroFrontalCount,
+      rivalFaltaDerechaCount,
+      rivalFaltaIzquierdaCount,
+      rivalFaltaFrontalCount,
+      rivalCentroDerechaCount,
+      rivalCentroIzquierdaCount,
+      rivalCornerIzquierdaCount,
+      rivalCornerDerechaCount,
+      inicioPropioCount,
+      inicioRivalCount,
+      onRivalCount,
+      offRivalCount,
+      onNeutroCount,
+      offNeutroCount,
+      fueraCount,
+      blocajeCount,
+      despejeDefensaCount,
+      despejePorteroCount,
+      golCount,
+      golRivalCount,
+      penalCount,
+      saqueEsquinaFueraCount,
+      infraccionCount,
+      ocasionCount,
+      golesList,
+      players,
+      timerSeconds,
+      timerRunning,
+      actionLog
+    });
+  }, [currentMatch, tiroDerechaCount, rivalTiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, players, timerSeconds, timerRunning, actionLog]);
 
   const handleAceptar = () => {
     const titulares = players.filter(p => p.status === 'titular').length;
