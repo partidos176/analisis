@@ -24,6 +24,7 @@ export default function App() {
   const [currentMatch, setCurrentMatch] = useState(null);
   const [activeTab, setActiveTab] = useState('acciones');
   const [tiroDerechaCount, setTiroDerechaCount] = useState(0);
+  const [rivalTiroDerechaCount, setRivalTiroDerechaCount] = useState(0);
   const [tiroIzquierdaCount, setTiroIzquierdaCount] = useState(0);
   const [tiroFrontalCount, setTiroFrontalCount] = useState(0);
   const [faltaDerechaCount, setFaltaDerechaCount] = useState(0);
@@ -168,6 +169,10 @@ export default function App() {
   };
 
   const decrementCounter = (name) => {
+    if (name === 'RIVAL TIRO DERECHA') {
+      setRivalTiroDerechaCount(prev => Math.max(0, prev - 1));
+      return;
+    }
     const base = name.startsWith('RIVAL ') ? name.slice(6) : name;
     const map = {
       'TIRO DERECHA': setTiroDerechaCount,
@@ -839,7 +844,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL TIRO DERECHA')) {
-                        setTiroDerechaCount(tiroDerechaCount + 1);
+                        setRivalTiroDerechaCount(rivalTiroDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -869,7 +874,7 @@ export default function App() {
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {tiroDerechaCount}
+                      {rivalTiroDerechaCount}
                     </span>
                   </button>
                   <button
