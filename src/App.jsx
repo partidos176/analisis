@@ -192,6 +192,12 @@ export default function App() {
     setPeriodo('1ª PARTE');
   };
 
+  const normalizeArray = (v) => {
+    if (!v) return [];
+    if (Array.isArray(v)) return v;
+    return Object.values(v);
+  };
+
   const handleOpenMatch = async (match) => {
     setActiveTab('alineacion');
     resetMatchData();
@@ -235,11 +241,11 @@ export default function App() {
         setSaqueEsquinaFueraCount(d.saqueEsquinaFueraCount ?? 0);
         setInfraccionCount(d.infraccionCount ?? 0);
         setOcasionCount(d.ocasionCount ?? 0);
-        setGolesList(d.golesList ?? []);
-        setPlayers(d.players ?? Array(23).fill({ name: 'JUAN', status: '-' }));
+        setGolesList(normalizeArray(d.golesList));
+        setPlayers(d.players ? normalizeArray(d.players) : Array(23).fill({ name: 'JUAN', status: '-' }));
         setTimerSeconds(d.timerSeconds ?? 0);
         setTimerRunning(d.timerRunning ?? false);
-        setActionLog(d.actionLog ?? []);
+        setActionLog(normalizeArray(d.actionLog));
       } else {
         resetMatchData();
       }
@@ -251,49 +257,51 @@ export default function App() {
   };
 
   const saveMatchData = (id) => {
-    const dataRef = ref(db, `matches/${id}/data`);
-    return set(dataRef, {
-      tiroDerechaCount,
-      rivalTiroDerechaCount,
-      tiroIzquierdaCount,
-      tiroFrontalCount,
-      faltaDerechaCount,
-      faltaIzquierdaCount,
-      faltaFrontalCount,
-      centroDerechaCount,
-      centroIzquierdaCount,
-      cornerIzquierdaCount,
-      cornerDerechaCount,
-      rivalTiroIzquierdaCount,
-      rivalTiroFrontalCount,
-      rivalFaltaDerechaCount,
-      rivalFaltaIzquierdaCount,
-      rivalFaltaFrontalCount,
-      rivalCentroDerechaCount,
-      rivalCentroIzquierdaCount,
-      rivalCornerIzquierdaCount,
-      rivalCornerDerechaCount,
-      inicioPropioCount,
-      inicioRivalCount,
-      onRivalCount,
-      offRivalCount,
-      onNeutroCount,
-      offNeutroCount,
-      fueraCount,
-      blocajeCount,
-      despejeDefensaCount,
-      despejePorteroCount,
-      golCount,
-      golRivalCount,
-      penalCount,
-      saqueEsquinaFueraCount,
-      infraccionCount,
-      ocasionCount,
-      golesList,
-      players,
-      timerSeconds,
-      timerRunning,
-      actionLog
+    const matchRef = ref(db, `matches/${id}`);
+    return update(matchRef, {
+      data: {
+        tiroDerechaCount,
+        rivalTiroDerechaCount,
+        tiroIzquierdaCount,
+        tiroFrontalCount,
+        faltaDerechaCount,
+        faltaIzquierdaCount,
+        faltaFrontalCount,
+        centroDerechaCount,
+        centroIzquierdaCount,
+        cornerIzquierdaCount,
+        cornerDerechaCount,
+        rivalTiroIzquierdaCount,
+        rivalTiroFrontalCount,
+        rivalFaltaDerechaCount,
+        rivalFaltaIzquierdaCount,
+        rivalFaltaFrontalCount,
+        rivalCentroDerechaCount,
+        rivalCentroIzquierdaCount,
+        rivalCornerIzquierdaCount,
+        rivalCornerDerechaCount,
+        inicioPropioCount,
+        inicioRivalCount,
+        onRivalCount,
+        offRivalCount,
+        onNeutroCount,
+        offNeutroCount,
+        fueraCount,
+        blocajeCount,
+        despejeDefensaCount,
+        despejePorteroCount,
+        golCount,
+        golRivalCount,
+        penalCount,
+        saqueEsquinaFueraCount,
+        infraccionCount,
+        ocasionCount,
+        golesList,
+        players,
+        timerSeconds,
+        timerRunning,
+        actionLog
+      }
     });
   };
 
