@@ -55,7 +55,6 @@ export default function App() {
   const [despejePorteroCount, setDespejePorteroCount] = useState(0);
   const [golCount, setGolCount] = useState(0);
   const [penalCount, setPenalCount] = useState(0);
-  const [penalFueraCount, setPenalFueraCount] = useState(0);
   const [saqueEsquinaFueraCount, setSaqueEsquinaFueraCount] = useState(0);
   const [infraccionCount, setInfraccionCount] = useState(0);
   const [ocasionCount, setOcasionCount] = useState(0);
@@ -213,7 +212,6 @@ export default function App() {
       'SAQUE DE ESQUINA': setSaqueEsquinaFueraCount,
       'GOL': setGolCount,
       'PENAL': setPenalCount,
-      'PENAL + FUERA': setPenalFueraCount,
       'INFRACCION': setInfraccionCount
     };
     const setter = map[name];
@@ -1620,25 +1618,18 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setActiveTab('alineacion'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL', 'finalizacion')) { setPenalCount(penalCount + 1); setActiveTab('alineacion'); } }}
+                        onClick={() => { if (logAction('PENAL', 'finalizacion')) { setPenalCount(penalCount + 1); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
-                      </button>
-                      <button
-                        onClick={() => { if (logAction('PENAL + FUERA', 'finalizacion')) { setPenalFueraCount(penalFueraCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                      >
-                        <span>PENAL + FUERA</span>
-                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalFueraCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('INFRACCION', 'finalizacion')) { setInfraccionCount(infraccionCount + 1); setActiveTab('acciones'); } }}
