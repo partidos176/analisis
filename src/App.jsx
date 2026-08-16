@@ -35,6 +35,7 @@ export default function App() {
   const [inicioPropioCount, setInicioPropioCount] = useState(0);
   const [inicioRivalCount, setInicioRivalCount] = useState(0);
   const [onRivalCount, setOnRivalCount] = useState(0);
+  const [offRivalCount, setOffRivalCount] = useState(0);
   const [fueraCount, setFueraCount] = useState(0);
   const [blocajeCount, setBlocajeCount] = useState(0);
   const [despejeDefensaCount, setDespejeDefensaCount] = useState(0);
@@ -1197,6 +1198,45 @@ export default function App() {
                       textAlign: 'center'
                     }}>
                       {onRivalCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setOffRivalCount(offRivalCount + 1);
+                    }}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#dc2626',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '1.5rem',
+                      borderRadius: '50%',
+                      width: '100px',
+                      height: '100px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      gap: '0.3rem',
+                      cursor: 'pointer',
+                      border: 'none'
+                    }}
+                  >
+                    <span>OFF</span>
+                    <span>RIVAL</span>
+                    <span style={{
+                      background: '#ffffff',
+                      color: '#dc2626',
+                      fontWeight: 900,
+                      fontSize: '0.9rem',
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '8px',
+                      minWidth: '25px',
+                      textAlign: 'center'
+                    }}>
+                      {offRivalCount}
                     </span>
                   </button>
                 </div>
