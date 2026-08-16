@@ -37,6 +37,7 @@ export default function App() {
   const [onRivalCount, setOnRivalCount] = useState(0);
   const [offRivalCount, setOffRivalCount] = useState(0);
   const [onNeutroCount, setOnNeutroCount] = useState(0);
+  const [offNeutroCount, setOffNeutroCount] = useState(0);
   const [fueraCount, setFueraCount] = useState(0);
   const [blocajeCount, setBlocajeCount] = useState(0);
   const [despejeDefensaCount, setDespejeDefensaCount] = useState(0);
@@ -1200,6 +1201,47 @@ export default function App() {
                         textAlign: 'center'
                       }}>
                         {onNeutroCount}
+                      </span>
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => {
+                        setOffNeutroCount(offNeutroCount + 1);
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#dc2626',
+                        color: '#ffffff',
+                        fontWeight: 900,
+                        fontSize: '0.8rem',
+                        padding: '1rem',
+                        borderRadius: '50%',
+                        width: '75px',
+                        height: '75px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        gap: '0.2rem',
+                        cursor: 'pointer',
+                        border: 'none'
+                      }}
+                    >
+                      <span>OFF</span>
+                      <span>NEUTRO</span>
+                      <span style={{
+                        background: '#ffffff',
+                        color: '#dc2626',
+                        fontWeight: 900,
+                        fontSize: '0.8rem',
+                        padding: '0.1rem 0.4rem',
+                        borderRadius: '8px',
+                        minWidth: '20px',
+                        textAlign: 'center'
+                      }}>
+                        {offNeutroCount}
                       </span>
                     </button>
                   </div>
