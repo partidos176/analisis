@@ -2157,7 +2157,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     const totalPosesion = onRivalCount + offRivalCount + onNeutroCount + offNeutroCount;
                     const pctRival = totalPosesion > 0 ? Math.round(((onRivalCount + offRivalCount) / totalPosesion) * 100) : 0;
                     const pctNeutro = totalPosesion > 0 ? Math.round(((onNeutroCount + offNeutroCount) / totalPosesion) * 100) : 0;
-                    const pctPropio = 100 - pctRival - pctNeutro;
+                    const pctPropio = totalPosesion > 0 ? Math.max(0, 100 - pctRival - pctNeutro) : 0;
                     return (
                       <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
