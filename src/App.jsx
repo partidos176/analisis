@@ -542,6 +542,9 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     {isTenerife && (
                       <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golCount}</span>
                     )}
+                    {!isTenerife && (
+                      <span style={{ background: '#f87171', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golRivalCount}</span>
+                    )}
                   </div>
                 );
               })}
