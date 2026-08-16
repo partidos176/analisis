@@ -2154,23 +2154,27 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   gap: '1.5rem'
                 }}>
                   {(() => {
-                    const totalPosesion = onRivalCount + offRivalCount + onNeutroCount + offNeutroCount;
-                    const pctRival = totalPosesion > 0 ? Math.round(((onRivalCount + offRivalCount) / totalPosesion) * 100) : 0;
-                    const pctNeutro = totalPosesion > 0 ? Math.round(((onNeutroCount + offNeutroCount) / totalPosesion) * 100) : 0;
-                    const pctPropio = totalPosesion > 0 ? Math.max(0, 100 - pctRival - pctNeutro) : 0;
+                    const totalPosesion = timerSeconds;
+                    const rivalSegundos = onRivalCount + offRivalCount;
+                    const neutroSegundos = onNeutroCount + offNeutroCount;
+                    const propioSegundos = Math.max(0, totalPosesion - rivalSegundos - neutroSegundos);
+                    const pctRival = totalPosesion > 0 ? (rivalSegundos / totalPosesion) * 100 : 0;
+                    const pctNeutro = totalPosesion > 0 ? (neutroSegundos / totalPosesion) * 100 : 0;
+                    const pctPropio = totalPosesion > 0 ? (propioSegundos / totalPosesion) * 100 : 0;
+                    const fmt = (v) => (v % 1 === 0 ? v.toFixed(0) : v.toFixed(2));
                     return (
                       <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
                           <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Propia</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{pctPropio}%</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctPropio)}%</span>
                         </div>
                         <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
                           <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Rival</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{pctRival}%</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctRival)}%</span>
                         </div>
                         <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
                           <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Neutra</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{pctNeutro}%</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctNeutro)}%</span>
                         </div>
                       </div>
                     );
