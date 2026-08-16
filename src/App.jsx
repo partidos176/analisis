@@ -2153,9 +2153,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
-                    DATOS
-                  </span>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.8rem' }}>
                     {[
                       ['TIRO DERECHA', tiroDerechaCount],
