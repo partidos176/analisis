@@ -1161,84 +1161,86 @@ export default function App() {
                       {inicioRivalCount}
                     </span>
                   </button>
-                  <button
-                    onClick={() => {
-                      setOnRivalCount(onRivalCount + 1);
-                    }}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: '#dc2626',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '1.5rem',
-                      borderRadius: '50%',
-                      width: '100px',
-                      height: '100px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      gap: '0.3rem',
-                      cursor: 'pointer',
-                      border: 'none'
-                    }}
-                  >
-                    <span>ON</span>
-                    <span>RIVAL</span>
-                    <span style={{
-                      background: '#ffffff',
-                      color: '#dc2626',
-                      fontWeight: 900,
-                      fontSize: '0.9rem',
-                      padding: '0.15rem 0.5rem',
-                      borderRadius: '8px',
-                      minWidth: '25px',
-                      textAlign: 'center'
-                    }}>
-                      {onRivalCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setOffRivalCount(offRivalCount + 1);
-                    }}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: '#dc2626',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '1.5rem',
-                      borderRadius: '50%',
-                      width: '100px',
-                      height: '100px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      gap: '0.3rem',
-                      cursor: 'pointer',
-                      border: 'none'
-                    }}
-                  >
-                    <span>OFF</span>
-                    <span>RIVAL</span>
-                    <span style={{
-                      background: '#ffffff',
-                      color: '#dc2626',
-                      fontWeight: 900,
-                      fontSize: '0.9rem',
-                      padding: '0.15rem 0.5rem',
-                      borderRadius: '8px',
-                      minWidth: '25px',
-                      textAlign: 'center'
-                    }}>
-                      {offRivalCount}
-                    </span>
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => {
+                        setOnRivalCount(onRivalCount + 1);
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#dc2626',
+                        color: '#ffffff',
+                        fontWeight: 900,
+                        fontSize: '0.8rem',
+                        padding: '1rem',
+                        borderRadius: '50%',
+                        width: '75px',
+                        height: '75px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        gap: '0.2rem',
+                        cursor: 'pointer',
+                        border: 'none'
+                      }}
+                    >
+                      <span>ON</span>
+                      <span>RIVAL</span>
+                      <span style={{
+                        background: '#ffffff',
+                        color: '#dc2626',
+                        fontWeight: 900,
+                        fontSize: '0.8rem',
+                        padding: '0.1rem 0.4rem',
+                        borderRadius: '8px',
+                        minWidth: '20px',
+                        textAlign: 'center'
+                      }}>
+                        {onRivalCount}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setOffRivalCount(offRivalCount + 1);
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#dc2626',
+                        color: '#ffffff',
+                        fontWeight: 900,
+                        fontSize: '0.8rem',
+                        padding: '1rem',
+                        borderRadius: '50%',
+                        width: '75px',
+                        height: '75px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        gap: '0.2rem',
+                        cursor: 'pointer',
+                        border: 'none'
+                      }}
+                    >
+                      <span>OFF</span>
+                      <span>RIVAL</span>
+                      <span style={{
+                        background: '#ffffff',
+                        color: '#dc2626',
+                        fontWeight: 900,
+                        fontSize: '0.8rem',
+                        padding: '0.1rem 0.4rem',
+                        borderRadius: '8px',
+                        minWidth: '20px',
+                        textAlign: 'center'
+                      }}>
+                        {offRivalCount}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
