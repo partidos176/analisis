@@ -1373,6 +1373,40 @@ export default function App() {
                   borderRadius: 'var(--radius-lg)',
                   padding: '1rem'
                 }}>
+                  <button
+                    onClick={() => {
+                      setActionLog([]);
+                    }}
+                    title="Vaciar listado"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#eab308',
+                      borderRadius: '50%',
+                      width: '48px',
+                      height: '48px',
+                      alignSelf: 'center',
+                      cursor: 'pointer',
+                      border: 'none',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                    }}
+                  >
+                    <svg
+                      width="26"
+                      height="26"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#000000"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M20 5c-8 0-14 3-14 9s6 9 14 9" />
+                      <path d="M2 12h6" />
+                      <path d="M8 8l-6 4 6 4" />
+                    </svg>
+                  </button>
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
                     Acciones
                   </span>
