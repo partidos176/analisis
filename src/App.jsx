@@ -154,8 +154,8 @@ export default function App() {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const logAction = (name) => {
-    setActionLog(prev => [{ name, time: formatTime(timerSeconds) }, ...prev]);
+  const logAction = (name, type = 'accion') => {
+    setActionLog(prev => [{ name, time: formatTime(timerSeconds), type }, ...prev]);
   };
 
   const handlePrimeraParte = () => {
@@ -1389,12 +1389,12 @@ export default function App() {
                       background: 'var(--bg-card)',
                       border: '1px solid var(--border-subtle)',
                       borderRadius: '8px',
-                      padding: '0.4rem 0.8rem'
+                      padding: entry.type === 'finalizacion' ? '0.2rem 0.6rem' : '0.4rem 0.8rem'
                     }}>
-                      <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                      <span style={{ color: entry.type === 'finalizacion' ? '#22c55e' : '#ffffff', fontWeight: 700, fontSize: entry.type === 'finalizacion' ? '0.7rem' : '0.85rem', textTransform: 'uppercase' }}>
                         {entry.name}
                       </span>
-                      <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', color: entry.type === 'finalizacion' ? '#22c55e' : '#38bdf8', fontWeight: 900, fontSize: entry.type === 'finalizacion' ? '0.75rem' : '0.9rem' }}>
                         {entry.time}
                       </span>
                     </div>
@@ -1407,7 +1407,7 @@ export default function App() {
                   {/* Botón OCASION centrado arriba */}
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <button
-                      onClick={() => { setOcasionCount(ocasionCount + 1); }}
+                      onClick={() => { setOcasionCount(ocasionCount + 1); logAction('OCASION', 'finalizacion'); }}
                       style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f97316', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '250px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                     >
                       <span>OCASION</span>
@@ -1419,35 +1419,35 @@ export default function App() {
                     {/* Columna izquierda */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { setFueraCount(fueraCount + 1); setActiveTab('acciones'); }}
+                        onClick={() => { setFueraCount(fueraCount + 1); setActiveTab('acciones'); logAction('FUERA', 'finalizacion'); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>FUERA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{fueraCount}</span>
                       </button>
                       <button
-                        onClick={() => { setBlocajeCount(blocajeCount + 1); setActiveTab('acciones'); }}
+                        onClick={() => { setBlocajeCount(blocajeCount + 1); setActiveTab('acciones'); logAction('BLOCAJE', 'finalizacion'); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>BLOCAJE</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{blocajeCount}</span>
                       </button>
                       <button
-                        onClick={() => { setDespejeDefensaCount(despejeDefensaCount + 1); setActiveTab('acciones'); }}
+                        onClick={() => { setDespejeDefensaCount(despejeDefensaCount + 1); setActiveTab('acciones'); logAction('DESPEJE DEFENSA', 'finalizacion'); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>DESPEJE DEFENSA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejeDefensaCount}</span>
                       </button>
                       <button
-                        onClick={() => { setDespejePorteroCount(despejePorteroCount + 1); setActiveTab('acciones'); }}
+                        onClick={() => { setDespejePorteroCount(despejePorteroCount + 1); setActiveTab('acciones'); logAction('DESPEJE PORTERO', 'finalizacion'); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>DESPEJE PORTERO</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejePorteroCount}</span>
                       </button>
                       <button
-                        onClick={() => { setSaqueEsquinaFueraCount(saqueEsquinaFueraCount + 1); setActiveTab('acciones'); }}
+                        onClick={() => { setSaqueEsquinaFueraCount(saqueEsquinaFueraCount + 1); setActiveTab('acciones'); logAction('SAQUE DE ESQUINA', 'finalizacion'); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>SAQUE DE ESQUINA</span>
@@ -1457,28 +1457,28 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { setGolCount(golCount + 1); setActiveTab('alineacion'); }}
+                        onClick={() => { setGolCount(golCount + 1); setActiveTab('alineacion'); logAction('GOL', 'finalizacion'); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { setPenalCount(penalCount + 1); setActiveTab('alineacion'); }}
+                        onClick={() => { setPenalCount(penalCount + 1); setActiveTab('alineacion'); logAction('PENAL + GOL', 'finalizacion'); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
                       </button>
                       <button
-                        onClick={() => { setPenalFueraCount(penalFueraCount + 1); setActiveTab('acciones'); }}
+                        onClick={() => { setPenalFueraCount(penalFueraCount + 1); setActiveTab('acciones'); logAction('PENAL + FUERA', 'finalizacion'); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + FUERA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalFueraCount}</span>
                       </button>
                       <button
-                        onClick={() => { setInfraccionCount(infraccionCount + 1); setActiveTab('acciones'); }}
+                        onClick={() => { setInfraccionCount(infraccionCount + 1); setActiveTab('acciones'); logAction('INFRACCION', 'finalizacion'); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>INFRACCION</span>
