@@ -59,6 +59,7 @@ export default function App() {
   const [infraccionCount, setInfraccionCount] = useState(0);
   const [ocasionCount, setOcasionCount] = useState(0);
   const [golesList, setGolesList] = useState([]);
+  const [fromRival, setFromRival] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [playerStatus, setPlayerStatus] = useState('titular');
   const [players, setPlayers] = useState(Array(23).fill({ name: 'JUAN', status: '-' }));
@@ -503,6 +504,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('TIRO DERECHA')) {
+                        setFromRival(false);
                         setTiroDerechaCount(tiroDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -539,6 +541,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('TIRO IZQUIERDA')) {
+                        setFromRival(false);
                         setTiroIzquierdaCount(tiroIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -575,6 +578,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('TIRO FRONTAL')) {
+                        setFromRival(false);
                         setTiroFrontalCount(tiroFrontalCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -611,6 +615,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('FALTA DERECHA')) {
+                        setFromRival(false);
                         setFaltaDerechaCount(faltaDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -647,6 +652,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('FALTA IZQUIERDA')) {
+                        setFromRival(false);
                         setFaltaIzquierdaCount(faltaIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -683,6 +689,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('FALTA FRONTAL')) {
+                        setFromRival(false);
                         setFaltaFrontalCount(faltaFrontalCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -719,6 +726,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('CENTRO DERECHA')) {
+                        setFromRival(false);
                         setCentroDerechaCount(centroDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -755,6 +763,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('CENTRO IZQUIERDA')) {
+                        setFromRival(false);
                         setCentroIzquierdaCount(centroIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -791,6 +800,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('CORNER IZQUIERDA')) {
+                        setFromRival(false);
                         setCornerIzquierdaCount(cornerIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -827,6 +837,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('CORNER DERECHA')) {
+                        setFromRival(false);
                         setCornerDerechaCount(cornerDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -872,6 +883,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL TIRO DERECHA')) {
+                        setFromRival(true);
                         setRivalTiroDerechaCount(rivalTiroDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -908,6 +920,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL TIRO IZQUIERDA')) {
+                        setFromRival(true);
                         setRivalTiroIzquierdaCount(rivalTiroIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -944,6 +957,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL TIRO FRONTAL')) {
+                        setFromRival(true);
                         setRivalTiroFrontalCount(rivalTiroFrontalCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -980,6 +994,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL FALTA DERECHA')) {
+                        setFromRival(true);
                         setRivalFaltaDerechaCount(rivalFaltaDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -1016,6 +1031,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL FALTA IZQUIERDA')) {
+                        setFromRival(true);
                         setRivalFaltaIzquierdaCount(rivalFaltaIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -1052,6 +1068,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL FALTA FRONTAL')) {
+                        setFromRival(true);
                         setRivalFaltaFrontalCount(rivalFaltaFrontalCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -1088,6 +1105,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL CENTRO DERECHA')) {
+                        setFromRival(true);
                         setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -1124,6 +1142,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL CENTRO IZQUIERDA')) {
+                        setFromRival(true);
                         setRivalCentroIzquierdaCount(rivalCentroIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -1160,6 +1179,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL CORNER IZQUIERDA')) {
+                        setFromRival(true);
                         setRivalCornerIzquierdaCount(rivalCornerIzquierdaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -1196,6 +1216,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('RIVAL CORNER DERECHA')) {
+                        setFromRival(true);
                         setRivalCornerDerechaCount(rivalCornerDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
@@ -1277,6 +1298,7 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (logAction('INICIO RIVAL')) {
+                        setFromRival(true);
                         setInicioRivalCount(inicioRivalCount + 1);
                       }
                     }}
@@ -1316,6 +1338,7 @@ export default function App() {
                       <button
                         onClick={() => {
                           if (logAction('ON RIVAL')) {
+                            setFromRival(true);
                             setOnRivalCount(onRivalCount + 1);
                           }
                         }}
@@ -1400,6 +1423,7 @@ export default function App() {
                       <button
                         onClick={() => {
                           if (logAction('OFF RIVAL')) {
+                            setFromRival(true);
                             setOffRivalCount(offRivalCount + 1);
                           }
                         }}
@@ -1619,7 +1643,7 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setGolesList([...golesList, 'JUAN']); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); if (!fromRival) { setGolesList([...golesList, 'JUAN']); } setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
