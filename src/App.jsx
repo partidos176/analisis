@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update } from './firebase';
 import Login from './components/Login';
+import descargaImg from './descarga.png';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -1383,24 +1384,19 @@ export default function App() {
                       alignSelf: 'center',
                       cursor: 'pointer',
                       border: 'none',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      overflow: 'hidden'
                     }}
                   >
-                    <svg
-                      width="30"
-                      height="30"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#000000"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M19 3C11 3 6 6 6 12s5 9 13 9" />
-                      <path d="M3 12h5" />
-                      <path d="M3 12l4-4" />
-                      <path d="M3 12l4 4" />
-                    </svg>
+                    <img
+                      src={descargaImg}
+                      alt="Vaciar listado"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
                   </button>
                   <div style={{
                     display: 'flex',
