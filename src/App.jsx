@@ -1090,7 +1090,7 @@ export default function App() {
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1rem',
-                  marginLeft: '2rem'
+                  marginLeft: '0rem'
                 }}>
                   <button
                     onClick={() => {
