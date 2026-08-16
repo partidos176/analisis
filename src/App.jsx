@@ -1370,9 +1370,9 @@ export default function App() {
                 }}>
                   <button
                     onClick={() => {
-                      setActionLog(prev => prev.slice(0, -1));
+                      setActionLog(prev => prev.slice(1));
                     }}
-                    title="Borrar última acción"
+                    title="Borrar primera acción"
                     style={{
                       display: 'flex',
                       alignItems: 'center',
