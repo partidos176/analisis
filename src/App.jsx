@@ -32,6 +32,8 @@ export default function App() {
   const [centroIzquierdaCount, setCentroIzquierdaCount] = useState(0);
   const [cornerIzquierdaCount, setCornerIzquierdaCount] = useState(0);
   const [cornerDerechaCount, setCornerDerechaCount] = useState(0);
+  const [inicioPropioCount, setInicioPropioCount] = useState(0);
+  const [inicioRivalCount, setInicioRivalCount] = useState(0);
   const [fueraCount, setFueraCount] = useState(0);
   const [blocajeCount, setBlocajeCount] = useState(0);
   const [despejeDefensaCount, setDespejeDefensaCount] = useState(0);
@@ -1076,6 +1078,84 @@ export default function App() {
                       textAlign: 'center'
                     }}>
                       {cornerDerechaCount}
+                    </span>
+                  </button>
+                </div>
+                {/* Botones INICIO PROPIO e INICIO RIVAL */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  marginLeft: '2rem'
+                }}>
+                  <button
+                    onClick={() => {
+                      setInicioPropioCount(inicioPropioCount + 1);
+                    }}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#7c3aed',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '1rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '180px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <span>INICIO PROPIO</span>
+                    <span style={{
+                      background: '#ffffff',
+                      color: '#7c3aed',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {inicioPropioCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setInicioRivalCount(inicioRivalCount + 1);
+                    }}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#7c3aed',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '1rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '180px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <span>INICIO RIVAL</span>
+                    <span style={{
+                      background: '#ffffff',
+                      color: '#7c3aed',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {inicioRivalCount}
                     </span>
                   </button>
                 </div>
