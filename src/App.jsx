@@ -335,6 +335,21 @@ export default function App() {
             >
               FINALIZACIONES
             </button>
+            <button
+              onClick={() => setActiveTab('goles')}
+              style={{
+                fontWeight: 800,
+                fontSize: '1.15rem',
+                color: activeTab === 'goles' ? '#ffffff' : '#64748b',
+                borderBottom: activeTab === 'goles' ? '2px solid #ffffff' : '2px solid transparent',
+                paddingBottom: '0.2rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              GOLES
+            </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
@@ -1634,6 +1649,25 @@ export default function App() {
                       </button>
                     </div>
                   </div>
+                </div>
+              )}
+              {activeTab === 'goles' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                    GOLES
+                  </span>
+                  <span style={{ color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem', textAlign: 'center' }}>
+                    Hoja de goles - en construcción
+                  </span>
                 </div>
               )}
               {activeTab === 'alineacion' && (
