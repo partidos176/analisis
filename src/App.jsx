@@ -1394,9 +1394,11 @@ export default function App() {
                       <span style={{ color: entry.type === 'finalizacion' ? '#22c55e' : '#ffffff', fontWeight: 700, fontSize: entry.type === 'finalizacion' ? '0.7rem' : '0.85rem', textTransform: 'uppercase' }}>
                         {entry.name}
                       </span>
-                      <span style={{ fontFamily: 'var(--font-mono)', color: entry.type === 'finalizacion' ? '#22c55e' : '#38bdf8', fontWeight: 900, fontSize: entry.type === 'finalizacion' ? '0.75rem' : '0.9rem' }}>
-                        {entry.time}
-                      </span>
+                      {entry.type !== 'finalizacion' && (
+                        <span style={{ fontFamily: 'var(--font-mono)', color: entry.type === 'finalizacion' ? '#22c55e' : '#38bdf8', fontWeight: 900, fontSize: entry.type === 'finalizacion' ? '0.75rem' : '0.9rem' }}>
+                          {entry.time}
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
