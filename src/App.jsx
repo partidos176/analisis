@@ -36,6 +36,7 @@ export default function App() {
   const [inicioRivalCount, setInicioRivalCount] = useState(0);
   const [onRivalCount, setOnRivalCount] = useState(0);
   const [offRivalCount, setOffRivalCount] = useState(0);
+  const [onNeutroCount, setOnNeutroCount] = useState(0);
   const [fueraCount, setFueraCount] = useState(0);
   const [blocajeCount, setBlocajeCount] = useState(0);
   const [despejeDefensaCount, setDespejeDefensaCount] = useState(0);
@@ -1201,9 +1202,11 @@ export default function App() {
                         {onRivalCount}
                       </span>
                     </button>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
                     <button
                       onClick={() => {
-                        setOffRivalCount(offRivalCount + 1);
+                        setOnNeutroCount(onNeutroCount + 1);
                       }}
                       style={{
                         display: 'flex',
@@ -1225,8 +1228,8 @@ export default function App() {
                         border: 'none'
                       }}
                     >
-                      <span>OFF</span>
-                      <span>RIVAL</span>
+                      <span>ON</span>
+                      <span>NEUTRO</span>
                       <span style={{
                         background: '#ffffff',
                         color: '#dc2626',
@@ -1237,7 +1240,7 @@ export default function App() {
                         minWidth: '20px',
                         textAlign: 'center'
                       }}>
-                        {offRivalCount}
+                        {onNeutroCount}
                       </span>
                     </button>
                   </div>
