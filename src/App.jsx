@@ -70,6 +70,7 @@ export default function App() {
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerInterval, setTimerInterval] = useState(null);
   const [actionLog, setActionLog] = useState([]);
+  const [sustituciones, setSustituciones] = useState([]);
   const [contadorWarning, setContadorWarning] = useState(false);
   const [dataLoadedId, setDataLoadedId] = useState(null);
 
@@ -188,6 +189,7 @@ export default function App() {
     setTimerSeconds(0);
     setTimerRunning(false);
     setActionLog([]);
+    setSustituciones([]);
     setFromRival(false);
     setPeriodo('1ª PARTE');
   };
@@ -242,6 +244,7 @@ export default function App() {
     setTimerSeconds(match.timerSeconds ?? 0);
     setTimerRunning(match.timerRunning ?? false);
     setActionLog(normalizeArray(match.actionLog));
+    setSustituciones(normalizeArray(match.sustituciones));
     setCurrentMatch(match);
   };
 
@@ -288,7 +291,8 @@ export default function App() {
       players,
       timerSeconds,
       timerRunning,
-      actionLog
+      actionLog,
+      sustituciones
     });
   };
 
@@ -307,7 +311,7 @@ export default function App() {
   useEffect(() => {
     if (!currentMatch) return;
 saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando datos del partido:', err));
-  }, [currentMatch, tiroDerechaCount, rivalTiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, players, timerSeconds, timerRunning, actionLog]);
+  }, [currentMatch, tiroDerechaCount, rivalTiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
 
   const handleAceptar = () => {
     const titulares = players.filter(p => p.status === 'titular').length;
@@ -510,6 +514,21 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               }}
             >
               GOLES
+            </button>
+            <button
+              onClick={() => setActiveTab('sustituciones')}
+              style={{
+                fontWeight: 800,
+                fontSize: '1.15rem',
+                color: activeTab === 'sustituciones' ? '#ffffff' : '#64748b',
+                borderBottom: activeTab === 'sustituciones' ? '2px solid #ffffff' : '2px solid transparent',
+                paddingBottom: '0.2rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              SUSTITUCIONES
             </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -1980,6 +1999,107 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               setGolCount(Math.max(0, golCount - 1));
                             }
                           }}
+                          style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
+                        >X</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {activeTab === 'sustituciones' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                    SUSTITUCIONES
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: '150px' }}>
+                      <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>SALE</span>
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          const sale = e.target.value;
+                          if (!sale) return;
+                          setSustituciones(prev => [...prev, { sale, entra: '', minuto: Math.floor(timerSeconds / 60), periodo }]);
+                        }}
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                          padding: '0.4rem 0.6rem',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                          flex: 1
+                        }}
+                      >
+                        <option value="">-</option>
+                        <option value="JUAN">JUAN</option>
+                        <option value="PEDRO">PEDRO</option>
+                        <option value="LUIS">LUIS</option>
+                        <option value="MILLA">MILLA</option>
+                        <option value="ALEXIS">ALEXIS</option>
+                        <option value="ANTONIO">ANTONIO</option>
+                      </select>
+                    </div>
+                    <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>por</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: '150px' }}>
+                      <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ENTRA</span>
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          const entra = e.target.value;
+                          if (!entra) return;
+                          setSustituciones(prev => {
+                            const last = [...prev];
+                            const i = last.findIndex(s => !s.entra);
+                            if (i !== -1) { last[i] = { ...last[i], entra }; }
+                            return last;
+                          });
+                        }}
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          fontSize: '0.8rem',
+                          padding: '0.4rem 0.6rem',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                          flex: 1
+                        }}
+                      >
+                        <option value="">-</option>
+                        <option value="JUAN">JUAN</option>
+                        <option value="PEDRO">PEDRO</option>
+                        <option value="LUIS">LUIS</option>
+                        <option value="MILLA">MILLA</option>
+                        <option value="ALEXIS">ALEXIS</option>
+                        <option value="ANTONIO">ANTONIO</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {sustituciones.length === 0 && (
+                      <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin sustituciones</span>
+                    )}
+                    {sustituciones.map((s, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.4rem 0.8rem' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>{s.sale} → {s.entra}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '0.85rem' }}>{s.minuto}'</span>
+                        <button
+                          onClick={() => setSustituciones(sustituciones.filter((_, idx) => idx !== i))}
                           style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
                         >X</button>
                       </div>
