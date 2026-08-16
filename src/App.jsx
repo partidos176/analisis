@@ -161,14 +161,17 @@ export default function App() {
   const handlePrimeraParte = () => {
     setTimerSeconds(0);
     setTimerRunning(true);
+    logAction('1ª PARTE');
   };
 
   const handleSegundaParte = () => {
     setTimerRunning(true);
+    logAction('2ª PARTE');
   };
 
   const handleFin = () => {
     setTimerRunning(false);
+    logAction('FIN');
   };
 
   useEffect(() => {
