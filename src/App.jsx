@@ -58,6 +58,7 @@ export default function App() {
   const [saqueEsquinaFueraCount, setSaqueEsquinaFueraCount] = useState(0);
   const [infraccionCount, setInfraccionCount] = useState(0);
   const [ocasionCount, setOcasionCount] = useState(0);
+  const [golesList, setGolesList] = useState([]);
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [playerStatus, setPlayerStatus] = useState('titular');
   const [players, setPlayers] = useState(Array(23).fill({ name: 'JUAN', status: '-' }));
@@ -1618,7 +1619,7 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setGolesList([...golesList, 'JUAN']); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
@@ -1653,6 +1654,43 @@ export default function App() {
                   flexDirection: 'column',
                   gap: '1rem'
                 }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                    GOLES
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {golesList.map((g, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.8rem', minWidth: '20px', textAlign: 'right' }}>{i + 1}</span>
+                        <select
+                          value={g}
+                          onChange={(e) => {
+                            const newGoles = [...golesList];
+                            newGoles[i] = e.target.value;
+                            setGolesList(newGoles);
+                          }}
+                          style={{
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.8rem',
+                            padding: '0.4rem 0.6rem',
+                            textTransform: 'uppercase',
+                            cursor: 'pointer',
+                            flex: 1
+                          }}
+                        >
+                          <option value="JUAN">JUAN</option>
+                          <option value="PEDRO">PEDRO</option>
+                          <option value="LUIS">LUIS</option>
+                          <option value="MILLA">MILLA</option>
+                          <option value="ALEXIS">ALEXIS</option>
+                          <option value="ANTONIO">ANTONIO</option>
+                        </select>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               {activeTab === 'alineacion' && (
