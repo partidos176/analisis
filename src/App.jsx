@@ -1656,6 +1656,25 @@ export default function App() {
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     GOLES
                   </span>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <select
+                      style={{
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        padding: '0.5rem 1rem',
+                        textTransform: 'uppercase',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="pie">PIE</option>
+                      <option value="cabeza">CABEZA</option>
+                      <option value="penal">PENAL</option>
+                    </select>
+                  </div>
                   <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
                     {/* Columna izquierda */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
