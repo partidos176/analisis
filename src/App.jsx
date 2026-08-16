@@ -2207,18 +2207,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       </div>
                     ))}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>SUSTITUCIONES</span>
-                    {sustituciones.filter(s => s && s.sale).length === 0 && (
-                      <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin sustituciones</span>
-                    )}
-                    {sustituciones.map((s, i) => s && s.sale ? (
-                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.4rem 0.8rem' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>{s.sale} → {s.entra || '?'}</span>
-                        <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8', fontWeight: 900, fontSize: '0.85rem' }}>{s.minuto != null ? `${s.minuto}'` : ''}</span>
-                      </div>
-                    ) : null)}
-                  </div>
                 </div>
               )}
               {activeTab === 'alineacion' && (
