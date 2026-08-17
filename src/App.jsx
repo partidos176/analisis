@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update } from './firebase';
 import Login from './components/Login';
 import descargaImg from './descarga.png';
+import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -568,6 +569,21 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               }}
             >
               TIEMPO JUGADO
+            </button>
+            <button
+              onClick={() => setActiveTab('resumengoles')}
+              style={{
+                fontWeight: 800,
+                fontSize: '1.15rem',
+                color: activeTab === 'resumengoles' ? '#ffffff' : '#64748b',
+                borderBottom: activeTab === 'resumengoles' ? '2px solid #ffffff' : '2px solid transparent',
+                paddingBottom: '0.2rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              RESUMEN GOLES
             </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -1928,6 +1944,205 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   </div>
                 </div>
               )}
+              {activeTab === 'resumengoles' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                    RESUMEN GOLES
+                  </span>
+                  {(() => {
+                    const stats = {};
+                    const addGoal = (name, tipo) => {
+                      if (!name) return;
+                      if (!stats[name]) stats[name] = { total: 0, pie: 0, cabeza: 0, penal: 0 };
+                      stats[name].total += 1;
+                      if (tipo === 'PIE') stats[name].pie += 1;
+                      else if (tipo === 'CABEZA') stats[name].cabeza += 1;
+                      else if (tipo === 'PENAL') stats[name].penal += 1;
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                      gl.forEach(g => { if (g && g.name) addGoal(g.name, g.tipo); });
+                    });
+                    golesList.forEach(g => { if (g && g.name) addGoal(g.name, g.tipo); });
+                    const filas = Object.entries(stats).sort((a, b) => b[1].total - a[1].total);
+                    const asistStats = {};
+                    const addAsist = (name2) => {
+                      if (!name2 || name2.toUpperCase() === 'SIN ASISTENCIA') return;
+                      asistStats[name2] = (asistStats[name2] || 0) + 1;
+                    };
+                    const contarAsist = (gl) => {
+                      gl.forEach(g => { if (g && g.name2) addAsist(g.name2); });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                      contarAsist(gl);
+                    });
+                    contarAsist(golesList);
+                    const filasAsist = Object.entries(asistStats).sort((a, b) => b[1] - a[1]);
+                    let totalGoles = 0;
+                    const periodos = [
+                      { name: 'MIN 0-15', desde: 0, hasta: 15 },
+                      { name: 'MIN 16-30', desde: 16, hasta: 30 },
+                      { name: 'MIN 31-45', desde: 31, hasta: 45 },
+                      { name: 'MIN 46-60', desde: 46, hasta: 60 },
+                      { name: 'MIN 61-75', desde: 61, hasta: 75 },
+                      { name: 'MIN 76-90', desde: 76, hasta: 90 }
+                    ];
+                    const contarGoles = (gl) => {
+                      gl.forEach(g => {
+                        if (!g || !g.name) return;
+                        totalGoles += 1;
+                        const min = g.minuto || 0;
+                        const p = periodos.find(p => min >= p.desde && min <= p.hasta) || periodos[periodos.length - 1];
+                        p.goles = (p.goles || 0) + 1;
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                      contarGoles(gl);
+                    });
+                    contarGoles(golesList);
+                    const chartData = periodos.map(p => ({
+                      name: p.name,
+                      value: p.goles || 0,
+                      pct: totalGoles > 0 ? ((p.goles || 0) / totalGoles) * 100 : 0
+                    }));
+                    const COLORS = ['#39ff14', '#38bdf8', '#f97316', '#eab308', '#a78bfa', '#f43f5e'];
+                    const golesPorJornada = {};
+                    const contarJornada = (gl, md) => {
+                      const jornada = Number(md);
+                      if (!gl || !jornada) return;
+                      const n = gl.filter(g => g && g.name).length;
+                      golesPorJornada[jornada] = (golesPorJornada[jornada] || 0) + n;
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      contarJornada(m.golesList, m.matchday);
+                    });
+                    if (currentMatch) contarJornada(golesList, currentMatch.matchday);
+                    const rangoGoles = (a, b) => Object.entries(golesPorJornada).filter(([md]) => md >= a && md <= b).reduce((s, [, v]) => s + v, 0);
+                    const tramos = [
+                      { name: 'J1-J12', value: rangoGoles(1, 12) },
+                      { name: 'J13-J24', value: rangoGoles(13, 24) },
+                      { name: 'J25-J36', value: rangoGoles(25, 36) }
+                    ];
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                          <div style={{ flex: 1, minWidth: '320px', overflowX: 'auto' }}>
+                            <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>GOLES</span>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                              <thead>
+                                <tr>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PIE</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>CABEZA</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PENAL</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filas.map(([n, s]) => (
+                                  <tr key={n}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.pie}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.cabeza}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.penal}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div style={{ minWidth: '320px', marginLeft: 'auto', overflowX: 'auto' }}>
+                            <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'left', display: 'block', marginBottom: '0.5rem' }}>ASISTENCIAS</span>
+                            <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                              <thead>
+                                <tr>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JUGADOR</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filasAsist.map(([n, v]) => (
+                                  <tr key={n}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
+                        {chartData.length > 0 && (
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <PieChart width={620} height={500}>
+                              <Pie
+                                data={chartData}
+                                cx="50%"
+                                cy="50%"
+                                outerRadius={110}
+                                dataKey="value"
+                                labelLine
+                                label={(props) => {
+                                  const pct = (props.percent || 0) * 100;
+                                  const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
+                                  return (
+                                    <text x={props.x} y={props.y} fill="#ffffff" textAnchor={props.textAnchor} dominantBaseline="central" fontWeight={800} fontSize={13}>
+                                      {`${props.name}: ${props.value} (${pctTxt}%)`}
+                                    </text>
+                                  );
+                                }}
+                              >
+                                {chartData.map((_, i) => (
+                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </PieChart>
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                          <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <thead>
+                              <tr>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {tramos.map((t) => (
+                                <tr key={t.name}>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value}</td>
+                                </tr>
+                              ))}
+                              <tr>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramos.reduce((s, t) => s + t.value, 0)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
               {activeTab === 'goles' && (
                 <div style={{
                   background: 'var(--bg-card)',
@@ -2079,7 +2294,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     {[0, 1, 2, 3, 4].map(row => (
                       <div key={row} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem', minWidth: '24px', textAlign: 'center' }}>{row + 1}</span>
-                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: '150px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>SALE</span>
                           <select
                             value={sustituciones[row]?.sale || ''}
@@ -2101,8 +2316,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               fontSize: '0.8rem',
                               padding: '0.4rem 0.6rem',
                               textTransform: 'uppercase',
-                              cursor: 'pointer',
-                              flex: 1
+                              cursor: 'pointer'
                             }}
                           >
                             <option value="">-</option>
@@ -2112,7 +2326,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           </select>
                         </div>
                         <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>por</span>
-                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: '150px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ENTRA</span>
                           <select
                             value={sustituciones[row]?.entra || ''}
@@ -2134,8 +2348,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               fontSize: '0.8rem',
                               padding: '0.4rem 0.6rem',
                               textTransform: 'uppercase',
-                              cursor: 'pointer',
-                              flex: 1
+                              cursor: 'pointer'
                             }}
                           >
                             <option value="">-</option>
@@ -2144,7 +2357,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             ))}
                           </select>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: '70px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: '35px' }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>MINUTO</span>
                           <input
                             type="number"
