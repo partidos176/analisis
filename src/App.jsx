@@ -2019,7 +2019,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       value: p.goles || 0,
                       pct: totalGoles > 0 ? ((p.goles || 0) / totalGoles) * 100 : 0
                     }));
-                    const COLORS = ['#39ff14', '#38bdf8', '#f97316', '#eab308', '#a78bfa', '#f43f5e'];
+                    const COLORS = ['#118DFF', '#12239E', '#E66C37', '#6B007B', '#E044A7', '#744EC2'];
                     const golesPorJornada = {};
                     const contarJornada = (gl, md) => {
                       const jornada = Number(md);
@@ -2086,36 +2086,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             </table>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
-                        {chartData.length > 0 && (
-                          <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <PieChart width={620} height={500}>
-                              <Pie
-                                data={chartData}
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={110}
-                                dataKey="value"
-                                labelLine
-                                label={(props) => {
-                                  const pct = (props.percent || 0) * 100;
-                                  const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
-                                  return (
-                                    <text x={props.x} y={props.y} fill="#ffffff" textAnchor={props.textAnchor} dominantBaseline="central" fontWeight={800} fontSize={13}>
-                                      {`${props.name}: ${props.value} (${pctTxt}%)`}
-                                    </text>
-                                  );
-                                }}
-                              >
-                                {chartData.map((_, i) => (
-                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                ))}
-                              </Pie>
-                              <Tooltip />
-                            </PieChart>
-                          </div>
-                        )}
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0', alignItems: 'center' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1, margin: 0, padding: 0 }}>GOLES A FAVOR</span>
+                        <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'flex-start', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
                           <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                             <thead>
                               <tr>
@@ -2136,6 +2110,49 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               </tr>
                             </tbody>
                           </table>
+                        </div>
+                        {chartData.length > 0 && (
+                          <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center' }}>
+                            <PieChart width={460} height={420}>
+                              <Pie
+                                data={chartData}
+                                cx="50%"
+                                cy="37%"
+                                outerRadius={95}
+                                dataKey="value"
+                                labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
+                                label={(props) => {
+                                  const pct = (props.percent || 0) * 100;
+                                  const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
+                                  const w = 120;
+                                  const h = 52;
+                                  const x = props.textAnchor === 'start' ? props.x : props.textAnchor === 'end' ? props.x - w : props.x - w / 2;
+                                  const y = props.y - h / 2;
+                                  return (
+                                    <g>
+                                      <rect x={x} y={y} width={w} height={h} rx={8} fill="#0f172a" stroke={props.payload && props.payload.fill ? props.payload.fill : '#605E5C'} strokeWidth={2} />
+                                      <line x1={props.textAnchor === 'start' ? x : x + w} y1={y + h / 2} x2={props.x} y2={props.y} stroke="#605E5C" strokeWidth={1.5} />
+                                      <text x={x + w / 2} y={y + 17} fill="#ffffff" textAnchor="middle" fontSize={11} fontWeight={800}>
+                                        {props.name}
+                                      </text>
+                                      <text x={x + w / 2} y={y + 32} fill="#39ff14" textAnchor="middle" fontSize={13} fontWeight={900}>
+                                        {props.value} GOLES
+                                      </text>
+                                      <text x={x + w / 2} y={y + 46} fill="#eab308" textAnchor="middle" fontSize={11} fontWeight={700}>
+                                        {pctTxt}%
+                                      </text>
+                                    </g>
+                                  );
+                                }}
+                              >
+                                {chartData.map((_, i) => (
+                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </PieChart>
+                          </div>
+                        )}
                         </div>
                         </div>
                       </div>
