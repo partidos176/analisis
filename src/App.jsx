@@ -2093,8 +2093,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                             <thead>
                               <tr>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -2113,35 +2113,32 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         </div>
                         {chartData.length > 0 && (
                           <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center' }}>
-                            <PieChart width={460} height={420}>
+                            <PieChart width={600} height={480} margin={{ top: 50, right: 80, bottom: 20, left: 80 }}>
                               <Pie
                                 data={chartData}
                                 cx="50%"
-                                cy="37%"
-                                outerRadius={95}
+                                cy="30%"
+                                outerRadius={90}
                                 dataKey="value"
+                                isAnimationActive={false}
                                 labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
                                 label={(props) => {
+                                  if ((props.value || 0) === 0) return null;
                                   const pct = (props.percent || 0) * 100;
                                   const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
-                                  const w = 120;
-                                  const h = 52;
-                                  const x = props.textAnchor === 'start' ? props.x : props.textAnchor === 'end' ? props.x - w : props.x - w / 2;
-                                  const y = props.y - h / 2;
                                   return (
-                                    <g>
-                                      <rect x={x} y={y} width={w} height={h} rx={8} fill="#0f172a" stroke={props.payload && props.payload.fill ? props.payload.fill : '#605E5C'} strokeWidth={2} />
-                                      <line x1={props.textAnchor === 'start' ? x : x + w} y1={y + h / 2} x2={props.x} y2={props.y} stroke="#605E5C" strokeWidth={1.5} />
-                                      <text x={x + w / 2} y={y + 17} fill="#ffffff" textAnchor="middle" fontSize={11} fontWeight={800}>
-                                        {props.name}
-                                      </text>
-                                      <text x={x + w / 2} y={y + 32} fill="#39ff14" textAnchor="middle" fontSize={13} fontWeight={900}>
-                                        {props.value} GOLES
-                                      </text>
-                                      <text x={x + w / 2} y={y + 46} fill="#eab308" textAnchor="middle" fontSize={11} fontWeight={700}>
-                                        {pctTxt}%
-                                      </text>
-                                    </g>
+                                    <text
+                                      x={props.x}
+                                      y={props.y}
+                                      dy={4}
+                                      textAnchor={props.textAnchor}
+                                      fill="#ffffff"
+                                      fontSize={14}
+                                      fontWeight={700}
+                                      stroke="none"
+                                    >
+                                      {props.name} • {props.value} ({pctTxt}%)
+                                    </text>
                                   );
                                 }}
                               >
