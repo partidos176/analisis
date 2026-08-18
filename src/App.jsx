@@ -252,32 +252,38 @@ export default function App() {
   const handleOpenMatch = async (match) => {
     setActiveTab('alineacion');
     resetMatchData();
-    setTiroDerechaCount(match.tiroDerechaCount ?? 0);
-    setRivalTiroDerechaCount(match.rivalTiroDerechaCount ?? 0);
-    setTiroIzquierdaCount(match.tiroIzquierdaCount ?? 0);
-    setTiroFrontalCount(match.tiroFrontalCount ?? 0);
-    setFaltaDerechaCount(match.faltaDerechaCount ?? 0);
-    setFaltaIzquierdaCount(match.faltaIzquierdaCount ?? 0);
-    setFaltaFrontalCount(match.faltaFrontalCount ?? 0);
-    setCentroDerechaCount(match.centroDerechaCount ?? 0);
-    setCentroIzquierdaCount(match.centroIzquierdaCount ?? 0);
-    setCornerIzquierdaCount(match.cornerIzquierdaCount ?? 0);
-    setCornerDerechaCount(match.cornerDerechaCount ?? 0);
-    setRivalTiroIzquierdaCount(match.rivalTiroIzquierdaCount ?? 0);
-    setRivalTiroFrontalCount(match.rivalTiroFrontalCount ?? 0);
-    setRivalFaltaDerechaCount(match.rivalFaltaDerechaCount ?? 0);
-    setRivalFaltaIzquierdaCount(match.rivalFaltaIzquierdaCount ?? 0);
-    setRivalFaltaFrontalCount(match.rivalFaltaFrontalCount ?? 0);
-    setRivalCentroDerechaCount(match.rivalCentroDerechaCount ?? 0);
-    setRivalCentroIzquierdaCount(match.rivalCentroIzquierdaCount ?? 0);
-    setRivalCornerIzquierdaCount(match.rivalCornerIzquierdaCount ?? 0);
-    setRivalCornerDerechaCount(match.rivalCornerDerechaCount ?? 0);
-    setInicioPropioCount(match.inicioPropioCount ?? 0);
-    setInicioRivalCount(match.inicioRivalCount ?? 0);
-    setOnRivalCount(match.onRivalCount ?? 0);
-    setOffRivalCount(match.offRivalCount ?? 0);
-    setOnNeutroCount(match.onNeutroCount ?? 0);
-    setOffNeutroCount(match.offNeutroCount ?? 0);
+    const logAcciones = {};
+    normalizeArray(match.actionLog).forEach(e => {
+      if (e && e.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(e.name)) {
+        logAcciones[e.name] = (logAcciones[e.name] || 0) + 1;
+      }
+    });
+    setTiroDerechaCount(Math.max(match.tiroDerechaCount ?? 0, logAcciones['TIRO DERECHA'] || 0));
+    setRivalTiroDerechaCount(Math.max(match.rivalTiroDerechaCount ?? 0, logAcciones['RIVAL TIRO DERECHA'] || 0));
+    setTiroIzquierdaCount(Math.max(match.tiroIzquierdaCount ?? 0, logAcciones['TIRO IZQUIERDA'] || 0));
+    setTiroFrontalCount(Math.max(match.tiroFrontalCount ?? 0, logAcciones['TIRO FRONTAL'] || 0));
+    setFaltaDerechaCount(Math.max(match.faltaDerechaCount ?? 0, logAcciones['FALTA DERECHA'] || 0));
+    setFaltaIzquierdaCount(Math.max(match.faltaIzquierdaCount ?? 0, logAcciones['FALTA IZQUIERDA'] || 0));
+    setFaltaFrontalCount(Math.max(match.faltaFrontalCount ?? 0, logAcciones['FALTA FRONTAL'] || 0));
+    setCentroDerechaCount(Math.max(match.centroDerechaCount ?? 0, logAcciones['CENTRO DERECHA'] || 0));
+    setCentroIzquierdaCount(Math.max(match.centroIzquierdaCount ?? 0, logAcciones['CENTRO IZQUIERDA'] || 0));
+    setCornerIzquierdaCount(Math.max(match.cornerIzquierdaCount ?? 0, logAcciones['CORNER IZQUIERDA'] || 0));
+    setCornerDerechaCount(Math.max(match.cornerDerechaCount ?? 0, logAcciones['CORNER DERECHA'] || 0));
+    setRivalTiroIzquierdaCount(Math.max(match.rivalTiroIzquierdaCount ?? 0, logAcciones['RIVAL TIRO IZQUIERDA'] || 0));
+    setRivalTiroFrontalCount(Math.max(match.rivalTiroFrontalCount ?? 0, logAcciones['RIVAL TIRO FRONTAL'] || 0));
+    setRivalFaltaDerechaCount(Math.max(match.rivalFaltaDerechaCount ?? 0, logAcciones['RIVAL FALTA DERECHA'] || 0));
+    setRivalFaltaIzquierdaCount(Math.max(match.rivalFaltaIzquierdaCount ?? 0, logAcciones['RIVAL FALTA IZQUIERDA'] || 0));
+    setRivalFaltaFrontalCount(Math.max(match.rivalFaltaFrontalCount ?? 0, logAcciones['RIVAL FALTA FRONTAL'] || 0));
+    setRivalCentroDerechaCount(Math.max(match.rivalCentroDerechaCount ?? 0, logAcciones['RIVAL CENTRO DERECHA'] || 0));
+    setRivalCentroIzquierdaCount(Math.max(match.rivalCentroIzquierdaCount ?? 0, logAcciones['RIVAL CENTRO IZQUIERDA'] || 0));
+    setRivalCornerIzquierdaCount(Math.max(match.rivalCornerIzquierdaCount ?? 0, logAcciones['RIVAL CORNER IZQUIERDA'] || 0));
+    setRivalCornerDerechaCount(Math.max(match.rivalCornerDerechaCount ?? 0, logAcciones['RIVAL CORNER DERECHA'] || 0));
+    setInicioPropioCount(Math.max(match.inicioPropioCount ?? 0, logAcciones['INICIO PROPIO'] || 0));
+    setInicioRivalCount(Math.max(match.inicioRivalCount ?? 0, logAcciones['INICIO RIVAL'] || 0));
+    setOnRivalCount(Math.max(match.onRivalCount ?? 0, logAcciones['ON RIVAL'] || 0));
+    setOffRivalCount(Math.max(match.offRivalCount ?? 0, logAcciones['OFF RIVAL'] || 0));
+    setOnNeutroCount(Math.max(match.onNeutroCount ?? 0, logAcciones['ON NEUTRO'] || 0));
+    setOffNeutroCount(Math.max(match.offNeutroCount ?? 0, logAcciones['OFF NEUTRO'] || 0));
     setFueraCount(match.fueraCount ?? 0);
     setBlocajeCount(match.blocajeCount ?? 0);
     setDespejeDefensaCount(match.despejeDefensaCount ?? 0);
@@ -1939,6 +1945,30 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
             )}
             {activeTab === 'finalizaciones' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+                  {/* Botón RESET FINALIZACIONES */}
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => {
+                        setFueraCount(0);
+                        setBlocajeCount(0);
+                        setDespejeDefensaCount(0);
+                        setDespejePorteroCount(0);
+                        setSaqueEsquinaFueraCount(0);
+                        setInfraccionCount(0);
+                        setOcasionCount(0);
+                        setGolCount(0);
+                        setGolRivalCount(0);
+                        setPenalCount(0);
+                        setGolesList([]);
+                        setGolesRivalList([]);
+                        setActionLog(prev => prev.filter(e => e.type !== 'finalizacion'));
+                      }}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#dc2626', color: '#ffffff', fontWeight: 900, fontSize: '0.9rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '250px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                    >
+                      <span>RESET FINALIZACIONES</span>
+                      <span style={{ background: '#ffffff', color: '#dc2626', fontWeight: 900, fontSize: '0.8rem', padding: '0.2rem 0.7rem', borderRadius: '8px' }}>A 0</span>
+                    </button>
+                  </div>
                   {/* Botón OCASION centrado arriba */}
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <button
@@ -2003,6 +2033,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
+                        <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
+                      </button>
+                      <button
+                        onClick={() => { if (logAction('PENAL + GOL RIVAL', 'finalizacion')) { setPenalCount(penalCount + 1); setGolRivalCount(golRivalCount + 1); setGolesRivalList([...golesRivalList, { periodo, minuto: Math.floor(timerSeconds / 60), tipo: 'PENAL' }]); setActiveTab('acciones'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>PENAL + GOL RIVAL</span>
                         <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
                       </button>
                       <button
@@ -2399,50 +2436,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       rivalCentroDerechaCount, rivalCentroIzquierdaCount,
                       rivalCornerIzquierdaCount, rivalCornerDerechaCount
                     };
-                    const grupos = [
-                      ['FINALIZACIONES', [
-                        ['OCASION', 'ocasionCount'],
-                        ['FUERA', 'fueraCount'],
-                        ['BLOCAJE', 'blocajeCount'],
-                        ['DESPEJE DEFENSA', 'despejeDefensaCount'],
-                        ['DESPEJE PORTERO', 'despejePorteroCount'],
-                        ['SAQUE DE ESQUINA', 'saqueEsquinaFueraCount'],
-                        ['GOL', 'golCount'],
-                        ['GOL RIVAL', 'golRivalCount'],
-                        ['PENAL', 'penalCount'],
-                        ['INFRACCION', 'infraccionCount']
-                      ]],
-                      ['ACCIONES PROPIAS', [
-                        ['TIRO DERECHA', 'tiroDerechaCount'],
-                        ['TIRO IZQUIERDA', 'tiroIzquierdaCount'],
-                        ['TIRO FRONTAL', 'tiroFrontalCount'],
-                        ['FALTA DERECHA', 'faltaDerechaCount'],
-                        ['FALTA IZQUIERDA', 'faltaIzquierdaCount'],
-                        ['FALTA FRONTAL', 'faltaFrontalCount'],
-                        ['CENTRO DERECHA', 'centroDerechaCount'],
-                        ['CENTRO IZQUIERDA', 'centroIzquierdaCount'],
-                        ['CORNER IZQUIERDA', 'cornerIzquierdaCount'],
-                        ['CORNER DERECHA', 'cornerDerechaCount'],
-                        ['INICIO PROPIO', 'inicioPropioCount'],
-                        ['INICIO RIVAL', 'inicioRivalCount'],
-                        ['ON RIVAL', 'onRivalCount'],
-                        ['OFF RIVAL', 'offRivalCount'],
-                        ['ON NEUTRO', 'onNeutroCount'],
-                        ['OFF NEUTRO', 'offNeutroCount']
-                      ]],
-                      ['ACCIONES DEL RIVAL', [
-                        ['RIVAL TIRO DERECHA', 'rivalTiroDerechaCount'],
-                        ['RIVAL TIRO IZQUIERDA', 'rivalTiroIzquierdaCount'],
-                        ['RIVAL TIRO FRONTAL', 'rivalTiroFrontalCount'],
-                        ['RIVAL FALTA DERECHA', 'rivalFaltaDerechaCount'],
-                        ['RIVAL FALTA IZQUIERDA', 'rivalFaltaIzquierdaCount'],
-                        ['RIVAL FALTA FRONTAL', 'rivalFaltaFrontalCount'],
-                        ['RIVAL CENTRO DERECHA', 'rivalCentroDerechaCount'],
-                        ['RIVAL CENTRO IZQUIERDA', 'rivalCentroIzquierdaCount'],
-                        ['RIVAL CORNER IZQUIERDA', 'rivalCornerIzquierdaCount'],
-                        ['RIVAL CORNER DERECHA', 'rivalCornerDerechaCount']
-                      ]]
-                    ];
+                    const grupos = [];
                     const totalPor = (key) => {
                       let t = (live[key] || 0);
                       matches.forEach(m => {
@@ -2451,8 +2445,122 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       });
                       return t;
                     };
+                    const finalizacionesOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'GOL RIVAL', 'INFRACCION'];
+                    const accionesOrder = ['TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'OFF NEUTRO'];
+                    const cruce = {};
+                    const cruceTotal = {};
+                    const cruceRows = {};
+                    finalizacionesOrder.forEach(f => { cruceTotal[f] = 0; });
+                    const procesarLog = (al) => {
+                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
+                      const crono = [...logArr].reverse();
+                      let ultimaAccion = '';
+                      crono.forEach(entry => {
+                        if (!entry) return;
+                        if (entry.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(entry.name)) {
+                          ultimaAccion = entry.name;
+                        } else if (entry.type === 'finalizacion') {
+                          const acc = ultimaAccion || 'SIN ACCION';
+                          cruce[acc] = cruce[acc] || {};
+                          cruce[acc][entry.name] = (cruce[acc][entry.name] || 0) + 1;
+                          cruceTotal[entry.name] = (cruceTotal[entry.name] || 0) + 1;
+                          cruceRows[acc] = (cruceRows[acc] || 0) + 1;
+                        }
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      procesarLog(m.actionLog);
+                    });
+                    procesarLog(actionLog);
+                    const cruceAcciones = Object.keys(cruce).sort((a, b) => {
+                      const ia = accionesOrder.indexOf(a);
+                      const ib = accionesOrder.indexOf(b);
+                      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib) || a.localeCompare(b);
+                    });
+                    const cruceFinalizaciones = Object.keys(cruceTotal).filter(f => cruceTotal[f] > 0).sort((a, b) => {
+                      const ia = finalizacionesOrder.indexOf(a);
+                      const ib = finalizacionesOrder.indexOf(b);
+                      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+                    });
+                    const cruceRivalAcciones = cruceAcciones.filter(a => a.startsWith('RIVAL '));
+                    const crucePropiasAcciones = cruceAcciones.filter(a => !a.startsWith('RIVAL '));
+                    const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
+                    const cruceRivalFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL' && f !== 'PENAL + GOL');
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        {crucePropiasAcciones.length > 0 && crucePropiasFinalizaciones.length > 0 && (
+                          <div>
+                            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>TOTAL ACCIONES PROPIAS</span>
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                              <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
+                                    {crucePropiasFinalizaciones.map(f => (
+                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
+                                    ))}
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {crucePropiasAcciones.map(a => (
+                                    <tr key={a}>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
+                                      {crucePropiasFinalizaciones.map(f => (
+                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
+                                      ))}
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
+                                    </tr>
+                                  ))}
+                                  <tr>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    {crucePropiasFinalizaciones.map(f => (
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
+                                    ))}
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                        {cruceRivalAcciones.length > 0 && cruceRivalFinalizaciones.length > 0 && (
+                          <div>
+                            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>TOTAL ACCIONES RIVAL</span>
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                              <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
+                                    {cruceRivalFinalizaciones.map(f => (
+                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
+                                    ))}
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {cruceRivalAcciones.map(a => (
+                                    <tr key={a}>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
+                                      {cruceRivalFinalizaciones.map(f => (
+                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
+                                      ))}
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
+                                    </tr>
+                                  ))}
+                                  <tr>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    {cruceRivalFinalizaciones.map(f => (
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
+                                    ))}
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
                         {grupos.map(([titulo, filasDef]) => (
                           <div key={titulo}>
                             <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>{titulo}</span>
@@ -2507,7 +2615,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       const titular = {};
                       const suplente = {};
                       names.forEach(n => { minutos[n] = 0; titular[n] = 0; suplente[n] = 0; });
-                      const subsSorted = (Array.isArray(subs) ? subs : []).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
+                      const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
                       names.forEach(n => {
                         const empiezaTitular = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular');
                         let entrySec = empiezaTitular ? 0 : null;
@@ -2621,6 +2729,43 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       contarAccionGoles(m.golesList, m.actionLog);
                     });
                     contarAccionGoles(golesList, actionLog);
+                    const rivalGoalsWhilePlaying = {};
+                    names.forEach(n => { rivalGoalsWhilePlaying[n] = 0; });
+                    const contarRivalGoals = (m, subs) => {
+                      if (!m) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const rgl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                      const subsArr = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && (s.sale || s.entra));
+                      const matchEnd = Math.max(Math.floor((m.timerSeconds || 0) / 60), ...rgl.map(g => (g && g.minuto) || 0));
+                      names.forEach(n => {
+                        const p = pl.find(x => x && x.name === n);
+                        if (!p) return;
+                        let entry = null;
+                        let exit = null;
+                        if (p.status === 'titular') {
+                          entry = 0;
+                          const sale = subsArr.find(s => s.sale === n);
+                          if (sale) exit = sale.minuto || 0;
+                        } else if (p.status === 'suplente') {
+                          const entra = subsArr.find(s => s.entra === n);
+                          if (entra) {
+                            entry = entra.minuto || 0;
+                            const sale = subsArr.find(s => s.sale === n);
+                            if (sale) exit = sale.minuto || 0;
+                          }
+                        }
+                        if (entry === null) return;
+                        const fin = exit === null ? matchEnd : exit;
+                        rgl.forEach(g => {
+                          if (g && g.minuto >= entry && g.minuto <= fin) rivalGoalsWhilePlaying[n] += 1;
+                        });
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      contarRivalGoals(m, m.sustituciones);
+                    });
+                    contarRivalGoals({ players, golesRivalList, timerSeconds }, sustituciones);
                     return (
                   <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -2652,11 +2797,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </option>
                       ))}
                     </select>
-                    {jugadoresData[jugadorSeleccionado] && (
-                      <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.08em', width: '150px', textAlign: 'center', marginTop: '0.5rem' }}>
-                        {jugadorSeleccionado}
-                      </span>
-                    )}
                     {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].foto && (
                       <img
                         src={jugadoresData[jugadorSeleccionado].foto}
@@ -2694,7 +2834,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         ASISTENCIAS: {asistPerPlayer[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && (
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && (
                       <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', marginLeft: '9rem' }}>
                         TOTAL DE GOLES: {golCountPerPlayer[jugadorSeleccionado] || 0}
                       </span>
@@ -2706,17 +2846,17 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         TITULAR: {titularCount[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && (
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && (
                       <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', marginLeft: '12rem' }}>
                         PIE: {golPiePerPlayer[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && (
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && (
                       <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
                         CABEZA: {golCabezaPerPlayer[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && (
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && (
                       <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
                         PENAL: {golPenalPerPlayer[jugadorSeleccionado] || 0}
                       </span>
@@ -2742,7 +2882,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         DIV. HONOR: {divHonorCount[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && (
+                    {jugadorSeleccionado === 'HECTOR' || jugadorSeleccionado === 'EMILIANO' ? (
+                      <span style={{ color: '#ff4d4d', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        GOLES ENCAJADOS: {rivalGoalsWhilePlaying[jugadorSeleccionado] || 0}
+                      </span>
+                    ) : null}
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'EMILIANO' && (
                       <table style={{ borderCollapse: 'collapse', marginTop: '1rem', fontFamily: 'var(--font-mono)' }}>
                         <thead>
                           <tr>
@@ -3209,7 +3354,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const calcMatchMinutes = (pl, subs, durationSec) => {
                       const minutos = {};
                       names.forEach(n => { minutos[n] = 0; });
-                      const subsSorted = (Array.isArray(subs) ? subs : []).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
+                      const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
                       names.forEach(n => {
                         let entrySec = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular') ? 0 : null;
                         subsSorted.forEach(s => {
