@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update } from './firebase';
 import Login from './components/Login';
 import descargaImg from './descarga.png';
+import juanImg from './jugadores/juan.jpg';
+import pedroImg from './jugadores/pedro.jpg';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+
+const jugadoresData = {
+  JUAN: { foto: juanImg, pos1: 'PORTERO' },
+  PEDRO: { foto: pedroImg, pos1: 'DEFENSA CENTRAL', pos2: 'MEDIO CENTRO' }
+};
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -75,6 +82,7 @@ export default function App() {
   const [sustituciones, setSustituciones] = useState([]);
   const [contadorWarning, setContadorWarning] = useState(false);
   const [dataLoadedId, setDataLoadedId] = useState(null);
+  const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -594,6 +602,36 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               }}
             >
               RESUMEN GOLES
+            </button>
+            <button
+              onClick={() => setActiveTab('resumenacciones')}
+              style={{
+                fontWeight: 800,
+                fontSize: '1.15rem',
+                color: activeTab === 'resumenacciones' ? '#ffffff' : '#64748b',
+                borderBottom: activeTab === 'resumenacciones' ? '2px solid #ffffff' : '2px solid transparent',
+                paddingBottom: '0.2rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              RESUMEN ACCIONES
+            </button>
+            <button
+              onClick={() => setActiveTab('jugadores')}
+              style={{
+                fontWeight: 800,
+                fontSize: '1.15rem',
+                color: activeTab === 'jugadores' ? '#ffffff' : '#64748b',
+                borderBottom: activeTab === 'jugadores' ? '2px solid #ffffff' : '2px solid transparent',
+                paddingBottom: '0.2rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              JUGADORES
             </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -2290,6 +2328,245 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         </div>
                         </div>
                       </div>
+                    );
+                  })()}
+                </div>
+              )}
+              {activeTab === 'resumenacciones' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                    RESUMEN ACCIONES
+                  </span>
+                  {(() => {
+                    const live = {
+                      ocasionCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount,
+                      saqueEsquinaFueraCount, golCount, golRivalCount, penalCount, infraccionCount,
+                      tiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount,
+                      faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount,
+                      centroDerechaCount, centroIzquierdaCount,
+                      cornerIzquierdaCount, cornerDerechaCount,
+                      inicioPropioCount, inicioRivalCount,
+                      onRivalCount, offRivalCount, onNeutroCount, offNeutroCount,
+                      rivalTiroDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount,
+                      rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount,
+                      rivalCentroDerechaCount, rivalCentroIzquierdaCount,
+                      rivalCornerIzquierdaCount, rivalCornerDerechaCount
+                    };
+                    const grupos = [
+                      ['FINALIZACIONES', [
+                        ['OCASION', 'ocasionCount'],
+                        ['FUERA', 'fueraCount'],
+                        ['BLOCAJE', 'blocajeCount'],
+                        ['DESPEJE DEFENSA', 'despejeDefensaCount'],
+                        ['DESPEJE PORTERO', 'despejePorteroCount'],
+                        ['SAQUE DE ESQUINA', 'saqueEsquinaFueraCount'],
+                        ['GOL', 'golCount'],
+                        ['GOL RIVAL', 'golRivalCount'],
+                        ['PENAL', 'penalCount'],
+                        ['INFRACCION', 'infraccionCount']
+                      ]],
+                      ['ACCIONES PROPIAS', [
+                        ['TIRO DERECHA', 'tiroDerechaCount'],
+                        ['TIRO IZQUIERDA', 'tiroIzquierdaCount'],
+                        ['TIRO FRONTAL', 'tiroFrontalCount'],
+                        ['FALTA DERECHA', 'faltaDerechaCount'],
+                        ['FALTA IZQUIERDA', 'faltaIzquierdaCount'],
+                        ['FALTA FRONTAL', 'faltaFrontalCount'],
+                        ['CENTRO DERECHA', 'centroDerechaCount'],
+                        ['CENTRO IZQUIERDA', 'centroIzquierdaCount'],
+                        ['CORNER IZQUIERDA', 'cornerIzquierdaCount'],
+                        ['CORNER DERECHA', 'cornerDerechaCount'],
+                        ['INICIO PROPIO', 'inicioPropioCount'],
+                        ['INICIO RIVAL', 'inicioRivalCount'],
+                        ['ON RIVAL', 'onRivalCount'],
+                        ['OFF RIVAL', 'offRivalCount'],
+                        ['ON NEUTRO', 'onNeutroCount'],
+                        ['OFF NEUTRO', 'offNeutroCount']
+                      ]],
+                      ['ACCIONES DEL RIVAL', [
+                        ['RIVAL TIRO DERECHA', 'rivalTiroDerechaCount'],
+                        ['RIVAL TIRO IZQUIERDA', 'rivalTiroIzquierdaCount'],
+                        ['RIVAL TIRO FRONTAL', 'rivalTiroFrontalCount'],
+                        ['RIVAL FALTA DERECHA', 'rivalFaltaDerechaCount'],
+                        ['RIVAL FALTA IZQUIERDA', 'rivalFaltaIzquierdaCount'],
+                        ['RIVAL FALTA FRONTAL', 'rivalFaltaFrontalCount'],
+                        ['RIVAL CENTRO DERECHA', 'rivalCentroDerechaCount'],
+                        ['RIVAL CENTRO IZQUIERDA', 'rivalCentroIzquierdaCount'],
+                        ['RIVAL CORNER IZQUIERDA', 'rivalCornerIzquierdaCount'],
+                        ['RIVAL CORNER DERECHA', 'rivalCornerDerechaCount']
+                      ]]
+                    ];
+                    const totalPor = (key) => {
+                      let t = (live[key] || 0);
+                      matches.forEach(m => {
+                        if (currentMatch && m.id === currentMatch.id) return;
+                        t += (m[key] ?? 0);
+                      });
+                      return t;
+                    };
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        {grupos.map(([titulo, filasDef]) => (
+                          <div key={titulo}>
+                            <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>{titulo}</span>
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                              <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {filasDef.map(([label, key]) => (
+                                    <tr key={key}>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{label}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPor(key)}</td>
+                                    </tr>
+                                  ))}
+                                  <tr>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasDef.reduce((s, [, key]) => s + totalPor(key), 0)}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              {activeTab === 'jugadores' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                    JUGADORES
+                  </span>
+                  {(() => {
+                    const nombres = new Set();
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      (Array.isArray(m.players) ? m.players : []).forEach(p => {
+                        if (p && p.name) nombres.add(p.name);
+                      });
+                    });
+                    (Array.isArray(players) ? players : []).forEach(p => {
+                      if (p && p.name) nombres.add(p.name);
+                    });
+                    const names = [...nombres];
+                    const calcMatchMinutes = (pl, subs, durationSec) => {
+                      const minutos = {};
+                      const titular = {};
+                      const suplente = {};
+                      names.forEach(n => { minutos[n] = 0; titular[n] = 0; suplente[n] = 0; });
+                      const subsSorted = (Array.isArray(subs) ? subs : []).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
+                      names.forEach(n => {
+                        const empiezaTitular = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular');
+                        let entrySec = empiezaTitular ? 0 : null;
+                        subsSorted.forEach(s => {
+                          const subSec = (s.minuto || 0) * 60;
+                          if (s.sale === n && entrySec !== null) {
+                            const added = Math.max(0, subSec - entrySec);
+                            minutos[n] += added;
+                            if (empiezaTitular) titular[n] += added; else suplente[n] += added;
+                            entrySec = null;
+                          } else if (s.entra === n) {
+                            entrySec = subSec;
+                          }
+                        });
+                        if (entrySec !== null) {
+                          const added = Math.max(0, (durationSec || 0) - entrySec);
+                          minutos[n] += added;
+                          if (empiezaTitular) titular[n] += added; else suplente[n] += added;
+                        }
+                      });
+                      return { minutos, titular, suplente };
+                    };
+                    const totalMinutos = {};
+                    const totalTitular = {};
+                    const totalSuplente = {};
+                    names.forEach(n => { totalMinutos[n] = 0; totalTitular[n] = 0; totalSuplente[n] = 0; });
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
+                      names.forEach(n => { totalMinutos[n] += mMin.minutos[n]; totalTitular[n] += mMin.titular[n]; totalSuplente[n] += mMin.suplente[n]; });
+                    });
+                    const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
+                    names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; totalTitular[n] += liveMin.titular[n]; totalSuplente[n] += liveMin.suplente[n]; });
+                    return (
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <select
+                      value={jugadorSeleccionado}
+                      onChange={(e) => setJugadorSeleccionado(e.target.value)}
+                      style={{
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        padding: '0.5rem 0.8rem',
+                        textTransform: 'uppercase',
+                        cursor: 'pointer',
+                        width: '150px'
+                      }}
+                    >
+                      <option value="">-</option>
+                      {names.sort().map((n) => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                                        {jugadorSeleccionado && (
+                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        <u>MIN. TOTALES: {formatTime(totalMinutos[jugadorSeleccionado] || 0)}</u> = MIN. TITULAR: {formatTime(totalTitular[jugadorSeleccionado] || 0)} + MIN. SUPLENTE: {formatTime(totalSuplente[jugadorSeleccionado] || 0)}
+                      </span>
+                    )}
+                    </div>
+                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].foto && (
+                      <img
+                        src={jugadoresData[jugadorSeleccionado].foto}
+                        alt={jugadorSeleccionado}
+                        style={{
+                          width: '150px',
+                          height: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '12px',
+                          border: '2px solid var(--border-subtle)'
+                        }}
+                      />
+                    )}
+                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].pos1 && (
+                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '150px', textAlign: 'center' }}>
+                        {jugadoresData[jugadorSeleccionado].pos1}
+                      </span>
+                    )}
+                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].pos2 && (
+                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '150px', textAlign: 'center' }}>
+                        {jugadoresData[jugadorSeleccionado].pos2}
+                      </span>
+                    )}
+                  </div>
                     );
                   })()}
                 </div>
