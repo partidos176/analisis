@@ -1954,7 +1954,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setGolesList([...golesList, { name: '', tipo: '', name2: '', accion: actionLog.length > 0 ? actionLog[0].name : '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setGolesList([...golesList, { name: '', tipo: '', name2: '', accion: [...actionLog].find(e => e.type === 'accion') ? [...actionLog].find(e => e.type === 'accion').name : '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
@@ -2560,20 +2560,38 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       contarGoles(m.golesList);
                     });
                     contarGoles(golesList);
-                    const golesJugador = [];
-                    const recogerGoles = (gl) => {
+                    const golesAccion = {};
+                    const derivarAcciones = (al) => {
+                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
+                      const crono = [...logArr].reverse();
+                      const res = [];
+                      let ultimaAccion = '';
+                      crono.forEach(entry => {
+                        if (entry && entry.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(entry.name)) {
+                          ultimaAccion = entry.name;
+                        } else if (entry && entry.name === 'GOL') {
+                          res.push(ultimaAccion || 'GOL');
+                        } else if (entry && entry.name === 'PENAL + GOL') {
+                          res.push('PENAL');
+                        }
+                      });
+                      return res;
+                    };
+                    const contarAccionGoles = (gl, al) => {
                       const arr = Array.isArray(gl) ? gl : (gl ? Object.values(gl) : []);
-                      arr.forEach(g => {
+                      const acciones = derivarAcciones(al);
+                      arr.forEach((g, idx) => {
                         if (g && g.name && g.name === jugadorSeleccionado) {
-                          golesJugador.push(`${g.accion || 'GOL'}`);
+                          const accion = g.accion || acciones[idx] || 'GOL';
+                          golesAccion[accion] = (golesAccion[accion] || 0) + 1;
                         }
                       });
                     };
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
-                      recogerGoles(m.golesList);
+                      contarAccionGoles(m.golesList, m.actionLog);
                     });
-                    recogerGoles(golesList);
+                    contarAccionGoles(golesList, actionLog);
                     return (
                   <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -2686,22 +2704,30 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </span>
                     )}
                     {jugadorSeleccionado && (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '1rem' }}>
-                        <span style={{ color: '#00ff87', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
-                          ACCIONES DE GOL
-                        </span>
-                        {golesJugador.length === 0 ? (
-                          <span style={{ color: '#ffffff', fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>
-                            Sin goles registrados
-                          </span>
-                        ) : (
-                          golesJugador.map((g, i) => (
-                            <span key={i} style={{ color: '#ffffff', fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>
-                              {g}
-                            </span>
-                          ))
-                        )}
-                      </div>
+                      <table style={{ borderCollapse: 'collapse', marginTop: '1rem', fontFamily: 'var(--font-mono)' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#00ff87', fontSize: '0.9rem', textTransform: 'uppercase', textAlign: 'left' }}>ACCIÓN</th>
+                            <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#00ff87', fontSize: '0.9rem', textTransform: 'uppercase', textAlign: 'center' }}>GOLES</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.keys(golesAccion).length === 0 ? (
+                            <tr>
+                              <td colSpan="2" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem' }}>
+                                Sin goles registrados
+                              </td>
+                            </tr>
+                          ) : (
+                            Object.keys(golesAccion).sort().map(accion => (
+                              <tr key={accion}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem' }}>{accion}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem', textAlign: 'center' }}>{golesAccion[accion]}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
                     )}
                     </div>
                     </div>
