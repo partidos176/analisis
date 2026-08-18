@@ -393,6 +393,12 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
     if (setter) {
       setter(prev => Math.max(0, prev - 1));
     }
+    if (name === 'GOL') {
+      setGolesList(prev => prev.slice(0, -1));
+    }
+    if (name === 'GOL RIVAL') {
+      setGolesRivalList(prev => prev.slice(0, -1));
+    }
   };
 
   const handlePrimeraParte = () => {
@@ -2025,13 +2031,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     }));
                     let totalGolesRival = 0;
                     let sinMinutoRival = 0;
-                    const periodosRival = periodos.map(p => ({ ...p }));
+                    const periodosRival = periodos.map(p => ({ ...p, goles: 0 }));
                     const contarGolesRival = (gl) => {
                       gl.forEach(g => {
                         if (!g) return;
                         totalGolesRival += 1;
                         const min = g.minuto;
-                        if (!min) {
+                        if (min === undefined || min === null) {
                           sinMinutoRival += 1;
                           return;
                         }
@@ -2056,18 +2062,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       totalGolesRival += golRivalCount;
                       sinMinutoRival += golRivalCount;
                     }
-                    const chartDataRival = [
-                      ...periodosRival.map(p => ({
+                    const chartDataRival = periodosRival
+                      .map(p => ({
                         name: p.name,
                         value: p.goles || 0,
                         pct: totalGolesRival > 0 ? ((p.goles || 0) / totalGolesRival) * 100 : 0
-                      })),
-                      {
-                        name: 'SIN MINUTO',
-                        value: sinMinutoRival,
-                        pct: totalGolesRival > 0 ? (sinMinutoRival / totalGolesRival) * 100 : 0
-                      }
-                    ];
+                      }))
+                      .filter(p => p.value > 0);
                     const COLORS = ['#118DFF', '#12239E', '#E66C37', '#6B007B', '#E044A7', '#744EC2', '#94a3b8'];
                     const golesPorJornada = {};
                     const contarJornada = (gl, md) => {
@@ -2221,8 +2222,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           </div>
                         )}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1rem 2rem', marginTop: '-7rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1rem 2rem', marginTop: '-13rem' }}>
                           <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES DEL RIVAL</span>
+                          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ display: 'flex', justifyContent: 'center' }}>
                           <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                             <thead>
                               <tr>
@@ -2243,6 +2246,47 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               </tr>
                             </tbody>
                           </table>
+                          </div>
+                          {chartDataRival.length > 0 && (
+                            <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center' }}>
+<PieChart width={400} height={380} margin={{ top: 30, right: 40, bottom: 10, left: 40 }}>
+                                <Pie
+                                  data={chartDataRival}
+                                  cx="50%"
+                                  cy="30%"
+                                  outerRadius={90}
+                                  dataKey="value"
+                                  isAnimationActive={false}
+                                  labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
+                                  label={(props) => {
+                                    if ((props.value || 0) === 0) return null;
+                                    const pct = (props.percent || 0) * 100;
+                                    const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
+                                    return (
+                                      <text
+                                        x={props.x}
+                                        y={props.y}
+                                        dy={4}
+                                        textAnchor={props.textAnchor}
+                                        fill="#ffffff"
+                                        fontSize={14}
+                                        fontWeight={700}
+                                        stroke="none"
+                                      >
+                                        {props.name} • {props.value} ({pctTxt}%)
+                                      </text>
+                                    );
+                                  }}
+                                >
+                                  {chartDataRival.map((_, i) => (
+                                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                  ))}
+                                </Pie>
+                                <Tooltip />
+                              </PieChart>
+                            </div>
+                          )}
+                          </div>
                         </div>
                         </div>
                       </div>
@@ -2372,6 +2416,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             setGolesList(newGoles);
                             if (g.team === 'away') {
                               setGolRivalCount(Math.max(0, golRivalCount - 1));
+                              const rivalIdx = golesRivalList.findIndex(rg => rg.periodo === g.periodo && rg.minuto === g.minuto);
+                              if (rivalIdx !== -1) {
+                                setGolesRivalList(golesRivalList.filter((_, j) => j !== rivalIdx));
+                              }
                             } else {
                               setGolCount(Math.max(0, golCount - 1));
                             }
@@ -3006,8 +3054,11 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       <span style={{ fontWeight: 700, color: '#38bdf8' }}>{m.homeTeam}</span>
                       <span style={{ margin: '0 0.4rem', color: '#ffffff', fontWeight: 700 }}>vs</span>
                       <span style={{ fontWeight: 700, color: '#f87171' }}>{m.awayTeam}</span>
-                      <span style={{ marginLeft: '0.75rem', fontSize: '0.75rem', color: '#ffffff', fontWeight: 600 }}>
+                      <span style={{ marginLeft: '0.75rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.1rem' }}>
                         J{m.matchday}
+                      </span>
+                      <span style={{ marginLeft: '1.5rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.1rem' }}>
+                        {m.golCount || 0} - {m.golRivalCount || 0}
                       </span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
