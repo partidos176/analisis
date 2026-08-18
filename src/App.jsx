@@ -61,6 +61,7 @@ export default function App() {
   const [infraccionCount, setInfraccionCount] = useState(0);
   const [ocasionCount, setOcasionCount] = useState(0);
   const [golesList, setGolesList] = useState([]);
+  const [golesRivalList, setGolesRivalList] = useState([]);
   const [fromRival, setFromRival] = useState(false);
   const [periodo, setPeriodo] = useState('1ª PARTE');
   const [selectedPlayer, setSelectedPlayer] = useState('');
@@ -186,6 +187,7 @@ export default function App() {
     setInfraccionCount(0);
     setOcasionCount(0);
     setGolesList([]);
+    setGolesRivalList([]);
     setPlayers(Array(23).fill({ name: 'JUAN', status: '-' }));
     setTimerSeconds(0);
     setTimerRunning(false);
@@ -241,6 +243,7 @@ export default function App() {
     setInfraccionCount(match.infraccionCount ?? 0);
     setOcasionCount(match.ocasionCount ?? 0);
     setGolesList(normalizeArray(match.golesList));
+    setGolesRivalList(normalizeArray(match.golesRivalList));
     setPlayers(match.players ? normalizeArray(match.players) : Array(23).fill({ name: 'JUAN', status: '-' }));
     setTimerSeconds(match.timerSeconds ?? 0);
     setTimerRunning(match.timerRunning ?? false);
@@ -289,6 +292,7 @@ export default function App() {
       infraccionCount,
       ocasionCount,
       golesList,
+      golesRivalList,
       players,
       timerSeconds,
       timerRunning,
@@ -312,7 +316,7 @@ export default function App() {
   useEffect(() => {
     if (!currentMatch) return;
 saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando datos del partido:', err));
-  }, [currentMatch, tiroDerechaCount, rivalTiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
+  }, [currentMatch, tiroDerechaCount, rivalTiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
 
   const handleAceptar = () => {
     const titulares = players.filter(p => p.status === 'titular').length;
@@ -1913,7 +1917,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(golRivalCount + 1); setActiveTab('acciones'); } }}
+                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(golRivalCount + 1); setGolesRivalList([...golesRivalList, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
@@ -2019,7 +2023,52 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       value: p.goles || 0,
                       pct: totalGoles > 0 ? ((p.goles || 0) / totalGoles) * 100 : 0
                     }));
-                    const COLORS = ['#118DFF', '#12239E', '#E66C37', '#6B007B', '#E044A7', '#744EC2'];
+                    let totalGolesRival = 0;
+                    let sinMinutoRival = 0;
+                    const periodosRival = periodos.map(p => ({ ...p }));
+                    const contarGolesRival = (gl) => {
+                      gl.forEach(g => {
+                        if (!g) return;
+                        totalGolesRival += 1;
+                        const min = g.minuto;
+                        if (!min) {
+                          sinMinutoRival += 1;
+                          return;
+                        }
+                        const p = periodosRival.find(p => min >= p.desde && min <= p.hasta) || periodosRival[periodosRival.length - 1];
+                        p.goles = (p.goles || 0) + 1;
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                      if (gl.length) {
+                        contarGolesRival(gl);
+                      } else if (m.golRivalCount) {
+                        totalGolesRival += m.golRivalCount;
+                        sinMinutoRival += m.golRivalCount;
+                      }
+                    });
+                    const currentGl = Array.isArray(golesRivalList) ? golesRivalList : (golesRivalList ? Object.values(golesRivalList) : []);
+                    if (currentGl.length) {
+                      contarGolesRival(currentGl);
+                    } else if (golRivalCount) {
+                      totalGolesRival += golRivalCount;
+                      sinMinutoRival += golRivalCount;
+                    }
+                    const chartDataRival = [
+                      ...periodosRival.map(p => ({
+                        name: p.name,
+                        value: p.goles || 0,
+                        pct: totalGolesRival > 0 ? ((p.goles || 0) / totalGolesRival) * 100 : 0
+                      })),
+                      {
+                        name: 'SIN MINUTO',
+                        value: sinMinutoRival,
+                        pct: totalGolesRival > 0 ? (sinMinutoRival / totalGolesRival) * 100 : 0
+                      }
+                    ];
+                    const COLORS = ['#118DFF', '#12239E', '#E66C37', '#6B007B', '#E044A7', '#744EC2', '#94a3b8'];
                     const golesPorJornada = {};
                     const contarJornada = (gl, md) => {
                       const jornada = Number(md);
@@ -2037,6 +2086,27 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       { name: 'J1-J12', value: rangoGoles(1, 12) },
                       { name: 'J13-J24', value: rangoGoles(13, 24) },
                       { name: 'J25-J36', value: rangoGoles(25, 36) }
+                    ];
+                    const golesRivalTotal = matches.reduce((s, m) => {
+                      if (currentMatch && m.id === currentMatch.id) return s;
+                      return s + (m.golRivalCount ?? 0);
+                    }, 0) + golRivalCount;
+                    const golesRivalPorJornada = {};
+                    const contarJornadaRival = (md, n) => {
+                      const jornada = Number(md);
+                      if (!jornada || !n) return;
+                      golesRivalPorJornada[jornada] = (golesRivalPorJornada[jornada] || 0) + n;
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      contarJornadaRival(m.matchday, m.golRivalCount ?? 0);
+                    });
+                    if (currentMatch) contarJornadaRival(currentMatch.matchday, golRivalCount);
+                    const rangoGolesRival = (a, b) => Object.entries(golesRivalPorJornada).filter(([md]) => md >= a && md <= b).reduce((s, [, v]) => s + v, 0);
+                    const tramosRival = [
+                      { name: 'J1-J12', value: rangoGolesRival(1, 12) },
+                      { name: 'J13-J24', value: rangoGolesRival(13, 24) },
+                      { name: 'J25-J36', value: rangoGolesRival(25, 36) }
                     ];
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -2150,6 +2220,29 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             </PieChart>
                           </div>
                         )}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1rem 2rem', marginTop: '-7rem' }}>
+                          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES DEL RIVAL</span>
+                          <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <thead>
+                              <tr>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {tramosRival.map((t) => (
+                                <tr key={t.name}>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value}</td>
+                                </tr>
+                              ))}
+                              <tr>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramosRival.reduce((s, t) => s + t.value, 0)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                         </div>
                       </div>
