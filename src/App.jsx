@@ -1954,7 +1954,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setGolesList([...golesList, { name: '', tipo: '', name2: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setGolesList([...golesList, { name: '', tipo: '', name2: '', accion: actionLog.length > 0 ? actionLog[0].name : '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
@@ -1975,7 +1975,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setGolesList([...golesList, { name: '', tipo: 'PENAL', name2: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setGolesList([...golesList, { name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL</span>
@@ -2299,7 +2299,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                   label={(props) => {
                                     if ((props.value || 0) === 0) return null;
                                     const pct = (props.percent || 0) * 100;
-                                    const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
+const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     return (
                                       <text
                                         x={props.x}
@@ -2458,7 +2458,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#39ff14', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     JUGADORES
                   </span>
                   {(() => {
@@ -2513,9 +2513,71 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     });
                     const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
                     names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; totalTitular[n] += liveMin.titular[n]; totalSuplente[n] += liveMin.suplente[n]; });
+                    const titularCount = {};
+                    const suplenteCount = {};
+                    const noConvocadoCount = {};
+                    const lesionadoCount = {};
+                    const divHonorCount = {};
+                    names.forEach(n => { titularCount[n] = 0; suplenteCount[n] = 0; noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      pl.forEach(p => {
+                        if (p && p.name && p.status === 'titular') titularCount[p.name] += 1;
+                        if (p && p.name && p.status === 'suplente') suplenteCount[p.name] += 1;
+                        if (p && p.name && p.status === 'no convocado') noConvocadoCount[p.name] += 1;
+                        if (p && p.name && p.status === 'lesion') lesionadoCount[p.name] += 1;
+                        if (p && p.name && p.status === 'division honor') divHonorCount[p.name] += 1;
+                      });
+                    });
+                    (Array.isArray(players) ? players : []).forEach(p => {
+                      if (p && p.name && p.status === 'titular') titularCount[p.name] += 1;
+                      if (p && p.name && p.status === 'suplente') suplenteCount[p.name] += 1;
+                      if (p && p.name && p.status === 'no convocado') noConvocadoCount[p.name] += 1;
+                      if (p && p.name && p.status === 'lesion') lesionadoCount[p.name] += 1;
+                      if (p && p.name && p.status === 'division honor') divHonorCount[p.name] += 1;
+                    });
+                    const golCountPerPlayer = {};
+                    const golPiePerPlayer = {};
+                    const golCabezaPerPlayer = {};
+                    const golPenalPerPlayer = {};
+                    const asistPerPlayer = {};
+                    names.forEach(n => { golCountPerPlayer[n] = 0; golPiePerPlayer[n] = 0; golCabezaPerPlayer[n] = 0; golPenalPerPlayer[n] = 0; asistPerPlayer[n] = 0; });
+                    const contarGoles = (gl) => {
+                      const arr = Array.isArray(gl) ? gl : (gl ? Object.values(gl) : []);
+                      arr.forEach(g => {
+                        if (g && g.name) {
+                          golCountPerPlayer[g.name] += 1;
+                          if ((g.tipo || '').toUpperCase() === 'PIE') golPiePerPlayer[g.name] += 1;
+                          if ((g.tipo || '').toUpperCase() === 'CABEZA') golCabezaPerPlayer[g.name] += 1;
+                          if ((g.tipo || '').toUpperCase() === 'PENAL') golPenalPerPlayer[g.name] += 1;
+                        }
+                        if (g && g.name2 && g.name2.toUpperCase() !== 'SIN ASISTENCIA') asistPerPlayer[g.name2] += 1;
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      contarGoles(m.golesList);
+                    });
+                    contarGoles(golesList);
+                    const golesJugador = [];
+                    const recogerGoles = (gl) => {
+                      const arr = Array.isArray(gl) ? gl : (gl ? Object.values(gl) : []);
+                      arr.forEach(g => {
+                        if (g && g.name && g.name === jugadorSeleccionado) {
+                          golesJugador.push(`${g.accion || 'GOL'}`);
+                        }
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      recogerGoles(m.golesList);
+                    });
+                    recogerGoles(golesList);
                     return (
                   <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                     <select
                       value={jugadorSeleccionado}
                       onChange={(e) => setJugadorSeleccionado(e.target.value)}
@@ -2529,7 +2591,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         padding: '0.5rem 0.8rem',
                         textTransform: 'uppercase',
                         cursor: 'pointer',
-                        width: '150px'
+                        width: '150px',
+                        marginTop: '-1.5rem'
                       }}
                     >
                       <option value="">-</option>
@@ -2537,12 +2600,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <option key={n} value={n}>{n}</option>
                       ))}
                     </select>
-                                        {jugadorSeleccionado && (
-                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        <u>MIN. TOTALES: {formatTime(totalMinutos[jugadorSeleccionado] || 0)}</u> = MIN. TITULAR: {formatTime(totalTitular[jugadorSeleccionado] || 0)} + MIN. SUPLENTE: {formatTime(totalSuplente[jugadorSeleccionado] || 0)}
-                      </span>
-                    )}
-                    </div>
                     {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].foto && (
                       <img
                         src={jugadoresData[jugadorSeleccionado].foto}
@@ -2552,7 +2609,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           height: '200px',
                           objectFit: 'cover',
                           borderRadius: '12px',
-                          border: '2px solid var(--border-subtle)'
+                          border: '2px solid var(--border-subtle)',
+                          marginTop: '0.5rem'
                         }}
                       />
                     )}
@@ -2566,6 +2624,87 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         {jugadoresData[jugadorSeleccionado].pos2}
                       </span>
                     )}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        MIN. TOTALES: {formatTime(totalMinutos[jugadorSeleccionado] || 0)} = MIN. TITULAR: {formatTime(totalTitular[jugadorSeleccionado] || 0)} + MIN. SUPLENTE: {formatTime(totalSuplente[jugadorSeleccionado] || 0)}
+                      </span>
+                    )}
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#e044a7', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        ASISTENCIAS: {asistPerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', marginLeft: '9rem' }}>
+                        TOTAL DE GOLES: {golCountPerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem', marginLeft: '9rem' }}>
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', marginLeft: '-9rem' }}>
+                        TITULAR: {titularCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', marginLeft: '12rem' }}>
+                        PIE: {golPiePerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        CABEZA: {golCabezaPerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        PENAL: {golPenalPerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    </div>
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        SUPLENTE: {suplenteCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        NO CONVOCADO: {noConvocadoCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        LESIONADO: {lesionadoCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        DIV. HONOR: {divHonorCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '1rem' }}>
+                        <span style={{ color: '#00ff87', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
+                          ACCIONES DE GOL
+                        </span>
+                        {golesJugador.length === 0 ? (
+                          <span style={{ color: '#ffffff', fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>
+                            Sin goles registrados
+                          </span>
+                        ) : (
+                          golesJugador.map((g, i) => (
+                            <span key={i} style={{ color: '#ffffff', fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>
+                              {g}
+                            </span>
+                          ))
+                        )}
+                      </div>
+                    )}
+                    </div>
+                    </div>
                   </div>
                     );
                   })()}
