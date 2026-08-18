@@ -2,13 +2,51 @@ import React, { useState, useEffect, useRef } from 'react';
 import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update } from './firebase';
 import Login from './components/Login';
 import descargaImg from './descarga.png';
-import juanImg from './jugadores/juan.jpg';
-import pedroImg from './jugadores/pedro.jpg';
+import alexImg from './jugadores/alex.jpg';
+import alvaroImg from './jugadores/alvaro.jpg';
+import ancorImg from './jugadores/ancor.jpg';
+import cardonaImg from './jugadores/cardona.jpg';
+import daniImg from './jugadores/dani.jpg';
+import davidImg from './jugadores/david.jpg';
+import diegoImg from './jugadores/diego.jpg';
+import emilianoImg from './jugadores/emiliano.jpg';
+import hectorImg from './jugadores/hector.jpg';
+import ismaImg from './jugadores/isma.jpg';
+import jonasImg from './jugadores/jonas.jpg';
+import juandaImg from './jugadores/juanda.jpg';
+import kevinImg from './jugadores/kevin.jpg';
+import lucasImg from './jugadores/lucas.jpg';
+import oscarImg from './jugadores/oscar.jpg';
+import raveloImg from './jugadores/ravelo.jpg';
+import santanaImg from './jugadores/santana.jpg';
+import santosImg from './jugadores/santos.jpg';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
 const jugadoresData = {
-  JUAN: { foto: juanImg, pos1: 'PORTERO' },
-  PEDRO: { foto: pedroImg, pos1: 'DEFENSA CENTRAL', pos2: 'MEDIO CENTRO' }
+  ALEX: { foto: alexImg, pos1: 'CENTRAL' },
+  ALVARO: { foto: alvaroImg },
+  ANCOR: { foto: ancorImg, pos1: 'MEDIO CENTRO' },
+  CARDONA: { foto: cardonaImg },
+  CADETE: {},
+  DANI: { foto: daniImg },
+  DAVID: { foto: davidImg, pos1: 'MEDIO CENTRO' },
+  DIEGO: { foto: diegoImg },
+  EMILIANO: { foto: emilianoImg, pos1: 'PORTERO' },
+  HECTOR: { foto: hectorImg, pos1: 'PORTERO' },
+  ISMA: { foto: ismaImg, pos1: 'DELANTERO' },
+  JONAS: { foto: jonasImg },
+  JUANDA: { foto: juandaImg },
+  KEVIN: { foto: kevinImg, pos1: 'CENTRAL' },
+  LUCAS: { foto: lucasImg, pos1: 'CENTRAL' },
+  OSCAR: { foto: oscarImg, pos1: 'LATERAL DERECHO' },
+  RAVELO: { foto: raveloImg, pos1: 'LATERAL IZQUIERDO' },
+  SANTANA: { foto: santanaImg, pos1: 'LATERAL IZQUIERDO' },
+  SANTOS: { foto: santosImg }
+};
+
+const defaultPlayersList = () => {
+  const roster = Object.keys(jugadoresData);
+  return Array(23).fill(null).map((_, i) => ({ name: roster[i] || '', status: '-' }));
 };
 
 export default function App() {
@@ -73,7 +111,7 @@ export default function App() {
   const [periodo, setPeriodo] = useState('1ª PARTE');
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [playerStatus, setPlayerStatus] = useState('titular');
-  const [players, setPlayers] = useState(Array(23).fill({ name: 'JUAN', status: '-' }));
+  const [players, setPlayers] = useState(defaultPlayersList());
   const [alineacionError, setAlineacionError] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -196,7 +234,7 @@ export default function App() {
     setOcasionCount(0);
     setGolesList([]);
     setGolesRivalList([]);
-    setPlayers(Array(23).fill({ name: 'JUAN', status: '-' }));
+    setPlayers(defaultPlayersList());
     setTimerSeconds(0);
     setTimerRunning(false);
     setActionLog([]);
@@ -252,7 +290,7 @@ export default function App() {
     setOcasionCount(match.ocasionCount ?? 0);
     setGolesList(normalizeArray(match.golesList));
     setGolesRivalList(normalizeArray(match.golesRivalList));
-    setPlayers(match.players ? normalizeArray(match.players) : Array(23).fill({ name: 'JUAN', status: '-' }));
+    setPlayers(match.players ? normalizeArray(match.players) : defaultPlayersList());
     setTimerSeconds(match.timerSeconds ?? 0);
     setTimerRunning(match.timerRunning ?? false);
     setActionLog(normalizeArray(match.actionLog));
@@ -2462,16 +2500,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     JUGADORES
                   </span>
                   {(() => {
-                    const nombres = new Set();
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      (Array.isArray(m.players) ? m.players : []).forEach(p => {
-                        if (p && p.name) nombres.add(p.name);
-                      });
-                    });
-                    (Array.isArray(players) ? players : []).forEach(p => {
-                      if (p && p.name) nombres.add(p.name);
-                    });
+                    const nombres = new Set(Object.keys(jugadoresData));
                     const names = [...nombres];
                     const calcMatchMinutes = (pl, subs, durationSec) => {
                       const minutos = {};
@@ -2615,9 +2644,19 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     >
                       <option value="">-</option>
                       {names.sort().map((n) => (
-                        <option key={n} value={n}>{n}</option>
+                        <option key={n} value={n}>
+                          {jugadoresData[n] && jugadoresData[n].foto && (
+                            <img src={jugadoresData[n].foto} alt="" style={{ width: '20px', height: '26px', objectFit: 'cover', verticalAlign: 'middle', marginRight: '6px', borderRadius: '3px' }} />
+                          )}
+                          {n}
+                        </option>
                       ))}
                     </select>
+                    {jugadoresData[jugadorSeleccionado] && (
+                      <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.08em', width: '150px', textAlign: 'center', marginTop: '0.5rem' }}>
+                        {jugadorSeleccionado}
+                      </span>
+                    )}
                     {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].foto && (
                       <img
                         src={jugadoresData[jugadorSeleccionado].foto}
@@ -2781,13 +2820,26 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             }}
                           >
                             <option value="">-</option>
-                            <option value="JUAN">JUAN</option>
-                            <option value="PEDRO">PEDRO</option>
-                            <option value="LUIS">LUIS</option>
-                            <option value="MILLA">MILLA</option>
-                            <option value="ALEXIS">ALEXIS</option>
-                            <option value="ANTONIO">ANTONIO</option>
-                          </select>
+                            <option value="ALEX">ALEX</option>
+                          <option value="ALVARO">ALVARO</option>
+                          <option value="ANCOR">ANCOR</option>
+                          <option value="CARDONA">CARDONA</option>
+                          <option value="DANI">DANI</option>
+                          <option value="DAVID">DAVID</option>
+                          <option value="DIEGO">DIEGO</option>
+                          <option value="EMILIANO">EMILIANO</option>
+                          <option value="HECTOR">HECTOR</option>
+                          <option value="ISMA">ISMA</option>
+                          <option value="JONAS">JONAS</option>
+                          <option value="JUANDA">JUANDA</option>
+                          <option value="KEVIN">KEVIN</option>
+                          <option value="LUCAS">LUCAS</option>
+                          <option value="OSCAR">OSCAR</option>
+                          <option value="RAVELO">RAVELO</option>
+                          <option value="SANTANA">SANTANA</option>
+                          <option value="SANTOS">SANTOS</option>
+                            <option value="CADETE">CADETE</option>
+                        </select>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ACCION</span>
@@ -2842,12 +2894,25 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             }}
                           >
                             <option value="">-</option>
-                            <option value="JUAN">JUAN</option>
-                            <option value="PEDRO">PEDRO</option>
-                            <option value="LUIS">LUIS</option>
-                            <option value="MILLA">MILLA</option>
-                            <option value="ALEXIS">ALEXIS</option>
-                            <option value="ANTONIO">ANTONIO</option>
+                            <option value="ALEX">ALEX</option>
+                            <option value="ALVARO">ALVARO</option>
+                            <option value="ANCOR">ANCOR</option>
+                            <option value="CARDONA">CARDONA</option>
+                            <option value="DANI">DANI</option>
+                            <option value="DAVID">DAVID</option>
+                            <option value="DIEGO">DIEGO</option>
+                            <option value="EMILIANO">EMILIANO</option>
+                            <option value="HECTOR">HECTOR</option>
+                            <option value="ISMA">ISMA</option>
+                            <option value="JONAS">JONAS</option>
+                            <option value="JUANDA">JUANDA</option>
+                            <option value="KEVIN">KEVIN</option>
+                            <option value="LUCAS">LUCAS</option>
+                            <option value="OSCAR">OSCAR</option>
+                            <option value="RAVELO">RAVELO</option>
+                            <option value="SANTANA">SANTANA</option>
+                            <option value="SANTOS">SANTOS</option>
+                            <option value="CADETE">CADETE</option>
                             <option value="SIN ASISTENCIA">SIN ASISTENCIA</option>
                           </select>
                         </div>
@@ -3140,7 +3205,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   gap: '1.5rem'
                 }}>
                   {(() => {
-                    const names = [...new Set(players.map(p => p.name).filter(Boolean))];
+                    const names = [...new Set([...players.map(p => p.name).filter(Boolean), ...Object.keys(jugadoresData)])];
                     const calcMatchMinutes = (pl, subs, durationSec) => {
                       const minutos = {};
                       names.forEach(n => { minutos[n] = 0; });
@@ -3272,12 +3337,26 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             flex: 1
                           }}
                         >
-                          <option value="JUAN">JUAN</option>
-                          <option value="PEDRO">PEDRO</option>
-                          <option value="LUIS">LUIS</option>
-                          <option value="MILLA">MILLA</option>
-                          <option value="ALEXIS">ALEXIS</option>
-                          <option value="ANTONIO">ANTONIO</option>
+                          <option value="">-</option>
+                          <option value="ALEX">ALEX</option>
+                          <option value="ALVARO">ALVARO</option>
+                          <option value="ANCOR">ANCOR</option>
+                          <option value="CARDONA">CARDONA</option>
+                          <option value="DANI">DANI</option>
+                          <option value="DAVID">DAVID</option>
+                          <option value="DIEGO">DIEGO</option>
+                          <option value="EMILIANO">EMILIANO</option>
+                          <option value="HECTOR">HECTOR</option>
+                          <option value="ISMA">ISMA</option>
+                          <option value="JONAS">JONAS</option>
+                          <option value="JUANDA">JUANDA</option>
+                          <option value="KEVIN">KEVIN</option>
+                          <option value="LUCAS">LUCAS</option>
+                          <option value="OSCAR">OSCAR</option>
+                          <option value="RAVELO">RAVELO</option>
+                          <option value="SANTANA">SANTANA</option>
+                          <option value="SANTOS">SANTOS</option>
+                            <option value="CADETE">CADETE</option>
                         </select>
                         <select
                           value={p.status}
@@ -3334,12 +3413,26 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             flex: 1
                           }}
                         >
-                          <option value="JUAN">JUAN</option>
-                          <option value="PEDRO">PEDRO</option>
-                          <option value="LUIS">LUIS</option>
-                          <option value="MILLA">MILLA</option>
-                          <option value="ALEXIS">ALEXIS</option>
-                          <option value="ANTONIO">ANTONIO</option>
+                          <option value="">-</option>
+                          <option value="ALEX">ALEX</option>
+                          <option value="ALVARO">ALVARO</option>
+                          <option value="ANCOR">ANCOR</option>
+                          <option value="CARDONA">CARDONA</option>
+                          <option value="DANI">DANI</option>
+                          <option value="DAVID">DAVID</option>
+                          <option value="DIEGO">DIEGO</option>
+                          <option value="EMILIANO">EMILIANO</option>
+                          <option value="HECTOR">HECTOR</option>
+                          <option value="ISMA">ISMA</option>
+                          <option value="JONAS">JONAS</option>
+                          <option value="JUANDA">JUANDA</option>
+                          <option value="KEVIN">KEVIN</option>
+                          <option value="LUCAS">LUCAS</option>
+                          <option value="OSCAR">OSCAR</option>
+                          <option value="RAVELO">RAVELO</option>
+                          <option value="SANTANA">SANTANA</option>
+                          <option value="SANTOS">SANTOS</option>
+                            <option value="CADETE">CADETE</option>
                         </select>
                         <select
                           value={p.status}
