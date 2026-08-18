@@ -1945,30 +1945,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
             )}
             {activeTab === 'finalizaciones' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
-                  {/* Botón RESET FINALIZACIONES */}
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => {
-                        setFueraCount(0);
-                        setBlocajeCount(0);
-                        setDespejeDefensaCount(0);
-                        setDespejePorteroCount(0);
-                        setSaqueEsquinaFueraCount(0);
-                        setInfraccionCount(0);
-                        setOcasionCount(0);
-                        setGolCount(0);
-                        setGolRivalCount(0);
-                        setPenalCount(0);
-                        setGolesList([]);
-                        setGolesRivalList([]);
-                        setActionLog(prev => prev.filter(e => e.type !== 'finalizacion'));
-                      }}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#dc2626', color: '#ffffff', fontWeight: 900, fontSize: '0.9rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '250px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                    >
-                      <span>RESET FINALIZACIONES</span>
-                      <span style={{ background: '#ffffff', color: '#dc2626', fontWeight: 900, fontSize: '0.8rem', padding: '0.2rem 0.7rem', borderRadius: '8px' }}>A 0</span>
-                    </button>
-                  </div>
                   {/* Botón OCASION centrado arriba */}
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <button
