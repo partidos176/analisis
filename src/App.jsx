@@ -2097,7 +2097,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     const filasAsist = Object.entries(asistStats).sort((a, b) => b[1] - a[1]);
                     let totalGoles = 0;
                     const periodos = [
-                      { name: 'MIN 0-15', desde: 0, hasta: 15 },
+                      { name: 'MIN. 0-15', desde: 0, hasta: 15 },
                       { name: 'MIN 16-30', desde: 16, hasta: 30 },
                       { name: 'MIN 31-45', desde: 31, hasta: 45 },
                       { name: 'MIN 46-60', desde: 46, hasta: 60 },
@@ -2320,7 +2320,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1rem 2rem', marginTop: '-13rem' }}>
                           <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES EN CONTRA</span>
                           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', justifyContent: 'center' }}>
-                          <div style={{ display: 'flex', justifyContent: 'center' }}>
+                          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-10rem' }}>
                           <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                             <thead>
                               <tr>
@@ -2343,8 +2343,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           </table>
                           </div>
                           {chartDataRival.length > 0 && (
-                            <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center' }}>
-<PieChart width={400} height={380} margin={{ top: 30, right: 40, bottom: 10, left: 40 }}>
+                            <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center', marginLeft: '6rem' }}>
+<PieChart width={520} height={460} margin={{ top: 40, right: 80, bottom: 60, left: 80 }}>
                                 <Pie
                                   data={chartDataRival}
                                   cx="50%"
@@ -2806,8 +2806,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     {jugadorSeleccionado && (
-                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        MIN. TOTALES: {formatTime(totalMinutos[jugadorSeleccionado] || 0)} = MIN. TITULAR: {formatTime(totalTitular[jugadorSeleccionado] || 0)} + MIN. SUPLENTE: {formatTime(totalSuplente[jugadorSeleccionado] || 0)}
+                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
+                        DISPUTA {formatTime(totalMinutos[jugadorSeleccionado] || 0)} MIN. = TITULAR {formatTime(totalTitular[jugadorSeleccionado] || 0)} + SUPLENTE {formatTime(totalSuplente[jugadorSeleccionado] || 0)}
                       </span>
                     )}
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
