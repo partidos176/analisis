@@ -727,7 +727,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               </div>
               </>
               )}
-              <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
+              <span style={{ fontSize: ['tiempojugado', 'resumengoles', 'resumenacciones'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
                 JORNADA {currentMatch.matchday}
               </span>
               {activeTab === 'alineacion' && (
