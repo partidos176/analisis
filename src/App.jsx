@@ -713,15 +713,15 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.homeTeam}</span>
                 {currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE')
-                  ? <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golesList.length}</span>
-                  : <span style={{ background: '#f87171', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
+                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.length}</span>
+                  : <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
               <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ffffff' }}>vs</span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.awayTeam}</span>
                 {currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE')
-                  ? <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golesList.length}</span>
-                  : <span style={{ background: '#f87171', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
+                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.length}</span>
+                  : <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
               <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
                 JORNADA {currentMatch.matchday}
