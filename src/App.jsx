@@ -13,6 +13,7 @@ import emilianoImg from './jugadores/emiliano.jpg';
 import hectorImg from './jugadores/hector.jpg';
 import ismaImg from './jugadores/isma.jpg';
 import jonasImg from './jugadores/jonas.jpg';
+import jorgeImg from './jugadores/jorge.png';
 import juandaImg from './jugadores/juanda.jpg';
 import kevinImg from './jugadores/kevin.jpg';
 import lucasImg from './jugadores/lucas.jpg';
@@ -35,6 +36,7 @@ const jugadoresData = {
   HECTOR: { foto: hectorImg, pos1: 'PORTERO' },
   ISMA: { foto: ismaImg, pos1: 'DELANTERO' },
   JONAS: { foto: jonasImg },
+  JORGE: { foto: jorgeImg },
   JUANDA: { foto: juandaImg },
   KEVIN: { foto: kevinImg, pos1: 'CENTRAL' },
   LUCAS: { foto: lucasImg, pos1: 'CENTRAL' },
@@ -2958,6 +2960,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <option value="HECTOR">HECTOR</option>
                           <option value="ISMA">ISMA</option>
                           <option value="JONAS">JONAS</option>
+                          <option value="JORGE">JORGE</option>
                           <option value="JUANDA">JUANDA</option>
                           <option value="KEVIN">KEVIN</option>
                           <option value="LUCAS">LUCAS</option>
@@ -3032,6 +3035,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <option value="HECTOR">HECTOR</option>
                             <option value="ISMA">ISMA</option>
                             <option value="JONAS">JONAS</option>
+                            <option value="JORGE">JORGE</option>
                             <option value="JUANDA">JUANDA</option>
                             <option value="KEVIN">KEVIN</option>
                             <option value="LUCAS">LUCAS</option>
@@ -3476,6 +3480,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <option value="HECTOR">HECTOR</option>
                           <option value="ISMA">ISMA</option>
                           <option value="JONAS">JONAS</option>
+                          <option value="JORGE">JORGE</option>
                           <option value="JUANDA">JUANDA</option>
                           <option value="KEVIN">KEVIN</option>
                           <option value="LUCAS">LUCAS</option>
@@ -3552,6 +3557,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <option value="HECTOR">HECTOR</option>
                           <option value="ISMA">ISMA</option>
                           <option value="JONAS">JONAS</option>
+                          <option value="JORGE">JORGE</option>
                           <option value="JUANDA">JUANDA</option>
                           <option value="KEVIN">KEVIN</option>
                           <option value="LUCAS">LUCAS</option>
