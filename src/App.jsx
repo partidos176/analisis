@@ -440,17 +440,22 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
       'GOL': setGolCount,
       'GOL RIVAL': setGolRivalCount,
       'PENAL + FUERA': setPenalCount,
+      'PENAL + GOL': setPenalCount,
+      'PENAL + GOL RIVAL': setPenalCount,
       'INFRACCION': setInfraccionCount
     };
     const setter = map[name];
     if (setter) {
       setter(prev => Math.max(0, prev - 1));
     }
-    if (name === 'GOL') {
+    if (name === 'GOL' || name === 'PENAL + GOL') {
       setGolesList(prev => prev.slice(0, -1));
     }
-    if (name === 'GOL RIVAL') {
+    if (name === 'GOL RIVAL' || name === 'PENAL + GOL RIVAL') {
       setGolesRivalList(prev => prev.slice(0, -1));
+    }
+    if (name === 'PENAL + GOL RIVAL') {
+      setGolRivalCount(prev => Math.max(0, prev - 1));
     }
   };
 
@@ -704,15 +709,15 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.homeTeam}</span>
                 {currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE')
-                  ? <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golCount + penalCount}</span>
-                  : <span style={{ background: '#f87171', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golRivalCount}</span>}
+                  ? <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golesList.length}</span>
+                  : <span style={{ background: '#f87171', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
-              <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#334155' }}>vs</span>
+              <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ffffff' }}>vs</span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.awayTeam}</span>
                 {currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE')
-                  ? <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golCount + penalCount}</span>
-                  : <span style={{ background: '#f87171', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golRivalCount}</span>}
+                  ? <span style={{ background: '#38bdf8', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golesList.length}</span>
+                  : <span style={{ background: '#f87171', color: '#0f172a', fontWeight: 900, fontSize: '1.1rem', padding: '0.15rem 0.8rem', borderRadius: 'var(--radius-full)', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
               <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
                 JORNADA {currentMatch.matchday}
@@ -2228,7 +2233,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             </table>
                           </div>
                           <div style={{ minWidth: '320px', marginLeft: 'auto', overflowX: 'auto' }}>
-                            <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'left', display: 'block', marginBottom: '0.5rem' }}>ASISTENCIAS</span>
+                            <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem', marginLeft: '-14rem' }}>ASISTENCIAS</span>
                             <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                               <thead>
                                 <tr>
@@ -2313,7 +2318,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         )}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1rem 2rem', marginTop: '-13rem' }}>
-                          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES DEL RIVAL</span>
+                          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES EN CONTRA</span>
                           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', justifyContent: 'center' }}>
                           <div style={{ display: 'flex', justifyContent: 'center' }}>
                           <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
@@ -2462,8 +2467,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     });
                     const cruceRivalAcciones = cruceAcciones.filter(a => a.startsWith('RIVAL '));
                     const crucePropiasAcciones = cruceAcciones.filter(a => !a.startsWith('RIVAL '));
-                    const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
-                    const cruceRivalFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL' && f !== 'PENAL + GOL');
+                    const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && crucePropiasAcciones.some(a => (cruce[a][f] || 0) > 0));
+                    const cruceRivalFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL' && f !== 'PENAL + GOL' && cruceRivalAcciones.some(a => (cruce[a][f] || 0) > 0));
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {crucePropiasAcciones.length > 0 && crucePropiasFinalizaciones.length > 0 && (
@@ -2487,15 +2492,15 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                       {crucePropiasFinalizaciones.map(f => (
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                       ))}
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
                                     </tr>
                                   ))}
                                   <tr>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {crucePropiasFinalizaciones.map(f => (
-                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
                                     ))}
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -2523,15 +2528,15 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                       {cruceRivalFinalizaciones.map(f => (
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                       ))}
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
                                     </tr>
                                   ))}
                                   <tr>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {cruceRivalFinalizaciones.map(f => (
-                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
                                     ))}
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -2553,12 +2558,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   {filasDef.map(([label, key]) => (
                                     <tr key={key}>
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{label}</td>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPor(key)}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPor(key)}</td>
                                     </tr>
                                   ))}
                                   <tr>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasDef.reduce((s, [, key]) => s + totalPor(key), 0)}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasDef.reduce((s, [, key]) => s + totalPor(key), 0)}</td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -2696,7 +2701,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       const acciones = derivarAcciones(al);
                       arr.forEach((g, idx) => {
                         if (g && g.name && g.name === jugadorSeleccionado) {
-                          const accion = g.accion || acciones[idx] || 'GOL';
+                          const accion = g.accion || acciones[idx] || '';
                           golesAccion[accion] = (golesAccion[accion] || 0) + 1;
                         }
                       });
@@ -2876,7 +2881,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           {Object.keys(golesAccion).length === 0 ? (
                             <tr>
                               <td colSpan="2" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem' }}>
-                                Sin goles registrados
+                                -
                               </td>
                             </tr>
                           ) : (
@@ -3303,7 +3308,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               <tr key={a}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: a.includes('RIVAL') ? '#ef4444' : '#ffffff', fontWeight: 700 }}>{a}</td>
                                 {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: a.includes('RIVAL') ? '#ef4444' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f]}</td>
+                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: a.includes('RIVAL') ? '#ef4444' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
                                 ))}
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + matriz[a][f], 0)}</td>
                               </tr>
