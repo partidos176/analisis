@@ -51,6 +51,8 @@ const defaultPlayersList = () => {
   return Array(23).fill(null).map((_, i) => ({ name: roster[i] || '', status: '-' }));
 };
 
+const playerOptions = ['ALEX', 'ALVARO', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'ISMA', 'JONAS', 'JORGE', 'JUANDA', 'KEVIN', 'LUCAS', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE'];
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -3469,26 +3471,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           }}
                         >
                           <option value="">-</option>
-                          <option value="ALEX">ALEX</option>
-                          <option value="ALVARO">ALVARO</option>
-                          <option value="ANCOR">ANCOR</option>
-                          <option value="CARDONA">CARDONA</option>
-                          <option value="DANI">DANI</option>
-                          <option value="DAVID">DAVID</option>
-                          <option value="DIEGO">DIEGO</option>
-                          <option value="EMILIANO">EMILIANO</option>
-                          <option value="HECTOR">HECTOR</option>
-                          <option value="ISMA">ISMA</option>
-                          <option value="JONAS">JONAS</option>
-                          <option value="JORGE">JORGE</option>
-                          <option value="JUANDA">JUANDA</option>
-                          <option value="KEVIN">KEVIN</option>
-                          <option value="LUCAS">LUCAS</option>
-                          <option value="OSCAR">OSCAR</option>
-                          <option value="RAVELO">RAVELO</option>
-                          <option value="SANTANA">SANTANA</option>
-                          <option value="SANTOS">SANTOS</option>
-                            <option value="CADETE">CADETE</option>
+                          {playerOptions.filter(n => n === p.name || !players.some((q, qi) => qi !== i && q.name === n)).map(n => (
+                            <option key={n} value={n}>{n}</option>
+                          ))}
                         </select>
                         <select
                           value={p.status}
@@ -3546,26 +3531,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           }}
                         >
                           <option value="">-</option>
-                          <option value="ALEX">ALEX</option>
-                          <option value="ALVARO">ALVARO</option>
-                          <option value="ANCOR">ANCOR</option>
-                          <option value="CARDONA">CARDONA</option>
-                          <option value="DANI">DANI</option>
-                          <option value="DAVID">DAVID</option>
-                          <option value="DIEGO">DIEGO</option>
-                          <option value="EMILIANO">EMILIANO</option>
-                          <option value="HECTOR">HECTOR</option>
-                          <option value="ISMA">ISMA</option>
-                          <option value="JONAS">JONAS</option>
-                          <option value="JORGE">JORGE</option>
-                          <option value="JUANDA">JUANDA</option>
-                          <option value="KEVIN">KEVIN</option>
-                          <option value="LUCAS">LUCAS</option>
-                          <option value="OSCAR">OSCAR</option>
-                          <option value="RAVELO">RAVELO</option>
-                          <option value="SANTANA">SANTANA</option>
-                          <option value="SANTOS">SANTOS</option>
-                            <option value="CADETE">CADETE</option>
+                          {playerOptions.filter(n => n === p.name || !players.some((q, qi) => qi !== i + 12 && q.name === n)).map(n => (
+                            <option key={n} value={n}>{n}</option>
+                          ))}
                         </select>
                         <select
                           value={p.status}
