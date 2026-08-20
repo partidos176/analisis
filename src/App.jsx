@@ -101,6 +101,7 @@ export default function App() {
   const [offRivalCount, setOffRivalCount] = useState(0);
   const [onNeutroCount, setOnNeutroCount] = useState(0);
   const [offNeutroCount, setOffNeutroCount] = useState(0);
+  const [perdidasCount, setPerdidasCount] = useState(0);
   const [fueraCount, setFueraCount] = useState(0);
   const [blocajeCount, setBlocajeCount] = useState(0);
   const [despejeDefensaCount, setDespejeDefensaCount] = useState(0);
@@ -291,8 +292,9 @@ export default function App() {
     setInicioRivalCount(Math.max(match.inicioRivalCount ?? 0, logAcciones['INICIO RIVAL'] || 0));
     setOnRivalCount(Math.max(match.onRivalCount ?? 0, logAcciones['ON RIVAL'] || 0));
     setOffRivalCount(Math.max(match.offRivalCount ?? 0, logAcciones['OFF RIVAL'] || 0));
-    setOnNeutroCount(Math.max(match.onNeutroCount ?? 0, logAcciones['ON NEUTRO'] || 0));
-    setOffNeutroCount(Math.max(match.offNeutroCount ?? 0, logAcciones['OFF NEUTRO'] || 0));
+    setOnNeutroCount(Math.max(match.onNeutroCount ?? 0, logAcciones['ON NEUTRO'] || 0, logAcciones['ON PROPIO'] || 0));
+    setOffNeutroCount(Math.max(match.offNeutroCount ?? 0, logAcciones['OFF NEUTRO'] || 0, logAcciones['OFF PROPIO'] || 0));
+    setPerdidasCount(Math.max(match.perdidasCount ?? 0, logAcciones['PÉRDIDAS'] || 0));
     setFueraCount(match.fueraCount ?? 0);
     setBlocajeCount(match.blocajeCount ?? 0);
     setDespejeDefensaCount(match.despejeDefensaCount ?? 0);
@@ -344,6 +346,7 @@ export default function App() {
       offRivalCount,
       onNeutroCount,
       offNeutroCount,
+      perdidasCount,
       fueraCount,
       blocajeCount,
       despejeDefensaCount,
@@ -379,7 +382,7 @@ export default function App() {
   useEffect(() => {
     if (!currentMatch) return;
 saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando datos del partido:', err));
-  }, [currentMatch, tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
+  }, [currentMatch, tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, perdidasCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
 
   const handleAceptar = () => {
     const titulares = players.filter(p => p.status === 'titular').length;
@@ -441,8 +444,11 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
       'INICIO RIVAL': setInicioRivalCount,
       'ON RIVAL': setOnRivalCount,
       'ON NEUTRO': setOnNeutroCount,
+      'ON PROPIO': setOnNeutroCount,
       'OFF RIVAL': setOffRivalCount,
       'OFF NEUTRO': setOffNeutroCount,
+      'OFF PROPIO': setOffNeutroCount,
+      'PÉRDIDAS': setPerdidasCount,
       'OCASION': setOcasionCount,
       'FUERA': setFueraCount,
       'BLOCAJE': setBlocajeCount,
@@ -1830,7 +1836,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       </button>
                       <button
                         onClick={() => {
-                          if (logAction('ON NEUTRO')) {
+                          if (logAction('ON PROPIO')) {
                             setOnNeutroCount(onNeutroCount + 1);
                           }
                         }}
@@ -1839,7 +1845,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: '#8b5cf6',
+                          background: '#f97316',
                           color: '#ffffff',
                           fontWeight: 900,
                           fontSize: '0.8rem',
@@ -1858,7 +1864,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <span>PROPIO</span>
                         <span style={{
                           background: '#ffffff',
-                          color: '#8b5cf6',
+                          color: '#f97316',
                           fontWeight: 900,
                           fontSize: '0.8rem',
                           padding: '0.1rem 0.4rem',
@@ -1867,6 +1873,46 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           textAlign: 'center'
                         }}>
                           {onNeutroCount}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (logAction('PÉRDIDAS')) {
+                            setPerdidasCount(perdidasCount + 1);
+                          }
+                        }}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#ffffff',
+                          color: '#334155',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          padding: '1rem',
+                          borderRadius: '50%',
+                          width: '75px',
+                          height: '75px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          gap: '0.2rem',
+                          cursor: 'pointer',
+                          border: 'none'
+                        }}
+                      >
+                        <span>PÉRDIDAS</span>
+                        <span style={{
+                          background: '#334155',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '8px',
+                          minWidth: '20px',
+                          textAlign: 'center'
+                        }}>
+                          {perdidasCount}
                         </span>
                       </button>
                     </div>
@@ -1915,7 +1961,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       </button>
                       <button
                         onClick={() => {
-                          if (logAction('OFF NEUTRO')) {
+                          if (logAction('OFF PROPIO')) {
                             setOffNeutroCount(offNeutroCount + 1);
                           }
                         }}
@@ -1924,7 +1970,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: '#8b5cf6',
+                          background: '#f97316',
                           color: '#ffffff',
                           fontWeight: 900,
                           fontSize: '0.8rem',
@@ -1943,7 +1989,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <span>PROPIO</span>
                         <span style={{
                           background: '#ffffff',
-                          color: '#8b5cf6',
+                          color: '#f97316',
                           fontWeight: 900,
                           fontSize: '0.8rem',
                           padding: '0.1rem 0.4rem',
@@ -2045,7 +2091,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <button
                       onClick={() => { if (logAction('OCASION', 'finalizacion')) setOcasionCount(ocasionCount + 1); }}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#f97316', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '250px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#f97316', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                     >
                       <span>OCASION</span>
                       <span style={{ background: '#ffffff', color: '#f97316', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{ocasionCount}</span>
@@ -2054,83 +2100,97 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   {/* Dos columnas debajo */}
                   <div style={{ display: 'flex', gap: '2rem' }}>
                     {/* Columna izquierda */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
                         onClick={() => { if (logAction('FUERA', 'finalizacion')) { setFueraCount(fueraCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>FUERA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{fueraCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('BLOCAJE', 'finalizacion')) { setBlocajeCount(blocajeCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>BLOCAJE</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{blocajeCount}</span>
                       </button>
                       <button
+                        onClick={() => { if (logAction('BLOCAJE', 'finalizacion')) { setBlocajeCount(blocajeCount + 1); setActiveTab('acciones'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>FINAL+BOCA</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{blocajeCount}</span>
+                      </button>
+                      <button
+                        onClick={() => { if (logAction('BLOCAJE', 'finalizacion')) { setBlocajeCount(blocajeCount + 1); setActiveTab('acciones'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>FINAL+DESP</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{blocajeCount}</span>
+                      </button>
+                      <button
+                        onClick={() => { if (logAction('BLOCAJE', 'finalizacion')) { setBlocajeCount(blocajeCount + 1); setActiveTab('acciones'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>FINAL+FUERA</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{blocajeCount}</span>
+                      </button>
+                      <button
                         onClick={() => { if (logAction('DESPEJE DEFENSA', 'finalizacion')) { setDespejeDefensaCount(despejeDefensaCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>DESPEJE DEFENSA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejeDefensaCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('DESPEJE PORTERO', 'finalizacion')) { setDespejePorteroCount(despejePorteroCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>DESPEJE PORTERO</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejePorteroCount}</span>
                       </button>
-                      <button
-                        onClick={() => { if (logAction('SAQUE DE ESQUINA', 'finalizacion')) { setSaqueEsquinaFueraCount(saqueEsquinaFueraCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                      >
-                        <span>SAQUE DE ESQUINA</span>
-                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{saqueEsquinaFueraCount}</span>
-                      </button>
                     </div>
                     {/* Columna derecha */}
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
                         onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setGolesList([...golesList, { name: '', tipo: '', name2: '', accion: [...actionLog].find(e => e.type === 'accion') ? [...actionLog].find(e => e.type === 'accion').name : '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(golRivalCount + 1); setGolesRivalList([...golesRivalList, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
                         <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('PENAL + GOL RIVAL', 'finalizacion')) { setPenalCount(penalCount + 1); setGolRivalCount(golRivalCount + 1); setGolesRivalList([...golesRivalList, { periodo, minuto: Math.floor(timerSeconds / 60), tipo: 'PENAL' }]); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL RIVAL</span>
                         <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('PENAL + FUERA', 'finalizacion')) { setPenalCount(penalCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + FUERA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setGolesList([...golesList, { name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('INFRACCION', 'finalizacion')) { setInfraccionCount(infraccionCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: '220px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>INFRACCION</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{infraccionCount}</span>
@@ -2518,7 +2578,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       return t;
                     };
                     const finalizacionesOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'GOL RIVAL', 'INFRACCION'];
-                    const accionesOrder = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'OFF NEUTRO'];
+                    const accionesOrder = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'];
                     const cruce = {};
                     const cruceTotal = {};
                     const cruceRows = {};
@@ -3312,9 +3372,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     let onNeutroStart = null;
                     [...actionLog].reverse().forEach(entry => {
                       const secs = parseTime(entry.time);
-                      if (entry.name === 'ON NEUTRO') {
+                      if (entry.name === 'ON NEUTRO' || entry.name === 'ON PROPIO') {
                         onNeutroStart = { time: entry.time, secs };
-                      } else if (entry.name === 'OFF NEUTRO' && onNeutroStart !== null) {
+                      } else if ((entry.name === 'OFF NEUTRO' || entry.name === 'OFF PROPIO') && onNeutroStart !== null) {
                         neutroPeriods.push({
                           start: onNeutroStart.time,
                           end: entry.time,
@@ -3357,7 +3417,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA',
                       'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA',
                       'INICIO PROPIO', 'INICIO RIVAL',
-                      'ON RIVAL', 'ON NEUTRO', 'OFF RIVAL', 'OFF NEUTRO'
+                      'ON RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF RIVAL', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'
                     ];
                     const finalizaciones = [
                       'OCASION', 'FUERA', 'BLOCAJE', 'DESPEJE DEFENSA', 'DESPEJE PORTERO',
