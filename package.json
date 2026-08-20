@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server.js",
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
+    "ffmpeg-static": "^5.3.0",
     "firebase": "^12.17.1",
     "lucide-react": "^1.31.0",
+    "multer": "^2.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "recharts": "^3.10.1"

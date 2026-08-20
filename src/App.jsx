@@ -129,6 +129,24 @@ export default function App() {
   const [contadorWarning, setContadorWarning] = useState(false);
   const [dataLoadedId, setDataLoadedId] = useState(null);
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoFileName, setVideoFileName] = useState('');
+  const [corteSegundos, setCorteSegundos] = useState(15);
+  const [corteError, setCorteError] = useState('');
+  const [cortandoTodos, setCortandoTodos] = useState(false);
+  const [servidorCortesDisponible, setServidorCortesDisponible] = useState(null);
+
+  useEffect(() => {
+    let activo = true;
+    const check = () => {
+      fetch('http://localhost:3001/api/cortar', { method: 'GET' })
+        .then(() => { if (activo) setServidorCortesDisponible(true); })
+        .catch(() => { if (activo) setServidorCortesDisponible(false); });
+    };
+    check();
+    const intervalo = setInterval(check, 10000);
+    return () => { activo = false; clearInterval(intervalo); };
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -384,6 +402,54 @@ export default function App() {
 saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando datos del partido:', err));
   }, [currentMatch, tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, perdidasCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
 
+  const generarTodosLosCortes = async () => {
+    if (!videoFile) {
+      setCorteError('Selecciona primero el archivo de vídeo');
+      return;
+    }
+    const acciones = actionLog.filter(e => e && e.time);
+    if (acciones.length === 0) {
+      setCorteError('No hay acciones registradas para cortar');
+      return;
+    }
+    setCorteError('');
+    setCortandoTodos(true);
+    try {
+      const base = videoFileName.replace(/\.[^.]+$/, '') || 'partido';
+      const cortes = acciones.map(e => ({ time: e.time, name: `${base}_corte_${e.time}` }));
+      const formData = new FormData();
+      formData.append('video', videoFile);
+      formData.append('segundos', String(Math.max(1, parseInt(corteSegundos, 10) || 15)));
+      formData.append('cortes', JSON.stringify(cortes));
+      const resp = await fetch('http://localhost:3001/api/cortar', {
+        method: 'POST',
+        body: formData
+      });
+      if (!resp.ok) {
+        let msg = 'Error al cortar el vídeo';
+        try {
+          const j = await resp.json();
+          if (j && j.error) msg = j.error;
+        } catch { /* ignore */ }
+        setCorteError(msg);
+        return;
+      }
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${base}_cortes.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    } catch (err) {
+      setCorteError('No se pudo conectar con el servidor de cortes (localhost:3001). Asegúrate de que está iniciado con "npm run server".');
+    } finally {
+      setCortandoTodos(false);
+    }
+  };
+
   const handleAceptar = () => {
     const titulares = players.filter(p => p.status === 'titular').length;
     if (titulares !== 11) {
@@ -523,7 +589,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         <div className="login-card">
           <div className="login-brand">
             <div className="brand-logo">FT</div>
-            <h1 className="login-title">Cargando…</h1>
+            <h1 className="login-title">Cargando</h1>
           </div>
         </div>
       </div>
@@ -550,7 +616,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
           zIndex: 50
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="btn-sm btn-secondary" onClick={handleBackToList} style={{ fontSize: '1rem' }}>←</button>
+            <button className="btn-sm btn-secondary" onClick={handleBackToList} style={{ fontSize: '1rem' }}></button>
             <button
               onClick={() => setActiveTab('alineacion')}
               style={{
@@ -2010,6 +2076,107 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   gap: '0.5rem',
                   minWidth: '280px'
                 }}>
+                  <label style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    background: 'var(--bg-secondary)',
+                    border: '1px dashed var(--border-subtle)',
+                    borderRadius: '12px',
+                    padding: '0.8rem',
+                    cursor: 'pointer',
+                    textAlign: 'center'
+                  }}>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={(e) => {
+                        const file = e.target.files && e.target.files[0];
+                        if (file) {
+                          setVideoFile(file);
+                          setVideoFileName(file.name);
+                          setCorteError('');
+                        }
+                      }}
+                      style={{ display: 'none' }}
+                    />
+                    <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {videoFileName ? 'Vídeo: ' + videoFileName : 'Seleccionar vídeo'}
+                    </span>
+                    {videoFileName && (
+                      <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.7rem' }}>
+                        Listo para cortar
+                      </span>
+                    )}
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}>
+                    <label style={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>
+                      Segundos:
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="120"
+                      value={corteSegundos}
+                      onChange={(e) => setCorteSegundos(e.target.value)}
+                      style={{
+                        width: '60px',
+                        padding: '0.3rem',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-subtle)',
+                        background: 'var(--bg-card)',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+                  {corteError && (
+                    <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.75rem', textAlign: 'center' }}>
+                      {corteError}
+                    </span>
+                  )}
+                  <button
+                    onClick={generarTodosLosCortes}
+                    disabled={cortandoTodos}
+                    style={{
+                      background: cortandoTodos ? '#64748b' : '#0284c7',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.8rem',
+                      padding: '0.6rem 1rem',
+                      borderRadius: '10px',
+                      border: 'none',
+                      cursor: cortandoTodos ? 'wait' : 'pointer',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    {cortandoTodos ? 'Generando cortes…' : 'Generar todos los cortes'}
+                  </button>
+                  {servidorCortesDisponible === false && (
+                    <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.7rem', textAlign: 'center' }}>
+                      El servidor de cortes no está iniciado. Ejecuta "npm run server" para poder cortar el vídeo.
+                    </span>
+                  )}
+                  {cortandoTodos && (
+                    <div style={{
+                      width: '100%',
+                      height: '8px',
+                      background: 'var(--bg-card)',
+                      borderRadius: '4px',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        width: '40%',
+                        height: '100%',
+                        background: '#22c55e',
+                        borderRadius: '4px',
+                        animation: 'barraProgreso 1.2s ease-in-out infinite'
+                      }} />
+                    </div>
+                  )}
                   <button
                     onClick={() => {
                       if (actionLog.length === 0) return;
@@ -2453,7 +2620,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                       fontWeight={700}
                                       stroke="none"
                                     >
-                                      {props.name} • {props.value} ({pctTxt}%)
+                                      {props.name}  {props.value} ({pctTxt}%)
                                     </text>
                                   );
                                 }}
@@ -2518,7 +2685,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                         fontWeight={700}
                                         stroke="none"
                                       >
-                                        {props.name} • {props.value} ({pctTxt}%)
+                                        {props.name}  {props.value} ({pctTxt}%)
                                       </text>
                                     );
                                   }}

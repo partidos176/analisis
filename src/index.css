@@ -216,3 +216,8 @@ button {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
+
+@keyframes barraProgreso {
+  0% { margin-left: -40%; }
+  100% { margin-left: 100%; }
+}
