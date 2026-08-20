@@ -74,7 +74,9 @@ export default function App() {
   const [currentMatch, setCurrentMatch] = useState(null);
   const [activeTab, setActiveTab] = useState('acciones');
   const [tiroDerechaCount, setTiroDerechaCount] = useState(0);
+  const [tiroAreaCount, setTiroAreaCount] = useState(0);
   const [rivalTiroDerechaCount, setRivalTiroDerechaCount] = useState(0);
+  const [rivalTiroAreaCount, setRivalTiroAreaCount] = useState(0);
   const [tiroIzquierdaCount, setTiroIzquierdaCount] = useState(0);
   const [tiroFrontalCount, setTiroFrontalCount] = useState(0);
   const [faltaDerechaCount, setFaltaDerechaCount] = useState(0);
@@ -264,7 +266,9 @@ export default function App() {
       }
     });
     setTiroDerechaCount(Math.max(match.tiroDerechaCount ?? 0, logAcciones['TIRO DERECHA'] || 0));
+    setTiroAreaCount(Math.max(match.tiroAreaCount ?? 0, logAcciones['TIRO AREA'] || 0));
     setRivalTiroDerechaCount(Math.max(match.rivalTiroDerechaCount ?? 0, logAcciones['RIVAL TIRO DERECHA'] || 0));
+    setRivalTiroAreaCount(Math.max(match.rivalTiroAreaCount ?? 0, logAcciones['RIVAL TIRO AREA'] || 0));
     setTiroIzquierdaCount(Math.max(match.tiroIzquierdaCount ?? 0, logAcciones['TIRO IZQUIERDA'] || 0));
     setTiroFrontalCount(Math.max(match.tiroFrontalCount ?? 0, logAcciones['TIRO FRONTAL'] || 0));
     setFaltaDerechaCount(Math.max(match.faltaDerechaCount ?? 0, logAcciones['FALTA DERECHA'] || 0));
@@ -313,7 +317,9 @@ export default function App() {
     const matchRef = ref(db, `matches/${id}`);
     await update(matchRef, {
       tiroDerechaCount,
+      tiroAreaCount,
       rivalTiroDerechaCount,
+      rivalTiroAreaCount,
       tiroIzquierdaCount,
       tiroFrontalCount,
       faltaDerechaCount,
@@ -373,7 +379,7 @@ export default function App() {
   useEffect(() => {
     if (!currentMatch) return;
 saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando datos del partido:', err));
-  }, [currentMatch, tiroDerechaCount, rivalTiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
+  }, [currentMatch, tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
 
   const handleAceptar = () => {
     const titulares = players.filter(p => p.status === 'titular').length;
@@ -410,6 +416,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
   const decrementCounter = (name) => {
     const map = {
       'TIRO DERECHA': setTiroDerechaCount,
+      'TIRO AREA': setTiroAreaCount,
       'TIRO IZQUIERDA': setTiroIzquierdaCount,
       'TIRO FRONTAL': setTiroFrontalCount,
       'FALTA DERECHA': setFaltaDerechaCount,
@@ -420,6 +427,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
       'CORNER IZQUIERDA': setCornerIzquierdaCount,
       'CORNER DERECHA': setCornerDerechaCount,
       'RIVAL TIRO DERECHA': setRivalTiroDerechaCount,
+      'RIVAL TIRO AREA': setRivalTiroAreaCount,
       'RIVAL TIRO IZQUIERDA': setRivalTiroIzquierdaCount,
       'RIVAL TIRO FRONTAL': setRivalTiroFrontalCount,
       'RIVAL FALTA DERECHA': setRivalFaltaDerechaCount,
@@ -872,6 +880,43 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                 }}>
                   <button
                     onClick={() => {
+                      if (logAction('TIRO AREA')) {
+                        setFromRival(false);
+                        setTiroAreaCount(tiroAreaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#eab308',
+                      color: '#000000',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>TIRO AREA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#eab308',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {tiroAreaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
                       if (logAction('TIRO DERECHA')) {
                         setFromRival(false);
                         setTiroDerechaCount(tiroDerechaCount + 1);
@@ -1249,6 +1294,43 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   alignItems: 'flex-start',
                   marginLeft: '4rem'
                 }}>
+                  <button
+                    onClick={() => {
+                      if (logAction('RIVAL TIRO AREA')) {
+                        setFromRival(true);
+                        setRivalTiroAreaCount(rivalTiroAreaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#eab308',
+                      color: '#000000',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>RIVAL TIRO AREA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#eab308',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {rivalTiroAreaCount}
+                    </span>
+                  </button>
                   <button
                     onClick={() => {
                       if (logAction('RIVAL TIRO DERECHA')) {
@@ -1757,7 +1839,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: '#dc2626',
+                          background: '#8b5cf6',
                           color: '#ffffff',
                           fontWeight: 900,
                           fontSize: '0.8rem',
@@ -1773,10 +1855,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         }}
                       >
                         <span>ON</span>
-                        <span>NEUTRO</span>
+                        <span>PROPIO</span>
                         <span style={{
                           background: '#ffffff',
-                          color: '#dc2626',
+                          color: '#8b5cf6',
                           fontWeight: 900,
                           fontSize: '0.8rem',
                           padding: '0.1rem 0.4rem',
@@ -1842,7 +1924,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: '#dc2626',
+                          background: '#8b5cf6',
                           color: '#ffffff',
                           fontWeight: 900,
                           fontSize: '0.8rem',
@@ -1858,10 +1940,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         }}
                       >
                         <span>OFF</span>
-                        <span>NEUTRO</span>
+                        <span>PROPIO</span>
                         <span style={{
                           background: '#ffffff',
-                          color: '#dc2626',
+                          color: '#8b5cf6',
                           fontWeight: 900,
                           fontSize: '0.8rem',
                           padding: '0.1rem 0.4rem',
@@ -2436,7 +2518,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       return t;
                     };
                     const finalizacionesOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'GOL RIVAL', 'INFRACCION'];
-                    const accionesOrder = ['TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'OFF NEUTRO'];
+                    const accionesOrder = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'OFF NEUTRO'];
                     const cruce = {};
                     const cruceTotal = {};
                     const cruceRows = {};
@@ -3250,7 +3332,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
                           <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Propia</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctPropio)}%</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctOffNeutro)}%</span>
                         </div>
                         <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
                           <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Rival</span>
@@ -3258,7 +3340,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </div>
                         <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
                           <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Neutra</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctOffNeutro)}%</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctPropio)}%</span>
                         </div>
                       </div>
                       </>
@@ -3266,11 +3348,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   })()}
                   {(() => {
                     const acciones = [
-                      'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL',
+                      'TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL',
                       'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL',
                       'CENTRO DERECHA', 'CENTRO IZQUIERDA',
                       'CORNER IZQUIERDA', 'CORNER DERECHA',
-                      'RIVAL TIRO DERECHA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL',
+                      'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL',
                       'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL',
                       'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA',
                       'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA',
