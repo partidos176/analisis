@@ -102,6 +102,18 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
       }
     }
 
+    if (cortes.length === 1) {
+      const outFiles = fs.readdirSync(outputDir).filter(f => f.endsWith('.mp4'));
+      const singlePath = path.join(outputDir, outFiles[0]);
+      console.log('Single video:', singlePath, fs.statSync(singlePath).size, 'bytes');
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Content-Disposition', `inline; filename="${outFiles[0]}"`);
+      const stream = fs.createReadStream(singlePath);
+      stream.pipe(res);
+      res.on('finish', () => { setTimeout(() => rmrf(dir), 1000); dir = null; });
+      return;
+    }
+
     const zipPath = path.join(dir, 'cortes.zip');
     const output = fs.createWriteStream(zipPath);
     const archive = archiver('zip', { zlib: { level: 9 } });
