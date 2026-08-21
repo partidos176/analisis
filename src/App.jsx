@@ -149,6 +149,8 @@ export default function App() {
   const [ajusteAccionesFin, setAjusteAccionesFin] = useState({});
   const [previewAccion, setPreviewAccion] = useState(null);
   const [generandoAccion, setGenerandoAccion] = useState(null);
+  const [variosIndex, setVariosIndex] = useState(0);
+  const [variosBaseTimes, setVariosBaseTimes] = useState({});
 
   useEffect(() => {
     let activo = true;
@@ -2331,22 +2333,26 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     {/* Acciones seleccionadas por el filtro */}
                     {filtroAccion && (() => {
                       const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN'];
-                      const accionesFiltradas = actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && e.name === filtroAccion).sort((a, b) => {
+                      const allAccionesFiltradas = (filtroAccion === '__varios__'
+                        ? actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name))
+                        : actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && e.name === filtroAccion)).sort((a, b) => {
                         const pa = String(a.time).split(':').map(Number);
                         const pb = String(b.time).split(':').map(Number);
                         return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]);
                       });
+                      const accionesFiltradas = filtroAccion === '__varios__' ? allAccionesFiltradas.slice(variosIndex, variosIndex + 1) : allAccionesFiltradas;
                       if (accionesFiltradas.length === 0) return null;
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.5rem', padding: '0.5rem', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
-                          <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            {filtroAccion} — {accionesFiltradas.length} {accionesFiltradas.length === 1 ? 'acción' : 'acciones'}
+                          <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#38bdf8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {filtroAccion === '__varios__' ? 'VARIOS' : filtroAccion} — {accionesFiltradas.length} {accionesFiltradas.length === 1 ? 'acción' : 'acciones'}
                           </span>
                           {accionesFiltradas.map((e, idx) => {
                             const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
                             const ajusteFin = ajusteAccionesFin[e.name + '_' + e.time] || 0;
+                            const baseTime = filtroAccion === '__varios__' ? (variosBaseTimes[e.name + '_' + e.time] || 0) : 0;
                             const parts = String(e.time).split(':').map(Number);
-                            const secs = (parts[0] || 0) * 60 + (parts[1] || 0) + ajuste;
+                            const secs = (filtroAccion === '__varios__' ? baseTime : (parts[0] || 0) * 60 + (parts[1] || 0)) + ajuste;
                             const finSecs = secs + 5 + ajusteFin;
                             const mm = String(Math.floor(Math.max(0, secs) / 60)).padStart(2, '0');
                             const ss = String(Math.max(0, secs) % 60).padStart(2, '0');
@@ -2357,12 +2363,16 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             <React.Fragment key={idx}>
                             <div onClick={() => {
                               if (videoRef.current && e.time) {
-                                const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
-                                videoRef.current.currentTime = Math.max(0, secs + offsetSecs);
+                                if (filtroAccion === '__varios__') {
+                                  videoRef.current.currentTime = Math.max(0, secs);
+                                } else {
+                                  const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                  videoRef.current.currentTime = Math.max(0, secs + offsetSecs);
+                                }
                               }
                             }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', cursor: 'pointer', gap: '0.5rem' }}>
                               <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', minWidth: '20px' }}>{idx + 1}</span>
-                              <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '0.8rem', flex: 1 }}>{e.name}</span>
+                              <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#ffffff', fontWeight: 600, fontSize: '0.8rem', flex: 1 }}>{filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : e.name}</span>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                                 <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase' }}>inicio</span>
                                 <button onClick={(ev) => {
@@ -2441,9 +2451,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 const adjustedTime = mm + ':' + ss;
                                 setGenerandoAccion(actionKey);
                                 setPreviewAccion(null);
-                                const sameName = accionesFiltradas.filter(a => a.name === e.name);
-                                const correlative = sameName.indexOf(e) + 1;
-                                const videoName = sameName.length > 1 ? e.name + ' ' + correlative : e.name;
+                                const videoName = filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : (() => { const sameName = accionesFiltradas.filter(a => a.name === e.name); const correlative = sameName.indexOf(e) + 1; return sameName.length > 1 ? e.name + ' ' + correlative : e.name; })();
                                 const formData = new FormData();
                                 formData.append('video', videoFile);
                                 formData.append('segundos', String(duracion));
@@ -2638,7 +2646,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                       <select
                         value={filtroAccion}
-                        onChange={(e) => setFiltroAccion(e.target.value)}
+                        onChange={(e) => { setFiltroAccion(e.target.value); if (e.target.value === '__varios__') { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset != null ? videoTimeOffset : 0; setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.floor(videoRef.current.currentTime + offset) })); } } }}
                         style={{
                           padding: '0.4rem 0.8rem',
                           borderRadius: '8px',
@@ -2649,7 +2657,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           cursor: 'pointer'
                         }}
                       >
-                        <option value="">Todas las acciones</option>
+                        <option value="" style={{ color: '#ffffff' }}>Todas las acciones</option>
+                        <option value="__varios__" style={{ color: '#ef4444' }}>VARIOS</option>
                         {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(e.name)).map(e => e.name))].map(name => (
                           <option key={name} value={name}>{name}</option>
                         ))}
