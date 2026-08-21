@@ -90,9 +90,10 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
 
     for (const corte of cortes) {
       const startSecs = parseTime(corte.time);
+      const duracion = corte.duracion ? Math.max(1, parseInt(corte.duracion, 10)) : segundos;
       const outName = (corte.name || 'corte').replace(/[\\/:*?"<>|]/g, '_');
       const outPath = path.join(outputDir, `${outName}.mp4`);
-      const args = ['-ss', String(startSecs), '-t', String(segundos), '-i', inputPath, '-c', 'copy', '-movflags', '+faststart', '-y', outPath];
+      const args = ['-ss', String(startSecs), '-t', String(duracion), '-i', inputPath, '-c', 'copy', '-movflags', '+faststart', '-y', outPath];
       console.log('ffmpeg args:', args.join(' '));
       try {
         await execFileAsync(ffmpegPath, args, { timeout: 300000 });

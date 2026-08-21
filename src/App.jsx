@@ -145,6 +145,10 @@ export default function App() {
   const [previewVideoUrl, setPreviewVideoUrl] = useState(null);
   const [previewNombres, setPreviewNombres] = useState([]);
   const [generandoPreview, setGenerandoPreview] = useState(false);
+  const [ajusteAcciones, setAjusteAcciones] = useState({});
+  const [ajusteAccionesFin, setAjusteAccionesFin] = useState({});
+  const [previewAccion, setPreviewAccion] = useState(null);
+  const [generandoAccion, setGenerandoAccion] = useState(null);
 
   useEffect(() => {
     let activo = true;
@@ -431,11 +435,15 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
       const cortes = acciones.map(e => {
         const parts = String(e.time).split(':').map(Number);
         const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
-        const totalSecs = Math.max(0, actionSecs + offsetSecs);
+        const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
+        const ajusteFin = ajusteAccionesFin[e.name + '_' + e.time] || 0;
+        const totalSecs = Math.max(0, actionSecs + offsetSecs + ajuste);
+        const finSecs = totalSecs + 5 + ajusteFin;
+        const duracion = Math.max(1, finSecs - totalSecs);
         const mm = String(Math.floor(totalSecs / 60)).padStart(2, '0');
         const ss = String(totalSecs % 60).padStart(2, '0');
         const adjustedTime = `${mm}:${ss}`;
-        return { time: adjustedTime, name: `${base}_corte_${adjustedTime}` };
+        return { time: adjustedTime, name: `${base}_corte_${adjustedTime}`, duracion: String(duracion) };
       });
       const formData = new FormData();
       formData.append('video', videoFile);
@@ -490,11 +498,15 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
       const cortes = acciones.map(e => {
         const parts = String(e.time).split(':').map(Number);
         const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
-        const totalSecs = Math.max(0, actionSecs + offsetSecs - 2);
+        const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
+        const ajusteFin = ajusteAccionesFin[e.name + '_' + e.time] || 0;
+        const totalSecs = Math.max(0, actionSecs + offsetSecs - 2 + ajuste);
+        const finSecs = totalSecs + 5 + ajusteFin;
+        const duracion = Math.max(1, finSecs - totalSecs);
         const mm = String(Math.floor(totalSecs / 60)).padStart(2, '0');
         const ss = String(totalSecs % 60).padStart(2, '0');
         const adjustedTime = `${mm}:${ss}`;
-        return { time: adjustedTime, name: `${base}_corte_${adjustedTime}`, actionName: e.name };
+        return { time: adjustedTime, name: `${base}_corte_${adjustedTime}`, actionName: e.name, duracion: String(duracion) };
       });
       const nameCount = {};
       const nombres = cortes.map(c => {
@@ -2316,34 +2328,153 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       </div>
                     ))}
                     </div>
-                    {/* Vista previa del corte generado */}
-                    {previewVideoUrl && (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-                        <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase' }}>
-                          Vista previa del corte
-                        </span>
-                        <video
-                          src={previewVideoUrl}
-                          controls
-                          style={{
-                            display: 'block',
-                            width: '100%',
-                            maxWidth: '350px',
-                            borderRadius: '12px',
-                            background: '#000000'
-                          }}
-                        />
-                        {previewNombres.length > 0 && (
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                            {previewNombres.map((nombre, idx) => (
-                              <span key={idx} style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
-                                {nombre}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {/* Acciones seleccionadas por el filtro */}
+                    {filtroAccion && (() => {
+                      const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN'];
+                      const accionesFiltradas = actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && e.name === filtroAccion).sort((a, b) => {
+                        const pa = String(a.time).split(':').map(Number);
+                        const pb = String(b.time).split(':').map(Number);
+                        return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]);
+                      });
+                      if (accionesFiltradas.length === 0) return null;
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.5rem', padding: '0.5rem', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                          <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {filtroAccion} — {accionesFiltradas.length} {accionesFiltradas.length === 1 ? 'acción' : 'acciones'}
+                          </span>
+                          {accionesFiltradas.map((e, idx) => {
+                            const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
+                            const ajusteFin = ajusteAccionesFin[e.name + '_' + e.time] || 0;
+                            const parts = String(e.time).split(':').map(Number);
+                            const secs = (parts[0] || 0) * 60 + (parts[1] || 0) + ajuste;
+                            const finSecs = secs + 5 + ajusteFin;
+                            const mm = String(Math.floor(Math.max(0, secs) / 60)).padStart(2, '0');
+                            const ss = String(Math.max(0, secs) % 60).padStart(2, '0');
+                            const finMm = String(Math.floor(Math.max(0, finSecs) / 60)).padStart(2, '0');
+                            const finSs = String(Math.max(0, finSecs) % 60).padStart(2, '0');
+                            const actionKey = e.name + '_' + e.time;
+                            return (
+                            <React.Fragment key={idx}>
+                            <div onClick={() => {
+                              if (videoRef.current && e.time) {
+                                const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                videoRef.current.currentTime = Math.max(0, secs + offsetSecs);
+                              }
+                            }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', cursor: 'pointer', gap: '0.5rem' }}>
+                              <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', minWidth: '20px' }}>{idx + 1}</span>
+                              <span style={{ color: '#ffffff', fontWeight: 600, fontSize: '0.8rem', flex: 1 }}>{e.name}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase' }}>inicio</span>
+                                <button onClick={(ev) => {
+                                  ev.stopPropagation();
+                                  setAjusteAcciones(prev => {
+                                    const newVal = (prev[actionKey] || 0) - 1;
+                                    if (videoRef.current && e.time) {
+                                      const baseParts = String(e.time).split(':').map(Number);
+                                      const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
+                                      const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                      videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
+                                    }
+                                    return Object.assign({}, prev, { [actionKey]: newVal });
+                                  });
+                                }} style={{ background: '#1e293b', color: '#ef4444', border: '1px solid #334155', borderRadius: '4px', width: '20px', height: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</button>
+                                <span style={{ color: '#22c55e', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', minWidth: '40px', textAlign: 'center' }}>{mm}:{ss}</span>
+                                <button onClick={(ev) => {
+                                  ev.stopPropagation();
+                                  setAjusteAcciones(prev => {
+                                    const newVal = (prev[actionKey] || 0) + 1;
+                                    if (videoRef.current && e.time) {
+                                      const baseParts = String(e.time).split(':').map(Number);
+                                      const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
+                                      const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                      videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
+                                    }
+                                    return Object.assign({}, prev, { [actionKey]: newVal });
+                                  });
+                                }} style={{ background: '#1e293b', color: '#22c55e', border: '1px solid #334155', borderRadius: '4px', width: '20px', height: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <span style={{ color: '#ef4444', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase' }}>fin</span>
+                                <button onClick={(ev) => {
+                                  ev.stopPropagation();
+                                  setAjusteAccionesFin(prev => {
+                                    const newVal = (prev[actionKey] || 0) - 1;
+                                    if (videoRef.current && e.time) {
+                                      const baseParts = String(e.time).split(':').map(Number);
+                                      const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
+                                      const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                      const inicioAjuste = ajusteAcciones[actionKey] || 0;
+                                      videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
+                                    }
+                                    return Object.assign({}, prev, { [actionKey]: newVal });
+                                  });
+                                }} style={{ background: '#1e293b', color: '#ef4444', border: '1px solid #334155', borderRadius: '4px', width: '20px', height: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</button>
+                                <span style={{ color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', minWidth: '40px', textAlign: 'center' }}>{finMm}:{finSs}</span>
+                                <button onClick={(ev) => {
+                                  ev.stopPropagation();
+                                  setAjusteAccionesFin(prev => {
+                                    const newVal = (prev[actionKey] || 0) + 1;
+                                    if (videoRef.current && e.time) {
+                                      const baseParts = String(e.time).split(':').map(Number);
+                                      const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
+                                      const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                      const inicioAjuste = ajusteAcciones[actionKey] || 0;
+                                      videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
+                                    }
+                                    return Object.assign({}, prev, { [actionKey]: newVal });
+                                  });
+                                }} style={{ background: '#1e293b', color: '#ef4444', border: '1px solid #334155', borderRadius: '4px', width: '20px', height: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+                              </div>
+                              <button onClick={(ev) => {
+                                ev.stopPropagation();
+                                if (!videoFile) { setCorteError('Selecciona primero el archivo de vídeo'); return; }
+                                const offsetSecs = videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0;
+                                const parts = String(e.time).split(':').map(Number);
+                                const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
+                                const ajusteInicio = ajusteAcciones[actionKey] || 0;
+                                const ajusteFinVal = ajusteAccionesFin[actionKey] || 0;
+                                const totalSecs = Math.max(0, actionSecs + offsetSecs - 2 + ajusteInicio);
+                                const finSecs = totalSecs + 5 + ajusteFinVal;
+                                const duracion = Math.max(1, finSecs - totalSecs);
+                                const mm = String(Math.floor(totalSecs / 60)).padStart(2, '0');
+                                const ss = String(totalSecs % 60).padStart(2, '0');
+                                const adjustedTime = mm + ':' + ss;
+                                setGenerandoAccion(actionKey);
+                                setPreviewAccion(null);
+                                const sameName = accionesFiltradas.filter(a => a.name === e.name);
+                                const correlative = sameName.indexOf(e) + 1;
+                                const videoName = sameName.length > 1 ? e.name + ' ' + correlative : e.name;
+                                const formData = new FormData();
+                                formData.append('video', videoFile);
+                                formData.append('segundos', String(duracion));
+                                formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName }]));
+                                fetch('/api/cortar', { method: 'POST', body: formData }).then(resp => {
+                                  if (!resp.ok) throw new Error('Error al generar');
+                                  return resp.blob();
+                                }).then(blob => {
+                                  if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url);
+                                  const url = URL.createObjectURL(blob);
+                                  setPreviewAccion({ url: url, name: videoName, key: actionKey });
+                                }).catch(err => { setCorteError(err.message); }).finally(() => { setGenerandoAccion(null); });
+                              }} style={{ background: '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>{generandoAccion === actionKey ? '...' : 'Generar'}</button>
+                            </div>
+                            {previewAccion && previewAccion.key === actionKey && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.3rem', paddingLeft: '0.5rem' }}>
+                                <video
+                                  src={previewAccion.url}
+                                  controls
+                                  style={{ display: 'block', width: '200px', borderRadius: '8px', background: '#000000' }}
+                                />
+                                <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>{previewAccion.name}</span>
+                                <a href={previewAccion.url} download={previewAccion.name + '.mp4'} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', textDecoration: 'none' }}>Descargar</a>
+                              </div>
+                            )}
+                          </React.Fragment>
+                          );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
                   {/* Vista previa del corte seleccionado */}
                   {accionSeleccionada && videoUrl && (
@@ -2523,48 +2654,12 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           <option key={name} value={name}>{name}</option>
                         ))}
                       </select>
-                      <button
-                        onClick={generarPreviewCorte}
-                        disabled={generandoPreview}
-                        style={{
-                          background: generandoPreview ? '#64748b' : '#f97316',
-                          color: '#ffffff',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          padding: '0.4rem 0.8rem',
-                          borderRadius: '8px',
-                          border: 'none',
-                          cursor: generandoPreview ? 'wait' : 'pointer',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em'
-                        }}
-                      >
-                        {generandoPreview ? 'Generando…' : 'Generar corte'}
-                      </button>
                     </div>
                     {corteError && (
                       <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.85rem', textAlign: 'center' }}>
                         {corteError}
                       </span>
                     )}
-                    <button
-                      onClick={generarTodosLosCortes}
-                      disabled={cortandoTodos}
-                      style={{
-                        background: cortandoTodos ? '#64748b' : '#0284c7',
-                        color: '#ffffff',
-                        fontWeight: 900,
-                        fontSize: '0.95rem',
-                        padding: '0.8rem 1.5rem',
-                        borderRadius: '12px',
-                        border: 'none',
-                        cursor: cortandoTodos ? 'wait' : 'pointer',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                      }}
-                    >
-                      {cortandoTodos ? 'Generando…' : 'Generar'}
-                    </button>
                     {servidorCortesDisponible === false && (
                       <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.8rem', textAlign: 'center' }}>
                         El servidor de cortes no está iniciado. Ejecuta "node server.js" en la carpeta del proyecto.
