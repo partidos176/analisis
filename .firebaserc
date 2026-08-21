@@ -1,13 +1,5 @@
 {
-  "projects": {},
-  "targets": {
-    "juanantonioelanalistaconia": {
-      "hosting": {
-        "juanantoniomorales": [
-          "juanantoniomorales"
-        ]
-      }
-    }
-  },
-  "etags": {}
+  "projects": {
+    "default": "prueba-60d41"
+  }
 }

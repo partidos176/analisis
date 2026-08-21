@@ -23,6 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+.tmp-cortes
+
 # Environment variables
 .env
 .env.*
