@@ -2645,9 +2645,12 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       if (accionesFiltradas.length === 0) return null;
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.5rem', padding: '0.5rem', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
-                          <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#38bdf8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            {filtroAccion === '__varios__' ? 'VARIOS' : filtroAccion} — {accionesFiltradas.length} {accionesFiltradas.length === 1 ? 'acción' : 'acciones'}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#38bdf8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                              {filtroAccion === '__varios__' ? 'VARIOS' : filtroAccion} — {accionesFiltradas.length} {accionesFiltradas.length === 1 ? 'acción' : 'acciones'}
+                            </span>
+                            {filtroAccion === '__varios__' && <button onClick={() => { setFiltroAccion(''); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>&#10005;</button>}
+                          </div>
                           {accionesFiltradas.map((e, idx) => {
                             const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
                             const ajusteFin = ajusteAccionesFin[e.name + '_' + e.time] || 0;
@@ -2678,7 +2681,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                  }
 
                               }
-                            }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', cursor: 'pointer', gap: '0.5rem' }}>
+                            }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', cursor: 'pointer', gap: '0.5rem', position: 'relative' }}>
+                              {filtroAccion === '__varios__' && <button onClick={(ev) => {
+                                ev.stopPropagation();
+                                setActionLog(prev => prev.filter(a => a !== e));
+                                decrementCounter(e.name);
+                                setAccionSeleccionada(null);
+                              }} style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '16px', height: '16px', fontSize: '0.6rem', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, zIndex: 5 }}>&#10005;</button>}
                               <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', minWidth: '20px' }}>{idx + 1}</span>
                               <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#ffffff', fontWeight: 600, fontSize: '0.8rem', flex: 1 }}>{filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : e.name}</span>
                               {finalizacion && <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>({finalizacion.name})</span>}
