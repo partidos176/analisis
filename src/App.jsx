@@ -4118,24 +4118,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const pctOffNeutro = totalPosesion > 0 ? (neutroPosesionSegundos / totalPosesion) * 100 : 0;
                     const pctPropio = Math.max(0, 100 - pctOffRival - pctOffNeutro);
                     const fmt = (v) => (v % 1 === 0 ? v.toFixed(0) : v.toFixed(2));
-                    return (
-                      <>
-                      <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
-                          <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Propia</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctOffNeutro)}%</span>
-                        </div>
-                        <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
-                          <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Rival</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctOffRival)}%</span>
-                        </div>
-                        <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
-                          <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', textAlign: 'center' }}>Posesión Neutra</span>
-                          <span style={{ fontFamily: 'var(--font-mono)', color: '#f97316', fontWeight: 900, fontSize: '2rem', textAlign: 'center' }}>{fmt(pctPropio)}%</span>
-                        </div>
-                      </div>
-                      </>
-                    );
+                    return null;
                   })()}
                   {(() => {
                     const acciones = [
