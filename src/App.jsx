@@ -2404,7 +2404,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       {videoTimeOffset === null && (
                         <button
                           onClick={() => {
-                            setVideoTimeOffset(25);
+                            if (videoRef.current) {
+                              const t = videoRef.current.currentTime;
+                              setVideoTimeOffset(t);
+                            }
                           }}
                           style={{
                             background: '#f97316',
