@@ -2375,6 +2375,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         ref={videoRef}
                         src={videoUrl}
                         controls
+                        onTimeUpdate={(e) => setVideoCurrentTime(e.target.currentTime)}
                         style={{
                           display: 'block',
                           width: '100%',
@@ -2383,6 +2384,15 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           background: '#000000'
                         }}
                       />
+                      <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', background: 'rgba(0,0,0,0.7)', padding: '0.2rem 0.8rem', borderRadius: '6px', zIndex: 5 }}>
+                        <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
+                          {(() => {
+                            const offset = videoTimeOffset != null ? videoTimeOffset : 0;
+                            const adjusted = Math.max(0, videoCurrentTime - offset);
+                            return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
+                          })()}
+                        </span>
+                      </div>
                       <button
                         onClick={() => { if (videoRef.current) { videoRef.current.pause(); } setVideoUrl(null); setVideoFile(null); setVideoFileName(''); setVideoTimeOffset(null); setAccionSeleccionada(null); setPreviewVideoUrl(null); }}
                         style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.85)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
