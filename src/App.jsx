@@ -2674,9 +2674,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             <div onClick={() => {
                               if (videoRef.current && e.time) {
                                 if (filtroAccion === '__varios__') {
-                                  videoRef.current.currentTime = Math.max(0, secs);
+                                  const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                                  videoRef.current.currentTime = Math.max(0, secs + offset);
                                 } else {
-                                   const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0));
+                                   const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
                                    videoRef.current.currentTime = Math.max(0, secs + offsetSecs);
                                  }
 
