@@ -128,7 +128,7 @@ export default function App() {
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
-  const [posesionMatchId, setPosesionMatchId] = useState(null);
+  const [posesionMatchIds, setPosesionMatchIds] = useState([]);
   const [posesionDropdownOpen, setPosesionDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -4247,46 +4247,49 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   })
                   .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
 
-                const effectiveMatchId = posesionMatchId || currentMatch?.id;
-                const effectiveMatch = matches.find(m => m.id === effectiveMatchId) || currentMatch;
-                const effectiveLog = effectiveMatch?.id === currentMatch?.id ? actionLog : normalizeArray(effectiveMatch?.actionLog || []);
+                const selectedIds = posesionMatchIds.length > 0 ? posesionMatchIds : (currentMatch?.id ? [currentMatch.id] : []);
 
-                const periods = [];
-                let periodStart = null;
-                [...effectiveLog].reverse().forEach(e => {
-                  if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { periodStart = e; }
-                  else if (e && e.time && e.name === 'FIN' && periodStart) { periods.push({ start: periodStart, end: e }); periodStart = null; }
-                });
-                if (periodStart) { periods.push({ start: periodStart, end: null }); }
-
-                const calcPeriod = (startEvent, endEvent) => {
-                  const startTime = parseTime(startEvent.time);
-                  const endTime = endEvent ? parseTime(endEvent.time) : timerSeconds;
-                  const periodoTotal = Math.max(1, endTime - startTime);
-                  const entries = effectiveLog.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= startTime && e.secs <= endTime).sort((a,b) => a.secs - b.secs);
-                  let ownSecs = 0, rivalSecs = 0;
-                  let onPropioStart = null, onRivalStart = null;
-                  entries.forEach(e => {
-                    if (e.name === 'ON PROPIO') { onPropioStart = e.secs; }
-                    else if (e.name === 'OFF PROPIO' && onPropioStart !== null) { ownSecs += e.secs - onPropioStart; onPropioStart = null; }
-                    else if (e.name === 'ON RIVAL') { onRivalStart = e.secs; }
-                    else if (e.name === 'OFF RIVAL' && onRivalStart !== null) { rivalSecs += e.secs - onRivalStart; onRivalStart = null; }
+                const buildRowsForMatch = (m) => {
+                  const log = m.id === currentMatch?.id ? actionLog : normalizeArray(m.actionLog || []);
+                  const pds = [];
+                  let ps = null;
+                  [...log].reverse().forEach(e => {
+                    if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { ps = e; }
+                    else if (e && e.time && e.name === 'FIN' && ps) { pds.push({ start: ps, end: e }); ps = null; }
                   });
-                  if (onPropioStart !== null) ownSecs += endTime - onPropioStart;
-                  if (onRivalStart !== null) rivalSecs += endTime - onRivalStart;
-                  const ownPct = Math.round((ownSecs / periodoTotal) * 100);
-                  const rivalPct = Math.round((rivalSecs / periodoTotal) * 100);
-                  const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
-                  return { ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
+                  if (ps) { pds.push({ start: ps, end: null }); }
+                  const md = m.matchday || 0;
+                  const rws = pds.map(p => {
+                    const startTime = parseTime(p.start.time);
+                    const endTime = p.end ? parseTime(p.end.time) : timerSeconds;
+                    const periodoTotal = Math.max(1, endTime - startTime);
+                    const entries = log.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= startTime && e.secs <= endTime).sort((a,b) => a.secs - b.secs);
+                    let ownSecs = 0, rivalSecs = 0, onPropioStart = null, onRivalStart = null;
+                    entries.forEach(e => {
+                      if (e.name === 'ON PROPIO') { onPropioStart = e.secs; }
+                      else if (e.name === 'OFF PROPIO' && onPropioStart !== null) { ownSecs += e.secs - onPropioStart; onPropioStart = null; }
+                      else if (e.name === 'ON RIVAL') { onRivalStart = e.secs; }
+                      else if (e.name === 'OFF RIVAL' && onRivalStart !== null) { rivalSecs += e.secs - onRivalStart; onRivalStart = null; }
+                    });
+                    if (onPropioStart !== null) ownSecs += endTime - onPropioStart;
+                    if (onRivalStart !== null) rivalSecs += endTime - onRivalStart;
+                    const ownPct = Math.round((ownSecs / periodoTotal) * 100);
+                    const rivalPct = Math.round((rivalSecs / periodoTotal) * 100);
+                    const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
+                    return { label: 'J' + md + ' — ' + p.start.name, ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
+                  });
+                  let tOwn = 0, tRiv = 0, tDur = 0;
+                  rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
+                  const subtotal = { label: 'J' + md + ' — TOTAL', ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0), ownSecs: tOwn, rivalSecs: tRiv, periodoTotal: tDur };
+                  return { rows: rws, subtotal, matchday: md };
                 };
-                const md = effectiveMatch?.matchday || currentMatch?.matchday || 0;
-                const rows = periods.map((p) => {
-                  const d = calcPeriod(p.start, p.end);
-                  return { label: 'J' + md + ' — ' + p.start.name, ...d };
-                });
-                let tOwn = 0, tRiv = 0, tDur = 0;
-                rows.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
-                const totalRow = { label: 'J' + md + ' — TOTAL', ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0) };
+                const allMatchData = selectedIds.map(id => { const m = matches.find(x => x.id === id); return m ? buildRowsForMatch(m) : null; }).filter(Boolean);
+                let grandOwn = 0, grandRiv = 0, grandDur = 0;
+                allMatchData.forEach(d => { grandOwn += d.subtotal.ownSecs; grandRiv += d.subtotal.rivalSecs; grandDur += d.subtotal.periodoTotal; });
+                const grandTotal = { label: 'TOTAL GENERAL', ownPct: String(grandDur > 0 ? Math.round((grandOwn / grandDur) * 100) : 0), rivalPct: String(grandDur > 0 ? Math.round((grandRiv / grandDur) * 100) : 0), neutroPct: String(grandDur > 0 ? Math.round(Math.max(0, grandDur - grandOwn - grandRiv) / grandDur * 100) : 0) };
+                const toggleMatch = (id) => { setPosesionMatchIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]); };
+                const toggleAll = () => { if (posesionMatchIds.length === matchOptions.length) { setPosesionMatchIds([]); } else { setPosesionMatchIds(matchOptions.map(o => o.id)); } };
+                const dropdownLabel = selectedIds.length === 0 ? 'Seleccionar jornada' : selectedIds.length === matchOptions.length ? 'Todas' : selectedIds.length + ' jornada' + (selectedIds.length > 1 ? 's' : '');
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
                   <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto' }}>
@@ -4300,21 +4303,30 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   onClick={() => setPosesionDropdownOpen(!posesionDropdownOpen)}
                                   style={{ background: 'transparent', color: '#ffffff', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', userSelect: 'none' }}
                                 >
-                                  {matchOptions.find(o => o.id === effectiveMatchId)?.label || 'Seleccionar jornada'} ▾
+                                  {dropdownLabel} ▾
                                 </div>
                                 {posesionDropdownOpen && (
-                                  <div style={{ position: 'absolute', top: '100%', left: 0, zIndex: 100, minWidth: '280px', background: '#2dd4bf', borderRadius: 'var(--radius-sm)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
-                                    {matchOptions.map(o => (
+                                  <div style={{ position: 'absolute', top: '100%', left: 0, zIndex: 100, minWidth: '320px', background: '#2dd4bf', borderRadius: 'var(--radius-sm)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+                                    <div
+                                      onClick={(e) => { e.stopPropagation(); toggleAll(); }}
+                                      style={{ padding: '0.4rem 0.6rem', cursor: 'pointer', color: '#000000', fontWeight: 800, fontSize: '0.85rem', background: 'rgba(0,0,0,0.1)', borderBottom: '1px solid rgba(0,0,0,0.15)' }}
+                                    >
+                                      {posesionMatchIds.length === matchOptions.length ? 'Todas' : 'Seleccionar todas'}
+                                    </div>
+                                    {matchOptions.map(o => {
+                                      const checked = selectedIds.includes(o.id);
+                                      return (
                                       <div
                                         key={o.id}
-                                        onClick={() => { setPosesionMatchId(o.id); setPosesionDropdownOpen(false); }}
-                                        style={{ padding: '0.4rem 0.6rem', cursor: 'pointer', color: o.id === effectiveMatchId ? '#ffffff' : '#000000', fontWeight: o.id === effectiveMatchId ? 800 : 600, fontSize: '0.85rem', background: o.id === effectiveMatchId ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+                                        onClick={(e) => { e.stopPropagation(); toggleMatch(o.id); }}
+                                        style={{ padding: '0.4rem 0.6rem', cursor: 'pointer', color: checked ? '#ffffff' : '#000000', fontWeight: checked ? 800 : 600, fontSize: '0.85rem', background: checked ? 'rgba(255,255,255,0.2)' : 'transparent' }}
                                         onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.background = o.id === effectiveMatchId ? 'rgba(255,255,255,0.2)' : 'transparent'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = checked ? 'rgba(255,255,255,0.2)' : 'transparent'; }}
                                       >
-                                        {o.label}
+                                        {checked ? '\u2611' : '\u2610'} {o.label}
                                       </div>
-                                    ))}
+                                      );
+                                    })}
                                   </div>
                                 )}
                               </div>
@@ -4326,23 +4338,28 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </tr>
                       </thead>
                       <tbody>
-                        {rows.map((r, i) => {
-                          const bgColors = ['rgba(34,197,94,0.1)', 'rgba(239,68,68,0.1)'];
-                          return (
-                          <tr key={i} style={{ background: bgColors[i % bgColors.length] }}>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
-                           </tr>
-                          );
-                        })}
-                        {rows.length > 0 && (
-                          <tr style={{ background: 'rgba(56,189,248,0.12)' }}>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{totalRow.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{totalRow.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{totalRow.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{totalRow.neutroPct}%</td>
+                        {allMatchData.flatMap((d, mi) => [
+                          ...d.rows.map((r, ri) => (
+                            <tr key={mi + '-' + ri} style={{ background: ri % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
+                            </tr>
+                          )),
+                          <tr key={'sub-' + mi} style={{ background: 'rgba(56,189,248,0.12)' }}>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{d.subtotal.label}</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.ownPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.rivalPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.neutroPct}%</td>
+                          </tr>
+                        ])}
+                        {allMatchData.length > 1 && (
+                          <tr style={{ background: 'rgba(56,189,248,0.2)' }}>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>{grandTotal.label}</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.ownPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.rivalPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.neutroPct}%</td>
                           </tr>
                         )}
                       </tbody>
