@@ -2447,7 +2447,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 setVideoTimeOffset2(t);
                               }
                             }}
-                            disabled={videoTimeOffset2 !== null}
+                            disabled={false}
                             style={{
                               background: videoTimeOffset2 !== null ? '#22c55e' : '#f97316',
                               color: '#ffffff',
