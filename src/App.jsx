@@ -4358,10 +4358,19 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </tbody>
                     </table>
                   </div>
-                  {allMatchData.length > 0 && (
+                  {(() => {
+                    const chartData = matches
+                      .filter(m => m.matchday)
+                      .map(m => {
+                        const d = buildRowsForMatch(m);
+                        return d.rows.length > 0 ? { name: 'J' + m.matchday, Propio: parseInt(d.subtotal.ownPct), Rival: parseInt(d.subtotal.rivalPct), Neutro: parseInt(d.subtotal.neutroPct) } : null;
+                      })
+                      .filter(Boolean)
+                      .sort((a, b) => (parseInt(a.name.slice(1)) || 0) - (parseInt(b.name.slice(1)) || 0));
+                    return chartData.length > 0 ? (
                     <div style={{ width: '100%', maxWidth: '700px', height: 300 }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={allMatchData.map(d => ({ name: 'J' + d.matchday, Propio: parseInt(d.subtotal.ownPct), Rival: parseInt(d.subtotal.rivalPct), Neutro: parseInt(d.subtotal.neutroPct) }))}>
+                        <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
                           <XAxis dataKey="name" tick={{ fill: '#ffffff', fontSize: 12 }} />
                           <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} domain={[0, 100]} />
@@ -4373,7 +4382,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
-                  )}
+                    ) : null;
+                  })()}
                 </div>
                 );
               })()}
