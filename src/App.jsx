@@ -4219,12 +4219,15 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   const ownPct = Math.round((ownSecs / periodoTotal) * 100);
                   const rivalPct = Math.round((rivalSecs / periodoTotal) * 100);
                   const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
-                  return { ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct) };
+                  return { ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
                 };
                 const rows = periods.map((p) => {
                   const d = calcPeriod(p.start, p.end);
                   return { label: 'J' + currentMatch.matchday + ' — ' + p.start.name, ...d };
                 });
+                let tOwn = 0, tRiv = 0, tDur = 0;
+                rows.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
+                const totalRow = { label: 'TOTAL', ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0) };
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
                   <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto' }}>
@@ -4246,6 +4249,14 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
                           </tr>
                         ))}
+                        {rows.length > 0 && (
+                          <tr style={{ background: 'rgba(56,189,248,0.15)' }}>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>{totalRow.label}</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{totalRow.ownPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{totalRow.rivalPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{totalRow.neutroPct}%</td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
