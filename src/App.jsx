@@ -2316,7 +2316,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     gap: '0.5rem'
                   }}>
                     <div style={{
-                      display: 'flex',
+                      display: 'none',
                       flexDirection: 'column',
                       gap: '0.5rem',
                       maxHeight: '500px',
