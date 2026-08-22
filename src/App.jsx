@@ -757,7 +757,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
           zIndex: 50
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="btn-sm btn-secondary" onClick={handleBackToList} style={{ fontSize: '1rem' }}></button>
+            <button className="btn-sm btn-secondary" onClick={handleBackToList} style={{ fontSize: '1.4rem', padding: '0.5rem 0.8rem' }}></button>
             <button
               onClick={() => setActiveTab('alineacion')}
               style={{
