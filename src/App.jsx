@@ -2401,30 +2401,30 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   )}
                   {videoUrl && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                      <button
-                        onClick={() => {
-                          if (videoRef.current) {
-                            const t = videoRef.current.currentTime;
-                            setVideoTimeOffset(t);
-                          }
-                        }}
-                        disabled={videoTimeOffset !== null}
-                        style={{
-                          background: videoTimeOffset !== null ? '#22c55e' : '#f97316',
-                          color: '#ffffff',
-                          fontWeight: 900,
-                          fontSize: '0.85rem',
-                          padding: '0.6rem 1rem',
-                          borderRadius: '10px',
-                          border: 'none',
-                          cursor: videoTimeOffset !== null ? 'not-allowed' : 'pointer',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          opacity: videoTimeOffset !== null ? 0.7 : 1
-                        }}
-                      >
-                        {videoTimeOffset !== null ? 'Sincro. 1ª parte' : 'Sincroniza 1ª parte'}
-                      </button>
+                      {videoTimeOffset === null && (
+                        <button
+                          onClick={() => {
+                            if (videoRef.current) {
+                              const t = videoRef.current.currentTime;
+                              setVideoTimeOffset(t);
+                            }
+                          }}
+                          style={{
+                            background: '#f97316',
+                            color: '#ffffff',
+                            fontWeight: 900,
+                            fontSize: '0.85rem',
+                            padding: '0.6rem 1rem',
+                            borderRadius: '10px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                          }}
+                        >
+                          Sincroniza 1ª parte
+                        </button>
+                      )}
                       {videoTimeOffset !== null && (
                         <>
                           <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
