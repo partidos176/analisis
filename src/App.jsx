@@ -2456,7 +2456,9 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             onClick={() => {
                               if (videoRef.current) {
                                 const t = videoRef.current.currentTime;
-                                setVideoTimeOffset2(t);
+                                const offset = videoTimeOffset != null ? videoTimeOffset : 0;
+                                const adjusted = Math.max(0, t - offset);
+                                setVideoTimeOffset2(adjusted);
                               }
                             }}
                             style={{
