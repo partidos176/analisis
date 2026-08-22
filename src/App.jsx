@@ -2689,7 +2689,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#ffffff', fontWeight: 600, fontSize: '0.8rem', flex: 1 }}>{filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : e.name}</span>
                               {finalizacion && filtroAccion !== '__varios__' && <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>({finalizacion.name})</span>}
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase' }}>inicio</span>
+                                {filtroAccion !== '__varios__' && <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase' }}>inicio</span>}
                                 <button onClick={(ev) => {
                                   ev.stopPropagation();
                                   setAjusteAcciones(prev => {
