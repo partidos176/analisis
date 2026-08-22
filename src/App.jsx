@@ -2541,7 +2541,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         style={{
                           display: 'block',
                           width: '100%',
-                          maxWidth: '350px',
+                          maxWidth: '800px',
                           borderRadius: '12px',
                           background: '#000000'
                         }}
