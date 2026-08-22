@@ -4289,7 +4289,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               <select
                                 value={effectiveMatchId || ''}
                                 onChange={(e) => setPosesionMatchId(e.target.value)}
-                                style={{ background: 'var(--bg-input)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', width: '100%' }}
+                                style={{ background: 'var(--bg-input)', color: '#000000', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', width: '100%' }}
                               >
                                 {matchOptions.map(o => (
                                   <option key={o.id} value={o.id}>J{o.matchday} — {o.ownPct}%</option>
