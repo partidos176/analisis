@@ -4216,10 +4216,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   });
                   if (onPropioStart !== null) ownSecs += endTime - onPropioStart;
                   if (onRivalStart !== null) rivalSecs += endTime - onRivalStart;
-                  const ownPct = ((ownSecs / periodoTotal) * 100).toFixed(1);
-                  const rivalPct = ((rivalSecs / periodoTotal) * 100).toFixed(1);
-                  const neutroPct = (Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100).toFixed(1);
-                  return { ownPct, rivalPct, neutroPct };
+                  const ownPct = Math.round((ownSecs / periodoTotal) * 100);
+                  const rivalPct = Math.round((rivalSecs / periodoTotal) * 100);
+                  const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
+                  return { ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct) };
                 };
                 const rows = periods.map((p) => {
                   const d = calcPeriod(p.start, p.end);
