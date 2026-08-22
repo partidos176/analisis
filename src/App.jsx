@@ -2727,9 +2727,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   </div>
                   {/* Vista previa del corte seleccionado */}
                   {accionSeleccionada && videoUrl && (
-                    <div style={{ width: '100%', maxWidth: '800px', position: 'relative', marginTop: '0.5rem' }}>
-                      <button onClick={() => { if (videoRef.current) { videoRef.current.pause(); } setVideoUrl(null); setVideoFile(null); setVideoFileName(''); setVideoTimeOffset(null); setAccionSeleccionada(null); setPreviewVideoUrl(null); }} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', zIndex: 10, background: 'rgba(0,0,0,0.6)', color: '#ffffff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', fontSize: '1rem', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Cerrar">&#10005;</button>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
                       <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase' }}>
                         {accionSeleccionada.name} — {accionSeleccionada.time}
                       </span>
@@ -2774,7 +2772,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           }} style={{ background: '#22c55e', color: '#fff', fontWeight: 900, fontSize: '0.8rem', padding: '0.3rem 0.6rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>+</button>
                         </div>
                       </div>
-                    </div>
                     </div>
                   )}
                   {/* Columna derecha - Controles de vídeo */}
