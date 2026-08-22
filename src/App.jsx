@@ -4337,7 +4337,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Propio</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Ver <button onClick={() => setHiddenPoseRows(new Set())} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '0.7rem', marginLeft: '0.2rem' }} title="Mostrar todas">&#8634;</button></th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Ver <button onClick={() => setHiddenPoseRows(new Set())} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1rem', marginLeft: '0.3rem', verticalAlign: 'middle' }} title="Mostrar todas">&#8634;</button></th>
                         </tr>
                       </thead>
                       <tbody>
