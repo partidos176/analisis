@@ -663,6 +663,20 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
   };
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
+        e.preventDefault();
+        const v = videoRef.current;
+        if (v) {
+          if (v.paused) v.play(); else v.pause();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
     let interval = null;
     if (timerRunning) {
       interval = setInterval(() => {
