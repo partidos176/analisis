@@ -2384,7 +2384,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           background: '#000000'
                         }}
                       />
-                      <div style={{ position: 'absolute', bottom: '4px', left: '50px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
+                      <div style={{ position: 'absolute', bottom: '32px', left: '50px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
                           {(() => {
                             const offset = videoTimeOffset != null ? videoTimeOffset : 0;
