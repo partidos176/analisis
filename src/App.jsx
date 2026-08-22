@@ -4194,82 +4194,58 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
               )}
               {activeTab === 'posesion' && (() => {
                 const parseTime = (str) => { const p = String(str).split(':').map(Number); return (p[0]||0)*60+(p[1]||0); };
-                const sorted = [...actionLog].filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'ON RIVAL' || e.name === 'ON NEUTRO' || e.name === 'OFF PROPIO' || e.name === 'OFF RIVAL' || e.name === 'OFF NEUTRO' || e.name === '1ª PARTE' || e.name === '2ª PARTE' || e.name === 'FIN')).sort((a,b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0]*60+pa[1])-(pb[0]*60+pb[1]); });
                 const periods = [];
                 let periodStart = null;
-                sorted.forEach(e => {
-                  if (e.name === '1ª PARTE' || e.name === '2ª PARTE') { periodStart = e; }
-                  else if (e.name === 'FIN' && periodStart) { periods.push({ start: periodStart, end: e }); periodStart = null; }
+                [...actionLog].reverse().forEach(e => {
+                  if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { periodStart = e; }
+                  else if (e && e.time && e.name === 'FIN' && periodStart) { periods.push({ start: periodStart, end: e }); periodStart = null; }
                 });
                 if (periodStart) { periods.push({ start: periodStart, end: null }); }
                 const calcPeriod = (startEvent, endEvent) => {
                   const startTime = parseTime(startEvent.time);
                   const endTime = endEvent ? parseTime(endEvent.time) : timerSeconds;
-                  let ownSecs = 0, rivalSecs = 0, neutroSecs = 0;
-                  let lastState = null, lastTime = startTime;
-                  sorted.forEach(e => {
-                    const t = parseTime(e.time);
-                    if (t < startTime || (endEvent && t > endTime)) return;
-                    if (lastState && t > lastTime) {
-                      const dur = t - lastTime;
-                      if (lastState === 'ON PROPIO') ownSecs += dur;
-                      else if (lastState === 'ON RIVAL') rivalSecs += dur;
-                      else if (lastState === 'ON NEUTRO') neutroSecs += dur;
-                    }
-                    if (e.name.startsWith('ON ')) { lastState = e.name; lastTime = t; }
-                    if (e.name.startsWith('OFF ')) { lastState = null; }
+                  const periodoTotal = Math.max(1, endTime - startTime);
+                  const entries = [...actionLog].filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= startTime && e.secs <= endTime).sort((a,b) => a.secs - b.secs);
+                  let ownSecs = 0, rivalSecs = 0;
+                  let onPropioStart = null, onRivalStart = null;
+                  entries.forEach(e => {
+                    if (e.name === 'ON PROPIO') { onPropioStart = e.secs; }
+                    else if (e.name === 'OFF PROPIO' && onPropioStart !== null) { ownSecs += e.secs - onPropioStart; onPropioStart = null; }
+                    else if (e.name === 'ON RIVAL') { onRivalStart = e.secs; }
+                    else if (e.name === 'OFF RIVAL' && onRivalStart !== null) { rivalSecs += e.secs - onRivalStart; onRivalStart = null; }
                   });
-                  if (lastState && endTime > lastTime) {
-                    const dur = endTime - lastTime;
-                    if (lastState === 'ON PROPIO') ownSecs += dur;
-                    else if (lastState === 'ON RIVAL') rivalSecs += dur;
-                    else if (lastState === 'ON NEUTRO') neutroSecs += dur;
-                  }
-                  return { ownSecs, rivalSecs, neutroSecs };
+                  if (onPropioStart !== null) ownSecs += endTime - onPropioStart;
+                  if (onRivalStart !== null) rivalSecs += endTime - onRivalStart;
+                  const ownPct = ((ownSecs / periodoTotal) * 100).toFixed(1);
+                  const rivalPct = ((rivalSecs / periodoTotal) * 100).toFixed(1);
+                  const neutroPct = (Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100).toFixed(1);
+                  return { ownPct, rivalPct, neutroPct };
                 };
-                const fmt = (s) => Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
-                const pct = (v, t) => t > 0 ? ((v/t)*100).toFixed(1) : '0.0';
                 const rows = periods.map((p) => {
                   const d = calcPeriod(p.start, p.end);
-                  const total = Math.max(1, d.ownSecs + d.rivalSecs + d.neutroSecs);
-                  return { label: 'J' + currentMatch.matchday + ' — ' + p.start.name, ...d, total };
+                  return { label: 'J' + currentMatch.matchday + ' — ' + p.start.name, ...d };
                 });
-                let tOwn = 0, tRiv = 0, tNeu = 0;
-                rows.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tNeu += r.neutroSecs; });
-                const tTotal = Math.max(1, tOwn + tRiv + tNeu);
-                const thS = { border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' };
-                const tdS = { border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' };
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                  <span style={{ display: 'none', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.2rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>POSESIÓN</span>
                   <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                          <th style={{ ...thS, textAlign: 'left' }}>Período</th>
-                          <th style={{ ...thS, color: '#22c55e' }}>Nuestro %</th>
-                          <th style={{ ...thS, color: '#f59e0b' }}>Neutro %</th>
-                          <th style={{ ...thS, color: '#ef4444' }}>Rival %</th>
-                          <th style={{ ...thS, display: 'none' }}>Duración</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>Período</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Nuestro %</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro %</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival %</th>
                         </tr>
                       </thead>
                       <tbody>
                         {rows.map((r, i) => (
                           <tr key={i} style={{ background: i % 2 === 0 ? 'rgba(0,0,0,0.15)' : 'transparent' }}>
-                            <td style={{ ...tdS, textAlign: 'left', color: '#ffffff', fontWeight: 800 }}>{r.label}</td>
-                            <td style={{ ...tdS, color: '#22c55e' }}>{pct(r.ownSecs, r.total)}%</td>
-                            <td style={{ ...tdS, color: '#f59e0b' }}>{pct(r.neutroSecs, r.total)}%</td>
-                            <td style={{ ...tdS, color: '#ef4444' }}>{pct(r.rivalSecs, r.total)}%</td>
-                            <td style={{ ...tdS, color: '#94a3b8', display: 'none' }}>{fmt(r.total)}</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
                           </tr>
                         ))}
-                        <tr style={{ background: 'rgba(56,189,248,0.1)', fontWeight: 900 }}>
-                          <td style={{ ...tdS, textAlign: 'left', color: '#38bdf8', fontWeight: 900 }}>TOTAL</td>
-                          <td style={{ ...tdS, color: '#22c55e', fontWeight: 900 }}>{pct(tOwn, tTotal)}%</td>
-                          <td style={{ ...tdS, color: '#f59e0b', fontWeight: 900 }}>{pct(tNeu, tTotal)}%</td>
-                          <td style={{ ...tdS, color: '#ef4444', fontWeight: 900 }}>{pct(tRiv, tTotal)}%</td>
-                          <td style={{ ...tdS, color: '#94a3b8', fontWeight: 900, display: 'none' }}>{fmt(tTotal)}</td>
-                        </tr>
                       </tbody>
                     </table>
                   </div>
