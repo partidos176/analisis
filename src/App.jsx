@@ -2387,7 +2387,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       <div style={{ position: 'absolute', bottom: '32px', left: '50px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
                           {(() => {
-                            const offset = videoTimeOffset != null ? videoTimeOffset : 0;
+                            const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
                             const adjusted = Math.max(0, videoCurrentTime - offset);
                             return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
                           })()}
@@ -2455,10 +2455,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           <button
                             onClick={() => {
                               if (videoRef.current) {
-                                const t = videoRef.current.currentTime;
-                                const offset = videoTimeOffset != null ? videoTimeOffset : 0;
-                                const adjusted = Math.max(0, t - offset);
-                                setVideoTimeOffset2(adjusted);
+                                const parte2 = actionLog.find(e => e && e.name === '2ª PARTE' && e.time);
+                                if (parte2) {
+                                  const parts = parte2.time.split(':').map(Number);
+                                  const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
+                                  const t = videoRef.current.currentTime;
+                                  setVideoTimeOffset2(t - actionSecs);
+                                }
                               }
                             }}
                             style={{
@@ -2813,7 +2816,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       <div style={{ width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'center' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: 'rgba(0,0,0,0.4)', padding: '0.2rem 0.8rem', borderRadius: '6px' }}>
                           {(() => {
-                            const offset = videoTimeOffset != null ? videoTimeOffset : 0;
+                            const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
                             const adjusted = Math.max(0, videoCurrentTime - offset);
                             return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
                           })()}
