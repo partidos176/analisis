@@ -838,6 +838,21 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               DATOS
             </button>
             <button
+              onClick={() => setActiveTab('posesion')}
+              style={{
+                fontWeight: 800,
+                fontSize: '1.15rem',
+                color: activeTab === 'posesion' ? '#ffffff' : '#64748b',
+                borderBottom: activeTab === 'posesion' ? '2px solid #ffffff' : '2px solid transparent',
+                paddingBottom: '0.2rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              POSESION
+            </button>
+            <button
               onClick={() => setActiveTab('tiempojugado')}
               style={{
                 fontWeight: 800,
@@ -4177,6 +4192,83 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   })()}
                 </div>
               )}
+              {activeTab === 'posesion' && (() => {
+                const totalSecs = timerSeconds;
+                const ownOn = [...actionLog].filter(e => e && e.time && e.name === 'ON PROPIO');
+                const rivalOn = [...actionLog].filter(e => e && e.time && e.name === 'ON RIVAL');
+                const neutroOn = [...actionLog].filter(e => e && e.time && e.name === 'ON NEUTRO');
+                const parseTime = (str) => { const p = String(str).split(':').map(Number); return (p[0]||0)*60+(p[1]||0); };
+                let ownSecs = 0, rivalSecs = 0, neutroSecs = 0;
+                const sorted = [...actionLog].filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'ON RIVAL' || e.name === 'ON NEUTRO' || e.name === 'OFF PROPIO' || e.name === 'OFF RIVAL' || e.name === 'OFF NEUTRO' || e.name === '1ª PARTE' || e.name === '2ª PARTE' || e.name === 'FIN')).sort((a,b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0]*60+pa[1])-(pb[0]*60+pb[1]); });
+                let lastState = null, lastTime = 0;
+                sorted.forEach(e => {
+                  const t = parseTime(e.time);
+                  if (lastState && t > lastTime) {
+                    const dur = t - lastTime;
+                    if (lastState === 'ON PROPIO') ownSecs += dur;
+                    else if (lastState === 'ON RIVAL') rivalSecs += dur;
+                    else if (lastState === 'ON NEUTRO') neutroSecs += dur;
+                  }
+                  if (e.name === '1ª PARTE' || e.name === '2ª PARTE') { lastState = null; lastTime = t; return; }
+                  if (e.name === 'FIN') { lastState = null; return; }
+                  if (e.name.startsWith('ON ')) { lastState = e.name; lastTime = t; }
+                  if (e.name.startsWith('OFF ')) { lastState = null; }
+                });
+                if (lastState && totalSecs > lastTime) {
+                  const dur = totalSecs - lastTime;
+                  if (lastState === 'ON PROPIO') ownSecs += dur;
+                  else if (lastState === 'ON RIVAL') rivalSecs += dur;
+                  else if (lastState === 'ON NEUTRO') neutroSecs += dur;
+                }
+                const total = Math.max(1, ownSecs + rivalSecs + neutroSecs);
+                const ownPct = ((ownSecs / total) * 100).toFixed(1);
+                const rivalPct = ((rivalSecs / total) * 100).toFixed(1);
+                const neutroPct = ((neutroSecs / total) * 100).toFixed(1);
+                const fmt = (s) => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+                return (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem',
+                  alignItems: 'center'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.2rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>POSESIÓN</span>
+                  <div style={{ display: 'flex', width: '100%', maxWidth: '600px', height: '40px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+                    <div style={{ width: ownPct + '%', background: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'width 0.5s' }}>
+                      {ownSecs > 0 && <span style={{ color: '#fff', fontWeight: 900, fontSize: '0.9rem' }}>{ownPct}%</span>}
+                    </div>
+                    <div style={{ width: neutroPct + '%', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'width 0.5s' }}>
+                      {neutroSecs > 0 && <span style={{ color: '#fff', fontWeight: 900, fontSize: '0.9rem' }}>{neutroPct}%</span>}
+                    </div>
+                    <div style={{ width: rivalPct + '%', background: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'width 0.5s' }}>
+                      {rivalSecs > 0 && <span style={{ color: '#fff', fontWeight: 900, fontSize: '0.9rem' }}>{rivalPct}%</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                      <span style={{ color: '#22c55e', fontWeight: 900, fontSize: '1.8rem', fontFamily: 'var(--font-mono)' }}>{ownPct}%</span>
+                      <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem' }}>NUESTRO</span>
+                      <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>{fmt(ownSecs)}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                      <span style={{ color: '#f59e0b', fontWeight: 900, fontSize: '1.8rem', fontFamily: 'var(--font-mono)' }}>{neutroPct}%</span>
+                      <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem' }}>NEUTRO</span>
+                      <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>{fmt(neutroSecs)}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                      <span style={{ color: '#ef4444', fontWeight: 900, fontSize: '1.8rem', fontFamily: 'var(--font-mono)' }}>{rivalPct}%</span>
+                      <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem' }}>RIVAL</span>
+                      <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>{fmt(rivalSecs)}</span>
+                    </div>
+                  </div>
+                </div>
+                );
+              })()}
               {activeTab === 'tiempojugado' && (
                 <div style={{
                   background: 'var(--bg-card)',
