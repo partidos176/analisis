@@ -4250,7 +4250,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <th style={{ ...thS, color: '#22c55e' }}>Nuestro %</th>
                           <th style={{ ...thS, color: '#f59e0b' }}>Neutro %</th>
                           <th style={{ ...thS, color: '#ef4444' }}>Rival %</th>
-                          <th style={thS}>Duración</th>
+                          <th style={{ ...thS, display: 'none' }}>Duración</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -4260,7 +4260,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <td style={{ ...tdS, color: '#22c55e' }}>{pct(r.ownSecs, r.total)}%</td>
                             <td style={{ ...tdS, color: '#f59e0b' }}>{pct(r.neutroSecs, r.total)}%</td>
                             <td style={{ ...tdS, color: '#ef4444' }}>{pct(r.rivalSecs, r.total)}%</td>
-                            <td style={{ ...tdS, color: '#94a3b8' }}>{fmt(r.total)}</td>
+                            <td style={{ ...tdS, color: '#94a3b8', display: 'none' }}>{fmt(r.total)}</td>
                           </tr>
                         ))}
                         <tr style={{ background: 'rgba(56,189,248,0.1)', fontWeight: 900 }}>
@@ -4268,7 +4268,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <td style={{ ...tdS, color: '#22c55e', fontWeight: 900 }}>{pct(tOwn, tTotal)}%</td>
                           <td style={{ ...tdS, color: '#f59e0b', fontWeight: 900 }}>{pct(tNeu, tTotal)}%</td>
                           <td style={{ ...tdS, color: '#ef4444', fontWeight: 900 }}>{pct(tRiv, tTotal)}%</td>
-                          <td style={{ ...tdS, color: '#94a3b8', fontWeight: 900 }}>{fmt(tTotal)}</td>
+                          <td style={{ ...tdS, color: '#94a3b8', fontWeight: 900, display: 'none' }}>{fmt(tTotal)}</td>
                         </tr>
                       </tbody>
                     </table>
