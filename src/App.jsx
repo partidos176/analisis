@@ -2388,7 +2388,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
                           {(() => {
                             const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0));
-                            const adjusted = Math.max(0, videoCurrentTime - offset);
+                            const adjusted = Math.max(0, Math.floor(videoCurrentTime - offset));
                             return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
                           })()}
                         </span>
@@ -2655,11 +2655,11 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
                             const ajusteFin = ajusteAccionesFin[e.name + '_' + e.time] || 0;
                             const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
-                            const counterTime = Math.max(0, videoCurrentTime - offset);
+                            const counterTime = Math.max(0, Math.floor(videoCurrentTime - offset));
                             const baseTime = filtroAccion === '__varios__' ? Math.max(0, counterTime - 2) : 0;
                             const parts = String(e.time).split(':').map(Number);
-                            const secs = (filtroAccion === '__varios__' ? baseTime : (parts[0] || 0) * 60 + (parts[1] || 0)) + ajuste;
-                            const finSecs = secs + 5 + ajusteFin;
+                            const secs = Math.floor((filtroAccion === '__varios__' ? baseTime : (parts[0] || 0) * 60 + (parts[1] || 0)) + ajuste);
+                            const finSecs = secs + 5 + Math.floor(ajusteFin);
                             const mm = String(Math.floor(Math.max(0, secs) / 60)).padStart(2, '0');
                             const ss = String(Math.max(0, secs) % 60).padStart(2, '0');
                             const finMm = String(Math.floor(Math.max(0, finSecs) / 60)).padStart(2, '0');
@@ -2824,7 +2824,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: 'rgba(0,0,0,0.4)', padding: '0.2rem 0.8rem', borderRadius: '6px' }}>
                           {(() => {
                             const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0));
-                            const adjusted = Math.max(0, videoCurrentTime - offset);
+                            const adjusted = Math.max(0, Math.floor(videoCurrentTime - offset));
                             return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
                           })()}
                         </span>
