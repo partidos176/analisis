@@ -4234,7 +4234,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   .map(m => {
                     const r = calcMatchPossession(m.actionLog);
                     const ownPct = r.totalDur > 0 ? Math.round((r.totalOwn / r.totalDur) * 100) : 0;
-                    return { id: m.id, matchday: m.matchday, ownPct };
+                    const score = (m.homeScore != null && m.awayScore != null) ? ` (${m.homeScore}-${m.awayScore})` : '';
+                    return { id: m.id, matchday: m.matchday, ownPct, label: 'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
                   })
                   .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
 
@@ -4292,7 +4293,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 style={{ background: 'transparent', color: '#ffffff', border: 'none', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', width: '100%', WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', colorScheme: 'dark' }}
                               >
                                 {matchOptions.map(o => (
-                                  <option key={o.id} value={o.id}>J{o.matchday}</option>
+                                  <option key={o.id} value={o.id}>{o.label}</option>
                                 ))}
                               </select>
                             ) : 'Período'}
