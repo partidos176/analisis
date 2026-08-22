@@ -2649,7 +2649,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#38bdf8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                               {filtroAccion === '__varios__' ? 'VARIOS' : filtroAccion} — {accionesFiltradas.length} {accionesFiltradas.length === 1 ? 'acción' : 'acciones'}
                             </span>
-                            {filtroAccion === '__varios__' && <button onClick={() => { setFiltroAccion(''); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>&#10005;</button>}
                           </div>
                           {accionesFiltradas.map((e, idx) => {
                             const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
