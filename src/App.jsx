@@ -4247,7 +4247,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   })
                   .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
 
-                const selectedIds = posesionMatchIds.length > 0 ? posesionMatchIds : (currentMatch?.id ? [currentMatch.id] : []);
+                const selectedIds = posesionMatchIds;
 
                 const buildRowsForMatch = (m) => {
                   const log = m.id === currentMatch?.id ? actionLog : normalizeArray(m.actionLog || []);
