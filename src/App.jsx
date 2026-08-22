@@ -128,6 +128,7 @@ export default function App() {
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
+  const [posesionMatchId, setPosesionMatchId] = useState(null);
   const [dataLoadedId, setDataLoadedId] = useState(null);
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const [videoFile, setVideoFile] = useState(null);
@@ -4194,18 +4195,66 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
               )}
               {activeTab === 'posesion' && (() => {
                 const parseTime = (str) => { const p = String(str).split(':').map(Number); return (p[0]||0)*60+(p[1]||0); };
+
+                const calcMatchPossession = (log) => {
+                  if (!log || log.length === 0) return null;
+                  const arr = normalizeArray(log);
+                  const periods = [];
+                  let periodStart = null;
+                  [...arr].reverse().forEach(e => {
+                    if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { periodStart = e; }
+                    else if (e && e.time && e.name === 'FIN' && periodStart) { periods.push({ start: periodStart, end: e }); periodStart = null; }
+                  });
+                  if (periodStart) { periods.push({ start: periodStart, end: null }); }
+                  if (periods.length === 0) return null;
+                  let totalOwn = 0, totalRival = 0, totalDur = 0;
+                  const periodResults = periods.map(p => {
+                    const startTime = parseTime(p.start.time);
+                    const endTime = p.end ? parseTime(p.end.time) : null;
+                    const totalSeconds = endTime !== null ? Math.max(1, endTime - startTime) : null;
+                    const entries = arr.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= startTime && (endTime === null || e.secs <= endTime)).sort((a,b) => a.secs - b.secs);
+                    let ownSecs = 0, rivalSecs = 0;
+                    let onPropioStart = null, onRivalStart = null;
+                    entries.forEach(e => {
+                      if (e.name === 'ON PROPIO') { onPropioStart = e.secs; }
+                      else if (e.name === 'OFF PROPIO' && onPropioStart !== null) { ownSecs += e.secs - onPropioStart; onPropioStart = null; }
+                      else if (e.name === 'ON RIVAL') { onRivalStart = e.secs; }
+                      else if (e.name === 'OFF RIVAL' && onRivalStart !== null) { rivalSecs += e.secs - onRivalStart; onRivalStart = null; }
+                    });
+                    if (onPropioStart !== null && endTime !== null) ownSecs += endTime - onPropioStart;
+                    if (onRivalStart !== null && endTime !== null) rivalSecs += endTime - onRivalStart;
+                    if (totalSeconds !== null) { totalOwn += ownSecs; totalRival += rivalSecs; totalDur += totalSeconds; }
+                    return { ownSecs, rivalSecs, totalSeconds, startName: p.start.name };
+                  });
+                  return { periodResults, totalOwn, totalRival, totalDur };
+                };
+
+                const matchOptions = matches
+                  .filter(m => { const r = calcMatchPossession(m.actionLog); return r && r.totalOwn > 0; })
+                  .map(m => {
+                    const r = calcMatchPossession(m.actionLog);
+                    const ownPct = r.totalDur > 0 ? Math.round((r.totalOwn / r.totalDur) * 100) : 0;
+                    return { id: m.id, matchday: m.matchday, ownPct };
+                  })
+                  .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
+
+                const effectiveMatchId = posesionMatchId || currentMatch?.id;
+                const effectiveMatch = matches.find(m => m.id === effectiveMatchId) || currentMatch;
+                const effectiveLog = effectiveMatch?.id === currentMatch?.id ? actionLog : normalizeArray(effectiveMatch?.actionLog || []);
+
                 const periods = [];
                 let periodStart = null;
-                [...actionLog].reverse().forEach(e => {
+                [...effectiveLog].reverse().forEach(e => {
                   if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { periodStart = e; }
                   else if (e && e.time && e.name === 'FIN' && periodStart) { periods.push({ start: periodStart, end: e }); periodStart = null; }
                 });
                 if (periodStart) { periods.push({ start: periodStart, end: null }); }
+
                 const calcPeriod = (startEvent, endEvent) => {
                   const startTime = parseTime(startEvent.time);
                   const endTime = endEvent ? parseTime(endEvent.time) : timerSeconds;
                   const periodoTotal = Math.max(1, endTime - startTime);
-                  const entries = [...actionLog].filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= startTime && e.secs <= endTime).sort((a,b) => a.secs - b.secs);
+                  const entries = effectiveLog.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= startTime && e.secs <= endTime).sort((a,b) => a.secs - b.secs);
                   let ownSecs = 0, rivalSecs = 0;
                   let onPropioStart = null, onRivalStart = null;
                   entries.forEach(e => {
@@ -4221,20 +4270,33 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
                   return { ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
                 };
+                const md = effectiveMatch?.matchday || currentMatch?.matchday || 0;
                 const rows = periods.map((p) => {
                   const d = calcPeriod(p.start, p.end);
-                  return { label: 'J' + currentMatch.matchday + ' — ' + p.start.name, ...d };
+                  return { label: 'J' + md + ' — ' + p.start.name, ...d };
                 });
                 let tOwn = 0, tRiv = 0, tDur = 0;
                 rows.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
-                const totalRow = { label: 'J' + currentMatch.matchday + ' — TOTAL', ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0) };
+                const totalRow = { label: 'J' + md + ' — TOTAL', ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0) };
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
                   <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>Período</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                            {matchOptions.length > 0 ? (
+                              <select
+                                value={effectiveMatchId || ''}
+                                onChange={(e) => setPosesionMatchId(e.target.value)}
+                                style={{ background: 'var(--bg-input)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', width: '100%' }}
+                              >
+                                {matchOptions.map(o => (
+                                  <option key={o.id} value={o.id}>J{o.matchday} — {o.ownPct}%</option>
+                                ))}
+                              </select>
+                            ) : 'Período'}
+                          </th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Propio</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro</th>
