@@ -2696,7 +2696,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
                                   });
-                                }} style={{ background: '#1e293b', color: '#ef4444', border: '1px solid #334155', borderRadius: '4px', width: '20px', height: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</button>
+                                }} style={{ background: '#1e293b', color: '#22c55e', border: '1px solid #334155', borderRadius: '4px', width: '20px', height: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</button>
                                 <span style={{ color: '#22c55e', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', minWidth: '40px', textAlign: 'center' }}>{mm}:{ss}</span>
                                 <button onClick={(ev) => {
                                   ev.stopPropagation();
