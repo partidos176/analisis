@@ -2307,8 +2307,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                 flexDirection: 'column',
                 gap: '1.5rem'
               }}>
-                <div style={{ display: 'flex', gap: '2rem' }}>
-                  {/* Columna izquierda - Tabla de acciones */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+                  {/* Columna izquierda - Tabla de acciones (oculta) */}
                   <div style={{
                     flex: 1,
                     display: 'flex',
@@ -2579,7 +2579,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   )}
                   {/* Columna derecha - Controles de vídeo */}
                   <div style={{
-                    flex: 1,
+                    width: '100%',
+                    maxWidth: '900px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -2630,7 +2631,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         style={{
                           display: 'block',
                           width: '100%',
-                          maxWidth: '500px',
+                          maxWidth: '900px',
                           height: 'auto',
                           borderRadius: '12px',
                           background: '#000000'
