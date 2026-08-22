@@ -448,18 +448,14 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         const adjustedTime = `${mm}:${ss}`;
         return { time: adjustedTime, name: `${base}_corte_${adjustedTime}`, duracion: String(duracion) };
       });
-      let results;
-      try {
-        const formData = new FormData();
-        formData.append('segundos', String(Math.max(1, parseInt(corteSegundos, 10) || 15)));
-        formData.append('cortes', JSON.stringify(cortes));
-        const resp = await fetch('/api/cortar', { method: 'POST', body: formData });
-        if (!resp.ok) { let msg = 'Error al cortar el vídeo'; try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {} throw new Error(msg); }
-        const blob = await resp.blob();
-        results = [{ name: `${base}_cortes.zip`, blob }];
-      } catch (e) {
-        throw e;
-      }
+      const formData = new FormData();
+      formData.append('video', videoFile);
+      formData.append('segundos', String(Math.max(1, parseInt(corteSegundos, 10) || 15)));
+      formData.append('cortes', JSON.stringify(cortes));
+      const resp = await fetch('/api/cortar', { method: 'POST', body: formData });
+      if (!resp.ok) { let msg = 'Error al cortar el vídeo'; try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {} throw new Error(msg); }
+      const blob = await resp.blob();
+      const results = [{ name: `${base}_cortes.zip`, blob }];
       if (results.length === 1) {
         const url = URL.createObjectURL(results[0].blob);
         const a = document.createElement('a');
@@ -527,18 +523,14 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         const total = acciones.filter(a => a.name === c.actionName).length;
         return total > 1 ? `${c.actionName} ${count}` : c.actionName;
       });
-      let results;
-      try {
-        const formData = new FormData();
-        formData.append('segundos', String(Math.max(1, parseInt(corteSegundos, 10) || 15)));
-        formData.append('cortes', JSON.stringify(cortes));
-        const resp = await fetch('/api/cortar', { method: 'POST', body: formData });
-        if (!resp.ok) { let msg = 'Error al generar preview'; try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {} throw new Error(msg); }
-        const blob = await resp.blob();
-        results = [{ name: 'preview.zip', blob }];
-      } catch (e) {
-        throw e;
-      }
+      const formData = new FormData();
+      formData.append('video', videoFile);
+      formData.append('segundos', String(Math.max(1, parseInt(corteSegundos, 10) || 15)));
+      formData.append('cortes', JSON.stringify(cortes));
+      const resp = await fetch('/api/cortar', { method: 'POST', body: formData });
+      if (!resp.ok) { let msg = 'Error al generar preview'; try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {} throw new Error(msg); }
+      const blob = await resp.blob();
+      const results = [{ name: 'preview.zip', blob }];
       const { default: JSZip } = await import('jszip');
       const zip = new JSZip();
       for (const r of results) zip.file(r.name, r.blob);
@@ -2421,6 +2413,25 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       )}
                     </div>
                   )}
+                  <select
+                    value={filtroAccion}
+                    onChange={(e) => { setFiltroAccion(e.target.value); if (e.target.value === '__varios__') { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset != null ? videoTimeOffset : 0; setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.floor(videoRef.current.currentTime + offset) })); } } }}
+                    style={{
+                      padding: '0.4rem 0.8rem',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-subtle)',
+                      background: 'var(--bg-card)',
+                      color: '#ffffff',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="" style={{ color: '#ffffff' }}>Todas las acciones</option>
+                    <option value="__varios__" style={{ color: '#ef4444' }}>VARIOS</option>
+                    {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name)).map(e => e.name))].map(name => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
                   {!videoUrl && (
                     <label style={{
                       display: 'flex',
@@ -2656,10 +2667,11 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 const videoName = filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : (() => { const sameName = accionesFiltradas.filter(a => a.name === e.name); const correlative = sameName.indexOf(e) + 1; return sameName.length > 1 ? e.name + ' ' + correlative : e.name; })();
                                 const doCut = async () => {
                                   const formData = new FormData();
+                                  formData.append('video', videoFile);
                                   formData.append('segundos', String(duracion));
                                   formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName }]));
                                   const resp = await fetch('/api/cortar', { method: 'POST', body: formData, signal: AbortSignal.timeout(600000) });
-                                  if (!resp.ok) throw new Error('Error al generar');
+                                  if (!resp.ok) { let msg = 'Error al generar'; try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {} throw new Error(msg); }
                                   return await resp.blob();
                                 };
                                 doCut().then(blob => {
@@ -2745,27 +2757,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     alignItems: 'center',
                     gap: '1.2rem'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                      <select
-                        value={filtroAccion}
-                        onChange={(e) => { setFiltroAccion(e.target.value); if (e.target.value === '__varios__') { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset != null ? videoTimeOffset : 0; setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.floor(videoRef.current.currentTime + offset) })); } } }}
-                        style={{
-                          padding: '0.4rem 0.8rem',
-                          borderRadius: '8px',
-                          border: '1px solid var(--border-subtle)',
-                          background: 'var(--bg-card)',
-                          color: '#ffffff',
-                          fontWeight: 700,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <option value="" style={{ color: '#ffffff' }}>Todas las acciones</option>
-                        <option value="__varios__" style={{ color: '#ef4444' }}>VARIOS</option>
-                        {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name)).map(e => e.name))].map(name => (
-                          <option key={name} value={name}>{name}</option>
-                        ))}
-                      </select>
-                    </div>
                     {corteError && (
                       <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.85rem', textAlign: 'center' }}>
                         {corteError}

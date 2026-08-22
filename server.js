@@ -83,6 +83,7 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
       cachedVideoName = req.file.originalname;
       rmrf(path.dirname(inputPath));
       dir = null;
+      inputPath = cachedPath;
       console.log('Video cached:', cachedVideoName, req.file.size, 'bytes');
     } else if (cachedVideoPath && fs.existsSync(cachedVideoPath)) {
       inputPath = cachedVideoPath;
