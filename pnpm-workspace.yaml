@@ -1,5 +1,6 @@
 allowBuilds:
   '@firebase/util': true
   esbuild: true
+  ffmpeg-static: true
   protobufjs: true
   re2: true

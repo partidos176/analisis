@@ -16,7 +16,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '2gb' }));
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2048 * 1024 * 1024 } });
+const upload = multer({ storage: multer.diskStorage({ destination: (req, file, cb) => { const d = tmpDir(); req._uploadDir = d; cb(null, d); }, filename: (req, file, cb) => cb(null, 'input.mp4') }), limits: { fileSize: 20 * 1024 * 1024 * 1024 } });
 
 let tmpCounter = 0;
 const tmpDir = () => {
@@ -61,11 +61,15 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
     if (!Array.isArray(cortes) || cortes.length === 0) {
       return res.status(400).json({ error: 'No hay cortes que generar' });
     }
-    dir = tmpDir();
+    dir = req._uploadDir || tmpDir();
     const inputPath = path.join(dir, 'input.mp4');
-    fs.writeFileSync(inputPath, req.file.buffer);
-    const writtenSize = fs.statSync(inputPath).size;
-    console.log('Input written:', inputPath, 'size:', writtenSize, 'of', req.file.size);
+    if (req.file) {
+      const writtenSize = req.file.size;
+      console.log('Input uploaded:', req.file.path, 'size:', writtenSize);
+    }
+    if (!fs.existsSync(inputPath)) {
+      return res.status(400).json({ error: 'No se recibió el archivo de vídeo' });
+    }
 
     const header = Buffer.alloc(12);
     const fd = fs.openSync(inputPath, 'r');
@@ -75,9 +79,8 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
     const mdat = header.toString('ascii', 4, 8);
     console.log('MP4 header bytes:', header.toString('hex').substring(0, 24), 'ftyp:', ftyp, 'next:', mdat);
 
-    if (writtenSize !== req.file.size) {
-      return res.status(500).json({ error: `Tamaño del archivo no coincide: esperaba ${req.file.size}, escrito ${writtenSize}` });
-    }
+    const diskSize = fs.statSync(inputPath).size;
+    console.log('Disk size:', diskSize, 'file size:', req.file?.size);
 
     if (ftyp === 'ftyp' || mdat === 'ftyp') {
       console.log('Valid MP4/ftyp header detected');

@@ -127,6 +127,7 @@ export default function App() {
   const [sustituciones, setSustituciones] = useState([]);
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
   const [contadorWarning, setContadorWarning] = useState(false);
+  const [igualarAviso, setIgualarAviso] = useState(false);
   const [dataLoadedId, setDataLoadedId] = useState(null);
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const [videoFile, setVideoFile] = useState(null);
@@ -1968,6 +1969,11 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                       <button
                         onClick={() => {
+                          if (onNeutroCount !== offNeutroCount) {
+                            setIgualarAviso(true);
+                            setTimeout(() => setIgualarAviso(false), 2500);
+                            return;
+                          }
                           if (logAction('ON RIVAL')) {
                             setFromRival(true);
                             setOnRivalCount(onRivalCount + 1);
@@ -1978,7 +1984,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: '#dc2626',
+                          background: '#6b7280',
                           color: '#ffffff',
                           fontWeight: 900,
                           fontSize: '0.8rem',
@@ -1997,7 +2003,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <span>RIVAL</span>
                         <span style={{
                           background: '#ffffff',
-                          color: '#dc2626',
+                          color: '#6b7280',
                           fontWeight: 900,
                           fontSize: '0.8rem',
                           padding: '0.1rem 0.4rem',
@@ -2010,6 +2016,11 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       </button>
                       <button
                         onClick={() => {
+                          if (onRivalCount !== offRivalCount) {
+                            setIgualarAviso(true);
+                            setTimeout(() => setIgualarAviso(false), 2500);
+                            return;
+                          }
                           if (logAction('ON PROPIO')) {
                             setOnNeutroCount(onNeutroCount + 1);
                           }
@@ -2049,6 +2060,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           {onNeutroCount}
                         </span>
                       </button>
+                      <div style={{ position: 'relative' }}>
                       <button
                         onClick={() => {
                           if (logAction('PÉRDIDAS')) {
@@ -2089,6 +2101,31 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           {perdidasCount}
                         </span>
                       </button>
+                      {igualarAviso && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '5px',
+                          right: '-80px',
+                          background: '#dc2626',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.55rem',
+                          width: '58px',
+                          height: '58px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          textAlign: 'center',
+                          lineHeight: '1.1',
+                          padding: '4px',
+                          zIndex: 10,
+                          animation: 'blink 0.5s infinite'
+                        }}>
+                          IGUALAR CONTADOR
+                        </div>
+                      )}
+                    </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                       <button
@@ -2103,7 +2140,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           flexDirection: 'column',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: '#dc2626',
+                          background: '#6b7280',
                           color: '#ffffff',
                           fontWeight: 900,
                           fontSize: '0.8rem',
@@ -2122,7 +2159,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         <span>RIVAL</span>
                         <span style={{
                           background: '#ffffff',
-                          color: '#dc2626',
+                          color: '#6b7280',
                           fontWeight: 900,
                           fontSize: '0.8rem',
                           padding: '0.1rem 0.4rem',
@@ -2290,14 +2327,14 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       padding: '1rem'
                     }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
-                      Acciones ({actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(e.name) && (filtroAccion === '' || e.name === filtroAccion)).length})
+                      Acciones ({actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name) && (filtroAccion === '' || e.name === filtroAccion)).length})
                     </span>
                     {actionLog.length === 0 && (
                       <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
                         Sin acciones aún
                       </span>
                     )}
-                    {[...actionLog].reverse().map((entry, idx) => (
+                    {[...actionLog].reverse().filter(e => !['ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name)).map((entry, idx) => (
                       <div key={idx} onClick={() => {
                         if (entry.time && entry.type !== 'finalizacion' && videoRef.current && videoUrl) {
                           const parts = String(entry.time).split(':').map(Number);
@@ -2334,8 +2371,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     {filtroAccion && (() => {
                       const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN'];
                       const allAccionesFiltradas = (filtroAccion === '__varios__'
-                        ? actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name))
-                        : actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && e.name === filtroAccion)).sort((a, b) => {
+                        ? actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && !['ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name))
+                        : actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && e.name === filtroAccion && !['ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name))).sort((a, b) => {
                         const pa = String(a.time).split(':').map(Number);
                         const pb = String(b.time).split(':').map(Number);
                         return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]);
@@ -2359,6 +2396,12 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             const finMm = String(Math.floor(Math.max(0, finSecs) / 60)).padStart(2, '0');
                             const finSs = String(Math.max(0, finSecs) % 60).padStart(2, '0');
                             const actionKey = e.name + '_' + e.time;
+                            const actionIdx = actionLog.findIndex(a => a === e);
+                            let finalizacion = null;
+                            for (let fi = actionIdx - 1; fi >= 0; fi--) {
+                              if (actionLog[fi].type === 'finalizacion') { finalizacion = actionLog[fi]; break; }
+                              if (actionLog[fi].type === 'accion') break;
+                            }
                             return (
                             <React.Fragment key={idx}>
                             <div onClick={() => {
@@ -2373,6 +2416,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', cursor: 'pointer', gap: '0.5rem' }}>
                               <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', minWidth: '20px' }}>{idx + 1}</span>
                               <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#ffffff', fontWeight: 600, fontSize: '0.8rem', flex: 1 }}>{filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : e.name}</span>
+                              {finalizacion && <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>({finalizacion.name})</span>}
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                                 <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase' }}>inicio</span>
                                 <button onClick={(ev) => {
@@ -2456,7 +2500,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 formData.append('video', videoFile);
                                 formData.append('segundos', String(duracion));
                                 formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName }]));
-                                fetch('/api/cortar', { method: 'POST', body: formData }).then(resp => {
+                                fetch('/api/cortar', { method: 'POST', body: formData, signal: AbortSignal.timeout(600000) }).then(resp => {
                                   if (!resp.ok) throw new Error('Error al generar');
                                   return resp.blob();
                                 }).then(blob => {
@@ -2602,6 +2646,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               setVideoTimeOffset(t);
                             }
                           }}
+                          disabled={videoTimeOffset !== null}
                           style={{
                             background: videoTimeOffset !== null ? '#22c55e' : '#f97316',
                             color: '#ffffff',
@@ -2610,12 +2655,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             padding: '0.6rem 1rem',
                             borderRadius: '10px',
                             border: 'none',
-                            cursor: 'pointer',
+                            cursor: videoTimeOffset !== null ? 'not-allowed' : 'pointer',
                             textTransform: 'uppercase',
-                            letterSpacing: '0.05em'
+                            letterSpacing: '0.05em',
+                            opacity: videoTimeOffset !== null ? 0.7 : 1
                           }}
                         >
-                          {videoTimeOffset !== null ? 'Sincronizado' : 'Sincronizar inicio'}
+                          {videoTimeOffset !== null ? 'Sincro. 1ª parte' : 'Sincroniza 1ª parte'}
                         </button>
                         {videoTimeOffset !== null && (
                           <>
@@ -2659,7 +2705,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       >
                         <option value="" style={{ color: '#ffffff' }}>Todas las acciones</option>
                         <option value="__varios__" style={{ color: '#ef4444' }}>VARIOS</option>
-                        {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(e.name)).map(e => e.name))].map(name => (
+                        {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name)).map(e => e.name))].map(name => (
                           <option key={name} value={name}>{name}</option>
                         ))}
                       </select>
