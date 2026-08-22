@@ -21,7 +21,7 @@ import oscarImg from './jugadores/oscar.jpg';
 import raveloImg from './jugadores/ravelo.jpg';
 import santanaImg from './jugadores/santana.jpg';
 import santosImg from './jugadores/santos.jpg';
-import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 const jugadoresData = {
   ALEX: { foto: alexImg, pos1: 'CENTRAL' },
@@ -4357,6 +4357,22 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </tbody>
                     </table>
                   </div>
+                  {allMatchData.length > 0 && (
+                    <div style={{ width: '100%', maxWidth: '700px', height: 300 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={allMatchData.map(d => ({ name: 'J' + d.matchday, Propio: parseInt(d.subtotal.ownPct), Rival: parseInt(d.subtotal.rivalPct), Neutro: parseInt(d.subtotal.neutroPct) }))}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
+                          <XAxis dataKey="name" tick={{ fill: '#ffffff', fontSize: 12 }} />
+                          <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} domain={[0, 100]} />
+                          <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff' }} />
+                          <Legend wrapperStyle={{ color: '#ffffff' }} />
+                          <Line type="monotone" dataKey="Propio" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} />
+                          <Line type="monotone" dataKey="Rival" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+                          <Line type="monotone" dataKey="Neutro" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </div>
                 );
               })()}
