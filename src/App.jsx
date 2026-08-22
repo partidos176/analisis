@@ -2654,7 +2654,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           {accionesFiltradas.map((e, idx) => {
                             const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
                             const ajusteFin = ajusteAccionesFin[e.name + '_' + e.time] || 0;
-                            const baseTime = filtroAccion === '__varios__' ? (variosBaseTimes[e.name + '_' + e.time] || 0) : 0;
+                            const baseTime = filtroAccion === '__varios__' ? (videoCurrentTime - (videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0)) - 2) : 0;
                             const parts = String(e.time).split(':').map(Number);
                             const secs = (filtroAccion === '__varios__' ? baseTime : (parts[0] || 0) * 60 + (parts[1] || 0)) + ajuste;
                             const finSecs = secs + 5 + ajusteFin;
