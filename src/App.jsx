@@ -4230,7 +4230,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                 };
 
                 const matchOptions = matches
-                  .filter(m => { const r = calcMatchPossession(m.actionLog); return r && r.totalOwn > 0; })
+                  .filter(m => { const r = calcMatchPossession(m.actionLog); return r && r.totalDur > 0; })
                   .map(m => {
                     const r = calcMatchPossession(m.actionLog);
                     const ownPct = r.totalDur > 0 ? Math.round((r.totalOwn / r.totalDur) * 100) : 0;
