@@ -975,7 +975,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               </div>
               </>
               )}
-              <span style={{ fontSize: ['tiempojugado', 'resumengoles', 'resumenacciones', 'videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
+              <span style={{ fontSize: ['tiempojugado', 'resumengoles', 'resumenacciones', 'videos', 'posesion', 'jugadores'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
                 {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : activeTab === 'jugadores' ? 'JUGADORES' : `JORNADA ${currentMatch.matchday}`}
               </span>
               {activeTab === 'alineacion' && (
@@ -3467,9 +3467,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#39ff14', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
-                    JUGADORES
-                  </span>
                   {(() => {
                     const nombres = new Set(Object.keys(jugadoresData));
                     const names = [...nombres];
