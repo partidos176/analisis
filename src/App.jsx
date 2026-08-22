@@ -129,6 +129,14 @@ export default function App() {
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
   const [posesionMatchId, setPosesionMatchId] = useState(null);
+  const [posesionDropdownOpen, setPosesionDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (!posesionDropdownOpen) return;
+    const handler = () => setPosesionDropdownOpen(false);
+    const timer = setTimeout(() => document.addEventListener('click', handler), 0);
+    return () => { clearTimeout(timer); document.removeEventListener('click', handler); };
+  }, [posesionDropdownOpen]);
   const [dataLoadedId, setDataLoadedId] = useState(null);
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const [videoFile, setVideoFile] = useState(null);
@@ -4285,17 +4293,31 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', position: 'relative' }}>
                             {matchOptions.length > 0 ? (
-                              <select
-                                value={effectiveMatchId || ''}
-                                onChange={(e) => setPosesionMatchId(e.target.value)}
-                                style={{ background: 'transparent', color: '#ffffff', border: 'none', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', width: '100%', WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none', colorScheme: 'dark' }}
-                              >
-                                {matchOptions.map(o => (
-                                  <option key={o.id} value={o.id}>{o.label}</option>
-                                ))}
-                              </select>
+                              <div style={{ position: 'relative' }}>
+                                <div
+                                  onClick={() => setPosesionDropdownOpen(!posesionDropdownOpen)}
+                                  style={{ background: 'transparent', color: '#ffffff', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', userSelect: 'none' }}
+                                >
+                                  {matchOptions.find(o => o.id === effectiveMatchId)?.label || 'Seleccionar jornada'} ▾
+                                </div>
+                                {posesionDropdownOpen && (
+                                  <div style={{ position: 'absolute', top: '100%', left: 0, zIndex: 100, minWidth: '280px', background: '#2dd4bf', borderRadius: 'var(--radius-sm)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
+                                    {matchOptions.map(o => (
+                                      <div
+                                        key={o.id}
+                                        onClick={() => { setPosesionMatchId(o.id); setPosesionDropdownOpen(false); }}
+                                        style={{ padding: '0.4rem 0.6rem', cursor: 'pointer', color: o.id === effectiveMatchId ? '#ffffff' : '#000000', fontWeight: o.id === effectiveMatchId ? 800 : 600, fontSize: '0.85rem', background: o.id === effectiveMatchId ? 'rgba(255,255,255,0.2)' : 'transparent' }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = o.id === effectiveMatchId ? 'rgba(255,255,255,0.2)' : 'transparent'; }}
+                                      >
+                                        {o.label}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             ) : 'Período'}
                           </th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Propio</th>
