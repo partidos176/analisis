@@ -2527,6 +2527,9 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       <option key={name} value={name}>{name}</option>
                     ))}
                   </select>
+                  {filtroAccion === '__varios__' && (
+                    <button onClick={() => { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.max(0, Math.floor(videoCurrentTime - offset) - 2) })); }                       }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem' }}>+ VARIOS</button>
+                  )}
                   {!videoUrl && (
                     <label style={{
                       display: 'flex',
