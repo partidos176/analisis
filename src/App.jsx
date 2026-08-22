@@ -849,7 +849,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               DATOS
             </button>
             <button
-              onClick={() => setActiveTab('posesion')}
+              onClick={() => { setActiveTab('posesion'); setPosesionMatchIds(currentMatch?.id ? [currentMatch.id] : []); }}
               style={{
                 fontWeight: 800,
                 fontSize: '1.15rem',
