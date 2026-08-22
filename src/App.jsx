@@ -4241,7 +4241,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                 const tdS = { border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' };
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.2rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>POSESIÓN POR PERÍODOS</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.2rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>POSESIÓN</span>
                   <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
