@@ -2652,19 +2652,28 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             {filtroAccion === '__varios__' && <button onClick={() => { setFiltroAccion(''); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '18px', height: '18px', fontSize: '0.65rem', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>&#10005;</button>}
                           </div>
                           {accionesFiltradas.map((e, idx) => {
-                            const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
-                            const ajusteFin = ajusteAccionesFin[e.name + '_' + e.time] || 0;
                             const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
-                            const counterTime = Math.max(0, Math.floor(videoCurrentTime - offset));
-                            const baseTime = filtroAccion === '__varios__' ? Math.max(0, counterTime - 2) : 0;
                             const parts = String(e.time).split(':').map(Number);
-                            const secs = Math.floor((filtroAccion === '__varios__' ? baseTime : (parts[0] || 0) * 60 + (parts[1] || 0)) + ajuste);
+                            const actionKey = e.name + '_' + e.time;
+                            let baseTime;
+                            if (filtroAccion === '__varios__') {
+                              if (variosBaseTimes[actionKey] == null) {
+                                baseTime = Math.max(0, Math.floor(videoCurrentTime - offset) - 2);
+                                setVariosBaseTimes(prev => Object.assign({}, prev, { [actionKey]: baseTime }));
+                              } else {
+                                baseTime = variosBaseTimes[actionKey];
+                              }
+                            } else {
+                              baseTime = (parts[0] || 0) * 60 + (parts[1] || 0);
+                            }
+                            const ajuste = ajusteAcciones[actionKey] || 0;
+                            const ajusteFin = ajusteAccionesFin[actionKey] || 0;
+                            const secs = Math.floor(baseTime + ajuste);
                             const finSecs = secs + 5 + Math.floor(ajusteFin);
                             const mm = String(Math.floor(Math.max(0, secs) / 60)).padStart(2, '0');
                             const ss = String(Math.max(0, secs) % 60).padStart(2, '0');
                             const finMm = String(Math.floor(Math.max(0, finSecs) / 60)).padStart(2, '0');
                             const finSs = String(Math.max(0, finSecs) % 60).padStart(2, '0');
-                            const actionKey = e.name + '_' + e.time;
                             const actionIdx = actionLog.findIndex(a => a === e);
                             let finalizacion = null;
                             for (let fi = actionIdx - 1; fi >= 0; fi--) {
