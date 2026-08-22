@@ -91,7 +91,7 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
     const outputDir = path.join(dir, 'output');
     fs.mkdirSync(outputDir, { recursive: true });
 
-    for (const corte of cortes) {
+    const results = await Promise.all(cortes.map(async (corte) => {
       const startSecs = parseTime(corte.time);
       const duracion = corte.duracion ? Math.max(1, parseInt(corte.duracion, 10)) : segundos;
       const outName = (corte.name || 'corte').replace(/[\\/:*?"<>|]/g, '_');
@@ -100,10 +100,15 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
       console.log('ffmpeg args:', args.join(' '));
       try {
         await execFileAsync(ffmpegPath, args, { timeout: 300000 });
+        return { ok: true, name: outName };
       } catch (err) {
         console.error('ffmpeg error:', err.message);
-        return res.status(500).json({ error: `Error al cortar ${corte.time}: ${err.message}` });
+        return { ok: false, name: outName, error: err.message };
       }
+    }));
+    const failed = results.filter(r => !r.ok);
+    if (failed.length > 0) {
+      return res.status(500).json({ error: `Error al cortar: ${failed.map(f => f.name + ': ' + f.error).join('; ')}` });
     }
 
     if (cortes.length === 1) {
