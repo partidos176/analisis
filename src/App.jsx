@@ -130,6 +130,7 @@ export default function App() {
   const [igualarAviso, setIgualarAviso] = useState(false);
   const [posesionMatchIds, setPosesionMatchIds] = useState([]);
   const [posesionDropdownOpen, setPosesionDropdownOpen] = useState(false);
+  const [hiddenLines, setHiddenLines] = useState({});
 
   useEffect(() => {
     if (!posesionDropdownOpen) return;
@@ -4365,10 +4366,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <XAxis dataKey="name" tick={{ fill: '#ffffff', fontSize: 12 }} />
                           <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} domain={[0, 100]} />
                           <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff' }} />
-                          <Legend wrapperStyle={{ color: '#ffffff' }} />
-                          <Line type="monotone" dataKey="Propio" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} />
-                          <Line type="monotone" dataKey="Rival" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
-                          <Line type="monotone" dataKey="Neutro" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />
+                          <Legend wrapperStyle={{ color: '#ffffff', cursor: 'pointer' }} onClick={(e) => { setHiddenLines(prev => ({ ...prev, [e.dataKey]: !prev[e.dataKey] })); }} />
+                          <Line type="monotone" dataKey="Propio" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Propio} />
+                          <Line type="monotone" dataKey="Rival" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Rival} />
+                          <Line type="monotone" dataKey="Neutro" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Neutro} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
