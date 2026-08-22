@@ -2451,6 +2451,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       )}
                       {videoTimeOffset !== null && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                          {videoTimeOffset2 === null && (
                           <button
                             onClick={() => {
                               if (videoRef.current) {
@@ -2458,23 +2459,22 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 setVideoTimeOffset2(t);
                               }
                             }}
-                            disabled={false}
                             style={{
-                              background: videoTimeOffset2 !== null ? '#22c55e' : '#f97316',
+                              background: '#f97316',
                               color: '#ffffff',
                               fontWeight: 900,
                               fontSize: '0.85rem',
                               padding: '0.6rem 1rem',
                               borderRadius: '10px',
                               border: 'none',
-                              cursor: videoTimeOffset2 !== null ? 'not-allowed' : 'pointer',
+                              cursor: 'pointer',
                               textTransform: 'uppercase',
-                              letterSpacing: '0.05em',
-                              opacity: videoTimeOffset2 !== null ? 0.7 : 1
+                              letterSpacing: '0.05em'
                             }}
                           >
-                            {videoTimeOffset2 !== null ? 'Sincro. 2ª parte' : 'Sincroniza 2ª parte'}
+                            Sincroniza 2ª parte
                           </button>
+                          )}
                           {videoTimeOffset2 !== null && (
                             <>
                               <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
@@ -2495,7 +2495,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                   letterSpacing: '0.05em'
                                 }}
                               >
-                                Borrar sync
+                                Borrar sync 2ª
                               </button>
                             </>
                           )}
