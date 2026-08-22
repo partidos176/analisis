@@ -2445,7 +2445,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               letterSpacing: '0.05em'
                             }}
                           >
-                            Borrar sync
+                            Borrar sync 1ª
                           </button>
                         </>
                       )}
