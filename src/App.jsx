@@ -2323,6 +2323,58 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       }}
                     />
                   )}
+                  {videoUrl && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      <button
+                        onClick={() => {
+                          if (videoRef.current) {
+                            const t = videoRef.current.currentTime;
+                            setVideoTimeOffset(t);
+                          }
+                        }}
+                        disabled={videoTimeOffset !== null}
+                        style={{
+                          background: videoTimeOffset !== null ? '#22c55e' : '#f97316',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.85rem',
+                          padding: '0.6rem 1rem',
+                          borderRadius: '10px',
+                          border: 'none',
+                          cursor: videoTimeOffset !== null ? 'not-allowed' : 'pointer',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          opacity: videoTimeOffset !== null ? 0.7 : 1
+                        }}
+                      >
+                        {videoTimeOffset !== null ? 'Sincro. 1ª parte' : 'Sincroniza 1ª parte'}
+                      </button>
+                      {videoTimeOffset !== null && (
+                        <>
+                          <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
+                            Offset: {Math.floor(videoTimeOffset / 60)}:{String(Math.floor(videoTimeOffset % 60)).padStart(2, '0')}
+                          </span>
+                          <button
+                            onClick={() => setVideoTimeOffset(null)}
+                            style={{
+                              background: '#ef4444',
+                              color: '#ffffff',
+                              fontWeight: 900,
+                              fontSize: '0.85rem',
+                              padding: '0.6rem 1rem',
+                              borderRadius: '10px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em'
+                            }}
+                          >
+                            Borrar sync
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                   {!videoUrl && (
                     <label style={{
                       display: 'flex',
@@ -2643,58 +2695,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     alignItems: 'center',
                     gap: '1.2rem'
                   }}>
-                    {videoUrl && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                        <button
-                          onClick={() => {
-                            if (videoRef.current) {
-                              const t = videoRef.current.currentTime;
-                              setVideoTimeOffset(t);
-                            }
-                          }}
-                          disabled={videoTimeOffset !== null}
-                          style={{
-                            background: videoTimeOffset !== null ? '#22c55e' : '#f97316',
-                            color: '#ffffff',
-                            fontWeight: 900,
-                            fontSize: '0.85rem',
-                            padding: '0.6rem 1rem',
-                            borderRadius: '10px',
-                            border: 'none',
-                            cursor: videoTimeOffset !== null ? 'not-allowed' : 'pointer',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            opacity: videoTimeOffset !== null ? 0.7 : 1
-                          }}
-                        >
-                          {videoTimeOffset !== null ? 'Sincro. 1ª parte' : 'Sincroniza 1ª parte'}
-                        </button>
-                        {videoTimeOffset !== null && (
-                          <>
-                            <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
-                              Offset: {Math.floor(videoTimeOffset / 60)}:{String(Math.floor(videoTimeOffset % 60)).padStart(2, '0')}
-                            </span>
-                            <button
-                              onClick={() => setVideoTimeOffset(null)}
-                              style={{
-                                background: '#ef4444',
-                                color: '#ffffff',
-                                fontWeight: 900,
-                                fontSize: '0.85rem',
-                                padding: '0.6rem 1rem',
-                                borderRadius: '10px',
-                                border: 'none',
-                                cursor: 'pointer',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.05em'
-                              }}
-                            >
-                              Borrar sync
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                       <select
                         value={filtroAccion}
