@@ -4259,6 +4259,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   });
                   if (ps) { pds.push({ start: ps, end: null }); }
                   const md = m.matchday || 0;
+                  const teamInfo = (m.homeTeam || '') + ' vs ' + (m.awayTeam || '');
+                  const score = (m.homeScore != null && m.awayScore != null) ? ' (' + m.homeScore + '-' + m.awayScore + ')' : '';
                   const rws = pds.map(p => {
                     const startTime = parseTime(p.start.time);
                     const endTime = p.end ? parseTime(p.end.time) : timerSeconds;
@@ -4276,11 +4278,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const ownPct = Math.round((ownSecs / periodoTotal) * 100);
                     const rivalPct = Math.round((rivalSecs / periodoTotal) * 100);
                     const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
-                    return { label: 'J' + md + ' — ' + p.start.name, ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
+                    return { label: 'J' + md + ' — ' + teamInfo + score + ' — ' + p.start.name, ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
                   });
                   let tOwn = 0, tRiv = 0, tDur = 0;
                   rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
-                  const subtotal = { label: 'J' + md + ' — TOTAL', ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0), ownSecs: tOwn, rivalSecs: tRiv, periodoTotal: tDur };
+                  const subtotal = { label: 'J' + md + ' — ' + teamInfo + score + ' — TOTAL', ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0), ownSecs: tOwn, rivalSecs: tRiv, periodoTotal: tDur };
                   return { rows: rws, subtotal, matchday: md };
                 };
                 const allMatchData = selectedIds.map(id => { const m = matches.find(x => x.id === id); return m ? buildRowsForMatch(m) : null; }).filter(Boolean);
