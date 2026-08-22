@@ -958,7 +958,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               justifyContent: 'center',
               gap: '2rem'
             }}>
-              {activeTab !== 'resumengoles' && activeTab !== 'resumenacciones' && activeTab !== 'tiempojugado' && activeTab !== 'videos' && activeTab !== 'posesion' && (
+              {activeTab !== 'resumengoles' && activeTab !== 'resumenacciones' && activeTab !== 'tiempojugado' && activeTab !== 'videos' && activeTab !== 'posesion' && activeTab !== 'jugadores' && (
               <>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.homeTeam}</span>
