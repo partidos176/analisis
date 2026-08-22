@@ -4232,9 +4232,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <thead>
                         <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>Período</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Nuestro %</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro %</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival %</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Nuestro</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival</th>
                         </tr>
                       </thead>
                       <tbody>
