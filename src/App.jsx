@@ -4232,7 +4232,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                 const rows = periods.map((p) => {
                   const d = calcPeriod(p.start, p.end);
                   const total = Math.max(1, d.ownSecs + d.rivalSecs + d.neutroSecs);
-                  return { label: 'JORNADA ' + currentMatch.matchday + ' — ' + p.start.name, ...d, total };
+                  return { label: 'J' + currentMatch.matchday + ' — ' + p.start.name, ...d, total };
                 });
                 let tOwn = 0, tRiv = 0, tNeu = 0;
                 rows.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tNeu += r.neutroSecs; });
