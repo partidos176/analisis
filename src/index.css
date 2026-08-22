@@ -217,6 +217,11 @@ button {
   50% { opacity: 0; }
 }
 
+video::-webkit-media-controls-time-remaining-display,
+video::-webkit-media-controls-current-time-display {
+  display: none !important;
+}
+
 @keyframes barraProgreso {
   0% { margin-left: -40%; }
   100% { margin-left: 100%; }
