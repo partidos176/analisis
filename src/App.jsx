@@ -2641,7 +2641,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         const pb = String(b.time).split(':').map(Number);
                         return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]);
                       });
-                      const accionesFiltradas = filtroAccion === '__varios__' ? allAccionesFiltradas.slice(variosIndex, variosIndex + 1) : allAccionesFiltradas;
+                      const accionesFiltradas = filtroAccion === '__varios__' ? allAccionesFiltradas.slice(0, variosIndex + 1) : allAccionesFiltradas;
                       if (accionesFiltradas.length === 0) return null;
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.5rem', padding: '0.5rem', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
