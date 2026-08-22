@@ -4354,14 +4354,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.neutroPct}%</td>
                           </tr>
                         ])}
-                        {allMatchData.length > 1 && (
-                          <tr style={{ background: 'rgba(56,189,248,0.2)' }}>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>{grandTotal.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 900, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.neutroPct}%</td>
-                          </tr>
-                        )}
                       </tbody>
                     </table>
                   </div>
