@@ -145,6 +145,7 @@ export default function App() {
   const [videoFileName, setVideoFileName] = useState('');
   const [videoUrl, setVideoUrl] = useState(null);
   const [videoTimeOffset, setVideoTimeOffset] = useState(null);
+  const [videoTimeOffset2, setVideoTimeOffset2] = useState(null);
   const videoRef = useRef(null);
   const [corteSegundos, setCorteSegundos] = useState(15);
   const [filtroAccion, setFiltroAccion] = useState('');
@@ -2436,6 +2437,58 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             Borrar sync
                           </button>
                         </>
+                      )}
+                      {videoTimeOffset !== null && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                          <button
+                            onClick={() => {
+                              if (videoRef.current) {
+                                const t = videoRef.current.currentTime;
+                                setVideoTimeOffset2(t);
+                              }
+                            }}
+                            disabled={videoTimeOffset2 !== null}
+                            style={{
+                              background: videoTimeOffset2 !== null ? '#22c55e' : '#f97316',
+                              color: '#ffffff',
+                              fontWeight: 900,
+                              fontSize: '0.85rem',
+                              padding: '0.6rem 1rem',
+                              borderRadius: '10px',
+                              border: 'none',
+                              cursor: videoTimeOffset2 !== null ? 'not-allowed' : 'pointer',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                              opacity: videoTimeOffset2 !== null ? 0.7 : 1
+                            }}
+                          >
+                            {videoTimeOffset2 !== null ? 'Sincro. 2ª parte' : 'Sincroniza 2ª parte'}
+                          </button>
+                          {videoTimeOffset2 !== null && (
+                            <>
+                              <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
+                                Offset: {Math.floor(videoTimeOffset2 / 60)}:{String(Math.floor(videoTimeOffset2 % 60)).padStart(2, '0')}
+                              </span>
+                              <button
+                                onClick={() => setVideoTimeOffset2(null)}
+                                style={{
+                                  background: '#ef4444',
+                                  color: '#ffffff',
+                                  fontWeight: 900,
+                                  fontSize: '0.85rem',
+                                  padding: '0.6rem 1rem',
+                                  borderRadius: '10px',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}
+                              >
+                                Borrar sync
+                              </button>
+                            </>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}
