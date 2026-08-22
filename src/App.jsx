@@ -448,8 +448,23 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         const adjustedTime = `${mm}:${ss}`;
         return { time: adjustedTime, name: `${base}_corte_${adjustedTime}`, duracion: String(duracion) };
       });
-      const { cutVideoMultiple } = await import('./ffmpegCut.js');
-      const results = await cutVideoMultiple(videoFile, cortes);
+      let results;
+      try {
+        const { cutVideoMultiple, isBrowserCutSupported } = await import('./ffmpegCut.js');
+        if (isBrowserCutSupported(videoFile)) {
+          results = await cutVideoMultiple(videoFile, cortes);
+        } else { throw new Error('Server fallback'); }
+      } catch (e) {
+        console.warn('Browser cut failed, falling back to server:', e);
+        const formData = new FormData();
+        formData.append('video', videoFile);
+        formData.append('segundos', String(Math.max(1, parseInt(corteSegundos, 10) || 15)));
+        formData.append('cortes', JSON.stringify(cortes));
+        const resp = await fetch('/api/cortar', { method: 'POST', body: formData });
+        if (!resp.ok) { let msg = 'Error al cortar el vídeo'; try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {} throw new Error(msg); }
+        const blob = await resp.blob();
+        results = [{ name: `${base}_cortes.zip`, blob }];
+      }
       if (results.length === 1) {
         const url = URL.createObjectURL(results[0].blob);
         const a = document.createElement('a');
@@ -517,8 +532,23 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         const total = acciones.filter(a => a.name === c.actionName).length;
         return total > 1 ? `${c.actionName} ${count}` : c.actionName;
       });
-      const { cutVideoMultiple } = await import('./ffmpegCut.js');
-      const results = await cutVideoMultiple(videoFile, cortes);
+      let results;
+      try {
+        const { cutVideoMultiple, isBrowserCutSupported } = await import('./ffmpegCut.js');
+        if (isBrowserCutSupported(videoFile)) {
+          results = await cutVideoMultiple(videoFile, cortes);
+        } else { throw new Error('Server fallback'); }
+      } catch (e) {
+        console.warn('Browser cut failed, falling back to server:', e);
+        const formData = new FormData();
+        formData.append('video', videoFile);
+        formData.append('segundos', String(Math.max(1, parseInt(corteSegundos, 10) || 15)));
+        formData.append('cortes', JSON.stringify(cortes));
+        const resp = await fetch('/api/cortar', { method: 'POST', body: formData });
+        if (!resp.ok) { let msg = 'Error al generar preview'; try { const j = await resp.json(); if (j && j.error) msg = j.error; } catch {} throw new Error(msg); }
+        const blob = await resp.blob();
+        results = [{ name: 'preview.zip', blob }];
+      }
       const { default: JSZip } = await import('jszip');
       const zip = new JSZip();
       for (const r of results) zip.file(r.name, r.blob);
@@ -2631,13 +2661,26 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 setGenerandoAccion(actionKey);
                                 setPreviewAccion(null);
                                 const videoName = filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : (() => { const sameName = accionesFiltradas.filter(a => a.name === e.name); const correlative = sameName.indexOf(e) + 1; return sameName.length > 1 ? e.name + ' ' + correlative : e.name; })();
-                                import('./ffmpegCut.js').then(({ cutVideoSingle }) => {
-                                  cutVideoSingle(videoFile, adjustedTime, duracion, videoName, () => {}).then(blob => {
-                                    if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url);
-                                    const url = URL.createObjectURL(blob);
-                                    setPreviewAccion({ url: url, name: videoName, key: actionKey });
-                                  }).catch(err => { setCorteError(err.message); }).finally(() => { setGenerandoAccion(null); });
-                                });
+                                const doCut = async () => {
+                                  try {
+                                    const { cutVideoSingle, isBrowserCutSupported } = await import('./ffmpegCut.js');
+                                    if (isBrowserCutSupported(videoFile)) {
+                                      return await cutVideoSingle(videoFile, adjustedTime, duracion, videoName, () => {});
+                                    }
+                                  } catch (e) { console.warn('Browser cut failed, falling back to server:', e); }
+                                  const formData = new FormData();
+                                  formData.append('video', videoFile);
+                                  formData.append('segundos', String(duracion));
+                                  formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName }]));
+                                  const resp = await fetch('/api/cortar', { method: 'POST', body: formData, signal: AbortSignal.timeout(600000) });
+                                  if (!resp.ok) throw new Error('Error al generar');
+                                  return await resp.blob();
+                                };
+                                doCut().then(blob => {
+                                  if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url);
+                                  const url = URL.createObjectURL(blob);
+                                  setPreviewAccion({ url: url, name: videoName, key: actionKey });
+                                }).catch(err => { setCorteError(err.message); }).finally(() => { setGenerandoAccion(null); });
                               }} style={{ background: '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>{generandoAccion === actionKey ? '...' : 'Generar'}</button>
                             </div>
                             {previewAccion && previewAccion.key === actionKey && (
