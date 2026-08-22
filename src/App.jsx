@@ -131,6 +131,7 @@ export default function App() {
   const [posesionMatchIds, setPosesionMatchIds] = useState([]);
   const [posesionDropdownOpen, setPosesionDropdownOpen] = useState(false);
   const [hiddenLines, setHiddenLines] = useState({});
+  const [hiddenPoseRows, setHiddenPoseRows] = useState(new Set());
 
   useEffect(() => {
     if (!posesionDropdownOpen) return;
@@ -4336,16 +4337,20 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Propio</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Ver</th>
                         </tr>
                       </thead>
                       <tbody>
                         {allMatchData.flatMap((d, mi) => [
-                          ...d.rows.map((r, ri) => (
+                          ...d.rows.filter(r => !hiddenPoseRows.has(r.label)).map((r, ri) => (
                             <tr key={mi + '-' + ri} style={{ background: ri % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center' }}>
+                                <button onClick={() => setHiddenPoseRows(prev => { const s = new Set(prev); s.has(r.label) ? s.delete(r.label) : s.add(r.label); return s; })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#22c55e', fontSize: '1.1rem' }} title="Ocultar/Mostrar">&#128065;</button>
+                              </td>
                             </tr>
                           )),
                           <tr key={'sub-' + mi} style={{ background: 'rgba(56,189,248,0.12)' }}>
@@ -4353,6 +4358,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.ownPct}%</td>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.rivalPct}%</td>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.neutroPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center' }}>
+                              <button onClick={() => setHiddenPoseRows(prev => { const s = new Set(prev); s.has(d.subtotal.label) ? s.delete(d.subtotal.label) : s.add(d.subtotal.label); return s; })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#22c55e', fontSize: '1.1rem' }} title="Ocultar/Mostrar">&#128065;</button>
+                            </td>
                           </tr>
                         ])}
                       </tbody>
