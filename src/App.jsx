@@ -447,7 +447,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
     setCortandoTodos(true);
     try {
       const base = videoFileName.replace(/\.[^.]+$/, '') || 'partido';
-      const offsetSecs = videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0;
+      const offsetSecs = videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0);
       const cortes = acciones.map(e => {
         const parts = String(e.time).split(':').map(Number);
         const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
@@ -515,7 +515,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
     setCorteError('');
     try {
       const base = videoFileName.replace(/\.[^.]+$/, '') || 'partido';
-      const offsetSecs = videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0;
+      const offsetSecs = videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0);
       const cortes = acciones.map(e => {
         const parts = String(e.time).split(':').map(Number);
         const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
@@ -2387,7 +2387,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       <div style={{ position: 'absolute', bottom: '32px', left: '50px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
                           {(() => {
-                            const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                            const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0));
                             const adjusted = Math.max(0, videoCurrentTime - offset);
                             return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
                           })()}
@@ -2510,7 +2510,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   )}
                   <select
                     value={filtroAccion}
-                    onChange={(e) => { setFiltroAccion(e.target.value); if (e.target.value === '__varios__') { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset != null ? videoTimeOffset : 0; setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.floor(videoRef.current.currentTime + offset) })); } } }}
+                    onChange={(e) => { setFiltroAccion(e.target.value); if (e.target.value === '__varios__') { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.floor(videoRef.current.currentTime + offset) })); } } }}
                     style={{
                       padding: '0.4rem 0.8rem',
                       borderRadius: '8px',
@@ -2603,7 +2603,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         if (entry.time && entry.type !== 'finalizacion' && videoRef.current && videoUrl) {
                           const parts = String(entry.time).split(':').map(Number);
                           const secs = (parts[0] || 0) * 60 + (parts[1] || 0);
-                          const offset = videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0;
+                          const offset = videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0));
                           const videoSecs = Math.max(0, secs + offset);
                           videoRef.current.currentTime = videoSecs;
                           setAccionSeleccionada(entry);
@@ -2673,9 +2673,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 if (filtroAccion === '__varios__') {
                                   videoRef.current.currentTime = Math.max(0, secs);
                                 } else {
-                                  const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
-                                  videoRef.current.currentTime = Math.max(0, secs + offsetSecs);
-                                }
+                                   const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0));
+                                   videoRef.current.currentTime = Math.max(0, secs + offsetSecs);
+                                 }
+
                               }
                             }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', cursor: 'pointer', gap: '0.5rem' }}>
                               <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', minWidth: '20px' }}>{idx + 1}</span>
@@ -2690,7 +2691,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                     if (videoRef.current && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
-                                      const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                      const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
                                       videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
@@ -2704,7 +2705,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                     if (videoRef.current && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
-                                      const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                      const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
                                       videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
@@ -2720,7 +2721,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                     if (videoRef.current && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
-                                      const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                      const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
                                       const inicioAjuste = ajusteAcciones[actionKey] || 0;
                                       videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
                                     }
@@ -2735,7 +2736,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                     if (videoRef.current && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
-                                      const offsetSecs = videoTimeOffset != null ? videoTimeOffset : 0;
+                                      const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
                                       const inicioAjuste = ajusteAcciones[actionKey] || 0;
                                       videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
                                     }
@@ -2746,7 +2747,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               <button onClick={(ev) => {
                                 ev.stopPropagation();
                                 if (!videoFile) { setCorteError('Selecciona primero el archivo de vídeo'); return; }
-                                const offsetSecs = videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0;
+                                const offsetSecs = videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0);
                                 const parts = String(e.time).split(':').map(Number);
                                 const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
                                 const ajusteInicio = ajusteAcciones[actionKey] || 0;
@@ -2816,7 +2817,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       <div style={{ width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'center' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: 'rgba(0,0,0,0.4)', padding: '0.2rem 0.8rem', borderRadius: '6px' }}>
                           {(() => {
-                            const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                            const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0));
                             const adjusted = Math.max(0, videoCurrentTime - offset);
                             return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
                           })()}
