@@ -146,6 +146,7 @@ export default function App() {
   const [videoUrl, setVideoUrl] = useState(null);
   const [videoTimeOffset, setVideoTimeOffset] = useState(null);
   const [videoTimeOffset2, setVideoTimeOffset2] = useState(null);
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const videoRef = useRef(null);
   const [corteSegundos, setCorteSegundos] = useState(15);
   const [filtroAccion, setFiltroAccion] = useState('');
@@ -2788,6 +2789,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         ref={videoRef}
                         src={videoUrl}
                         controls
+                        onTimeUpdate={(e) => setVideoCurrentTime(e.target.currentTime)}
                         style={{
                           display: 'block',
                           width: '100%',
@@ -2796,6 +2798,15 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                           background: '#000000'
                         }}
                       />
+                      <div style={{ width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'center' }}>
+                        <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: 'rgba(0,0,0,0.4)', padding: '0.2rem 0.8rem', borderRadius: '6px' }}>
+                          {(() => {
+                            const offset = videoTimeOffset != null ? videoTimeOffset : 0;
+                            const adjusted = Math.max(0, videoCurrentTime - offset);
+                            return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
+                          })()}
+                        </span>
+                      </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                           <button onClick={() => {
