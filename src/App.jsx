@@ -671,6 +671,16 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
           if (v.paused) v.play(); else v.pause();
         }
       }
+      if (e.code === 'Home' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
+        e.preventDefault();
+        const v = videoRef.current;
+        if (v) v.currentTime = Math.max(0, v.currentTime - 5);
+      }
+      if (e.code === 'End' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
+        e.preventDefault();
+        const v = videoRef.current;
+        if (v) v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
