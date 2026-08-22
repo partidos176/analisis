@@ -2343,19 +2343,24 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                   {videoUrl && (
-                    <video
-                      ref={videoRef}
-                      src={videoUrl}
-                      controls
-                      style={{
-                        display: 'block',
-                        width: '100%',
-                        maxWidth: '900px',
-                        height: 'auto',
-                        borderRadius: '12px',
-                        background: '#000000'
-                      }}
-                    />
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '900px' }}>
+                      <video
+                        ref={videoRef}
+                        src={videoUrl}
+                        controls
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '12px',
+                          background: '#000000'
+                        }}
+                      />
+                      <button
+                        onClick={() => { if (videoRef.current) { videoRef.current.pause(); } setVideoUrl(null); setVideoFile(null); setVideoFileName(''); setVideoTimeOffset(null); setAccionSeleccionada(null); setPreviewVideoUrl(null); }}
+                        style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.85)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                      >×</button>
+                    </div>
                   )}
                   {videoUrl && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
