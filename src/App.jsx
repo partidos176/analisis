@@ -4242,7 +4242,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                 const matchOptions = matches
                   .filter(m => m.matchday)
                   .map(m => {
-                    const score = (m.homeScore != null && m.awayScore != null) ? ` (${m.homeScore}-${m.awayScore})` : '';
+                    const score = ` (${m.golCount ?? 0}-${m.golRivalCount ?? 0})`;
                     return { id: m.id, matchday: m.matchday, label: 'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
                   })
                   .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
@@ -4260,7 +4260,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   if (ps) { pds.push({ start: ps, end: null }); }
                   const md = m.matchday || 0;
                   const teamInfo = (m.homeTeam || '') + ' vs ' + (m.awayTeam || '');
-                  const score = (m.homeScore != null && m.awayScore != null) ? ' (' + m.homeScore + '-' + m.awayScore + ')' : '';
+                  const score = ' (' + (m.golCount ?? 0) + '-' + (m.golRivalCount ?? 0) + ')';
                   const rws = pds.map(p => {
                     const startTime = parseTime(p.start.time);
                     const endTime = p.end ? parseTime(p.end.time) : timerSeconds;
