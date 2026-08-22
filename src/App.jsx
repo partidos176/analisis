@@ -2307,7 +2307,64 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                 flexDirection: 'column',
                 gap: '1.5rem'
               }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                  {videoUrl && (
+                    <video
+                      ref={videoRef}
+                      src={videoUrl}
+                      controls
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        maxWidth: '900px',
+                        height: 'auto',
+                        borderRadius: '12px',
+                        background: '#000000'
+                      }}
+                    />
+                  )}
+                  {!videoUrl && (
+                    <label style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      background: 'var(--bg-secondary)',
+                      border: '1px dashed var(--border-subtle)',
+                      borderRadius: '12px',
+                      padding: '1.2rem 2rem',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      minWidth: '280px',
+                      width: '100%',
+                      maxWidth: '900px'
+                    }}>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => {
+                          const file = e.target.files && e.target.files[0];
+                          if (file) {
+                            if (videoUrl) URL.revokeObjectURL(videoUrl);
+                            if (previewVideoUrl) URL.revokeObjectURL(previewVideoUrl);
+                            setVideoFile(file);
+                            setVideoFileName(file.name);
+                            setVideoUrl(URL.createObjectURL(file));
+                            setVideoTimeOffset(null);
+                            setAccionSeleccionada(null);
+                            setPreviewVideoUrl(null);
+                            setPreviewNombres([]);
+                            setCorteError('');
+                          }
+                        }}
+                        style={{ display: 'none' }}
+                      />
+                      <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        {videoFileName ? 'Vídeo: ' + videoFileName : 'Seleccionar vídeo'}
+                      </span>
+                    </label>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
                   {/* Columna izquierda - Tabla de acciones (oculta) */}
                   <div style={{
                     flex: 1,
@@ -2586,58 +2643,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     alignItems: 'center',
                     gap: '1.2rem'
                   }}>
-                    <label style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      background: 'var(--bg-secondary)',
-                      border: '1px dashed var(--border-subtle)',
-                      borderRadius: '12px',
-                      padding: '1.2rem 2rem',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      minWidth: '280px'
-                    }}>
-                      <input
-                        type="file"
-                        accept="video/*"
-                    onChange={(e) => {
-                      const file = e.target.files && e.target.files[0];
-                      if (file) {
-                        if (videoUrl) URL.revokeObjectURL(videoUrl);
-                        if (previewVideoUrl) URL.revokeObjectURL(previewVideoUrl);
-                        setVideoFile(file);
-                        setVideoFileName(file.name);
-                        setVideoUrl(URL.createObjectURL(file));
-                        setVideoTimeOffset(null);
-                        setAccionSeleccionada(null);
-                        setPreviewVideoUrl(null);
-                        setPreviewNombres([]);
-                        setCorteError('');
-                      }
-                    }}
-                        style={{ display: 'none' }}
-                      />
-                      <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {videoFileName ? 'Vídeo: ' + videoFileName : 'Seleccionar vídeo'}
-                  </span>
-                </label>
-                    {videoUrl && (
-                      <video
-                        ref={videoRef}
-                        src={videoUrl}
-                        controls
-                        style={{
-                          display: 'block',
-                          width: '100%',
-                          maxWidth: '900px',
-                          height: 'auto',
-                          borderRadius: '12px',
-                          background: '#000000'
-                        }}
-                      />
-                    )}
                     {videoUrl && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                         <button
@@ -2740,6 +2745,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       </div>
                     )}
                   </div>
+                </div>
                 </div>
               </div>
             )}
