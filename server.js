@@ -103,7 +103,8 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
     }
 
     const outDir = tmpDir();
-    const results = await Promise.all(cortes.map(async (corte) => {
+    const results = [];
+    for (const corte of cortes) {
       const startSecs = parseTime(corte.time);
       const duracion = corte.duracion ? Math.max(1, parseInt(corte.duracion, 10)) : 5;
       const outName = (corte.name || 'corte').replace(/[\\/:*?"<>|]/g, '_');
@@ -111,12 +112,12 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
       const args = ['-ss', String(startSecs), '-t', String(duracion), '-i', inputPath, '-c', 'copy', '-movflags', '+faststart', '-y', outPath];
       try {
         await execFileAsync(ffmpegPath, args, { timeout: 300000 });
-        return { ok: true, name: outName, path: outPath };
+        results.push({ ok: true, name: outName, path: outPath });
       } catch (err) {
         console.error('ffmpeg error:', err.message);
-        return { ok: false, name: outName, error: err.message };
+        results.push({ ok: false, name: outName, error: err.message });
       }
-    }));
+    }
 
     const failed = results.filter(r => !r.ok);
     if (failed.length > 0) {
