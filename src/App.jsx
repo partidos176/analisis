@@ -755,12 +755,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
 
   const startTracking = async (clickX, clickY) => {
     const video = videoRef.current;
-    if (!video || video.paused) return;
+    if (!video) return;
+    if (video.paused) { try { await video.play(); } catch (e) { /* noop */ } }
     const model = trackingModel || await loadTrackingModel();
     if (!model) return;
     const predictions = await model.detect(video);
     const persons = predictions.filter(p => p.class === 'person');
-    if (persons.length === 0) return;
+    if (persons.length === 0) { setTrackingMode(false); return; }
     let best = persons[0];
     let bestDist = Infinity;
     const videoRect = video.getBoundingClientRect();
@@ -814,22 +815,24 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
     const ctx = canvas.getContext('2d');
     const draw = () => {
       const rect = video.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
       canvas.width = rect.width;
       canvas.height = rect.height;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const scaleX = canvas.width / video.videoWidth;
       const scaleY = canvas.height / video.videoHeight;
       if (trailPoints.length > 1) {
-        ctx.beginPath();
-        ctx.moveTo(trailPoints[0].x * scaleX, trailPoints[0].y * scaleY);
         for (let i = 1; i < trailPoints.length; i++) {
+          const alpha = 0.3 + 0.7 * (i / trailPoints.length);
+          ctx.beginPath();
+          ctx.moveTo(trailPoints[i - 1].x * scaleX, trailPoints[i - 1].y * scaleY);
           ctx.lineTo(trailPoints[i].x * scaleX, trailPoints[i].y * scaleY);
+          ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+          ctx.lineWidth = 4;
+          ctx.lineJoin = 'round';
+          ctx.lineCap = 'round';
+          ctx.stroke();
         }
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.9)';
-        ctx.lineWidth = 4;
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.stroke();
       }
       const last = trailPoints[trailPoints.length - 1];
       if (last && last.bbox) {
@@ -2543,33 +2546,34 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         src={videoUrl}
                         controls
                         onTimeUpdate={(e) => setVideoCurrentTime(e.target.currentTime)}
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          height: 'auto',
+                          borderRadius: '12px',
+                          background: '#000000'
+                        }}
+                      />
+                      <canvas
+                        ref={trailCanvasRef}
                         onClick={(e) => {
                           if (!trackingMode) return;
-                          const rect = e.target.getBoundingClientRect();
+                          const canvas = e.target;
+                          const rect = canvas.getBoundingClientRect();
                           const x = e.clientX - rect.left;
                           const y = e.clientY - rect.top;
                           setTrackingMode(false);
                           startTracking(x, y);
                         }}
                         style={{
-                          display: 'block',
-                          width: '100%',
-                          height: 'auto',
-                          borderRadius: '12px',
-                          background: '#000000',
-                          cursor: trackingMode ? 'crosshair' : 'default'
-                        }}
-                      />
-                      <canvas
-                        ref={trailCanvasRef}
-                        style={{
                           position: 'absolute',
                           top: 0,
                           left: 0,
                           width: '100%',
                           height: '100%',
-                          pointerEvents: 'none',
-                          borderRadius: '12px'
+                          borderRadius: '12px',
+                          cursor: trackingMode ? 'crosshair' : 'default',
+                          pointerEvents: trackingMode ? 'auto' : 'none'
                         }}
                       />
                       <div style={{ position: 'absolute', bottom: '32px', left: '50px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
