@@ -22,6 +22,8 @@ import raveloImg from './jugadores/ravelo.jpg';
 import santanaImg from './jugadores/santana.jpg';
 import santosImg from './jugadores/santos.jpg';
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import * as tf from '@tensorflow/tfjs';
+import * as cocoSsd from '@tensorflow-models/coco-ssd';
 
 const jugadoresData = {
   ALEX: { foto: alexImg, pos1: 'CENTRAL' },
@@ -165,6 +167,15 @@ export default function App() {
   const [generandoAccion, setGenerandoAccion] = useState(null);
   const [variosIndex, setVariosIndex] = useState(0);
   const [variosBaseTimes, setVariosBaseTimes] = useState({});
+  const [trackingMode, setTrackingMode] = useState(false);
+  const [trackingModel, setTrackingModel] = useState(null);
+  const [modelLoading, setModelLoading] = useState(false);
+  const [trailPoints, setTrailPoints] = useState([]);
+  const [isTracking, setIsTracking] = useState(false);
+  const trailCanvasRef = useRef(null);
+  const trackingIntervalRef = useRef(null);
+  const trailStartRef = useRef(null);
+  const lastDetectedRef = useRef(null);
 
   useEffect(() => {
     let activo = true;
@@ -725,6 +736,123 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
       console.error('Error signing out:', err);
     }
   };
+
+  const loadTrackingModel = async () => {
+    if (trackingModel) return trackingModel;
+    setModelLoading(true);
+    try {
+      await tf.ready();
+      const model = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+      setTrackingModel(model);
+      setModelLoading(false);
+      return model;
+    } catch (e) {
+      console.error('Error loading model:', e);
+      setModelLoading(false);
+      return null;
+    }
+  };
+
+  const startTracking = async (clickX, clickY) => {
+    const video = videoRef.current;
+    if (!video || video.paused) return;
+    const model = trackingModel || await loadTrackingModel();
+    if (!model) return;
+    const predictions = await model.detect(video);
+    const persons = predictions.filter(p => p.class === 'person');
+    if (persons.length === 0) return;
+    let best = persons[0];
+    let bestDist = Infinity;
+    const videoRect = video.getBoundingClientRect();
+    const scaleX = video.videoWidth / videoRect.width;
+    const scaleY = video.videoHeight / videoRect.height;
+    const absX = clickX * scaleX;
+    const absY = clickY * scaleY;
+    for (const p of persons) {
+      const cx = p.bbox[0] + p.bbox[2] / 2;
+      const cy = p.bbox[1] + p.bbox[3] / 2;
+      const dist = Math.sqrt((cx - absX) ** 2 + (cy - absY) ** 2);
+      if (dist < bestDist) { bestDist = dist; best = p; }
+    }
+    const cx = best.bbox[0] + best.bbox[2] / 2;
+    const cy = best.bbox[1] + best.bbox[3] / 2;
+    setIsTracking(true);
+    trailStartRef.current = Date.now();
+    lastDetectedRef.current = { x: cx, y: cy, bbox: best.bbox };
+    setTrailPoints([{ x: cx, y: cy, time: Date.now(), bbox: best.bbox }]);
+    trackingIntervalRef.current = setInterval(async () => {
+      if (!videoRef.current || videoRef.current.paused) { stopTracking(); return; }
+      const preds = await model.detect(videoRef.current);
+      const ps = preds.filter(p => p.class === 'person');
+      if (ps.length === 0) return;
+      const prev = lastDetectedRef.current;
+      let closest = ps[0];
+      let closestDist = Infinity;
+      for (const p of ps) {
+        const pcx = p.bbox[0] + p.bbox[2] / 2;
+        const pcy = p.bbox[1] + p.bbox[3] / 2;
+        const d = prev ? Math.sqrt((pcx - prev.x) ** 2 + (pcy - prev.y) ** 2) : 0;
+        if (d < closestDist) { closestDist = d; closest = p; }
+      }
+      const ncx = closest.bbox[0] + closest.bbox[2] / 2;
+      const ncy = closest.bbox[1] + closest.bbox[3] / 2;
+      lastDetectedRef.current = { x: ncx, y: ncy, bbox: closest.bbox };
+      setTrailPoints(prev => [...prev, { x: ncx, y: ncy, time: Date.now(), bbox: closest.bbox }]);
+      if (Date.now() - trailStartRef.current >= 2000) stopTracking();
+    }, 150);
+  };
+
+  const stopTracking = () => {
+    if (trackingIntervalRef.current) { clearInterval(trackingIntervalRef.current); trackingIntervalRef.current = null; }
+    setIsTracking(false);
+  };
+
+  useEffect(() => {
+    const canvas = trailCanvasRef.current;
+    const video = videoRef.current;
+    if (!canvas || !video || trailPoints.length === 0) return;
+    const ctx = canvas.getContext('2d');
+    const draw = () => {
+      const rect = video.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const scaleX = canvas.width / video.videoWidth;
+      const scaleY = canvas.height / video.videoHeight;
+      if (trailPoints.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(trailPoints[0].x * scaleX, trailPoints[0].y * scaleY);
+        for (let i = 1; i < trailPoints.length; i++) {
+          ctx.lineTo(trailPoints[i].x * scaleX, trailPoints[i].y * scaleY);
+        }
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.9)';
+        ctx.lineWidth = 4;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+      const last = trailPoints[trailPoints.length - 1];
+      if (last && last.bbox) {
+        const bx = last.bbox[0] * scaleX;
+        const by = last.bbox[1] * scaleY;
+        const bw = last.bbox[2] * scaleX;
+        const bh = last.bbox[3] * scaleY;
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(bx, by, bw, bh);
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.15)';
+        ctx.fillRect(bx, by, bw, bh);
+      }
+    };
+    let animId;
+    const loop = () => { draw(); animId = requestAnimationFrame(loop); };
+    loop();
+    return () => cancelAnimationFrame(animId);
+  }, [trailPoints]);
+
+  useEffect(() => {
+    return () => { if (trackingIntervalRef.current) clearInterval(trackingIntervalRef.current); };
+  }, []);
 
   if (loading) {
     return (
@@ -2415,12 +2543,33 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         src={videoUrl}
                         controls
                         onTimeUpdate={(e) => setVideoCurrentTime(e.target.currentTime)}
+                        onClick={(e) => {
+                          if (!trackingMode) return;
+                          const rect = e.target.getBoundingClientRect();
+                          const x = e.clientX - rect.left;
+                          const y = e.clientY - rect.top;
+                          setTrackingMode(false);
+                          startTracking(x, y);
+                        }}
                         style={{
                           display: 'block',
                           width: '100%',
                           height: 'auto',
                           borderRadius: '12px',
-                          background: '#000000'
+                          background: '#000000',
+                          cursor: trackingMode ? 'crosshair' : 'default'
+                        }}
+                      />
+                      <canvas
+                        ref={trailCanvasRef}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          pointerEvents: 'none',
+                          borderRadius: '12px'
                         }}
                       />
                       <div style={{ position: 'absolute', bottom: '32px', left: '50px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
@@ -2547,6 +2696,31 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       )}
                     </div>
                   )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <button
+                      onClick={() => {
+                        if (isTracking) { stopTracking(); setTrailPoints([]); setTrackingMode(false); return; }
+                        setTrackingMode(!trackingMode);
+                        setTrailPoints([]);
+                      }}
+                      disabled={!videoUrl}
+                      style={{
+                        background: trackingMode ? '#ef4444' : (isTracking ? '#ef4444' : '#8b5cf6'),
+                        color: '#ffffff',
+                        fontWeight: 900,
+                        fontSize: '0.85rem',
+                        padding: '0.6rem 1rem',
+                        borderRadius: '10px',
+                        border: 'none',
+                        cursor: videoUrl ? 'pointer' : 'default',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        opacity: videoUrl ? 1 : 0.4
+                      }}
+                    >
+                      {isTracking ? 'Detener' : trackingMode ? 'Haz click en el jugador...' : modelLoading ? 'Cargando modelo...' : 'Seguir jugador'}
+                    </button>
+                  </div>
                   <select
                     value={filtroAccion}
                     onChange={(e) => { const isSelectingVarios = e.target.value === '__varios__'; const wasVarios = filtroAccion === '__varios__'; setFiltroAccion(e.target.value); if (isSelectingVarios && !wasVarios) { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.max(0, Math.floor(videoCurrentTime - offset) - 2) })); } } }}
