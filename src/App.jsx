@@ -2282,38 +2282,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   gap: '0.5rem',
                   minWidth: '280px'
                 }}>
-                  <button
-                    onClick={() => {
-                      if (actionLog.length === 0) return;
-                      decrementCounter(actionLog[0].name);
-                      setActionLog(actionLog.slice(1));
-                    }}
-                    title="Borrar primera acción"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: '#eab308',
-                      borderRadius: '50%',
-                      width: '48px',
-                      height: '48px',
-                      alignSelf: 'center',
-                      cursor: 'pointer',
-                      border: 'none',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    <img
-                      src={descargaImg}
-                      alt="Vaciar listado"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover'
-                      }}
-                    />
-                  </button>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                     <button
                       onClick={() => {
@@ -2353,6 +2321,38 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       Importar
                     </button>
                   </div>
+                  <button
+                    onClick={() => {
+                      if (actionLog.length === 0) return;
+                      decrementCounter(actionLog[0].name);
+                      setActionLog(actionLog.slice(1));
+                    }}
+                    title="Borrar primera acción"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#eab308',
+                      borderRadius: '50%',
+                      width: '48px',
+                      height: '48px',
+                      alignSelf: 'center',
+                      cursor: 'pointer',
+                      border: 'none',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <img
+                      src={descargaImg}
+                      alt="Vaciar listado"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  </button>
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
