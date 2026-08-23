@@ -759,45 +759,6 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
           zIndex: 50
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-              <button
-                onClick={() => {
-                  const data = { actionLog, matchName: currentMatch?.name || 'partido' };
-                  const json = JSON.stringify(data, null, 2);
-                  const blob = new Blob([json], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `acciones_${new Date().toISOString().slice(0, 10)}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-                style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
-                Exportar
-              </button>
-              <button
-                onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = '.json';
-                  input.click();
-                  input.onchange = () => {
-                    const file = input.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      try {
-                        const data = JSON.parse(reader.result);
-                        if (data.actionLog) setActionLog(data.actionLog);
-                      } catch (e) { /* noop */ }
-                    };
-                    reader.readAsText(file);
-                  };
-                }}
-                style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
-                Importar
-              </button>
-            </div>
             <button className="btn-sm btn-secondary" onClick={handleBackToList} style={{ fontSize: '1.4rem', padding: '0.5rem 0.8rem' }}>&#8592;</button>
             <button
               onClick={() => setActiveTab('alineacion')}
@@ -2547,6 +2508,45 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       )}
                     </div>
                   )}
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <button
+                      onClick={() => {
+                        const data = { actionLog, matchName: currentMatch?.name || 'partido' };
+                        const json = JSON.stringify(data, null, 2);
+                        const blob = new Blob([json], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `acciones_${new Date().toISOString().slice(0, 10)}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
+                      Exportar
+                    </button>
+                    <button
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = '.json';
+                        input.click();
+                        input.onchange = () => {
+                          const file = input.files[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            try {
+                              const data = JSON.parse(reader.result);
+                              if (data.actionLog) setActionLog(data.actionLog);
+                            } catch (e) { /* noop */ }
+                          };
+                          reader.readAsText(file);
+                        };
+                      }}
+                      style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
+                      Importar
+                    </button>
+                  </div>
                   <select
                     value={filtroAccion}
                     onChange={(e) => { setFiltroAccion(e.target.value); if (e.target.value === '__varios__') { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.max(0, Math.floor(videoCurrentTime - offset) - 2) })); } } }}
