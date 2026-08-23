@@ -2291,7 +2291,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = `acciones_${new Date().toISOString().slice(0, 10)}.json`;
+                        a.download = `J${currentMatch?.matchday || '?'}_${currentMatch?.homeTeam || ''}_vs_${currentMatch?.awayTeam || ''}.json`;
                         a.click();
                         URL.revokeObjectURL(url);
                       }}
