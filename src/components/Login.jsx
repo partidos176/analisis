@@ -43,6 +43,7 @@ export default function Login() {
             FútbolTotal <span>Análisis</span>
           </h1>
           <p className="login-subtitle">Tagueo Táctico &amp; Scouting en Tiempo Real</p>
+          <p style={{ color: '#ffffff', fontSize: '1.2rem', marginTop: '0.5rem' }}>hola</p>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
@@ -80,6 +81,25 @@ export default function Login() {
         <p className="login-footnote">
           Acceso restringido. Solo usuarios autorizados.
         </p>
+
+        <button
+          type="button"
+          onClick={() => window.open('https://partidos176.web.app/', '_blank')}
+          style={{
+            marginTop: '1rem',
+            background: '#10b981',
+            color: '#ffffff',
+            fontWeight: 800,
+            fontSize: '1rem',
+            padding: '0.6rem 1.5rem',
+            borderRadius: 'var(--radius-full)',
+            border: 'none',
+            cursor: 'pointer',
+            letterSpacing: '0.05em'
+          }}
+        >
+          ON
+        </button>
       </div>
     </div>
   );
