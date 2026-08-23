@@ -759,6 +759,45 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
           zIndex: 50
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+              <button
+                onClick={() => {
+                  const data = { actionLog, matchName: currentMatch?.name || 'partido' };
+                  const json = JSON.stringify(data, null, 2);
+                  const blob = new Blob([json], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `acciones_${new Date().toISOString().slice(0, 10)}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
+                Exportar
+              </button>
+              <button
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = '.json';
+                  input.click();
+                  input.onchange = () => {
+                    const file = input.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      try {
+                        const data = JSON.parse(reader.result);
+                        if (data.actionLog) setActionLog(data.actionLog);
+                      } catch (e) { /* noop */ }
+                    };
+                    reader.readAsText(file);
+                  };
+                }}
+                style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
+                Importar
+              </button>
+            </div>
             <button className="btn-sm btn-secondary" onClick={handleBackToList} style={{ fontSize: '1.4rem', padding: '0.5rem 0.8rem' }}>&#8592;</button>
             <button
               onClick={() => setActiveTab('alineacion')}
