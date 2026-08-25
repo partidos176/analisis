@@ -212,6 +212,115 @@ button {
   font-size: 0.75rem;
 }
 
+/* ==========================================================================
+   Header responsive (menú superior de análisis)
+   ========================================================================== */
+
+.app-header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.6rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.app-back-btn {
+  font-size: 1.4rem;
+  padding: 0.5rem 0.8rem;
+  flex-shrink: 0;
+}
+
+.app-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.app-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  padding-bottom: 0.2rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.tab-btn:hover {
+  color: #cbd5e1;
+}
+
+.tab-btn.active {
+  color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .tab-btn {
+    font-size: 1rem;
+  }
+}
+
+/* Móvil: fila 1 = volver + acciones, fila 2 = pestañas deslizables */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0.5rem 0.75rem;
+    row-gap: 0.35rem;
+  }
+
+  .app-tabs {
+    flex-basis: 100%;
+    order: 10;
+    gap: 1rem;
+    padding-bottom: 0.2rem;
+  }
+
+  .tab-btn {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-btn {
+    font-size: 0.8rem;
+  }
+
+  .app-back-btn {
+    font-size: 1.2rem;
+    padding: 0.35rem 0.65rem;
+  }
+
+  .app-header-actions .btn-sm {
+    padding: 0.25rem 0.45rem;
+    font-size: 0.7rem;
+  }
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }

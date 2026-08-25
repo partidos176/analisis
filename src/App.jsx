@@ -57,6 +57,21 @@ const defaultPlayersList = () => {
 
 const playerOptions = ['ALEX', 'ALVARO', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'ISMA', 'JONAS', 'JORGE', 'JUANDA', 'KEVIN', 'LUCAS', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE'];
 
+const matchTabs = [
+  { id: 'alineacion', label: 'ALINEACION' },
+  { id: 'acciones', label: 'ACCIONES' },
+  { id: 'finalizaciones', label: 'FINALIZACIONES' },
+  { id: 'goles', label: 'GOLES' },
+  { id: 'sustituciones', label: 'SUSTITUCIONES' },
+  { id: 'datos', label: 'DATOS' },
+  { id: 'posesion', label: 'POSESION' },
+  { id: 'tiempojugado', label: 'TIEMPO JUGADO' },
+  { id: 'resumengoles', label: 'RESUMEN GOLES' },
+  { id: 'resumenacciones', label: 'RESUMEN ACCIONES' },
+  { id: 'jugadores', label: 'JUGADORES' },
+  { id: 'videos', label: 'VIDEOS' }
+];
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -979,201 +994,23 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
   if (currentMatch) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <header style={{
-          background: 'var(--bg-secondary)',
-          borderBottom: '1px solid var(--border-subtle)',
-          padding: '0.6rem 1.25rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          position: 'sticky',
-          top: 0,
-          zIndex: 50
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <button className="btn-sm btn-secondary" onClick={handleBackToList} style={{ fontSize: '1.4rem', padding: '0.5rem 0.8rem' }}>&#8592;</button>
-            <button
-              onClick={() => setActiveTab('alineacion')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'alineacion' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'alineacion' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              ALINEACION
-            </button>
-            <button
-              onClick={() => setActiveTab('acciones')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'acciones' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'acciones' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              ACCIONES
-            </button>
-            <button
-              onClick={() => setActiveTab('finalizaciones')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'finalizaciones' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'finalizaciones' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              FINALIZACIONES
-            </button>
-            <button
-              onClick={() => setActiveTab('goles')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'goles' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'goles' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              GOLES
-            </button>
-            <button
-              onClick={() => setActiveTab('sustituciones')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'sustituciones' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'sustituciones' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              SUSTITUCIONES
-            </button>
-            <button
-              onClick={() => setActiveTab('datos')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'datos' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'datos' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              DATOS
-            </button>
-            <button
-              onClick={() => { setActiveTab('posesion'); setPosesionMatchIds(currentMatch?.id ? [currentMatch.id] : []); }}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'posesion' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'posesion' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              POSESION
-            </button>
-            <button
-              onClick={() => setActiveTab('tiempojugado')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'tiempojugado' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'tiempojugado' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              TIEMPO JUGADO
-            </button>
-            <button
-              onClick={() => setActiveTab('resumengoles')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'resumengoles' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'resumengoles' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              RESUMEN GOLES
-            </button>
-            <button
-              onClick={() => setActiveTab('resumenacciones')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'resumenacciones' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'resumenacciones' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              RESUMEN ACCIONES
-            </button>
-            <button
-              onClick={() => setActiveTab('jugadores')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'jugadores' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'jugadores' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              JUGADORES
-            </button>
-            <button
-              onClick={() => setActiveTab('videos')}
-              style={{
-                fontWeight: 800,
-                fontSize: '1.15rem',
-                color: activeTab === 'videos' ? '#ffffff' : '#64748b',
-                borderBottom: activeTab === 'videos' ? '2px solid #ffffff' : '2px solid transparent',
-                paddingBottom: '0.2rem',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              VIDEOS
-            </button>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <header className="app-header">
+          <button className="btn-sm btn-secondary app-back-btn" onClick={handleBackToList}>&#8592;</button>
+          <nav className="app-tabs">
+            {matchTabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`tab-btn${activeTab === tab.id ? ' active' : ''}`}
+                onClick={() => {
+                  if (tab.id === 'posesion') setPosesionMatchIds(currentMatch?.id ? [currentMatch.id] : []);
+                  setActiveTab(tab.id);
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+          <div className="app-header-actions">
             <button className="btn-sm btn-secondary" onClick={() => setVista('tratamiento')}>Tratamiento Dibujos</button>
             <button className="btn-sm btn-secondary" onClick={handleLogout}>Salir</button>
           </div>
