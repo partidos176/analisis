@@ -155,6 +155,8 @@ export default function App() {
   const [filtroAccion, setFiltroAccion] = useState('');
   const [corteError, setCorteError] = useState('');
   const [cortandoTodos, setCortandoTodos] = useState(false);
+  const SERVER_URL = 'http://localhost:3001';
+
   const [servidorCortesDisponible, setServidorCortesDisponible] = useState(null);
   const [accionSeleccionada, setAccionSeleccionada] = useState(null);
   const [corteInicio, setCorteInicio] = useState(0);
@@ -166,6 +168,7 @@ export default function App() {
   const [ajusteAccionesFin, setAjusteAccionesFin] = useState({});
   const [previewAccion, setPreviewAccion] = useState(null);
   const [generandoAccion, setGenerandoAccion] = useState(null);
+  const [progresoAccion, setProgresoAccion] = useState({});
   const [variosIndex, setVariosIndex] = useState(-1);
   const [variosBaseTimes, setVariosBaseTimes] = useState({});
   const [trackingMode, setTrackingMode] = useState(false);
@@ -178,7 +181,12 @@ export default function App() {
   const trailStartRef = useRef(null);
   const lastDetectedRef = useRef(null);
 
-  useEffect(() => { setServidorCortesDisponible(true); }, []);
+  useEffect(() => {
+    fetch(SERVER_URL + '/api/cortar')
+      .then(r => r.json())
+      .then(d => setServidorCortesDisponible(d.ok === true))
+      .catch(() => setServidorCortesDisponible(false));
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -463,29 +471,59 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         const adjustedTime = `${mm}:${ss}`;
         return { time: adjustedTime, name: `${base}_corte_${adjustedTime}`, duracion: String(duracion) };
       });
-      const results = await cutVideoMultiple(videoFile, cortes, (p) => setCorteProgress(p));
-      if (results.length === 1) {
-        const url = URL.createObjectURL(results[0].blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = results[0].name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      if (servidorCortesDisponible) {
+        const formData = new FormData();
+        formData.append('video', videoFile);
+        formData.append('cortes', JSON.stringify(cortes));
+        const resp = await fetch(SERVER_URL + '/api/cortar', { method: 'POST', body: formData });
+        if (!resp.ok) { const errData = await resp.json().catch(() => ({})); throw new Error(errData.error || 'Error en el servidor'); }
+        const contentType = resp.headers.get('content-type') || '';
+        if (contentType.includes('application/zip')) {
+          const zipBlob = await resp.blob();
+          const url = URL.createObjectURL(zipBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${base}_cortes.zip`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+        } else {
+          const videoBlob = await resp.blob();
+          const url = URL.createObjectURL(videoBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = cortes[0].name + '.mp4';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+        }
       } else {
-        const JSZip = (await import('jszip')).default;
-        const zip = new JSZip();
-        for (const r of results) zip.file(r.name, r.blob);
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const url = URL.createObjectURL(zipBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${base}_cortes.zip`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 3000);
+        const results = await cutVideoMultiple(videoFile, cortes, (p) => setCorteProgress(p));
+        if (results.length === 1) {
+          const url = URL.createObjectURL(results[0].blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = results[0].name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+        } else {
+          const JSZip = (await import('jszip')).default;
+          const zip = new JSZip();
+          for (const r of results) zip.file(r.name, r.blob);
+          const zipBlob = await zip.generateAsync({ type: 'blob' });
+          const url = URL.createObjectURL(zipBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${base}_cortes.zip`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+        }
       }
     } catch (err) {
       console.error('Error cortes:', err);
@@ -2946,14 +2984,41 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 setPreviewAccion(null);
                                 const videoName = filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : (() => { const sameName = accionesFiltradas.filter(a => a.name === e.name); const correlative = sameName.indexOf(e) + 1; return sameName.length > 1 ? e.name + ' ' + correlative : e.name; })();
                                 const doCut = async () => {
-                                  return await cutVideoSingle(videoFile, adjustedTime, duracion, videoName);
+                                  if (servidorCortesDisponible) {
+                                    return await new Promise((resolve, reject) => {
+                                      const formData = new FormData();
+                                      formData.append('video', videoFile);
+                                      formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName, duracion: String(duracion) }]));
+                                      const xhr = new XMLHttpRequest();
+                                      xhr.open('POST', SERVER_URL + '/api/cortar');
+                                      xhr.upload.onprogress = (ev) => {
+                                        if (ev.lengthComputable) {
+                                          setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round((ev.loaded / ev.total) * 90) }));
+                                        }
+                                      };
+                                      xhr.onload = () => {
+                                        setProgresoAccion(prev => ({ ...prev, [actionKey]: 95 }));
+                                        if (xhr.status >= 200 && xhr.status < 300) {
+                                          resolve(new Blob([xhr.response], { type: 'video/mp4' }));
+                                        } else {
+                                          try { const errData = JSON.parse(xhr.responseText); reject(new Error(errData.error || 'Error en el servidor')); } catch { reject(new Error('Error en el servidor')); }
+                                        }
+                                      };
+                                      xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
+                                      xhr.responseType = 'blob';
+                                      xhr.send(formData);
+                                    });
+                                  }
+                                  return await cutVideoSingle(videoFile, adjustedTime, duracion, videoName, (p) => {
+                                    setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round(p * 100) }));
+                                  });
                                 };
                                 doCut().then(blob => {
                                   if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url);
                                   const url = URL.createObjectURL(blob);
                                   setPreviewAccion({ url: url, name: videoName, key: actionKey });
-                                }).catch(err => { setCorteError(err.message); }).finally(() => { setGenerandoAccion(null); });
-                              }} style={{ background: '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>{generandoAccion === actionKey ? '...' : 'Generar'}</button>
+                                }).catch(err => { setCorteError(err.message || 'Error al generar el vídeo'); }).finally(() => { setGenerandoAccion(null); setProgresoAccion(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); });
+                              }} style={{ background: '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>{generandoAccion === actionKey ? (progresoAccion[actionKey] != null ? progresoAccion[actionKey] + '%' : '...') : 'Generar'}</button>
                               {filtroAccion === '__varios__' && <button onClick={(ev) => { ev.stopPropagation(); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[e.name + '_' + e.time]; return copy; }); setVariosIndex(prev => Math.max(0, prev - 1)); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
                             </div>
                             {previewAccion && previewAccion.key === actionKey && (

@@ -37,6 +37,8 @@ export function isBrowserCutSupported(file) {
 }
 
 export async function cutVideoSingle(file, timeSecs, durationSecs, outputName, onProgress) {
+  if (!file) throw new Error('No se ha seleccionado ningún archivo de vídeo');
+  if (file.size > MAX_BROWSER_SIZE) throw new Error(`El archivo es demasiado grande (${(file.size / 1024 / 1024 / 1024).toFixed(1)} GB). Máximo soportado: 2 GB`);
   const ffmpeg = await loadFFmpeg(onProgress);
   const inputName = 'input.mp4';
   const outputNameClean = (outputName || 'corte') + '.mp4';
