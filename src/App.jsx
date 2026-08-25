@@ -166,7 +166,7 @@ export default function App() {
   const [ajusteAccionesFin, setAjusteAccionesFin] = useState({});
   const [previewAccion, setPreviewAccion] = useState(null);
   const [generandoAccion, setGenerandoAccion] = useState(null);
-  const [variosIndex, setVariosIndex] = useState(0);
+  const [variosIndex, setVariosIndex] = useState(-1);
   const [variosBaseTimes, setVariosBaseTimes] = useState({});
   const [trackingMode, setTrackingMode] = useState(false);
   const [trackingModel, setTrackingModel] = useState(null);
@@ -2630,6 +2630,9 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                   const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
                                   const t = videoRef.current.currentTime;
                                   setVideoTimeOffset2(t - actionSecs);
+                                } else {
+                                  setCorteError('Pulsa primero el botón 2ª PARTE en el cronómetro');
+                                  setTimeout(() => setCorteError(''), 3000);
                                 }
                               }
                             }}
@@ -2677,31 +2680,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       )}
                     </div>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <button
-                      onClick={() => {
-                        if (isTracking) { stopTracking(); setTrailPoints([]); setTrackingMode(false); return; }
-                        setTrackingMode(!trackingMode);
-                        setTrailPoints([]);
-                      }}
-                      disabled={!videoUrl}
-                      style={{
-                        background: trackingMode ? '#ef4444' : (isTracking ? '#ef4444' : '#8b5cf6'),
-                        color: '#ffffff',
-                        fontWeight: 900,
-                        fontSize: '0.85rem',
-                        padding: '0.6rem 1rem',
-                        borderRadius: '10px',
-                        border: 'none',
-                        cursor: videoUrl ? 'pointer' : 'default',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        opacity: videoUrl ? 1 : 0.4
-                      }}
-                    >
-                      {isTracking ? 'Detener' : trackingMode ? 'Haz click en el jugador...' : modelLoading ? 'Cargando modelo...' : 'Seguir jugador'}
-                    </button>
-                  </div>
+
                   <select
                     value={filtroAccion}
                     onChange={(e) => { const isSelectingVarios = e.target.value === '__varios__'; const wasVarios = filtroAccion === '__varios__'; setFiltroAccion(e.target.value); if (isSelectingVarios && !wasVarios) { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.max(0, Math.floor(videoCurrentTime - offset) - 2) })); } } }}
@@ -2978,14 +2957,17 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               {filtroAccion === '__varios__' && <button onClick={(ev) => { ev.stopPropagation(); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[e.name + '_' + e.time]; return copy; }); setVariosIndex(prev => Math.max(0, prev - 1)); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
                             </div>
                             {previewAccion && previewAccion.key === actionKey && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.3rem', paddingLeft: '0.5rem' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem', marginTop: '0.3rem', paddingLeft: '0.5rem' }}>
                                 <video
                                   src={previewAccion.url}
                                   controls
                                   style={{ display: 'block', width: '200px', borderRadius: '8px', background: '#000000' }}
                                 />
-                                <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>{previewAccion.name}</span>
-                                <a href={previewAccion.url} download={previewAccion.name + '.mp4'} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', textDecoration: 'none' }}>Descargar</a>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                  <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>{previewAccion.name}</span>
+                                  <a href={previewAccion.url} download={previewAccion.name + '.mp4'} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', textDecoration: 'none' }}>Descargar</a>
+                                  <button onClick={() => { if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url); setPreviewAccion(null); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase' }}>Borrar</button>
+                                </div>
                               </div>
                             )}
                           </React.Fragment>
