@@ -39,7 +39,7 @@ const interseccionLineaElipse = (de, hacia, dim) => {
   return { x: de.x * dim.w + dx * t, y: de.y * dim.h + dy * t };
 };
 
-function TratamientoApp() {
+function TratamientoApp({ videoInicial }) {
   const [archivo, setArchivo] = useState(null);
   const [videoUrl, setVideoUrl] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -50,6 +50,8 @@ function TratamientoApp() {
   const [capturas, setCapturas] = useState([]);
   const [capturaSeleccionada, setCapturaSeleccionada] = useState(null);
   const [capturaGuardada, setCapturaGuardada] = useState(null);
+  const [capturaDuracion, setCapturaDuracion] = useState(null);
+  const [fotoCompleta, setFotoCompleta] = useState(false);
   const [figuras, setFiguras] = useState([]);
   const [figuraSeleccionada, setFiguraSeleccionada] = useState(null);
   const [imgDim, setImgDim] = useState(null);
@@ -58,6 +60,7 @@ function TratamientoApp() {
   const [arrastrePos, setArrastrePos] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [exportando, setExportando] = useState(false);
+  const [nombreVideo, setNombreVideo] = useState('');
   const [progresoVideo, setProgresoVideo] = useState(0);
   const [abrirCarpetaAlOK, setAbrirCarpetaAlOK] = useState(false);
   const [modoPolilinea, setModoPolilinea] = useState(false);
@@ -86,6 +89,30 @@ function TratamientoApp() {
   useEffect(() => () => {
     if (clipTimerRef.current) clearTimeout(clipTimerRef.current);
   }, []);
+
+  const editorRef = useRef(null);
+  useEffect(() => {
+    const onFs = () => {
+      setFotoCompleta(!!(editorRef.current && document.fullscreenElement === editorRef.current));
+    };
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+
+  useEffect(() => {
+    setCapturaDuracion(null);
+  }, [capturaGuardada]);
+
+  useEffect(() => {
+    if (!videoInicial) return;
+    if (videoUrl) URL.revokeObjectURL(videoUrl);
+    const url = URL.createObjectURL(videoInicial);
+    const file = videoInicial instanceof File ? videoInicial : new File([videoInicial], 'corte.mp4', { type: 'video/mp4' });
+    setArchivo(file);
+    setVideoUrl(url);
+    setProgreso(0);
+    setHoja('Presentación');
+  }, [videoInicial]);
   const svgRef = useRef(null);
   const dragRef = useRef(null);
 
@@ -149,11 +176,13 @@ function TratamientoApp() {
     setProgreso(x);
   };
 
-  const exportarVideo = async () => {
-    const original = videoRef.current;
-    if (!original || !duracion) return;
-    setExportando(true);
-    try {
+    const exportarVideo = async (nombre) => {
+      const original = videoRef.current;
+      if (!original || !duracion) return;
+      setExportando(true);
+      let orig = null;
+      let clipEls = [];
+      try {
       const w = original.videoWidth || 640;
       const h = original.videoHeight || 360;
       const clips = capturas.filter(c => c.videoUrl && c.insertarEn != null).sort((a, b) => a.insertarEn - b.insertarEn);
@@ -190,7 +219,7 @@ function TratamientoApp() {
       const chunks = [];
       rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
 
-      const orig = document.createElement('video');
+      orig = document.createElement('video');
       orig.muted = true;
       orig.playsInline = true;
       orig.preload = 'auto';
@@ -198,29 +227,45 @@ function TratamientoApp() {
 
       await new Promise((res, rej) => { orig.onloadedmetadata = res; orig.onerror = rej; });
 
-      const clipEls = clips.map(c => {
+      orig.style.position = 'fixed';
+      orig.style.opacity = '0';
+      orig.style.pointerEvents = 'none';
+      orig.style.width = '2px';
+      orig.style.height = '2px';
+      orig.style.left = '-10px';
+      orig.style.top = '-10px';
+      document.body.appendChild(orig);
+
+      clipEls = clips.map(c => {
         const v = document.createElement('video');
         v.muted = true;
         v.playsInline = true;
         v.preload = 'auto';
         v.src = c.videoUrl;
+        v.style.position = 'fixed';
+        v.style.opacity = '0';
+        v.style.pointerEvents = 'none';
+        v.style.width = '2px';
+        v.style.height = '2px';
+        v.style.left = '-10px';
+        v.style.top = '-10px';
+        document.body.appendChild(v);
         return { c, v };
       });
       await Promise.all(clipEls.map(({ v }) => new Promise((res) => { v.onloadedmetadata = res; v.onerror = res; })));
 
       let activeClip = null;
-      let clipStartTime = 0;
       let clipIdx = 0;
       let raf = 0;
       let terminado = false;
 
       const drawFrame = () => {
-        ctx.drawImage(orig, 0, 0, w, h);
-        if (activeClip) {
-          ctx.drawImage(activeClip, 0, 0, w, h);
+        try { ctx.drawImage(orig, 0, 0, w, h); } catch (e) { /* noop */ }
+        if (figurasImg) {
+          try { ctx.drawImage(figurasImg, 0, 0, w, h); } catch (e) { /* noop */ }
         }
-        if (figuresImg) {
-          ctx.drawImage(figuresImg, 0, 0, w, h);
+        if (activeClip && activeClip.readyState >= 2) {
+          try { ctx.drawImage(activeClip, 0, 0, w, h); } catch (e) { /* noop */ }
         }
       };
 
@@ -229,10 +274,41 @@ function TratamientoApp() {
         terminado = true;
         cancelAnimationFrame(raf);
         try { rec.stop(); } catch (e) { /* noop */ }
+        try { document.body.removeChild(orig); } catch (e) { /* noop */ }
+        clipEls.forEach(({ v }) => { try { document.body.removeChild(v); } catch (e) { /* noop */ } });
         setExportando(false);
         if (error) { setAviso('Error al exportar el video'); return; }
         await new Promise(res => { rec.onstop = res; });
         const blob = new Blob(chunks, { type: mime });
+        if (nombre) {
+          const baseName = (String(nombre).replace(/\.[^.]+$/, '') || 'video');
+          try {
+            setAviso('Convirtiendo a MP4...');
+            const ffmpeg = await loadFFmpeg();
+            await ffmpeg.writeFile('input_export.webm', new Uint8Array(await blob.arrayBuffer()));
+            await ffmpeg.exec(['-i', 'input_export.webm', '-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p', '-an', 'output_export.mp4']);
+            const out = await ffmpeg.readFile('output_export.mp4');
+            const mp4Blob = new Blob([out], { type: 'video/mp4' });
+            const enlace = document.createElement('a');
+            enlace.href = URL.createObjectURL(mp4Blob);
+            enlace.download = baseName + '.mp4';
+            document.body.appendChild(enlace);
+            enlace.click();
+            document.body.removeChild(enlace);
+            setTimeout(() => URL.revokeObjectURL(enlace.href), 2000);
+            setAviso('Vídeo generado y descargado');
+          } catch (e) {
+            const enlace = document.createElement('a');
+            enlace.href = URL.createObjectURL(blob);
+            enlace.download = baseName + '.webm';
+            document.body.appendChild(enlace);
+            enlace.click();
+            document.body.removeChild(enlace);
+            setTimeout(() => URL.revokeObjectURL(enlace.href), 2000);
+            setAviso('Vídeo descargado (webm)');
+          }
+          return;
+        }
         try {
           const resp = await fetch('/export-video', {
             method: 'POST',
@@ -252,17 +328,20 @@ function TratamientoApp() {
       };
 
       const loop = () => {
-        const t = orig.currentTime;
-        if (!activeClip && clipIdx < clipEls.length && t >= clipEls[clipIdx].c.insertarEn) {
+        if (!activeClip && clipIdx < clipEls.length && orig.currentTime >= clipEls[clipIdx].c.insertarEn) {
+          orig.pause();
           activeClip = clipEls[clipIdx].v;
-          clipStartTime = t;
           activeClip.currentTime = 0;
           activeClip.play().catch(() => {});
         }
-        if (activeClip && (t - clipStartTime) >= (clipEls[clipIdx].c.duracion || 4)) {
-          activeClip.pause();
-          activeClip = null;
-          clipIdx++;
+        if (activeClip) {
+          const cl = clipEls[clipIdx].c;
+          if (activeClip.ended || activeClip.currentTime >= (cl.duracion || 4)) {
+            activeClip.pause();
+            activeClip = null;
+            clipIdx++;
+            orig.play().catch(() => {});
+          }
         }
         drawFrame();
         if (!terminado) raf = requestAnimationFrame(loop);
@@ -276,6 +355,8 @@ function TratamientoApp() {
       await orig.play();
     } catch (e) {
       setExportando(false);
+      try { if (orig) document.body.removeChild(orig); } catch (err) { /* noop */ }
+      if (typeof clipEls !== 'undefined') clipEls.forEach(({ v }) => { try { document.body.removeChild(v); } catch (err) { /* noop */ } });
       setAviso('Error al exportar el video');
     }
   };
@@ -1015,6 +1096,21 @@ function TratamientoApp() {
                     </svg>
                   </button>
                 </div>
+                <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input
+                    value={nombreVideo}
+                    onChange={(e) => setNombreVideo(e.target.value)}
+                    placeholder="Nombre del vídeo"
+                    style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '0.7rem 1rem', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', color: '#e2e8f0', outline: 'none', minWidth: '220px' }}
+                  />
+                  <button
+                    onClick={() => exportarVideo(nombreVideo)}
+                    disabled={exportando || !videoUrl}
+                    style={{ background: '#22c55e', border: 'none', borderRadius: '12px', padding: '0.7rem 1.4rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.85rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: (exportando || !videoUrl) ? 'not-allowed' : 'pointer', opacity: (exportando || !videoUrl) ? 0.6 : 1 }}
+                  >
+                    {exportando ? 'Generando...' : 'Descargar'}
+                  </button>
+                </div>
                 {capturas.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.5rem' }}>
                     {capturas.map((c, i) => (
@@ -1079,14 +1175,29 @@ function TratamientoApp() {
           )}
         </div>
       ) : (
-        <div style={{ flex: 1, position: 'relative', display: 'flex' }}>
+        <div ref={editorRef} style={{ flex: 1, position: 'relative', display: 'flex' }}>
           {capturaSeleccionada && (
             <div style={{ position: 'absolute', top: '1rem', right: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem', zIndex: 10 }}>
               <button
-                onClick={() => { guardarCaptura(); setCapturaSeleccionada(null); setCapturaGuardada(null); setFiguras([]); setImgDim(null); setFiguraSeleccionada(null); }}
-                style={{ background: '#dc2626', border: 'none', borderRadius: '12px', padding: '0.7rem 1rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={() => {
+                  const el = editorRef.current;
+                  if (!el) return;
+                  if (!document.fullscreenElement) {
+                    el.requestFullscreen?.() || el.webkitRequestFullscreen?.();
+                  } else {
+                    document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+                  }
+                }}
+                title="Pantalla completa"
+                style={{ background: '#facc15', border: 'none', borderRadius: '12px', padding: '0.7rem', cursor: 'pointer', color: '#ffffff', fontSize: '0.85rem', zIndex: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {fotoCompleta ? (
+                    <><polyline points="4 14 10 14 10 20" /><polyline points="20 10 14 10 14 4" /><line x1="14" y1="10" x2="21" y2="3" /><line x1="3" y1="21" x2="10" y2="14" /></>
+                  ) : (
+                    <><polyline points="15 3 21 3 21 9" /><polyline points="9 21 3 21 3 15" /><line x1="21" y1="3" x2="14" y2="10" /><line x1="3" y1="21" x2="10" y2="14" /></>
+                  )}
+                </svg>
               </button>
               <button
                 onClick={guardarCaptura}
@@ -1094,6 +1205,12 @@ function TratamientoApp() {
                 style={{ background: '#16a34a', border: 'none', borderRadius: '12px', padding: '0.7rem 1.2rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.85rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: exportando ? 'wait' : 'pointer', opacity: exportando ? 0.6 : 1 }}
               >
                 {exportando ? `${progresoVideo}%` : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>}
+              </button>
+              <button
+                onClick={() => { guardarCaptura(); setCapturaSeleccionada(null); setCapturaGuardada(null); setFiguras([]); setImgDim(null); setFiguraSeleccionada(null); }}
+                style={{ background: '#dc2626', border: 'none', borderRadius: '12px', padding: '0.7rem 1rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginTop: '4rem' }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
               {figuraSeleccionada && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
@@ -1318,14 +1435,14 @@ function TratamientoApp() {
             }
           }}>
             {capturaSeleccionada ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ position: 'relative', display: 'inline-block' }} onClick={() => setFiguraSeleccionada(null)}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', ...(fotoCompleta ? { width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' } : {}) }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', ...(fotoCompleta ? { width: '100%', height: '100%' } : {}) }}>
+                  <div style={{ position: 'relative', display: 'inline-block', ...(fotoCompleta ? { width: '100%', height: '100%' } : {}) }} onClick={() => setFiguraSeleccionada(null)}>
                   <img
                     src={capturaSeleccionada.dataUrl}
                     alt="Captura en edición"
                     onLoad={(e) => setImgDim({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
-                    style={{ display: 'block', maxWidth: '100%', maxHeight: '92vh', borderRadius: '12px', border: '1px solid #334155' }}
+                    style={{ display: 'block', ...(fotoCompleta ? { width: '100%', height: '100%', maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' } : { maxWidth: '100%', maxHeight: '80vh' }), borderRadius: '12px', border: '1px solid #334155' }}
                   />
                   {imgDim && (
                     <svg
@@ -1857,6 +1974,7 @@ const shape = f.tipo === 'triangulo'
                           muted
                           controls
                           playsInline
+                          onLoadedMetadata={(e) => setCapturaDuracion(e.currentTarget.duration || 0)}
                           onClick={(e) => {
                             const v = e.currentTarget;
                             if (v.paused) v.play(); else v.pause();
@@ -1881,6 +1999,11 @@ const shape = f.tipo === 'triangulo'
                         ×
                       </button>
                     </div>
+                    {capturaDuracion != null && (
+                      <span style={{ fontFamily: 'var(--font-mono, JetBrains Mono, monospace)', fontWeight: 700, fontSize: '0.75rem', color: '#94a3b8' }}>
+                        Duración: {formatoTiempo(capturaDuracion)}
+                      </span>
+                    )}
                   </div>
                 )}
                 <span style={{ fontFamily: 'var(--font-mono, JetBrains Mono, monospace)', fontWeight: 700, fontSize: '0.8rem', color: '#94a3b8' }}>

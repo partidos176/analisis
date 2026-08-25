@@ -184,6 +184,7 @@ export default function App() {
   const [ajusteAcciones, setAjusteAcciones] = useState({});
   const [ajusteAccionesFin, setAjusteAccionesFin] = useState({});
   const [previewAccion, setPreviewAccion] = useState(null);
+  const [videoParaTratamiento, setVideoParaTratamiento] = useState(null);
   const [generandoAccion, setGenerandoAccion] = useState(null);
   const [progresoAccion, setProgresoAccion] = useState({});
   const [variosIndex, setVariosIndex] = useState(-1);
@@ -909,8 +910,8 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
   // Menú principal con 2 opciones
   if (vista === 'menu') {
     const opciones = [
-      { id: 'analisis', titulo: 'ANÁLISIS', descripcion: 'Partidos, acciones y estadísticas', color: '#0284c7' },
-      { id: 'tratamiento', titulo: 'TRATAMIENTO DIBUJOS', descripcion: 'Dibuja sobre vídeo y exporta', color: '#8b5cf6' }
+      { id: 'analisis', titulo: 'ANÁLISIS', descripcion: '', color: '#0284c7' },
+      { id: 'tratamiento', titulo: 'EDICIÓN', descripcion: '', color: '#8b5cf6' }
     ];
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -934,16 +935,15 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
           </div>
         </header>
         <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', gap: '2rem' }}>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 900, letterSpacing: '0.05em' }}>ELIGE UNA OPCIÓN</h1>
-          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.5rem' }}>
             {opciones.map((op) => (
               <button
                 key={op.id}
                 onClick={() => setVista(op.id)}
                 style={{
-                  width: '280px',
-                  padding: '2.5rem 2rem',
-                  background: 'var(--bg-card)',
+                  width: '360px',
+                  padding: '3.5rem 2.5rem',
+                  background: '#facc15',
                   border: `2px solid ${op.color}`,
                   borderRadius: 'var(--radius-lg)',
                   cursor: 'pointer',
@@ -956,12 +956,14 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
               >
                 <span style={{
                   fontWeight: 900,
-                  fontSize: '1.3rem',
-                  color: '#ffffff',
-                  background: op.color,
-                  padding: '0.6rem 1.4rem',
+                  fontSize: '2.6rem',
+                  color: op.id === 'tratamiento' ? '#ffffff' : '#ffffff',
+                  background: 'transparent',
+                  padding: '0.8rem 1.8rem',
                   borderRadius: '12px',
-                  letterSpacing: '0.04em'
+                  letterSpacing: '0.04em',
+                  textAlign: 'center',
+                  width: '100%'
                 }}>
                   {op.titulo}
                 </span>
@@ -981,11 +983,11 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         <button
           onClick={() => setVista('menu')}
           title="Volver al menú"
-          style={{ position: 'fixed', top: '10px', left: '10px', zIndex: 1000, background: '#0284c7', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.4)' }}
+          style={{ position: 'fixed', top: '10px', right: '10px', zIndex: 1000, background: '#0284c7', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.4)' }}
         >
           &#8592; MENÚ
         </button>
-        <TratamientoApp />
+        <TratamientoApp videoInicial={videoParaTratamiento} />
       </>
     );
   }
@@ -2940,7 +2942,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 doCut().then(blob => {
                                   if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url);
                                   const url = URL.createObjectURL(blob);
-                                  setPreviewAccion({ url: url, name: videoName, key: actionKey });
+                                  setPreviewAccion({ url: url, name: videoName, key: actionKey, blob: blob });
                                 }).catch(err => { setCorteError(err.message || 'Error al generar el vídeo'); }).finally(() => { setGenerandoAccion(null); setProgresoAccion(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); });
                               }} style={{ background: '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>{generandoAccion === actionKey ? (progresoAccion[actionKey] != null ? progresoAccion[actionKey] + '%' : '...') : 'Generar'}</button>
                               {filtroAccion === '__varios__' && <button onClick={(ev) => { ev.stopPropagation(); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[e.name + '_' + e.time]; return copy; }); setVariosIndex(prev => Math.max(0, prev - 1)); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
@@ -2956,8 +2958,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                   />
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '1.5rem' }}>
-                                  <a href={previewAccion.url} download={previewAccion.name + '.mp4'} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', textDecoration: 'none', textAlign: 'center' }}>Descargar</a>
-                                  <button onClick={() => { if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url); setPreviewAccion(null); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Borrar</button>
+                                  <a href={previewAccion.url} download={previewAccion.name + '.mp4'} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', textDecoration: 'none', textAlign: 'center' }}>Descargar</a>
+                                  <button onClick={() => { if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url); setPreviewAccion(null); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Borrar</button>
+                                  <button onClick={() => {
+                                    if (!previewAccion || !previewAccion.blob) return;
+                                    setVideoParaTratamiento(previewAccion.blob);
+                                    setVista('tratamiento');
+                                  }} style={{ background: '#8b5cf6', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Editar</button>
                                 </div>
                               </div>
                             )}
