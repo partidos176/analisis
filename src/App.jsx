@@ -1174,6 +1174,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
             </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <button className="btn-sm btn-secondary" onClick={() => setVista('tratamiento')}>Tratamiento Dibujos</button>
             <button className="btn-sm btn-secondary" onClick={handleLogout}>Salir</button>
           </div>
         </header>
@@ -5059,6 +5060,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
           <span style={{ fontWeight: 800, fontSize: '1.15rem' }}>FútbolTotal Análisis</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <button className="btn-sm btn-secondary" onClick={() => setVista('tratamiento')}>Tratamiento Dibujos</button>
           <button className="btn-sm btn-secondary" onClick={() => setVista('menu')}>Menú</button>
           <button className="btn-sm btn-secondary" onClick={handleLogout}>Salir</button>
         </div>
