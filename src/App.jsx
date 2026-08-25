@@ -3831,17 +3831,19 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                               {filtroAccion === '__varios__' && <button onClick={(ev) => { ev.stopPropagation(); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[e.name + '_' + e.time]; return copy; }); setVariosIndex(prev => Math.max(0, prev - 1)); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
                             </div>
                             {previewAccion && previewAccion.key === actionKey && (
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem', marginTop: '0.3rem', paddingLeft: '0.5rem' }}>
-                                <video
-                                  src={previewAccion.url}
-                                  controls
-                                  style={{ display: 'block', width: '200px', borderRadius: '8px', background: '#000000' }}
-                                />
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.3rem', paddingLeft: '0.5rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                                   <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>{previewAccion.name}</span>
-                                  <a href={previewAccion.url} download={previewAccion.name + '.mp4'} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', textDecoration: 'none' }}>Descargar</a>
-                                  <button onClick={() => { if (!previewAccion?.url) return; setTr_videoUrl(previewAccion.url); setTr_archivo({ name: previewAccion.name + '.mp4' }); setActiveTab('presentacion'); }} style={{ background: '#8b5cf6', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase' }}>Cargar</button>
-                                  <button onClick={() => { if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url); setPreviewAccion(null); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase' }}>Borrar</button>
+                                  <video
+                                    src={previewAccion.url}
+                                    controls
+                                    style={{ display: 'block', width: '260px', borderRadius: '8px', background: '#000000' }}
+                                  />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '1.5rem' }}>
+                                  <a href={previewAccion.url} download={previewAccion.name + '.mp4'} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', textDecoration: 'none', textAlign: 'center' }}>Descargar</a>
+                                  <button onClick={() => { if (!previewAccion?.url) return; setTr_videoUrl(previewAccion.url); setTr_archivo({ name: previewAccion.name + '.mp4' }); setActiveTab('presentacion'); }} style={{ background: '#8b5cf6', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Cargar</button>
+                                  <button onClick={() => { if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url); setPreviewAccion(null); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase' }}>Borrar</button>
                                 </div>
                               </div>
                             )}
