@@ -8,10 +8,11 @@ import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
+import ffmpegStatic from 'ffmpeg-static';
 
 const execFileAsync = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ffmpegPath = path.join(__dirname, 'node_modules', 'ffmpeg-static', 'ffmpeg.exe');
+const ffmpegPath = ffmpegStatic;
 
 const app = express();
 app.use(cors());

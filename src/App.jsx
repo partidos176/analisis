@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update } from './firebase';
 import Login from './components/Login';
 import TratamientoApp from './TratamientoApp';
-import { loadFFmpeg, cutVideoSingle, cutVideoMultiple } from './ffmpegCut';
+import { loadFFmpeg, cutVideoSingle, cutVideoMultiple, isBrowserCutSupported } from './ffmpegCut';
 import descargaImg from './descarga.png';
 import alexImg from './jugadores/alex.jpg';
 import alvaroImg from './jugadores/alvaro.jpg';
@@ -157,7 +157,7 @@ export default function App() {
   const [filtroAccion, setFiltroAccion] = useState('');
   const [corteError, setCorteError] = useState('');
   const [cortandoTodos, setCortandoTodos] = useState(false);
-  const SERVER_URL = 'http://localhost:3001';
+  const SERVER_URL = import.meta.env.VITE_CORTES_SERVER_URL || 'http://localhost:3001';
 
   const [servidorCortesDisponible, setServidorCortesDisponible] = useState(null);
   const [accionSeleccionada, setAccionSeleccionada] = useState(null);
@@ -3204,8 +3204,10 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       </span>
                     )}
                     {servidorCortesDisponible === false && (
-                      <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.8rem', textAlign: 'center' }}>
-                        El servidor de cortes no está iniciado. Ejecuta "node server.js" en la carpeta del proyecto.
+                      <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.8rem', textAlign: 'center', maxWidth: '100%' }}>
+                        {videoFile && !isBrowserCutSupported(videoFile)
+                          ? `El vídeo (${(videoFile.size / 1024 / 1024 / 1024).toFixed(1)} GB) supera el límite de 2 GB del corte en navegador. Comprímelo primero con HandBrake (handbrake.fr) o: ffmpeg -i video.mp4 -c:v libx264 -crf 24 -preset fast -c:a copy comprimido.mp4`
+                          : 'Sin servidor de cortes: los vídeos se generarán en el navegador (máx. 2 GB).'}
                       </span>
                     )}
                 {cortandoTodos && (
