@@ -2946,6 +2946,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 const ss = String(totalSecs % 60).padStart(2, '0');
                                 const adjustedTime = mm + ':' + ss;
                                 setGenerandoAccion(actionKey);
+                                setProgresoAccion(prev => ({ ...prev, [actionKey]: 0 }));
                                 setPreviewAccion(null);
                                 const trailSnapshot = trailPoints.map(p => ({ ...p }));
                                 const videoTimeSnapshot = videoRef.current ? videoRef.current.currentTime : 0;
@@ -2954,6 +2955,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 const doCut = async () => {
                                   const tryServer = async () => {
                                     return await new Promise((resolve, reject) => {
+                                      let serverProgressInterval = null;
                                       const formData = new FormData();
                                       formData.append('video', videoFile);
                                       formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName, duracion: String(duracion) }]));
@@ -2965,6 +2967,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                         }
                                       };
                                       xhr.onload = () => {
+                                        if (serverProgressInterval) clearInterval(serverProgressInterval);
                                         setProgresoAccion(prev => ({ ...prev, [actionKey]: 95 }));
                                         if (xhr.status >= 200 && xhr.status < 300) {
                                           resolve(new Blob([xhr.response], { type: 'video/mp4' }));
@@ -2972,9 +2975,19 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                           try { const errData = JSON.parse(xhr.responseText); reject(new Error(errData.error || 'Error en el servidor')); } catch { reject(new Error('Error en el servidor')); }
                                         }
                                       };
-                                      xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
+                                      xhr.onerror = () => {
+                                        if (serverProgressInterval) clearInterval(serverProgressInterval);
+                                        reject(new Error('No se pudo conectar al servidor'));
+                                      };
                                       xhr.responseType = 'blob';
                                       xhr.send(formData);
+                                      serverProgressInterval = setInterval(() => {
+                                        setProgresoAccion(prev => {
+                                          const cur = prev[actionKey] || 90;
+                                          if (cur < 98) return { ...prev, [actionKey]: cur + 1 };
+                                          return prev;
+                                        });
+                                      }, 2000);
                                     });
                                   };
                                   if (servidorCortesDisponible) {
@@ -3011,7 +3024,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                   setPreviewAccion({ url: url, name: videoName, key: actionKey, blob: blob });
                                   setTrailPointsPorCorte(prev => ({ ...prev, [actionKey]: { points: trailSnapshot, videoTimeOffset: videoTimeSnapshot, cutStartSecs: totalSecs, duration: duracion } }));
                                 }).catch(err => { setCorteError(err.message || 'Error al generar el vídeo'); }).finally(() => { setGenerandoAccion(null); setProgresoAccion(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); });
-                              }} style={{ background: '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>{generandoAccion === actionKey ? (progresoAccion[actionKey] != null ? progresoAccion[actionKey] + '%' : '...') : 'Generar'}</button>
+                              }} style={{ background: generandoAccion === actionKey ? `linear-gradient(90deg, #16a34a ${(progresoAccion[actionKey] || 0)}%, #eab308 ${(progresoAccion[actionKey] || 0)}%)` : '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap', minWidth: '70px', textAlign: 'center' }}>{generandoAccion === actionKey ? (progresoAccion[actionKey] != null ? progresoAccion[actionKey] + '%' : '...') : 'Generar'}</button>
                               {filtroAccion === '__varios__' && <button onClick={(ev) => { ev.stopPropagation(); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[e.name + '_' + e.time]; return copy; }); setVariosIndex(prev => Math.max(0, prev - 1)); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
                             </div>
                             {previewAccion && previewAccion.key === actionKey && (
