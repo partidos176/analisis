@@ -201,11 +201,20 @@ export default function App() {
   const trailStartRef = useRef(null);
   const lastDetectedRef = useRef(null);
 
+  const checkServerStatus = async () => {
+    try {
+      const r = await fetch(SERVER_URL + '/api/cortar');
+      const d = await r.json();
+      setServidorCortesDisponible(d.ok === true);
+    } catch {
+      setServidorCortesDisponible(false);
+    }
+  };
+
   useEffect(() => {
-    fetch(SERVER_URL + '/api/cortar')
-      .then(r => r.json())
-      .then(d => setServidorCortesDisponible(d.ok === true))
-      .catch(() => setServidorCortesDisponible(false));
+    checkServerStatus();
+    const interval = setInterval(checkServerStatus, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -491,40 +500,61 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         const adjustedTime = `${mm}:${ss}`;
         return { time: adjustedTime, name: `${base}_corte_${adjustedTime}`, duracion: String(duracion) };
       });
+      const tryServerBatch = async () => {
+        const formData = new FormData();
+        formData.append('video', videoFile);
+        formData.append('cortes', JSON.stringify(cortes));
+        const resp = await fetch(SERVER_URL + '/api/cortar', { method: 'POST', body: formData });
+        if (!resp.ok) { const errData = await resp.json().catch(() => ({})); throw new Error(errData.error || 'Error en el servidor'); }
+        const contentType = resp.headers.get('content-type') || '';
+        if (contentType.includes('application/zip')) {
+          const zipBlob = await resp.blob();
+          const url = URL.createObjectURL(zipBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${base}_cortes.zip`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+        } else {
+          const videoBlob = await resp.blob();
+          const url = URL.createObjectURL(videoBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = cortes[0].name + '.mp4';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+        }
+      };
       if (servidorCortesDisponible) {
         try {
-          const formData = new FormData();
-          formData.append('video', videoFile);
-          formData.append('cortes', JSON.stringify(cortes));
-          const resp = await fetch(SERVER_URL + '/api/cortar', { method: 'POST', body: formData });
-          if (!resp.ok) { const errData = await resp.json().catch(() => ({})); throw new Error(errData.error || 'Error en el servidor'); }
-          const contentType = resp.headers.get('content-type') || '';
-          if (contentType.includes('application/zip')) {
-            const zipBlob = await resp.blob();
-            const url = URL.createObjectURL(zipBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${base}_cortes.zip`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 3000);
-          } else {
-            const videoBlob = await resp.blob();
-            const url = URL.createObjectURL(videoBlob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = cortes[0].name + '.mp4';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 3000);
-          }
+          await tryServerBatch();
           return;
         } catch (serverErr) {
-          console.warn('Servidor falló, intentando en el navegador:', serverErr.message);
-          setServidorCortesDisponible(false);
+          console.warn('Servidor falló, reintentando...', serverErr.message);
+          await new Promise(r => setTimeout(r, 2000));
+          try {
+            await tryServerBatch();
+            return;
+          } catch (serverErr2) {
+            console.warn('Servidor no disponible, reintentando una vez más...', serverErr2.message);
+            setServidorCortesDisponible(false);
+            await new Promise(r => setTimeout(r, 3000));
+            checkServerStatus();
+            try {
+              await tryServerBatch();
+              return;
+            } catch (serverErr3) {
+              setServidorCortesDisponible(false);
+            }
+          }
         }
+      }
+      if (videoFile.size > 2 * 1024 * 1024 * 1024) {
+        throw new Error('El archivo supera los 2 GB y el servidor de cortes no está disponible. Inicia el servidor con: node server.js');
       }
       {
         const results = await cutVideoMultiple(videoFile, cortes, (p) => setCorteProgress(p));
@@ -2922,35 +2952,54 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 const videoTimeOffsetSnapshot = videoTimeOffset;
                                 const videoName = filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : (() => { const sameName = accionesFiltradas.filter(a => a.name === e.name); const correlative = sameName.indexOf(e) + 1; return sameName.length > 1 ? e.name + ' ' + correlative : e.name; })();
                                 const doCut = async () => {
+                                  const tryServer = async () => {
+                                    return await new Promise((resolve, reject) => {
+                                      const formData = new FormData();
+                                      formData.append('video', videoFile);
+                                      formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName, duracion: String(duracion) }]));
+                                      const xhr = new XMLHttpRequest();
+                                      xhr.open('POST', SERVER_URL + '/api/cortar');
+                                      xhr.upload.onprogress = (ev) => {
+                                        if (ev.lengthComputable) {
+                                          setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round((ev.loaded / ev.total) * 90) }));
+                                        }
+                                      };
+                                      xhr.onload = () => {
+                                        setProgresoAccion(prev => ({ ...prev, [actionKey]: 95 }));
+                                        if (xhr.status >= 200 && xhr.status < 300) {
+                                          resolve(new Blob([xhr.response], { type: 'video/mp4' }));
+                                        } else {
+                                          try { const errData = JSON.parse(xhr.responseText); reject(new Error(errData.error || 'Error en el servidor')); } catch { reject(new Error('Error en el servidor')); }
+                                        }
+                                      };
+                                      xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
+                                      xhr.responseType = 'blob';
+                                      xhr.send(formData);
+                                    });
+                                  };
                                   if (servidorCortesDisponible) {
                                     try {
-                                      return await new Promise((resolve, reject) => {
-                                        const formData = new FormData();
-                                        formData.append('video', videoFile);
-                                        formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName, duracion: String(duracion) }]));
-                                        const xhr = new XMLHttpRequest();
-                                        xhr.open('POST', SERVER_URL + '/api/cortar');
-                                        xhr.upload.onprogress = (ev) => {
-                                          if (ev.lengthComputable) {
-                                            setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round((ev.loaded / ev.total) * 90) }));
-                                          }
-                                        };
-                                        xhr.onload = () => {
-                                          setProgresoAccion(prev => ({ ...prev, [actionKey]: 95 }));
-                                          if (xhr.status >= 200 && xhr.status < 300) {
-                                            resolve(new Blob([xhr.response], { type: 'video/mp4' }));
-                                          } else {
-                                            try { const errData = JSON.parse(xhr.responseText); reject(new Error(errData.error || 'Error en el servidor')); } catch { reject(new Error('Error en el servidor')); }
-                                          }
-                                        };
-                                        xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
-                                        xhr.responseType = 'blob';
-                                        xhr.send(formData);
-                                      });
+                                      return await tryServer();
                                     } catch (serverErr) {
-                                      console.warn('Servidor falló, intentando en el navegador:', serverErr.message);
-                                      setServidorCortesDisponible(false);
+                                      console.warn('Servidor falló, reintentando...', serverErr.message);
+                                      await new Promise(r => setTimeout(r, 2000));
+                                      try {
+                                        return await tryServer();
+                                      } catch (serverErr2) {
+                                        console.warn('Servidor no disponible, reintentando una vez más...', serverErr2.message);
+                                        setServidorCortesDisponible(false);
+                                        await new Promise(r => setTimeout(r, 3000));
+                                        checkServerStatus();
+                                        try {
+                                          return await tryServer();
+                                        } catch (serverErr3) {
+                                          setServidorCortesDisponible(false);
+                                        }
+                                      }
                                     }
+                                  }
+                                  if (videoFile.size > 2 * 1024 * 1024 * 1024) {
+                                    throw new Error('El archivo supera los 2 GB y el servidor de cortes no está disponible. Inicia el servidor con: node server.js');
                                   }
                                   return await cutVideoSingle(videoFile, adjustedTime, duracion, videoName, (p) => {
                                     setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round(p * 100) }));
