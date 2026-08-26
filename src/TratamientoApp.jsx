@@ -189,29 +189,29 @@ function TratamientoApp({ videoInicial }) {
 
       const tempImgDim = { w, h };
 
-      const buildFiguresSvg = () => {
-        if (figuras.length === 0) return null;
-        const parts = figuras.map(f => svgFigura(f, tempImgDim)).filter(Boolean);
-        if (parts.length === 0) return null;
+      const capturasConFiguras = capturas.filter(c => c.figuras && c.figuras.length > 0 && c.tiempo != null && !c.videoUrl);
+
+      const figureImgs = [];
+      for (const cap of capturasConFiguras) {
+        const parts = cap.figuras.map(f => svgFigura(f, tempImgDim)).filter(Boolean);
+        if (parts.length === 0) continue;
         const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${parts.join('')}</svg>`;
         const blob = new Blob([svgStr], { type: 'image/svg+xml' });
-        return URL.createObjectURL(blob);
-      };
-
-      const svgUrl = buildFiguresSvg();
-      let figuresImg = null;
-      if (svgUrl) {
-        figuresImg = await new Promise((resolve) => {
-          const img = new Image();
-          img.onload = () => { URL.revokeObjectURL(svgUrl); resolve(img); };
-          img.onerror = () => { URL.revokeObjectURL(svgUrl); resolve(null); };
-          img.src = svgUrl;
+        const url = URL.createObjectURL(blob);
+        const img = await new Promise((resolve) => {
+          const i = new Image();
+          i.onload = () => { URL.revokeObjectURL(url); resolve(i); };
+          i.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+          i.src = url;
         });
+        if (img) figureImgs.push({ time: cap.tiempo, img, duration: 3 });
       }
 
       const canvas = document.createElement('canvas');
       canvas.width = w;
       canvas.height = h;
+      canvas.style.cssText = 'position:fixed;bottom:0;right:0;width:1px;height:1px;opacity:0.01;z-index:99999;';
+      document.body.appendChild(canvas);
       const ctx = canvas.getContext('2d');
       const stream = canvas.captureStream(30);
       const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
@@ -228,12 +228,12 @@ function TratamientoApp({ videoInicial }) {
       await new Promise((res, rej) => { orig.onloadedmetadata = res; orig.onerror = rej; });
 
       orig.style.position = 'fixed';
-      orig.style.opacity = '0';
+      orig.style.opacity = '0.01';
       orig.style.pointerEvents = 'none';
-      orig.style.width = '2px';
-      orig.style.height = '2px';
-      orig.style.left = '-10px';
-      orig.style.top = '-10px';
+      orig.style.width = '1px';
+      orig.style.height = '1px';
+      orig.style.left = '0px';
+      orig.style.top = '0px';
       document.body.appendChild(orig);
 
       clipEls = clips.map(c => {
@@ -243,12 +243,12 @@ function TratamientoApp({ videoInicial }) {
         v.preload = 'auto';
         v.src = c.videoUrl;
         v.style.position = 'fixed';
-        v.style.opacity = '0';
+        v.style.opacity = '0.01';
         v.style.pointerEvents = 'none';
-        v.style.width = '2px';
-        v.style.height = '2px';
-        v.style.left = '-10px';
-        v.style.top = '-10px';
+        v.style.width = '1px';
+        v.style.height = '1px';
+        v.style.left = '0px';
+        v.style.top = '0px';
         document.body.appendChild(v);
         return { c, v };
       });
@@ -261,8 +261,11 @@ function TratamientoApp({ videoInicial }) {
 
       const drawFrame = () => {
         try { ctx.drawImage(orig, 0, 0, w, h); } catch (e) { /* noop */ }
-        if (figurasImg) {
-          try { ctx.drawImage(figurasImg, 0, 0, w, h); } catch (e) { /* noop */ }
+        const t = orig.currentTime;
+        for (const fi of figureImgs) {
+          if (t >= fi.time && t <= fi.time + fi.duration) {
+            try { ctx.drawImage(fi.img, 0, 0, w, h); } catch (e) { /* noop */ }
+          }
         }
         if (activeClip && activeClip.readyState >= 2) {
           try { ctx.drawImage(activeClip, 0, 0, w, h); } catch (e) { /* noop */ }
@@ -275,6 +278,7 @@ function TratamientoApp({ videoInicial }) {
         cancelAnimationFrame(raf);
         try { rec.stop(); } catch (e) { /* noop */ }
         try { document.body.removeChild(orig); } catch (e) { /* noop */ }
+        try { document.body.removeChild(canvas); } catch (e) { /* noop */ }
         clipEls.forEach(({ v }) => { try { document.body.removeChild(v); } catch (e) { /* noop */ } });
         setExportando(false);
         if (error) { setAviso('Error al exportar el video'); return; }
@@ -343,6 +347,8 @@ function TratamientoApp({ videoInicial }) {
             orig.play().catch(() => {});
           }
         }
+        const pct = duracion > 0 ? Math.min(99, Math.round((orig.currentTime / duracion) * 100)) : 0;
+        setAviso('Exportando... ' + pct + '%');
         drawFrame();
         if (!terminado) raf = requestAnimationFrame(loop);
       };
@@ -354,10 +360,12 @@ function TratamientoApp({ videoInicial }) {
       loop();
       await orig.play();
     } catch (e) {
+      console.error('Export error:', e);
       setExportando(false);
       try { if (orig) document.body.removeChild(orig); } catch (err) { /* noop */ }
+      try { if (canvas && canvas.parentNode) document.body.removeChild(canvas); } catch (err) { /* noop */ }
       if (typeof clipEls !== 'undefined') clipEls.forEach(({ v }) => { try { document.body.removeChild(v); } catch (err) { /* noop */ } });
-      setAviso('Error al exportar el video');
+      setAviso('Error al exportar el video: ' + (e.message || String(e)));
     }
   };
 
@@ -979,6 +987,26 @@ function TratamientoApp({ videoInicial }) {
                     )}
                   </svg>
                 </button>
+                <button
+                  onClick={() => {
+                    const name = nombreVideo.trim() || (archivo ? archivo.name.replace(/\.[^.]+$/, '') : 'video');
+                    exportarVideo(name);
+                  }}
+                  title="Descargar vídeo"
+                  style={{ position: 'absolute', top: '8px', right: '50px', background: 'rgba(34,197,94,0.85)', border: 'none', borderRadius: '8px', padding: '0.3rem 0.5rem', cursor: 'pointer', color: '#ffffff', fontSize: '0.85rem', zIndex: 3 }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                </button>
+                <input
+                  value={nombreVideo}
+                  onChange={(e) => setNombreVideo(e.target.value)}
+                  placeholder="Nombre del vídeo"
+                  style={{ position: 'absolute', top: '8px', left: '8px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '0.3rem 0.6rem', color: '#e2e8f0', fontSize: '0.75rem', fontFamily: 'Inter, sans-serif', outline: 'none', maxWidth: '180px', zIndex: 3 }}
+                />
                 {clipActivo && clipActivo.videoUrl && (
                   <video
                     ref={(el) => {
@@ -1096,21 +1124,7 @@ function TratamientoApp({ videoInicial }) {
                     </svg>
                   </button>
                 </div>
-                <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <input
-                    value={nombreVideo}
-                    onChange={(e) => setNombreVideo(e.target.value)}
-                    placeholder="Nombre del vídeo"
-                    style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '0.7rem 1rem', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', color: '#e2e8f0', outline: 'none', minWidth: '220px' }}
-                  />
-                  <button
-                    onClick={() => exportarVideo(nombreVideo)}
-                    disabled={exportando || !videoUrl}
-                    style={{ background: '#22c55e', border: 'none', borderRadius: '12px', padding: '0.7rem 1.4rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.85rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: (exportando || !videoUrl) ? 'not-allowed' : 'pointer', opacity: (exportando || !videoUrl) ? 0.6 : 1 }}
-                  >
-                    {exportando ? 'Generando...' : 'Descargar'}
-                  </button>
-                </div>
+
                 {capturas.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '1.5rem' }}>
                     {capturas.map((c, i) => (
