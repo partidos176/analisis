@@ -554,7 +554,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         }
       }
       if (videoFile.size > 2 * 1024 * 1024 * 1024) {
-        setAviso('Servidor no detectado, reintentando conexión...');
+        setCorteError('Servidor no detectado, reintentando conexión...');
         checkServerStatus();
         await new Promise(r => setTimeout(r, 2000));
         try {
@@ -3020,7 +3020,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                     }
                                   }
                                   if (videoFile.size > 2 * 1024 * 1024 * 1024) {
-                                    setAviso('Servidor no detectado, reintentando conexión...');
+                                    setCorteError('Servidor no detectado, reintentando conexión...');
                                     checkServerStatus();
                                     await new Promise(r => setTimeout(r, 2000));
                                     try {
