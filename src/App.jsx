@@ -66,9 +66,9 @@ const matchTabs = [
   { id: 'sustituciones', label: 'SUSTITUCIONES' },
   { id: 'datos', label: 'DATOS' },
   { id: 'posesion', label: 'POSESION' },
-  { id: 'tiempojugado', label: 'TIEMPO JUGADO' },
-  { id: 'resumengoles', label: 'RESUMEN GOLES' },
-  { id: 'resumenacciones', label: 'RESUMEN ACCIONES' },
+  { id: 'tiempojugado', label: 'TOTAL JUGADO' },
+  { id: 'resumengoles', label: 'TOTAL GOLES' },
+  { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
   { id: 'jugadores', label: 'JUGADORES' },
   { id: 'videos', label: 'VIDEOS' }
 ];
