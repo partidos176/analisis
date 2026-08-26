@@ -3,6 +3,7 @@ import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update 
 import Login from './components/Login';
 import TratamientoApp from './TratamientoApp';
 import { loadFFmpeg, cutVideoSingle, cutVideoMultiple, isBrowserCutSupported } from './ffmpegCut';
+import { compositeVideoWithOverlay } from './compositeVideo';
 import descargaImg from './descarga.png';
 import alexImg from './jugadores/alex.jpg';
 import alvaroImg from './jugadores/alvaro.jpg';
@@ -187,6 +188,7 @@ export default function App() {
   const [videoParaTratamiento, setVideoParaTratamiento] = useState(null);
   const [generandoAccion, setGenerandoAccion] = useState(null);
   const [progresoAccion, setProgresoAccion] = useState({});
+  const [trailPointsPorCorte, setTrailPointsPorCorte] = useState({});
   const [variosIndex, setVariosIndex] = useState(-1);
   const [variosBaseTimes, setVariosBaseTimes] = useState({});
   const [trackingMode, setTrackingMode] = useState(false);
@@ -490,34 +492,41 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         return { time: adjustedTime, name: `${base}_corte_${adjustedTime}`, duracion: String(duracion) };
       });
       if (servidorCortesDisponible) {
-        const formData = new FormData();
-        formData.append('video', videoFile);
-        formData.append('cortes', JSON.stringify(cortes));
-        const resp = await fetch(SERVER_URL + '/api/cortar', { method: 'POST', body: formData });
-        if (!resp.ok) { const errData = await resp.json().catch(() => ({})); throw new Error(errData.error || 'Error en el servidor'); }
-        const contentType = resp.headers.get('content-type') || '';
-        if (contentType.includes('application/zip')) {
-          const zipBlob = await resp.blob();
-          const url = URL.createObjectURL(zipBlob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `${base}_cortes.zip`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 3000);
-        } else {
-          const videoBlob = await resp.blob();
-          const url = URL.createObjectURL(videoBlob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = cortes[0].name + '.mp4';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 3000);
+        try {
+          const formData = new FormData();
+          formData.append('video', videoFile);
+          formData.append('cortes', JSON.stringify(cortes));
+          const resp = await fetch(SERVER_URL + '/api/cortar', { method: 'POST', body: formData });
+          if (!resp.ok) { const errData = await resp.json().catch(() => ({})); throw new Error(errData.error || 'Error en el servidor'); }
+          const contentType = resp.headers.get('content-type') || '';
+          if (contentType.includes('application/zip')) {
+            const zipBlob = await resp.blob();
+            const url = URL.createObjectURL(zipBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${base}_cortes.zip`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
+          } else {
+            const videoBlob = await resp.blob();
+            const url = URL.createObjectURL(videoBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = cortes[0].name + '.mp4';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
+          }
+          return;
+        } catch (serverErr) {
+          console.warn('Servidor falló, intentando en el navegador:', serverErr.message);
+          setServidorCortesDisponible(false);
         }
-      } else {
+      }
+      {
         const results = await cutVideoMultiple(videoFile, cortes, (p) => setCorteProgress(p));
         if (results.length === 1) {
           const url = URL.createObjectURL(results[0].blob);
@@ -813,7 +822,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
     setIsTracking(true);
     trailStartRef.current = Date.now();
     lastDetectedRef.current = { x: cx, y: cy, bbox: best.bbox };
-    setTrailPoints([{ x: cx, y: cy, time: Date.now(), bbox: best.bbox }]);
+    setTrailPoints([{ x: cx, y: cy, time: Date.now(), videoTime: videoRef.current ? videoRef.current.currentTime : 0, bbox: best.bbox }]);
     trackingIntervalRef.current = setInterval(async () => {
       if (!videoRef.current || videoRef.current.paused) { stopTracking(); return; }
       const preds = await model.detect(videoRef.current);
@@ -831,7 +840,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
       const ncx = closest.bbox[0] + closest.bbox[2] / 2;
       const ncy = closest.bbox[1] + closest.bbox[3] / 2;
       lastDetectedRef.current = { x: ncx, y: ncy, bbox: closest.bbox };
-      setTrailPoints(prev => [...prev, { x: ncx, y: ncy, time: Date.now(), bbox: closest.bbox }]);
+      setTrailPoints(prev => [...prev, { x: ncx, y: ncy, time: Date.now(), videoTime: videoRef.current ? videoRef.current.currentTime : 0, bbox: closest.bbox }]);
       if (Date.now() - trailStartRef.current >= 2000) stopTracking();
     }, 150);
   };
@@ -2528,7 +2537,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       </div>
                       <button
                         onClick={() => { if (videoRef.current) { videoRef.current.pause(); } setVideoUrl(null); setVideoFile(null); setVideoFileName(''); setVideoTimeOffset(null); setAccionSeleccionada(null); setPreviewVideoUrl(null); }}
-                        style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.85)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+                        style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.85)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, zIndex: 10 }}
                       >×</button>
                     </div>
                   )}
@@ -2908,32 +2917,40 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                 const adjustedTime = mm + ':' + ss;
                                 setGenerandoAccion(actionKey);
                                 setPreviewAccion(null);
+                                const trailSnapshot = trailPoints.map(p => ({ ...p }));
+                                const videoTimeSnapshot = videoRef.current ? videoRef.current.currentTime : 0;
+                                const videoTimeOffsetSnapshot = videoTimeOffset;
                                 const videoName = filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : (() => { const sameName = accionesFiltradas.filter(a => a.name === e.name); const correlative = sameName.indexOf(e) + 1; return sameName.length > 1 ? e.name + ' ' + correlative : e.name; })();
                                 const doCut = async () => {
                                   if (servidorCortesDisponible) {
-                                    return await new Promise((resolve, reject) => {
-                                      const formData = new FormData();
-                                      formData.append('video', videoFile);
-                                      formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName, duracion: String(duracion) }]));
-                                      const xhr = new XMLHttpRequest();
-                                      xhr.open('POST', SERVER_URL + '/api/cortar');
-                                      xhr.upload.onprogress = (ev) => {
-                                        if (ev.lengthComputable) {
-                                          setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round((ev.loaded / ev.total) * 90) }));
-                                        }
-                                      };
-                                      xhr.onload = () => {
-                                        setProgresoAccion(prev => ({ ...prev, [actionKey]: 95 }));
-                                        if (xhr.status >= 200 && xhr.status < 300) {
-                                          resolve(new Blob([xhr.response], { type: 'video/mp4' }));
-                                        } else {
-                                          try { const errData = JSON.parse(xhr.responseText); reject(new Error(errData.error || 'Error en el servidor')); } catch { reject(new Error('Error en el servidor')); }
-                                        }
-                                      };
-                                      xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
-                                      xhr.responseType = 'blob';
-                                      xhr.send(formData);
-                                    });
+                                    try {
+                                      return await new Promise((resolve, reject) => {
+                                        const formData = new FormData();
+                                        formData.append('video', videoFile);
+                                        formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName, duracion: String(duracion) }]));
+                                        const xhr = new XMLHttpRequest();
+                                        xhr.open('POST', SERVER_URL + '/api/cortar');
+                                        xhr.upload.onprogress = (ev) => {
+                                          if (ev.lengthComputable) {
+                                            setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round((ev.loaded / ev.total) * 90) }));
+                                          }
+                                        };
+                                        xhr.onload = () => {
+                                          setProgresoAccion(prev => ({ ...prev, [actionKey]: 95 }));
+                                          if (xhr.status >= 200 && xhr.status < 300) {
+                                            resolve(new Blob([xhr.response], { type: 'video/mp4' }));
+                                          } else {
+                                            try { const errData = JSON.parse(xhr.responseText); reject(new Error(errData.error || 'Error en el servidor')); } catch { reject(new Error('Error en el servidor')); }
+                                          }
+                                        };
+                                        xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
+                                        xhr.responseType = 'blob';
+                                        xhr.send(formData);
+                                      });
+                                    } catch (serverErr) {
+                                      console.warn('Servidor falló, intentando en el navegador:', serverErr.message);
+                                      setServidorCortesDisponible(false);
+                                    }
                                   }
                                   return await cutVideoSingle(videoFile, adjustedTime, duracion, videoName, (p) => {
                                     setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round(p * 100) }));
@@ -2943,6 +2960,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                   if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url);
                                   const url = URL.createObjectURL(blob);
                                   setPreviewAccion({ url: url, name: videoName, key: actionKey, blob: blob });
+                                  setTrailPointsPorCorte(prev => ({ ...prev, [actionKey]: { points: trailSnapshot, videoTimeOffset: videoTimeSnapshot, cutStartSecs: totalSecs, duration: duracion } }));
                                 }).catch(err => { setCorteError(err.message || 'Error al generar el vídeo'); }).finally(() => { setGenerandoAccion(null); setProgresoAccion(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); });
                               }} style={{ background: '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>{generandoAccion === actionKey ? (progresoAccion[actionKey] != null ? progresoAccion[actionKey] + '%' : '...') : 'Generar'}</button>
                               {filtroAccion === '__varios__' && <button onClick={(ev) => { ev.stopPropagation(); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[e.name + '_' + e.time]; return copy; }); setVariosIndex(prev => Math.max(0, prev - 1)); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
@@ -2958,7 +2976,33 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                   />
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '1.5rem' }}>
-                                  <a href={previewAccion.url} download={previewAccion.name + '.mp4'} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', textDecoration: 'none', textAlign: 'center' }}>Descargar</a>
+                                  <button onClick={async () => {
+                                    if (!previewAccion || !previewAccion.blob) return;
+                                    const trailData = trailPointsPorCorte[previewAccion.key];
+                                    console.log('[DEBUG Descargar] trailData:', trailData);
+                                    console.log('[DEBUG Descargar] all trailPointsPorCorte keys:', Object.keys(trailPointsPorCorte));
+                                    console.log('[DEBUG Descargar] previewAccion.key:', previewAccion.key);
+                                    console.log('[DEBUG Descargar] blob size:', previewAccion.blob.size, 'type:', previewAccion.blob.type);
+                                    let blob = previewAccion.blob;
+                                    if (trailData && trailData.points && trailData.points.length >= 2) {
+                                      console.log('[DEBUG Descargar] Componiendo con', trailData.points.length, 'trail points, cutStartSecs:', trailData.cutStartSecs, 'duration:', trailData.duration);
+                                      console.log('[DEBUG Descargar] Primeros 3 points:', trailData.points.slice(0, 3));
+                                      try {
+                                        blob = await compositeVideoWithOverlay(previewAccion.blob, trailData);
+                                        console.log('[DEBUG Descargar] Composición OK, blob size:', blob.size, 'type:', blob.type);
+                                      } catch (e) { console.error('Composición fallida, descargando sin overlay:', e); }
+                                    } else {
+                                      console.log('[DEBUG Descargar] Sin trail data suficiente, descargando raw');
+                                    }
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = previewAccion.name + (blob.type.includes('webm') ? '.webm' : '.mp4');
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    setTimeout(() => URL.revokeObjectURL(url), 3000);
+                                  }} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Descargar</button>
                                   <button onClick={() => { if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url); setPreviewAccion(null); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Borrar</button>
                                   <button onClick={() => {
                                     if (!previewAccion || !previewAccion.blob) return;
