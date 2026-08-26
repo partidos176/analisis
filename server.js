@@ -162,9 +162,9 @@ const tmpBase = path.join(__dirname, '.tmp-cortes');
 try { fs.rmSync(tmpBase, { recursive: true, force: true }); } catch {}
 fs.mkdirSync(tmpBase, { recursive: true });
 
-const PORT = 3001;
-app.listen(PORT, () => {
-  console.log(`Servidor de cortes escuchando en http://localhost:${PORT}`);
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor de cortes escuchando en http://0.0.0.0:${PORT}`);
   console.log(`ffmpeg: ${ffmpegPath}`);
   console.log(`ffmpeg exists: ${fs.existsSync(ffmpegPath)}`);
   console.log(`Temp dir: ${tmpBase}`);

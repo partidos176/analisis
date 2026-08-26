@@ -173,7 +173,12 @@ export default function App() {
   const [filtroAccion, setFiltroAccion] = useState('');
   const [corteError, setCorteError] = useState('');
   const [cortandoTodos, setCortandoTodos] = useState(false);
-  const SERVER_URL = import.meta.env.VITE_CORTES_SERVER_URL || '';
+  const BUILD_SERVER_URL = import.meta.env.VITE_CORTES_SERVER_URL || '';
+  const [customServerUrl, setCustomServerUrl] = useState(() => {
+    try { return localStorage.getItem('ft_custom_server_url') || ''; } catch { return ''; }
+  });
+  const [resolvedServerUrl, setResolvedServerUrl] = useState('');
+  const SERVER_URL = resolvedServerUrl;
 
   const [servidorCortesDisponible, setServidorCortesDisponible] = useState(null);
   const [accionSeleccionada, setAccionSeleccionada] = useState(null);
@@ -202,20 +207,26 @@ export default function App() {
   const lastDetectedRef = useRef(null);
 
   const checkServerStatus = async () => {
-    try {
-      const r = await fetch(SERVER_URL + '/api/cortar');
-      const d = await r.json();
-      setServidorCortesDisponible(d.ok === true);
-    } catch {
-      setServidorCortesDisponible(false);
+    const urls = [customServerUrl, 'http://localhost:3001', BUILD_SERVER_URL].filter(Boolean);
+    for (const url of urls) {
+      try {
+        const r = await fetch(url + '/api/cortar');
+        const d = await r.json();
+        if (d.ok === true) {
+          setResolvedServerUrl(url);
+          setServidorCortesDisponible(true);
+          return;
+        }
+      } catch {}
     }
+    setServidorCortesDisponible(false);
   };
 
   useEffect(() => {
     checkServerStatus();
     const interval = setInterval(checkServerStatus, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [customServerUrl]);
 
   useEffect(() => {
     if (!user) return;
@@ -553,7 +564,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
           }
         }
       }
-      if (videoFile.size > 2 * 1024 * 1024 * 1024) {
+      if (!isBrowserCutSupported(videoFile)) {
         setCorteError('Servidor no detectado, reintentando conexión...');
         checkServerStatus();
         await new Promise(r => setTimeout(r, 2000));
@@ -561,7 +572,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
           await tryServerBatch();
           return;
         } catch (finalErr) {
-          throw new Error('El archivo supera los 2 GB y el servidor de cortes no está disponible. Inicia el servidor con: node server.js');
+          throw new Error('El archivo supera los 4 GB y el servidor de cortes no está disponible. Comprime el vídeo en la pestaña de vídeo o inicia el servidor con: node server.js');
         }
       }
       {
@@ -2752,6 +2763,47 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                       </span>
                     </label>
                   )}
+                  {videoFile && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', width: '100%', maxWidth: '900px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
+                        <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Servidor:</span>
+                        <input
+                          type="text"
+                          placeholder="Auto: localhost:3001"
+                          value={customServerUrl}
+                          onChange={(e) => {
+                            const v = e.target.value.trim();
+                            setCustomServerUrl(v);
+                            try { localStorage.setItem('ft_custom_server_url', v); } catch {}
+                            checkServerStatus();
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '0.35rem 0.6rem',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-subtle)',
+                            background: 'var(--bg-secondary)',
+                            color: '#ffffff',
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}
+                        />
+                        <span style={{
+                          color: servidorCortesDisponible === true ? '#22c55e' : servidorCortesDisponible === false ? '#ef4444' : '#94a3b8',
+                          fontWeight: 700,
+                          fontSize: '0.7rem'
+                        }}>
+                          {servidorCortesDisponible === true ? '● Conectado' : servidorCortesDisponible === false ? '● Sin servidor' : '● ...'}
+                        </span>
+                        {resolvedServerUrl && (
+                          <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.6rem', fontFamily: 'var(--font-mono)' }}>
+                            {resolvedServerUrl}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
                   {/* Columna izquierda - Tabla de acciones (oculta) */}
                   <div style={{
@@ -3019,14 +3071,14 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                       }
                                     }
                                   }
-                                  if (videoFile.size > 2 * 1024 * 1024 * 1024) {
+                                  if (!isBrowserCutSupported(videoFile)) {
                                     setCorteError('Servidor no detectado, reintentando conexión...');
                                     checkServerStatus();
                                     await new Promise(r => setTimeout(r, 2000));
                                     try {
                                       return await tryServer();
                                     } catch (finalErr) {
-                                      throw new Error('El archivo supera los 2 GB y el servidor de cortes no está disponible. Inicia el servidor con: node server.js');
+                                      throw new Error('El archivo supera los 4 GB y el servidor de cortes no está disponible. Comprime el vídeo en la pestaña de vídeo o inicia el servidor con: node server.js');
                                     }
                                   }
                                   return await cutVideoSingle(videoFile, adjustedTime, duracion, videoName, (p) => {
@@ -3171,9 +3223,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                     )}
                     {servidorCortesDisponible === false && (
                       <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.8rem', textAlign: 'center', maxWidth: '100%' }}>
-                        {videoFile && !isBrowserCutSupported(videoFile)
-                          ? `El vídeo (${(videoFile.size / 1024 / 1024 / 1024).toFixed(1)} GB) supera el límite de 2 GB del corte en navegador. Comprímelo primero con HandBrake (handbrake.fr) o: ffmpeg -i video.mp4 -c:v libx264 -crf 24 -preset fast -c:a copy comprimido.mp4`
-                          : 'Sin servidor de cortes: los vídeos se generarán en el navegador (máx. 2 GB).'}
+                        Sin servidor de cortes. Introduce la URL del servidor arriba para procesar vídeos grandes.
                       </span>
                     )}
                 {cortandoTodos && (
