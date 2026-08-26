@@ -173,7 +173,7 @@ export default function App() {
   const [filtroAccion, setFiltroAccion] = useState('');
   const [corteError, setCorteError] = useState('');
   const [cortandoTodos, setCortandoTodos] = useState(false);
-  const SERVER_URL = import.meta.env.VITE_CORTES_SERVER_URL || 'http://localhost:3001';
+  const SERVER_URL = import.meta.env.VITE_CORTES_SERVER_URL || '';
 
   const [servidorCortesDisponible, setServidorCortesDisponible] = useState(null);
   const [accionSeleccionada, setAccionSeleccionada] = useState(null);
