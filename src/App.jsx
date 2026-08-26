@@ -51,12 +51,46 @@ const jugadoresData = {
   SANTOS: { foto: santosImg }
 };
 
+const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'PEDRO': 'CADETE', 'JUAN ': 'JUANDA' };
+const normalizePlayerName = (raw) => {
+  if (!raw) return '';
+  const n = String(raw).trim().toUpperCase();
+  return LEGACY_NAME_MAP[n] || n;
+};
+
+const dedupePlayers = (list) => {
+  const seen = new Set();
+  return list.map(p => {
+    if (!p || !p.name) return p;
+    const norm = normalizePlayerName(p.name);
+    if (!norm) return { ...p, name: '' };
+    if (seen.has(norm)) return { ...p, name: '', status: '-' };
+    seen.add(norm);
+    if (norm !== p.name) return { ...p, name: norm };
+    return p;
+  });
+};
+
 const defaultPlayersList = () => {
   const roster = Object.keys(jugadoresData);
   return Array(23).fill(null).map((_, i) => ({ name: roster[i] || '', status: '-' }));
 };
 
 const playerOptions = ['ALEX', 'ALVARO', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'ISMA', 'JONAS', 'JORGE', 'JUANDA', 'KEVIN', 'LUCAS', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE'];
+
+const FORMACION_11 = [
+  { x: 10, y: 50 },
+  { x: 28, y: 15 },
+  { x: 28, y: 38 },
+  { x: 28, y: 62 },
+  { x: 28, y: 85 },
+  { x: 52, y: 22 },
+  { x: 52, y: 50 },
+  { x: 52, y: 78 },
+  { x: 78, y: 20 },
+  { x: 85, y: 50 },
+  { x: 78, y: 80 },
+];
 
 const matchTabs = [
   { id: 'alineacion', label: 'ALINEACION' },
@@ -141,6 +175,86 @@ export default function App() {
   const [playerStatus, setPlayerStatus] = useState('titular');
   const [players, setPlayers] = useState(defaultPlayersList());
   const [alineacionError, setAlineacionError] = useState(false);
+  const [draggingMapIdx, setDraggingMapIdx] = useState(null);
+  const campoRef = useRef(null);
+  const dragMovedRefGlobal = useRef(false);
+  const undoSnapshotRef = useRef(null);
+  const prevPlayersRef = useRef(players);
+  const isUndoingRef = useRef(false);
+  const [, forceHistUpdate] = useState(0);
+  useEffect(() => {
+    if (isUndoingRef.current) {
+      isUndoingRef.current = false;
+      prevPlayersRef.current = JSON.parse(JSON.stringify(players));
+      return;
+    }
+    if (JSON.stringify(prevPlayersRef.current) === JSON.stringify(players)) return;
+    undoSnapshotRef.current = JSON.parse(JSON.stringify(prevPlayersRef.current));
+    prevPlayersRef.current = JSON.parse(JSON.stringify(players));
+    forceHistUpdate(v => v + 1);
+  }, [players]);
+  const handleUndoPlayers = () => {
+    if (!undoSnapshotRef.current) return;
+    const prev = undoSnapshotRef.current;
+    undoSnapshotRef.current = null;
+    isUndoingRef.current = true;
+    setPlayers(prev);
+    forceHistUpdate(v => v + 1);
+  };
+  useEffect(() => {
+    // limpia deshacer al cambiar de partido
+    undoSnapshotRef.current = null;
+    prevPlayersRef.current = JSON.parse(JSON.stringify(players));
+    forceHistUpdate(v => v + 1);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentMatch?.id]);
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && activeTab === 'alineacion' && currentMatch && undoSnapshotRef.current) {
+        e.preventDefault();
+        const prev = undoSnapshotRef.current;
+        undoSnapshotRef.current = null;
+        isUndoingRef.current = true;
+        setPlayers(prev);
+        forceHistUpdate(v => v + 1);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeTab, currentMatch]);
+  useEffect(() => {
+    if (draggingMapIdx == null) return;
+    const handleMove = (e) => {
+      const rect = campoRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const x = ((clientX - rect.left) / rect.width) * 100;
+      const y = ((clientY - rect.top) / rect.height) * 100;
+      const nx = Math.max(6, Math.min(94, x));
+      const ny = Math.max(6, Math.min(94, y));
+      dragMovedRefGlobal.current = true;
+      setPlayers(prev => {
+        const copy = [...prev];
+        if (copy[draggingMapIdx]) copy[draggingMapIdx] = { ...copy[draggingMapIdx], mapX: nx, mapY: ny };
+        return copy;
+      });
+    };
+    const handleUp = () => {
+      setDraggingMapIdx(null);
+      setTimeout(() => { dragMovedRefGlobal.current = false; }, 80);
+    };
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleUp);
+    };
+  }, [draggingMapIdx]);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerInterval, setTimerInterval] = useState(null);
@@ -405,7 +519,15 @@ export default function App() {
     setOcasionCount(match.ocasionCount ?? 0);
     setGolesList(normalizeArray(match.golesList));
     setGolesRivalList(normalizeArray(match.golesRivalList));
-    setPlayers(match.players ? normalizeArray(match.players) : defaultPlayersList());
+    {
+      let rawPlayers = match.players ? normalizeArray(match.players) : defaultPlayersList();
+      // normaliza nombres legacy (JUAN->JUANDA), trim, upper
+      rawPlayers = rawPlayers.map(p => p && p.name ? { ...p, name: normalizePlayerName(p.name) } : p);
+      // rellena a 23 y dedup
+      while (rawPlayers.length < 23) rawPlayers.push({ name: '', status: '-' });
+      rawPlayers = dedupePlayers(rawPlayers).slice(0, 23);
+      setPlayers(rawPlayers);
+    }
     setTimerSeconds(match.timerSeconds ?? 0);
     setTimerRunning(match.timerRunning ?? false);
     setActionLog(normalizeArray(match.actionLog));
@@ -1077,7 +1199,7 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         </header>
 
         <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center' }}>
-          <div style={{ width: '100%', maxWidth: '800px' }}>
+          <div style={{ width: '100%', maxWidth: activeTab === 'alineacion' ? '980px' : '800px' }}>
             {/* Info del partido */}
             <div style={{
               background: 'var(--bg-card)',
@@ -4909,7 +5031,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                 </div>
               )}
               {activeTab === 'alineacion' && (
-                <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%' }}>
                   {alineacionError && (
                     <div style={{
                       position: 'fixed',
@@ -4928,6 +5050,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       ERROR DE ALINEACION
                     </div>
                   )}
+                  <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
                   {/* Columna izquierda */}
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {players.slice(0, 12).map((p, i) => (
@@ -5048,6 +5171,517 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </div>
                     ))}
                   </div>
+                  </div>
+
+                  {/* === MAPA DE CAMPO === */}
+                  {(() => {
+                    const titulares = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'titular');
+                    const suplentes = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'suplente');
+                    const noConvocados = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'no convocado');
+                    const lesionados = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'lesion');
+                    const divisionHonor = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'division honor');
+                    const handleDragStart = (e, idx) => {
+                      e.dataTransfer.setData('text/plain', String(idx));
+                      e.dataTransfer.effectAllowed = 'move';
+                    };
+                    const handleFieldDrop = (e) => {
+                      e.preventDefault();
+                      const raw = e.dataTransfer.getData('text/plain');
+                      if (raw.startsWith('free:')) {
+                        const n = raw.slice(5);
+                        const rect = campoRef.current?.getBoundingClientRect();
+                        if (!rect) return;
+                        const x = ((e.clientX - rect.left) / rect.width) * 100;
+                        const y = ((e.clientY - rect.top) / rect.height) * 100;
+                        const nx = Math.max(6, Math.min(94, x));
+                        const ny = Math.max(6, Math.min(94, y));
+                        const emptyIdx = players.findIndex(q => !q.name);
+                        if (emptyIdx === -1) return;
+                        if (titulares.length >= 11) return;
+                        setPlayers(prev => {
+                          const copy = [...prev];
+                          copy[emptyIdx] = { ...copy[emptyIdx], name: n, status: 'titular', mapX: nx, mapY: ny };
+                          return copy;
+                        });
+                        return;
+                      }
+                      const idx = raw !== '' ? parseInt(raw, 10) : NaN;
+                      if (Number.isNaN(idx) || idx < 0 || idx >= players.length) return;
+                      const rect = campoRef.current?.getBoundingClientRect();
+                      if (!rect) return;
+                      const x = ((e.clientX - rect.left) / rect.width) * 100;
+                      const y = ((e.clientY - rect.top) / rect.height) * 100;
+                      const nx = Math.max(6, Math.min(94, x));
+                      const ny = Math.max(6, Math.min(94, y));
+                      setPlayers(prev => {
+                        const copy = [...prev];
+                        const cur = copy[idx];
+                        if (!cur || !cur.name) return prev;
+                        if (cur.status === 'titular' && titulares.length <= 11) {
+                          copy[idx] = { ...cur, mapX: nx, mapY: ny };
+                          return copy;
+                        }
+                        if (titulares.filter(t => t.idx !== idx).length >= 11) {
+                          copy[idx] = { ...cur, status: 'suplente' };
+                          return copy;
+                        }
+                        copy[idx] = { ...cur, status: 'titular', mapX: nx, mapY: ny };
+                        return copy;
+                      });
+                    };
+                    const handleZoneDrop = (e, targetStatus) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const raw = e.dataTransfer.getData('text/plain');
+                      if (!raw) return;
+                      if (raw.startsWith('free:')) {
+                        const n = raw.slice(5);
+                        if (targetStatus === 'titular' && titulares.length >= 11) {
+                          // si campo lleno, manda a suplente
+                          targetStatus = 'suplente';
+                        }
+                        const emptyIdx = players.findIndex(q => !q.name);
+                        if (emptyIdx === -1) return;
+                        setPlayers(prev => {
+                          const copy = [...prev];
+                          copy[emptyIdx] = { ...copy[emptyIdx], name: n, status: targetStatus };
+                          if (targetStatus === 'titular') {
+                            const rect = campoRef.current?.getBoundingClientRect();
+                            let nx = 50, ny = 50;
+                            if (rect) {
+                              nx = Math.max(6, Math.min(94, ((e.clientX - rect.left) / rect.width) * 100));
+                              ny = Math.max(6, Math.min(94, ((e.clientY - rect.top) / rect.height) * 100));
+                            }
+                            copy[emptyIdx].mapX = nx;
+                            copy[emptyIdx].mapY = ny;
+                          }
+                          return copy;
+                        });
+                        return;
+                      }
+                      const idx = parseInt(raw, 10);
+                      if (Number.isNaN(idx) || idx < 0 || idx >= players.length) return;
+                      if (targetStatus === 'titular') {
+                        const rect = campoRef.current?.getBoundingClientRect();
+                        let nx = 50, ny = 50;
+                        if (rect) {
+                          nx = Math.max(6, Math.min(94, ((e.clientX - rect.left) / rect.width) * 100));
+                          ny = Math.max(6, Math.min(94, ((e.clientY - rect.top) / rect.height) * 100));
+                        }
+                        setPlayers(prev => {
+                          const copy = [...prev];
+                          const cur = copy[idx];
+                          if (!cur || !cur.name) return prev;
+                          if (titulares.filter(t => t.idx !== idx).length >= 11) {
+                            copy[idx] = { ...cur, status: 'suplente' };
+                            return copy;
+                          }
+                          copy[idx] = { ...cur, status: 'titular', mapX: nx, mapY: ny };
+                          return copy;
+                        });
+                        return;
+                      }
+                      setPlayers(prev => {
+                        const copy = [...prev];
+                        const cur = copy[idx];
+                        if (!cur || !cur.name) return prev;
+                        copy[idx] = { ...cur, status: targetStatus };
+                        return copy;
+                      });
+                    };
+                    const handleBenchDrop = (e) => handleZoneDrop(e, 'suplente');
+                    const circulo = (p, size = 56, extraStyle = {}) => {
+                      const foto = jugadoresData[p.name]?.foto;
+                      const isNoConvocado = p.status === 'no convocado';
+                      return (
+                        <div
+                          key={p.idx ?? p.name}
+                          draggable={!!p.name && p.status !== 'no convocado'}
+                          onDragStart={(e) => handleDragStart(e, p.idx)}
+                          onClick={() => {
+                            if (!p.name) return;
+                            const realIdx = p.idx;
+                            if (realIdx == null) return;
+                            setPlayers(prev => {
+                              const copy = [...prev];
+                              const cur = copy[realIdx];
+                              let next = 'titular';
+                              if (cur.status === 'titular') next = 'suplente';
+                              else if (cur.status === 'suplente') next = '-';
+                              else if (cur.status === 'no convocado') next = '-';
+                              else {
+                                const titCount = copy.filter(q => q.status === 'titular').length;
+                                next = titCount < 11 ? 'titular' : 'suplente';
+                              }
+                              copy[realIdx] = { ...cur, status: next };
+                              return copy;
+                            });
+                          }}
+                          onDoubleClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const realIdx = p.idx;
+                            if (realIdx == null) return;
+                            setPlayers(prev => {
+                              const copy = [...prev];
+                              const cur = copy[realIdx];
+                              if (cur.status === 'no convocado') copy[realIdx] = { ...cur, status: '-' };
+                              else copy[realIdx] = { ...cur, status: 'no convocado' };
+                              return copy;
+                            });
+                          }}
+                          title={`${p.name} — ${p.status} (arrastra al campo/banquillo · click: titular↔suplente, doble click: no convocado)`}
+                          style={{
+                            width: size,
+                            height: size,
+                            borderRadius: '50%',
+                            border: `3px solid ${p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'no convocado' ? '#000000' : '#334155'}`,
+                            overflow: 'hidden',
+                            position: 'relative',
+                            cursor: p.status === 'no convocado' ? 'pointer' : 'grab',
+                            flexShrink: 0,
+                            background: '#0f172a',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                            ...extraStyle
+                          }}
+                        >
+                          {foto ? (
+                            <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: isNoConvocado ? 'grayscale(1) brightness(0.35)' : 'none' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
+                          )}
+                          {isNoConvocado && (
+                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <span style={{ color: '#ffffff', fontWeight: 900, fontSize: size * 0.18, letterSpacing: '0.04em' }}>NO</span>
+                            </div>
+                          )}
+                          <div style={{ position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)', background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : '#334155', color: '#0f172a', fontWeight: 900, fontSize: Math.max(7, size * 0.16), padding: '0 4px', borderRadius: 4, whiteSpace: 'nowrap', lineHeight: 1.1, maxWidth: size + 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                        </div>
+                      );
+                    };
+
+                    const handleCampoClick = (e) => {
+                      if (draggingMapIdx != null) return;
+                      if (dragMovedRefGlobal.current) return;
+                      const titularesCount = titulares.length;
+                      if (titularesCount >= 11) return;
+                      const idxDisponible = players.findIndex(p => p.name && (p.status === '-' || p.status === 'division honor' || p.status === 'lesion' || !p.status));
+                      if (idxDisponible === -1) return;
+                      const rect = campoRef.current?.getBoundingClientRect();
+                      let pos = null;
+                      if (rect) {
+                        const x = ((e.clientX - rect.left) / rect.width) * 100;
+                        const y = ((e.clientY - rect.top) / rect.height) * 100;
+                        pos = { x: Math.max(8, Math.min(92, x)), y: Math.max(8, Math.min(92, y)) };
+                      }
+                      setPlayers(prev => {
+                        const copy = [...prev];
+                        copy[idxDisponible] = { ...copy[idxDisponible], status: 'titular', mapX: pos?.x, mapY: pos?.y };
+                        return copy;
+                      });
+                    };
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.6rem' }}>
+                          <span style={{ fontWeight: 900, fontSize: '0.95rem', color: '#38bdf8', letterSpacing: '0.05em' }}>MAPA TÁCTICO — {titulares.length}/11 TIT · {suplentes.length} SUP · {noConvocados.length} NC · {lesionados.length} LES · {divisionHonor.length} DH</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <button
+                              onClick={handleUndoPlayers}
+                              disabled={!undoSnapshotRef.current}
+                              title={!undoSnapshotRef.current ? 'Nada que deshacer' : 'Deshacer último cambio — Ctrl+Z'}
+                              style={{
+                                background: !undoSnapshotRef.current ? '#334155' : '#f59e0b',
+                                color: !undoSnapshotRef.current ? '#94a3b8' : '#0f172a',
+                                fontWeight: 900,
+                                fontSize: '0.7rem',
+                                padding: '0.35rem 0.7rem',
+                                borderRadius: 999,
+                                cursor: !undoSnapshotRef.current ? 'not-allowed' : 'pointer',
+                                opacity: !undoSnapshotRef.current ? 0.6 : 1,
+                                letterSpacing: '0.04em',
+                                border: 'none'
+                              }}
+                            >
+                              ↩ DESHACER
+                            </button>
+                            <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700 }}>Arrastra al campo o zona · Mueve en campo · Click: titular↔suplente · Doble click: no convocado</span>
+                          </div>
+                        </div>
+
+                        <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch', flexWrap: 'wrap', flexDirection: 'column' }}>
+                          {/* Campo - realista 105×68 horizontal, ocupa todo el ancho */}
+                          <div
+                            ref={campoRef}
+                            className="mapa-campo"
+                            onClick={handleCampoClick}
+                            onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                            onDrop={handleFieldDrop}
+                            style={{
+                              flex: '0 0 auto',
+                              width: '100%',
+                              maxWidth: '100%',
+                              alignSelf: 'stretch',
+                              aspectRatio: '105 / 68',
+                              background: '#1a7a33',
+                              borderRadius: 12,
+                              border: '2px solid #ffffff',
+                              position: 'relative',
+                              overflow: 'hidden',
+                              cursor: titulares.length < 11 ? 'crosshair' : 'default',
+                              boxShadow: 'inset 0 0 30px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.3)',
+                              userSelect: 'none',
+                              touchAction: 'none'
+                            }}
+                          >
+                            {/* Césped rayado */}
+                            <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.07) 0 18px, transparent 18px 36px)', pointerEvents: 'none' }} />
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 45%, transparent 55%, rgba(0,0,0,0.08) 100%)', pointerEvents: 'none' }} />
+                            {/* SVG líneas reglamentarias - horizontal 105×68 realista */}
+                            <svg viewBox="0 0 105 68" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+                              {/* Borde exterior */}
+                              <rect x="0.7" y="0.7" width="103.6" height="66.6" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Línea media */}
+                              <line x1="52.5" y1="0.7" x2="52.5" y2="67.3" stroke="white" strokeWidth="0.7" />
+                              {/* Círculo central r=9.15 */}
+                              <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="white" strokeWidth="0.7" />
+                              <circle cx="52.5" cy="34" r="0.7" fill="white" />
+                              {/* Área penal izquierda (propia) - 16.5 profundidad, 40.3 ancho */}
+                              <rect x="0.7" y="13.85" width="16.5" height="40.3" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Área de meta izquierda - 5.5 profundidad, 18.32 ancho */}
+                              <rect x="0.7" y="24.84" width="5.5" height="18.32" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Punto penal izquierda 11m */}
+                              <circle cx="11" cy="34" r="0.7" fill="white" />
+                              {/* Semicírculo penal izquierda - arco hacia centro */}
+                              <path d="M 16.5 26.69 A 9.15 9.15 0 0 1 16.5 41.31" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Portería izquierda */}
+                              <rect x="-0.5" y="30.1" width="1.2" height="7.8" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Área penal derecha (rival) */}
+                              <rect x="88.5" y="13.85" width="16.5" height="40.3" fill="none" stroke="white" strokeWidth="0.7" />
+                              <rect x="99.5" y="24.84" width="5.5" height="18.32" fill="none" stroke="white" strokeWidth="0.7" />
+                              <circle cx="94" cy="34" r="0.7" fill="white" />
+                              <path d="M 88.5 26.69 A 9.15 9.15 0 0 0 88.5 41.31" fill="none" stroke="white" strokeWidth="0.7" />
+                              <rect x="104.3" y="30.1" width="1.2" height="7.8" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Esquinas r=1 */}
+                              <path d="M 1.7 0.7 A 1 1 0 0 0 0.7 1.7" fill="none" stroke="white" strokeWidth="0.7" />
+                              <path d="M 104.3 1.7 A 1 1 0 0 1 105 0.7" fill="none" stroke="white" strokeWidth="0.7" />
+                              <path d="M 105 66.3 A 1 1 0 0 1 104.3 67.3" fill="none" stroke="white" strokeWidth="0.7" />
+                              <path d="M 0.7 66.3 A 1 1 0 0 1 1.7 67.3" fill="none" stroke="white" strokeWidth="0.7" />
+                            </svg>
+
+                            {titulares.length === 0 && (
+                              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                                <span style={{ background: 'rgba(0,0,0,0.35)', color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', padding: '0.35rem 0.7rem', borderRadius: 999, backdropFilter: 'blur(2px)' }}>Haz click para agregar titulares (click en hueco del campo)</span>
+                              </div>
+                            )}
+
+                            {titulares.map((p, i) => {
+                              const def = FORMACION_11[i] || { x: 50, y: 50 };
+                              const x = p.mapX ?? def.x;
+                              const y = p.mapY ?? def.y;
+                              const foto = jugadoresData[p.name]?.foto;
+                              const isNoConvocado = p.status === 'no convocado';
+                              return (
+                                <div
+                                  key={p.idx}
+                                  onClick={(e) => {
+                                    if (dragMovedRefGlobal.current) return;
+                                    e.stopPropagation();
+                                    setPlayers(prev => {
+                                      const copy = [...prev];
+                                      const cur = copy[p.idx];
+                                      let next = 'suplente';
+                                      if (cur.status === 'titular') next = 'suplente';
+                                      copy[p.idx] = { ...cur, status: next };
+                                      return copy;
+                                    });
+                                  }}
+                                  onDoubleClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setPlayers(prev => {
+                                      const copy = [...prev];
+                                      const cur = copy[p.idx];
+                                      copy[p.idx] = { ...cur, status: cur.status === 'no convocado' ? '-' : 'no convocado' };
+                                      return copy;
+                                    });
+                                  }}
+                                  draggable={!isNoConvocado}
+                                  onDragStart={(e) => handleDragStart(e, p.idx)}
+                                  onDragEnd={() => setDraggingMapIdx(null)}
+                                  onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    dragMovedRefGlobal.current = false;
+                                    setDraggingMapIdx(p.idx);
+                                  }}
+                                  onTouchStart={(e) => {
+                                    e.stopPropagation();
+                                    dragMovedRefGlobal.current = false;
+                                    setDraggingMapIdx(p.idx);
+                                  }}
+                                  style={{
+                                    position: 'absolute',
+                                    left: `${x}%`,
+                                    top: `${y}%`,
+                                    transform: 'translate(-50%, -50%)',
+                                    width: 64,
+                                    height: 64,
+                                    borderRadius: '50%',
+                                    border: `3px solid ${isNoConvocado ? '#000000' : '#38bdf8'}`,
+                                    overflow: 'hidden',
+                                    background: '#0f172a',
+                                    cursor: draggingMapIdx === p.idx ? 'grabbing' : 'grab',
+                                    boxShadow: draggingMapIdx === p.idx ? '0 6px 18px rgba(0,0,0,0.5)' : '0 2px 10px rgba(0,0,0,0.4)',
+                                    zIndex: draggingMapIdx === p.idx ? 10 : 2,
+                                    touchAction: 'none',
+                                    userSelect: 'none'
+                                  }}
+                                  title={`${p.name} — arrastra libremente por el campo o al banquillo · click: a suplente · doble click: no convocado`}
+                                >
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: isNoConvocado ? 'grayscale(1) brightness(0.35)' : 'none' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {isNoConvocado && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }} />}
+                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isNoConvocado ? 'rgba(0,0,0,0.75)' : 'rgba(56,189,248,0.95)', color: isNoConvocado ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 7.5, textAlign: 'center', padding: '1px 0', letterSpacing: '0.02em', lineHeight: 1.1 }}>{p.name}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Lateral horizontal - 4 zonas en fila */}
+                          <div className="mapa-lateral" style={{ flex: '1 1 100%', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.6rem', width: '100%' }}>
+                            {[
+                              { id: 'suplente', label: 'SUPLENTES', color: '#f59e0b', list: suplentes, max: '12', empty: 'Arrastra aquí' },
+                              { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000', list: noConvocados, max: '', empty: 'Arrastra aquí' },
+                              { id: 'lesion', label: 'LESIÓN', color: '#ef4444', list: lesionados, max: '', empty: 'Arrastra aquí' },
+                              { id: 'division honor', label: 'DIVISIÓN HONOR', color: '#8b5cf6', list: divisionHonor, max: '', empty: 'Arrastra aquí' },
+                            ].map(z => (
+                              <div
+                                key={z.id}
+                                onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                                onDrop={(e) => handleZoneDrop(e, z.id)}
+                                style={{
+                                  background: 'var(--bg-secondary)',
+                                  border: `2px dashed ${z.color}66`,
+                                  borderRadius: 12,
+                                  padding: '0.5rem 0.4rem',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '0.4rem',
+                                  alignItems: 'center',
+                                  minHeight: 92,
+                                  transition: 'border-color 0.15s'
+                                }}
+                              >
+                                <span style={{ fontWeight: 900, fontSize: '0.62rem', color: z.color === '#000000' ? '#94a3b8' : z.color, letterSpacing: '0.07em', textTransform: 'uppercase', textAlign: 'center' }}>{z.label} {z.max ? `· ${z.list.length}/${z.max}` : `· ${z.list.length}`}</span>
+                                <div style={{ width: '100%', height: 1, background: 'var(--border-subtle)', opacity: 0.6 }} />
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', justifyContent: 'center', width: '100%', minHeight: 40, alignContent: 'flex-start' }}>
+                                  {z.list.length === 0 ? (
+                                    <span style={{ color: '#64748b', fontWeight: 700, fontSize: '0.6rem', textAlign: 'center', padding: '0.5rem 0', width: '100%', border: '1px dashed var(--border-subtle)', borderRadius: 8 }}>{z.empty}</span>
+                                  ) : z.list.map(p => circulo(p, 44))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Plantilla completa */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                          <span style={{ fontWeight: 900, fontSize: '0.72rem', color: '#e2e8f0', letterSpacing: '0.06em', textTransform: 'uppercase' }}>PLANTILLA — Click para agregar al campo / suplentes · Doble click para no convocado (efecto negro)</span>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+                            {players.filter(p => p.name).map(p => {
+                              const foto = jugadoresData[p.name]?.foto;
+                              const isTit = p.status === 'titular';
+                              const isSup = p.status === 'suplente';
+                              const isNo = p.status === 'no convocado';
+                              return (
+                                <div
+                                  key={p.name + '_' + players.indexOf(p)}
+                                  onClick={() => {
+                                    const idx = players.indexOf(p);
+                                    setPlayers(prev => {
+                                      const copy = [...prev];
+                                      const cur = copy[idx];
+                                      if (cur.status === 'no convocado') return prev;
+                                      if (cur.status === '-' || cur.status === 'lesion' || cur.status === 'division honor') {
+                                        const titCount = copy.filter(q => q.status === 'titular').length;
+                                        copy[idx] = { ...cur, status: titCount < 11 ? 'titular' : 'suplente' };
+                                        if (copy[idx].status === 'titular' && cur.mapX == null) {
+                                          const pos = FORMACION_11[titCount] || { x: 50, y: 50 };
+                                          copy[idx].mapX = pos.x;
+                                          copy[idx].mapY = pos.y;
+                                        }
+                                      } else if (cur.status === 'titular') copy[idx] = { ...cur, status: 'suplente' };
+                                      else if (cur.status === 'suplente') copy[idx] = { ...cur, status: '-' };
+                                      return copy;
+                                    });
+                                  }}
+                                  onDoubleClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const idx = players.indexOf(p);
+                                    setPlayers(prev => {
+                                      const copy = [...prev];
+                                      const cur = copy[idx];
+                                      copy[idx] = { ...cur, status: cur.status === 'no convocado' ? '-' : 'no convocado' };
+                                      return copy;
+                                    });
+                                  }}
+                                  draggable={!!p.name && !isNo}
+                                  onDragStart={(e) => handleDragStart(e, players.indexOf(p))}
+                                  title={`${p.name} — ${p.status} (arrastra al campo o banquillo)`}
+                                  style={{
+                                    width: 62,
+                                    height: 62,
+                                    borderRadius: '50%',
+                                    border: `3px solid ${isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? '#000000' : '#334155'}`,
+                                    overflow: 'hidden',
+                                    position: 'relative',
+                                    cursor: isNo ? 'pointer' : 'grab',
+                                    background: '#0f172a',
+                                    opacity: isNo ? 1 : 1,
+                                    boxShadow: isTit || isSup ? '0 2px 8px rgba(0,0,0,0.35)' : 'none'
+                                  }}
+                                >
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: isNo ? 'grayscale(1) brightness(0.32)' : 'none' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {isNo && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.62)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#ffffff', fontWeight: 900, fontSize: 9 }}>NO</span></div>}
+                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? 'rgba(0,0,0,0.75)' : 'rgba(15,23,42,0.88)', color: isTit || isSup ? '#0f172a' : '#ffffff', fontWeight: 900, fontSize: 6.5, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 10)}</div>
+                                </div>
+                              );
+                            })}
+                            {/* Huecos vacíos para agregar nuevos nombres */}
+                            {playerOptions.filter(n => !players.some(q => q.name === n)).map(n => {
+                              const foto = jugadoresData[n]?.foto;
+                              return (
+                                <div
+                                  key={'free_' + n}
+                                  draggable
+                                  onDragStart={(e) => { e.dataTransfer.setData('text/plain', 'free:' + n); e.dataTransfer.effectAllowed = 'move'; }}
+                                  onClick={() => {
+                                    const emptyIdx = players.findIndex(q => !q.name);
+                                    if (emptyIdx === -1) return;
+                                    const titCount = players.filter(q => q.status === 'titular').length;
+                                    setPlayers(prev => {
+                                      const copy = [...prev];
+                                      copy[emptyIdx] = { ...copy[emptyIdx], name: n, status: titCount < 11 ? 'titular' : 'suplente', mapX: titCount < 11 ? (FORMACION_11[titCount]?.x) : undefined, mapY: titCount < 11 ? (FORMACION_11[titCount]?.y) : undefined };
+                                      return copy;
+                                    });
+                                  }}
+                                  title={`Arrastra o click para agregar ${n} al equipo`}
+                                  style={{ width: 62, height: 62, borderRadius: '50%', border: '2px dashed #334155', overflow: 'hidden', position: 'relative', cursor: 'grab', background: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                  {foto ? <img src={foto} alt={n} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }} /> : null}
+                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.55)' }}><span style={{ color: '#38bdf8', fontWeight: 900, fontSize: 18 }}>+</span></div>
+                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(15,23,42,0.88)', color: '#ffffff', fontWeight: 900, fontSize: 6.5, textAlign: 'center', padding: '1px 0' }}>{n.slice(0, 10)}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {players.filter(p => p.status === 'no convocado').length > 0 && (
+                            <span style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 600 }}>No convocados aparecen en negro. Doble click de nuevo para quitar el efecto.</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </div>

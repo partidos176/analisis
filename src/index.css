@@ -367,3 +367,41 @@ video::-webkit-media-controls-current-time-display {
 #video-container video::-moz-fullscreen-button {
   display: none !important;
 }
+
+/* ==========================================================================
+   Mapa táctico - campo realista 105×68 ocupa todo el ancho + lateral horizontal
+   ========================================================================== */
+.mapa-tactico-layout {
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+.mapa-campo {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  align-self: stretch !important;
+  aspect-ratio: 105 / 68 !important;
+}
+.mapa-lateral {
+  flex: 1 1 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 0.6rem !important;
+}
+@media (max-width: 1024px) {
+  .mapa-lateral {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+@media (max-width: 768px) {
+  .mapa-lateral {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 480px) {
+  .mapa-lateral {
+    grid-template-columns: 1fr !important;
+  }
+}
