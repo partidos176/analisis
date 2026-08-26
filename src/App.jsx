@@ -554,7 +554,15 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
         }
       }
       if (videoFile.size > 2 * 1024 * 1024 * 1024) {
-        throw new Error('El archivo supera los 2 GB y el servidor de cortes no está disponible. Inicia el servidor con: node server.js');
+        setAviso('Servidor no detectado, reintentando conexión...');
+        checkServerStatus();
+        await new Promise(r => setTimeout(r, 2000));
+        try {
+          await tryServerBatch();
+          return;
+        } catch (finalErr) {
+          throw new Error('El archivo supera los 2 GB y el servidor de cortes no está disponible. Inicia el servidor con: node server.js');
+        }
       }
       {
         const results = await cutVideoMultiple(videoFile, cortes, (p) => setCorteProgress(p));
@@ -3012,7 +3020,14 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                                     }
                                   }
                                   if (videoFile.size > 2 * 1024 * 1024 * 1024) {
-                                    throw new Error('El archivo supera los 2 GB y el servidor de cortes no está disponible. Inicia el servidor con: node server.js');
+                                    setAviso('Servidor no detectado, reintentando conexión...');
+                                    checkServerStatus();
+                                    await new Promise(r => setTimeout(r, 2000));
+                                    try {
+                                      return await tryServer();
+                                    } catch (finalErr) {
+                                      throw new Error('El archivo supera los 2 GB y el servidor de cortes no está disponible. Inicia el servidor con: node server.js');
+                                    }
                                   }
                                   return await cutVideoSingle(videoFile, adjustedTime, duracion, videoName, (p) => {
                                     setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round(p * 100) }));
