@@ -2534,44 +2534,73 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   gap: '0.5rem',
                   minWidth: '280px'
                 }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => {
-                        const data = { actionLog, matchName: currentMatch?.name || 'partido' };
-                        const json = JSON.stringify(data, null, 2);
-                        const blob = new Blob([json], { type: 'application/json' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `J${currentMatch?.matchday || '?'}_${currentMatch?.homeTeam || ''}_vs_${currentMatch?.awayTeam || ''}.json`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                      }}
-                      style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
-                      Exportar
-                    </button>
-                    <button
-                      onClick={() => {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = '.json';
-                        input.click();
-                        input.onchange = () => {
-                          const file = input.files[0];
-                          if (!file) return;
-                          const reader = new FileReader();
-                          reader.onload = () => {
-                            try {
-                              const data = JSON.parse(reader.result);
-                              if (data.actionLog) setActionLog(data.actionLog);
-                            } catch (e) { /* noop */ }
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ACCIONES</span>
+                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                      <button
+                        onClick={async () => {
+                          const XLSX = await import('xlsx');
+                          const headers = ['Tiempo','Nombre','Tipo'];
+                          const rows = actionLog.map(e => [e.time || '', e.name || '', e.type || '']);
+                          const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+                          const wb = XLSX.utils.book_new();
+                          XLSX.utils.book_append_sheet(wb, ws, 'Acciones');
+                          const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+                          const blob = new Blob([wbout], {type:'application/octet-stream'});
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `J${currentMatch?.matchday || '?'}_${currentMatch?.homeTeam || ''}_vs_${currentMatch?.awayTeam || ''}.xlsx`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.6rem', fontWeight: 800, fontSize: '0.65rem', cursor: 'pointer' }}>
+                        Exportar Excel
+                      </button>
+                      <button
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = '.xlsx,.xls,.csv,.json';
+                          input.click();
+                          input.onchange = () => {
+                            const file = input.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                              reader.onload = async () => {
+                                try {
+                                  const XLSX = await import('xlsx');
+                                  const wb = XLSX.read(reader.result, {type:'array'});
+                                  const ws = wb.Sheets[wb.SheetNames[0]];
+                                  const data = XLSX.utils.sheet_to_json(ws, {header:1});
+                                  if (data.length > 1 && data[0].includes('Tiempo')) {
+                                    const headers = data[0];
+                                    const timeIdx = headers.indexOf('Tiempo');
+                                    const nameIdx = headers.indexOf('Nombre');
+                                    const typeIdx = headers.indexOf('Tipo');
+                                    const newLog = data.slice(1).map(row => ({ time: row[timeIdx] || '', name: row[nameIdx] || '', type: row[typeIdx] || '' })).filter(e => e.name);
+                                    if (newLog.length > 0) setActionLog(newLog);
+                                  }
+                                  alert('Importado Excel: '+file.name);
+                                } catch (e) { alert('Error: '+e.message); }
+                              };
+                              reader.readAsArrayBuffer(file);
+                            } else {
+                              reader.onload = () => {
+                                try {
+                                  const data = JSON.parse(reader.result);
+                                  if (data.actionLog) setActionLog(data.actionLog);
+                                } catch (e) { /* noop */ }
+                              };
+                              reader.readAsText(file);
+                            }
                           };
-                          reader.readAsText(file);
-                        };
-                      }}
-                      style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
-                      Importar
-                    </button>
+                        }}
+                        style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.6rem', fontWeight: 800, fontSize: '0.65rem', cursor: 'pointer' }}>
+                        Importar Excel
+                      </button>
+                    </div>
                   </div>
                   <button
                     onClick={() => {
@@ -3912,8 +3941,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                               <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES PROPIAS</span>
                               <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION',...crucePropiasFinalizaciones,'TOTAL']; const rows=crucePropiasAcciones.map(a=>[a,...crucePropiasFinalizaciones.map(f=>cruce[a][f]||''),cruceRows[a]||0]); rows.push(['TOTAL',...crucePropiasFinalizaciones.map(f=>cruceTotal[f]||0),crucePropiasAcciones.reduce((s,a)=>s+(cruceRows[a]||0),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Propias'); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='total_acciones_propias.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar</button>
-                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importadas propias xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; if(f.name.endsWith('.json')){ const d=JSON.parse(t); console.log('Importadas propias',d);} else { alert('Importado: '+f.name+' ('+t.length+' bytes)'); } }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar</button>
+                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION',...crucePropiasFinalizaciones,'TOTAL']; const rows=crucePropiasAcciones.map(a=>[a,...crucePropiasFinalizaciones.map(f=>cruce[a][f]||''),cruceRows[a]||0]); rows.push(['TOTAL',...crucePropiasFinalizaciones.map(f=>cruceTotal[f]||0),crucePropiasAcciones.reduce((s,a)=>s+(cruceRows[a]||0),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Propias'); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='total_acciones_propias.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar Excel</button>
+                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importadas propias xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; if(f.name.endsWith('.json')){ const d=JSON.parse(t); console.log('Importadas propias',d);} else { alert('Importado: '+f.name+' ('+t.length+' bytes)'); } }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar Excel</button>
                               </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -3954,8 +3983,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                               <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES RIVAL</span>
                               <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION',...cruceRivalFinalizaciones,'TOTAL']; const rows=cruceRivalAcciones.map(a=>[a,...cruceRivalFinalizaciones.map(f=>cruce[a][f]||''),cruceRows[a]||0]); rows.push(['TOTAL',...cruceRivalFinalizaciones.map(f=>cruceTotal[f]||0),cruceRivalAcciones.reduce((s,a)=>s+(cruceRows[a]||0),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Rival'); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='total_acciones_rival.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar</button>
-                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importadas rival xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; if(f.name.endsWith('.json')){ const d=JSON.parse(t); console.log('Importadas rival',d);} else { alert('Importado: '+f.name+' ('+t.length+' bytes)'); } }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar</button>
+                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION',...cruceRivalFinalizaciones,'TOTAL']; const rows=cruceRivalAcciones.map(a=>[a,...cruceRivalFinalizaciones.map(f=>cruce[a][f]||''),cruceRows[a]||0]); rows.push(['TOTAL',...cruceRivalFinalizaciones.map(f=>cruceTotal[f]||0),cruceRivalAcciones.reduce((s,a)=>s+(cruceRows[a]||0),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Rival'); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='total_acciones_rival.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar Excel</button>
+                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importadas rival xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; if(f.name.endsWith('.json')){ const d=JSON.parse(t); console.log('Importadas rival',d);} else { alert('Importado: '+f.name+' ('+t.length+' bytes)'); } }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar Excel</button>
                               </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -3996,8 +4025,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                               <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{titulo}</span>
                               <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION','TOTAL']; const rows=filasDef.map(([label,key])=>[label,totalPor(key)]); rows.push(['TOTAL',filasDef.reduce((s,[,key])=>s+totalPor(key),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,titulo.slice(0,31)); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=titulo.replace(/\s+/g,'_').toLowerCase()+'.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar</button>
-                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importado grupo xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; alert('Importado: '+f.name+' ('+t.length+' bytes)'); }catch(err){ alert('Error: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar</button>
+                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION','TOTAL']; const rows=filasDef.map(([label,key])=>[label,totalPor(key)]); rows.push(['TOTAL',filasDef.reduce((s,[,key])=>s+totalPor(key),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,titulo.slice(0,31)); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=titulo.replace(/\s+/g,'_').toLowerCase()+'.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar Excel</button>
+                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importado grupo xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; alert('Importado: '+f.name+' ('+t.length+' bytes)'); }catch(err){ alert('Error: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar Excel</button>
                               </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
