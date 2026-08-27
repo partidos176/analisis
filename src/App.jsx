@@ -79,17 +79,17 @@ const defaultPlayersList = () => {
 const playerOptions = ['ALEX', 'ALVARO', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'ISMA', 'JONAS', 'JORGE', 'JUANDA', 'KEVIN', 'LUCAS', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE'];
 
 const FORMACION_11 = [
-  { x: 10, y: 50 },
-  { x: 28, y: 15 },
-  { x: 28, y: 38 },
-  { x: 28, y: 62 },
-  { x: 28, y: 85 },
-  { x: 52, y: 22 },
-  { x: 52, y: 50 },
-  { x: 52, y: 78 },
-  { x: 78, y: 20 },
-  { x: 85, y: 50 },
-  { x: 78, y: 80 },
+  { x: 50, y: 10 },
+  { x: 15, y: 28 },
+  { x: 38, y: 28 },
+  { x: 62, y: 28 },
+  { x: 85, y: 28 },
+  { x: 22, y: 52 },
+  { x: 50, y: 52 },
+  { x: 78, y: 52 },
+  { x: 20, y: 78 },
+  { x: 50, y: 85 },
+  { x: 80, y: 78 },
 ];
 
 const matchTabs = [
@@ -3909,7 +3909,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {crucePropiasAcciones.length > 0 && crucePropiasFinalizaciones.length > 0 && (
                           <div>
-                            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>TOTAL ACCIONES PROPIAS</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES PROPIAS</span>
+                              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION',...crucePropiasFinalizaciones,'TOTAL']; const rows=crucePropiasAcciones.map(a=>[a,...crucePropiasFinalizaciones.map(f=>cruce[a][f]||''),cruceRows[a]||0]); rows.push(['TOTAL',...crucePropiasFinalizaciones.map(f=>cruceTotal[f]||0),crucePropiasAcciones.reduce((s,a)=>s+(cruceRows[a]||0),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Propias'); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='total_acciones_propias.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar</button>
+                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importadas propias xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; if(f.name.endsWith('.json')){ const d=JSON.parse(t); console.log('Importadas propias',d);} else { alert('Importado: '+f.name+' ('+t.length+' bytes)'); } }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar</button>
+                              </div>
+                            </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                                 <thead>
@@ -3945,7 +3951,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         )}
                         {cruceRivalAcciones.length > 0 && cruceRivalFinalizaciones.length > 0 && (
                           <div>
-                            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>TOTAL ACCIONES RIVAL</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES RIVAL</span>
+                              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION',...cruceRivalFinalizaciones,'TOTAL']; const rows=cruceRivalAcciones.map(a=>[a,...cruceRivalFinalizaciones.map(f=>cruce[a][f]||''),cruceRows[a]||0]); rows.push(['TOTAL',...cruceRivalFinalizaciones.map(f=>cruceTotal[f]||0),cruceRivalAcciones.reduce((s,a)=>s+(cruceRows[a]||0),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Rival'); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='total_acciones_rival.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar</button>
+                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importadas rival xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; if(f.name.endsWith('.json')){ const d=JSON.parse(t); console.log('Importadas rival',d);} else { alert('Importado: '+f.name+' ('+t.length+' bytes)'); } }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar</button>
+                              </div>
+                            </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                                 <thead>
@@ -3981,7 +3993,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         )}
                         {grupos.map(([titulo, filasDef]) => (
                           <div key={titulo}>
-                            <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>{titulo}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                              <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{titulo}</span>
+                              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION','TOTAL']; const rows=filasDef.map(([label,key])=>[label,totalPor(key)]); rows.push(['TOTAL',filasDef.reduce((s,[,key])=>s+totalPor(key),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,titulo.slice(0,31)); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=titulo.replace(/\s+/g,'_').toLowerCase()+'.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar</button>
+                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importado grupo xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; alert('Importado: '+f.name+' ('+t.length+' bytes)'); }catch(err){ alert('Error: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar</button>
+                              </div>
+                            </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                                 <thead>
@@ -5435,38 +5453,38 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             }}
                           >
                             {/* Césped rayado */}
-                            <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.07) 0 18px, transparent 18px 36px)', pointerEvents: 'none' }} />
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 45%, transparent 55%, rgba(0,0,0,0.08) 100%)', pointerEvents: 'none' }} />
-                            {/* SVG líneas reglamentarias - horizontal 105×68 realista */}
-                            <svg viewBox="0 0 105 68" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+                            <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(90deg, rgba(0,0,0,0.07) 0 18px, transparent 18px 36px)', pointerEvents: 'none' }} />
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 0%, transparent 45%, transparent 55%, rgba(0,0,0,0.08) 100%)', pointerEvents: 'none' }} />
+                            {/* SVG líneas reglamentarias - vertical 68×105 realista */}
+                            <svg viewBox="0 0 68 105" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
                               {/* Borde exterior */}
-                              <rect x="0.7" y="0.7" width="103.6" height="66.6" fill="none" stroke="white" strokeWidth="0.7" />
+                              <rect x="0.7" y="0.7" width="66.6" height="103.6" fill="none" stroke="white" strokeWidth="0.7" />
                               {/* Línea media */}
-                              <line x1="52.5" y1="0.7" x2="52.5" y2="67.3" stroke="white" strokeWidth="0.7" />
+                              <line x1="0.7" y1="52.5" x2="67.3" y2="52.5" stroke="white" strokeWidth="0.7" />
                               {/* Círculo central r=9.15 */}
-                              <circle cx="52.5" cy="34" r="9.15" fill="none" stroke="white" strokeWidth="0.7" />
-                              <circle cx="52.5" cy="34" r="0.7" fill="white" />
-                              {/* Área penal izquierda (propia) - 16.5 profundidad, 40.3 ancho */}
-                              <rect x="0.7" y="13.85" width="16.5" height="40.3" fill="none" stroke="white" strokeWidth="0.7" />
-                              {/* Área de meta izquierda - 5.5 profundidad, 18.32 ancho */}
-                              <rect x="0.7" y="24.84" width="5.5" height="18.32" fill="none" stroke="white" strokeWidth="0.7" />
-                              {/* Punto penal izquierda 11m */}
-                              <circle cx="11" cy="34" r="0.7" fill="white" />
-                              {/* Semicírculo penal izquierda - arco hacia centro */}
-                              <path d="M 16.5 26.69 A 9.15 9.15 0 0 1 16.5 41.31" fill="none" stroke="white" strokeWidth="0.7" />
-                              {/* Portería izquierda */}
-                              <rect x="-0.5" y="30.1" width="1.2" height="7.8" fill="none" stroke="white" strokeWidth="0.7" />
-                              {/* Área penal derecha (rival) */}
-                              <rect x="88.5" y="13.85" width="16.5" height="40.3" fill="none" stroke="white" strokeWidth="0.7" />
-                              <rect x="99.5" y="24.84" width="5.5" height="18.32" fill="none" stroke="white" strokeWidth="0.7" />
-                              <circle cx="94" cy="34" r="0.7" fill="white" />
-                              <path d="M 88.5 26.69 A 9.15 9.15 0 0 0 88.5 41.31" fill="none" stroke="white" strokeWidth="0.7" />
-                              <rect x="104.3" y="30.1" width="1.2" height="7.8" fill="none" stroke="white" strokeWidth="0.7" />
+                              <circle cx="34" cy="52.5" r="9.15" fill="none" stroke="white" strokeWidth="0.7" />
+                              <circle cx="34" cy="52.5" r="0.7" fill="white" />
+                              {/* Área penal superior (propia) - 16.5 profundidad, 40.3 ancho */}
+                              <rect x="13.85" y="0.7" width="40.3" height="16.5" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Área de meta superior - 5.5 profundidad, 18.32 ancho */}
+                              <rect x="24.84" y="0.7" width="18.32" height="5.5" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Punto penal superior 11m */}
+                              <circle cx="34" cy="11" r="0.7" fill="white" />
+                              {/* Semicírculo penal superior - arco hacia el centro */}
+                              <path d="M 26.69 17.2 A 9.15 9.15 0 0 0 41.31 17.2" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Portería superior */}
+                              <rect x="30.1" y="-0.5" width="7.8" height="1.2" fill="none" stroke="white" strokeWidth="0.7" />
+                              {/* Área penal inferior (rival) */}
+                              <rect x="13.85" y="87.8" width="40.3" height="16.5" fill="none" stroke="white" strokeWidth="0.7" />
+                              <rect x="24.84" y="98.8" width="18.32" height="5.5" fill="none" stroke="white" strokeWidth="0.7" />
+                              <circle cx="34" cy="94" r="0.7" fill="white" />
+                              <path d="M 26.69 87.8 A 9.15 9.15 0 0 1 41.31 87.8" fill="none" stroke="white" strokeWidth="0.7" />
+                              <rect x="30.1" y="104.3" width="7.8" height="1.2" fill="none" stroke="white" strokeWidth="0.7" />
                               {/* Esquinas r=1 */}
-                              <path d="M 1.7 0.7 A 1 1 0 0 0 0.7 1.7" fill="none" stroke="white" strokeWidth="0.7" />
-                              <path d="M 104.3 1.7 A 1 1 0 0 1 105 0.7" fill="none" stroke="white" strokeWidth="0.7" />
-                              <path d="M 105 66.3 A 1 1 0 0 1 104.3 67.3" fill="none" stroke="white" strokeWidth="0.7" />
-                              <path d="M 0.7 66.3 A 1 1 0 0 1 1.7 67.3" fill="none" stroke="white" strokeWidth="0.7" />
+                              <path d="M 1.7 0.7 A 1 1 0 0 1 0.7 1.7" fill="none" stroke="white" strokeWidth="0.7" />
+                              <path d="M 66.3 0.7 A 1 1 0 0 0 67.3 1.7" fill="none" stroke="white" strokeWidth="0.7" />
+                              <path d="M 67.3 103.3 A 1 1 0 0 0 66.3 104.3" fill="none" stroke="white" strokeWidth="0.7" />
+                              <path d="M 0.7 103.3 A 1 1 0 0 1 1.7 104.3" fill="none" stroke="white" strokeWidth="0.7" />
                             </svg>
 
                             {titulares.length === 0 && (
@@ -5546,8 +5564,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             })}
                           </div>
 
-                          {/* Lateral horizontal - 4 zonas en fila */}
-                          <div className="mapa-lateral" style={{ flex: '1 1 100%', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.6rem', width: '100%' }}>
+                          {/* Columna derecha: zonas + plantilla (a la derecha del campo) */}
+                          <div className="mapa-derecha" style={{ flex: '1 1 20%', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                            {/* Lateral - 4 zonas apiladas */}
+                            <div className="mapa-lateral" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
                               { id: 'suplente', label: 'SUPLENTES', color: '#f59e0b', list: suplentes, max: '12', empty: 'Arrastra aquí' },
                               { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000', list: noConvocados, max: '', empty: 'Arrastra aquí' },
@@ -5581,11 +5601,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               </div>
                             ))}
                           </div>
-                        </div>
 
                         {/* Plantilla completa */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                          <span style={{ fontWeight: 900, fontSize: '0.72rem', color: '#e2e8f0', letterSpacing: '0.06em', textTransform: 'uppercase' }}>PLANTILLA — Click para agregar al campo / suplentes · Doble click para no convocado (efecto negro)</span>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
                             {players.filter(p => p.name).map(p => {
                               const foto = jugadoresData[p.name]?.foto;
@@ -5679,6 +5697,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <span style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 600 }}>No convocados aparecen en negro. Doble click de nuevo para quitar el efecto.</span>
                           )}
                         </div>
+                        </div>
+                      </div>
                       </div>
                     );
                   })()}
