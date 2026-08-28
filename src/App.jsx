@@ -469,8 +469,7 @@ export default function App() {
     return Object.values(v);
   };
 
-  const handleOpenMatch = async (match) => {
-    setActiveTab('alineacion');
+  const applyMatchData = (match, keepCurrent = false) => {
     resetMatchData();
     const logAcciones = {};
     normalizeArray(match.actionLog).forEach(e => {
@@ -532,7 +531,12 @@ export default function App() {
     setTimerRunning(match.timerRunning ?? false);
     setActionLog(normalizeArray(match.actionLog));
     setSustituciones(normalizeArray(match.sustituciones));
-    setCurrentMatch(match);
+    if (!keepCurrent) setCurrentMatch(match);
+  };
+
+  const handleOpenMatch = async (match) => {
+    setActiveTab('alineacion');
+    applyMatchData(match, false);
   };
 
   const saveMatchData = async (id) => {
@@ -2534,72 +2538,128 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   gap: '0.5rem',
                   minWidth: '280px'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ACCIONES</span>
-                    <div style={{ display: 'flex', gap: '0.4rem' }}>
-                      <button
-                        onClick={async () => {
-                          const XLSX = await import('xlsx');
-                          const headers = ['Tiempo','Nombre','Tipo'];
-                          const rows = actionLog.map(e => [e.time || '', e.name || '', e.type || '']);
-                          const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-                          const wb = XLSX.utils.book_new();
-                          XLSX.utils.book_append_sheet(wb, ws, 'Acciones');
-                          const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
-                          const blob = new Blob([wbout], {type:'application/octet-stream'});
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = `J${currentMatch?.matchday || '?'}_${currentMatch?.homeTeam || ''}_vs_${currentMatch?.awayTeam || ''}.xlsx`;
-                          a.click();
-                          URL.revokeObjectURL(url);
-                        }}
-                        style={{ background: '#10b981', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.6rem', fontWeight: 800, fontSize: '0.65rem', cursor: 'pointer' }}>
-                        Exportar Excel
-                      </button>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
                       <button
                         onClick={() => {
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.accept = '.xlsx,.xls,.csv,.json';
-                          input.click();
-                          input.onchange = () => {
-                            const file = input.files[0];
+                          if (!currentMatch) { alert('Abre primero el partido donde quieres importar los datos'); return; }
+                          const inp = document.createElement('input');
+                          inp.type = 'file';
+                          inp.accept = '.xlsx,.xls';
+                          inp.onchange = async () => {
+                            const file = inp.files[0];
                             if (!file) return;
-                            const reader = new FileReader();
-                            if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
-                              reader.onload = async () => {
-                                try {
-                                  const XLSX = await import('xlsx');
-                                  const wb = XLSX.read(reader.result, {type:'array'});
-                                  const ws = wb.Sheets[wb.SheetNames[0]];
-                                  const data = XLSX.utils.sheet_to_json(ws, {header:1});
-                                  if (data.length > 1 && data[0].includes('Tiempo')) {
-                                    const headers = data[0];
-                                    const timeIdx = headers.indexOf('Tiempo');
-                                    const nameIdx = headers.indexOf('Nombre');
-                                    const typeIdx = headers.indexOf('Tipo');
-                                    const newLog = data.slice(1).map(row => ({ time: row[timeIdx] || '', name: row[nameIdx] || '', type: row[typeIdx] || '' })).filter(e => e.name);
-                                    if (newLog.length > 0) setActionLog(newLog);
-                                  }
-                                  alert('Importado Excel: '+file.name);
-                                } catch (e) { alert('Error: '+e.message); }
-                              };
-                              reader.readAsArrayBuffer(file);
-                            } else {
-                              reader.onload = () => {
-                                try {
-                                  const data = JSON.parse(reader.result);
-                                  if (data.actionLog) setActionLog(data.actionLog);
-                                } catch (e) { /* noop */ }
-                              };
-                              reader.readAsText(file);
+                            try {
+                              const XLSX = await import('xlsx');
+                              const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+                              const rawWs = wb.Sheets['RAW'];
+                              if (!rawWs) { alert('Este Excel no fue generado por "Guardar" (falta hoja RAW)'); return; }
+                              const rawText = XLSX.utils.sheet_to_json(rawWs, { header: 1 })[1]?.[0];
+                              const data = JSON.parse(rawText);
+                              applyMatchData(data, true);
+                              alert('Datos importados en el partido actual. Pulsa GUARDAR para conservarlos.');
+                            } catch (err) {
+                              alert('Error al importar Excel: ' + (err?.message || err));
                             }
                           };
+                          inp.click();
                         }}
-                        style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.6rem', fontWeight: 800, fontSize: '0.65rem', cursor: 'pointer' }}>
-                        Importar Excel
+                        style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.8rem', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
+                        IMPORTAR EXCEL
                       </button>
+                      <button
+                        onClick={async () => {
+                          if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
+                          try {
+                            await saveMatchData(currentMatch.id);
+                            const XLSX = await import('xlsx');
+                            const resumen = {
+                              matchday: currentMatch.matchday,
+                              homeTeam: currentMatch.homeTeam,
+                              awayTeam: currentMatch.awayTeam,
+                              tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount,
+                              tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount,
+                              centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount,
+                              rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount,
+                              rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount,
+                              inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, perdidasCount,
+                              fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount,
+                              saqueEsquinaFueraCount, infraccionCount, ocasionCount, timerSeconds
+                            };
+                            const wb = XLSX.utils.book_new();
+                            const wsResumen = XLSX.utils.json_to_sheet(Object.entries(resumen).map(([k, v]) => ({ CAMPO: k, VALOR: v })));
+                            XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
+                            const wsJugadores = XLSX.utils.json_to_sheet(players.map(p => ({ nombre: p.name, estado: p.status, mapX: p.mapX, mapY: p.mapY })));
+                            XLSX.utils.book_append_sheet(wb, wsJugadores, 'Jugadores');
+                            const wsAcciones = XLSX.utils.json_to_sheet(actionLog.map(e => ({ tiempo: e.time, nombre: e.name, tipo: e.type })));
+                            XLSX.utils.book_append_sheet(wb, wsAcciones, 'Acciones');
+                            const wsGoles = XLSX.utils.json_to_sheet([...golesList.map(g => ({ equipo: 'PROPIO', ...g })), ...golesRivalList.map(g => ({ equipo: 'RIVAL', ...g }))]);
+                            XLSX.utils.book_append_sheet(wb, wsGoles, 'Goles');
+                            const wsSust = XLSX.utils.json_to_sheet((sustituciones || []).map(s => ({ minuto: s.minuto, entra: s.entra, sale: s.sale })));
+                            XLSX.utils.book_append_sheet(wb, wsSust, 'Sustituciones');
+                            const logPos = actionLog.map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= 0);
+                            const pdsPos = [];
+                            let psPos = null;
+                            [...logPos].reverse().forEach(e => {
+                              if (e.name === '1ª PARTE' || e.name === '2ª PARTE') { psPos = e; }
+                              else if (e.name === 'FIN' && psPos) { pdsPos.push({ start: psPos, end: e }); psPos = null; }
+                            });
+                            if (psPos) pdsPos.push({ start: psPos, end: null });
+                            const posRows = pdsPos.map(p => {
+                              const startT = parseTime(p.start.time);
+                              const endT = p.end ? parseTime(p.end.time) : timerSeconds;
+                              const total = Math.max(1, endT - startT);
+                              const entries = logPos.filter(e => e.secs >= startT && e.secs <= endT && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).sort((a, b) => a.secs - b.secs);
+                              let ownSecs = 0, rivalSecs = 0, opStart = null, orStart = null;
+                              entries.forEach(e => {
+                                if (e.name === 'ON PROPIO') opStart = e.secs;
+                                else if (e.name === 'OFF PROPIO' && opStart !== null) { ownSecs += e.secs - opStart; opStart = null; }
+                                else if (e.name === 'ON RIVAL') orStart = e.secs;
+                                else if (e.name === 'OFF RIVAL' && orStart !== null) { rivalSecs += e.secs - orStart; orStart = null; }
+                              });
+                              if (opStart !== null) ownSecs += endT - opStart;
+                              if (orStart !== null) rivalSecs += endT - orStart;
+                              const neutroSecs = Math.max(0, total - ownSecs - rivalSecs);
+                              const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+                              return { periodo: p.start.name, propio: fmt(ownSecs) + ' (' + Math.round((ownSecs / total) * 100) + '%)', rival: fmt(rivalSecs) + ' (' + Math.round((rivalSecs / total) * 100) + '%)', neutro: fmt(neutroSecs) + ' (' + Math.round((neutroSecs / total) * 100) + '%)' };
+                            });
+                            const wsPos = XLSX.utils.json_to_sheet(posRows.length ? posRows : [{ periodo: 'SIN DATOS', propio: '', rival: '', neutro: '' }]);
+                            XLSX.utils.book_append_sheet(wb, wsPos, 'Posesion');
+                            const accionesDatos = ['TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS'];
+                            const finalizacionesDatos = ['OCASION','FUERA','BLOCAJE','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','INFRACCION'];
+                            const matrizDatos = {};
+                            accionesDatos.forEach(a => { matrizDatos[a] = {}; finalizacionesDatos.forEach(f => { matrizDatos[a][f] = 0; }); });
+                            let ultimaAccion = null;
+                            [...actionLog].reverse().forEach(entry => {
+                              if (entry.type === 'accion' && accionesDatos.includes(entry.name)) ultimaAccion = entry.name;
+                              else if (entry.type === 'finalizacion' && finalizacionesDatos.includes(entry.name) && ultimaAccion) { matrizDatos[ultimaAccion][entry.name] += 1; }
+                            });
+                            const filasDatos = accionesDatos.filter(a => finalizacionesDatos.some(f => matrizDatos[a][f] > 0));
+                            const colsDatos = finalizacionesDatos.filter(f => accionesDatos.some(a => matrizDatos[a][f] > 0));
+                            const datosRows = filasDatos.map(a => ({ ACCION: a, ...Object.fromEntries(colsDatos.map(f => [f, matrizDatos[a][f] || ''])), TOTAL: colsDatos.reduce((s, f) => s + matrizDatos[a][f], 0) }));
+                            const wsDatos = XLSX.utils.json_to_sheet(datosRows.length ? datosRows : [{ ACCION: 'SIN DATOS' }]);
+                            XLSX.utils.book_append_sheet(wb, wsDatos, 'Datos');
+                            const rawData = { ...resumen, players, actionLog, golesList, golesRivalList, sustituciones, timerSeconds, timerRunning };
+                            const wsRaw = XLSX.utils.aoa_to_sheet([['DATOS'], [JSON.stringify(rawData)]]);
+                            XLSX.utils.book_append_sheet(wb, wsRaw, 'RAW');
+                            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                            const blob = new Blob([wbout], { type: 'application/octet-stream' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `J${currentMatch.matchday || '?'}_${currentMatch.homeTeam || ''}_vs_${currentMatch.awayTeam || ''}_datos.xlsx`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                            alert('Partido guardado y archivo Excel generado');
+                          } catch (err) {
+                            alert('Error al guardar: ' + (err?.message || err));
+                          }
+                        }}
+                        style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '6px', padding: '0.25rem 0.8rem', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
+                        GUARDAR
+                      </button>
+
+
                     </div>
                   </div>
                   <button
@@ -5097,128 +5157,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       ERROR DE ALINEACION
                     </div>
                   )}
-                  <div style={{ display: 'flex', gap: '1rem', width: '100%' }}>
-                  {/* Columna izquierda */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {players.slice(0, 12).map((p, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.8rem', minWidth: '20px', textAlign: 'right' }}>{i + 1}</span>
-                        <select
-                          value={p.name}
-                          onChange={(e) => {
-                            const newPlayers = [...players];
-                            newPlayers[i] = { ...newPlayers[i], name: e.target.value };
-                            setPlayers(newPlayers);
-                          }}
-                          style={{
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: '8px',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                            padding: '0.4rem 0.6rem',
-                            textTransform: 'uppercase',
-                            cursor: 'pointer',
-                            flex: 1
-                          }}
-                        >
-                          <option value="">-</option>
-                          {playerOptions.filter(n => n === p.name || !players.some((q, qi) => qi !== i && q.name === n)).map(n => (
-                            <option key={n} value={n}>{n}</option>
-                          ))}
-                        </select>
-                        <select
-                          value={p.status}
-                          onChange={(e) => {
-                            const newPlayers = [...players];
-                            newPlayers[i] = { ...newPlayers[i], status: e.target.value };
-                            setPlayers(newPlayers);
-                          }}
-                          style={{
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: '8px',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                            padding: '0.4rem 0.6rem',
-                            textTransform: 'uppercase',
-                            cursor: 'pointer',
-                            flex: 1
-                          }}
-                        >
-                          <option value="-">-</option>
-                          <option value="titular">TITULAR</option>
-                          <option value="suplente">SUPLENTE</option>
-                          <option value="lesion">LESION</option>
-                          <option value="no convocado">NO CONVOCADO</option>
-                          <option value="division honor">DIVISION HONOR</option>
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Columna derecha */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {players.slice(12, 23).map((p, i) => (
-                      <div key={i + 12} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.8rem', minWidth: '20px', textAlign: 'right' }}>{i + 13}</span>
-                        <select
-                          value={p.name}
-                          onChange={(e) => {
-                            const newPlayers = [...players];
-                            newPlayers[i + 12] = { ...newPlayers[i + 12], name: e.target.value };
-                            setPlayers(newPlayers);
-                          }}
-                          style={{
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: '8px',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                            padding: '0.4rem 0.6rem',
-                            textTransform: 'uppercase',
-                            cursor: 'pointer',
-                            flex: 1
-                          }}
-                        >
-                          <option value="">-</option>
-                          {playerOptions.filter(n => n === p.name || !players.some((q, qi) => qi !== i + 12 && q.name === n)).map(n => (
-                            <option key={n} value={n}>{n}</option>
-                          ))}
-                        </select>
-                        <select
-                          value={p.status}
-                          onChange={(e) => {
-                            const newPlayers = [...players];
-                            newPlayers[i + 12] = { ...newPlayers[i + 12], status: e.target.value };
-                            setPlayers(newPlayers);
-                          }}
-                          style={{
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--border-subtle)',
-                            borderRadius: '8px',
-                            color: '#ffffff',
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                            padding: '0.4rem 0.6rem',
-                            textTransform: 'uppercase',
-                            cursor: 'pointer',
-                            flex: 1
-                          }}
-                        >
-                          <option value="-">-</option>
-                          <option value="titular">TITULAR</option>
-                          <option value="suplente">SUPLENTE</option>
-                          <option value="lesion">LESION</option>
-                          <option value="no convocado">NO CONVOCADO</option>
-                          <option value="division honor">DIVISION HONOR</option>
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                  </div>
+
 
                   {/* === MAPA DE CAMPO === */}
                   {(() => {
@@ -5337,6 +5276,46 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       });
                     };
                     const handleBenchDrop = (e) => handleZoneDrop(e, 'suplente');
+                    const removePlayer = (realIdx) => {
+                      if (realIdx == null) return;
+                      setPlayers(prev => {
+                        const copy = [...prev];
+                        const cur = copy[realIdx];
+                        if (!cur || !cur.name) return prev;
+                        copy[realIdx] = { ...cur, status: '-', mapX: undefined, mapY: undefined };
+                        return copy;
+                      });
+                    };
+                    const XBtn = ({ idx }) => (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); removePlayer(idx); }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onDoubleClick={(e) => e.stopPropagation()}
+                        title="Quitar (volver a posición original)"
+                        style={{
+                          position: 'absolute',
+                          top: -5,
+                          right: -5,
+                          width: 18,
+                          height: 18,
+                          borderRadius: '50%',
+                          border: '2px solid #ef4444',
+                          background: '#0f172a',
+                          color: '#ef4444',
+                          fontWeight: 900,
+                          fontSize: 12,
+                          lineHeight: 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          zIndex: 6,
+                          padding: 0
+                        }}
+                      >×</button>
+                    );
                     const circulo = (p, size = 56, extraStyle = {}) => {
                       const foto = jugadoresData[p.name]?.foto;
                       const isNoConvocado = p.status === 'no convocado';
@@ -5402,10 +5381,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               <span style={{ color: '#ffffff', fontWeight: 900, fontSize: size * 0.18, letterSpacing: '0.04em' }}>NO</span>
                             </div>
                           )}
-                          <div style={{ position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)', background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : '#334155', color: '#0f172a', fontWeight: 900, fontSize: Math.max(7, size * 0.16), padding: '0 4px', borderRadius: 4, whiteSpace: 'nowrap', lineHeight: 1.1, maxWidth: size + 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
-                        </div>
-                      );
-                    };
+                           <div style={{ position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)', background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : '#334155', color: '#0f172a',                             fontWeight: 900, fontSize: Math.max(10, size * 0.22), padding: '0 4px', borderRadius: 4, whiteSpace: 'nowrap', lineHeight: 1.1, maxWidth: size + 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+                           {!!p.name && <XBtn idx={p.idx} />}
+                         </div>
+                       );
+                     };
 
                     const handleCampoClick = (e) => {
                       if (draggingMapIdx != null) return;
@@ -5430,31 +5410,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.6rem' }}>
-                          <span style={{ fontWeight: 900, fontSize: '0.95rem', color: '#38bdf8', letterSpacing: '0.05em' }}>MAPA TÁCTICO — {titulares.length}/11 TIT · {suplentes.length} SUP · {noConvocados.length} NC · {lesionados.length} LES · {divisionHonor.length} DH</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                            <button
-                              onClick={handleUndoPlayers}
-                              disabled={!undoSnapshotRef.current}
-                              title={!undoSnapshotRef.current ? 'Nada que deshacer' : 'Deshacer último cambio — Ctrl+Z'}
-                              style={{
-                                background: !undoSnapshotRef.current ? '#334155' : '#f59e0b',
-                                color: !undoSnapshotRef.current ? '#94a3b8' : '#0f172a',
-                                fontWeight: 900,
-                                fontSize: '0.7rem',
-                                padding: '0.35rem 0.7rem',
-                                borderRadius: 999,
-                                cursor: !undoSnapshotRef.current ? 'not-allowed' : 'pointer',
-                                opacity: !undoSnapshotRef.current ? 0.6 : 1,
-                                letterSpacing: '0.04em',
-                                border: 'none'
-                              }}
-                            >
-                              ↩ DESHACER
-                            </button>
-                            <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700 }}>Arrastra al campo o zona · Mueve en campo · Click: titular↔suplente · Doble click: no convocado</span>
-                          </div>
-                        </div>
+
 
                         <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch', flexWrap: 'wrap', flexDirection: 'column' }}>
                           {/* Campo - realista 105×68 horizontal, ocupa todo el ancho */}
@@ -5469,7 +5425,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               width: '100%',
                               maxWidth: '100%',
                               alignSelf: 'stretch',
-                              aspectRatio: '105 / 68',
+                              height: '680px',
                               background: '#1a7a33',
                               borderRadius: 12,
                               border: '2px solid #ffffff',
@@ -5537,9 +5493,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     setPlayers(prev => {
                                       const copy = [...prev];
                                       const cur = copy[p.idx];
-                                      let next = 'suplente';
-                                      if (cur.status === 'titular') next = 'suplente';
-                                      copy[p.idx] = { ...cur, status: next };
+                                      if (cur.status === 'titular') {
+                                        copy[p.idx] = { ...cur, status: '-', mapX: undefined, mapY: undefined };
+                                      }
                                       return copy;
                                     });
                                   }}
@@ -5571,8 +5527,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     left: `${x}%`,
                                     top: `${y}%`,
                                     transform: 'translate(-50%, -50%)',
-                                    width: 64,
-                                    height: 64,
+                                     width: 100,
+                                    height: 100,
                                     borderRadius: '50%',
                                     border: `3px solid ${isNoConvocado ? '#000000' : '#38bdf8'}`,
                                     overflow: 'hidden',
@@ -5583,12 +5539,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     touchAction: 'none',
                                     userSelect: 'none'
                                   }}
-                                  title={`${p.name} — arrastra libremente por el campo o al banquillo · click: a suplente · doble click: no convocado`}
+                                  title={`${p.name} — arrastra libremente por el campo o al banquillo · click: quitar (vuelve a la plantilla) · doble click: no convocado`}
                                 >
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: isNoConvocado ? 'grayscale(1) brightness(0.35)' : 'none' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                   {isNoConvocado && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }} />}
-                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isNoConvocado ? 'rgba(0,0,0,0.75)' : 'rgba(56,189,248,0.95)', color: isNoConvocado ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 7.5, textAlign: 'center', padding: '1px 0', letterSpacing: '0.02em', lineHeight: 1.1 }}>{p.name}</div>
-                                </div>
+                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isNoConvocado ? 'rgba(0,0,0,0.75)' : 'rgba(56,189,248,0.95)', color: isNoConvocado ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 13, textAlign: 'center', padding: '1px 0', letterSpacing: '0.02em', lineHeight: 1.1 }}>{p.name}</div>
+                                   {!!p.name && <XBtn idx={p.idx} />}
+                                 </div>
                               );
                             })}
                           </div>
@@ -5625,7 +5582,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', justifyContent: 'center', width: '100%', minHeight: 40, alignContent: 'flex-start' }}>
                                   {z.list.length === 0 ? (
                                     <span style={{ color: '#64748b', fontWeight: 700, fontSize: '0.6rem', textAlign: 'center', padding: '0.5rem 0', width: '100%', border: '1px dashed var(--border-subtle)', borderRadius: 8 }}>{z.empty}</span>
-                                  ) : z.list.map(p => circulo(p, 44))}
+                                  ) : z.list.map(p => circulo(p, 76))}
                                 </div>
                               </div>
                             ))}
@@ -5634,7 +5591,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         {/* Plantilla completa */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
-                            {players.filter(p => p.name).map(p => {
+                             {players.filter(p => p.name && p.status === '-').map(p => {
                               const foto = jugadoresData[p.name]?.foto;
                               const isTit = p.status === 'titular';
                               const isSup = p.status === 'suplente';
@@ -5675,9 +5632,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   draggable={!!p.name && !isNo}
                                   onDragStart={(e) => handleDragStart(e, players.indexOf(p))}
                                   title={`${p.name} — ${p.status} (arrastra al campo o banquillo)`}
-                                  style={{
-                                    width: 62,
-                                    height: 62,
+                                   style={{
+                                    width: 90,
+                                    height: 90,
                                     borderRadius: '50%',
                                     border: `3px solid ${isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? '#000000' : '#334155'}`,
                                     overflow: 'hidden',
@@ -5689,9 +5646,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   }}
                                 >
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: isNo ? 'grayscale(1) brightness(0.32)' : 'none' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
-                                  {isNo && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.62)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#ffffff', fontWeight: 900, fontSize: 9 }}>NO</span></div>}
-                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? 'rgba(0,0,0,0.75)' : 'rgba(15,23,42,0.88)', color: isTit || isSup ? '#0f172a' : '#ffffff', fontWeight: 900, fontSize: 6.5, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 10)}</div>
-                                </div>
+                                  {isNo && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.62)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#ffffff', fontWeight: 900, fontSize: 10 }}>NO</span></div>}
+                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? 'rgba(0,0,0,0.75)' : 'rgba(15,23,42,0.88)', color: isTit || isSup ? '#0f172a' : '#ffffff', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
+                                  <XBtn idx={players.indexOf(p)} />
+                                 </div>
                               );
                             })}
                             {/* Huecos vacíos para agregar nuevos nombres */}
@@ -5712,12 +5670,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                       return copy;
                                     });
                                   }}
-                                  title={`Arrastra o click para agregar ${n} al equipo`}
-                                  style={{ width: 62, height: 62, borderRadius: '50%', border: '2px dashed #334155', overflow: 'hidden', position: 'relative', cursor: 'grab', background: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                   title={`Arrastra o click para agregar ${n} al equipo`}
+                                   style={{ width: 90, height: 90, borderRadius: '50%', border: '2px dashed #334155', overflow: 'hidden', position: 'relative', cursor: 'grab', background: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
                                   {foto ? <img src={foto} alt={n} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }} /> : null}
-                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.55)' }}><span style={{ color: '#38bdf8', fontWeight: 900, fontSize: 18 }}>+</span></div>
-                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(15,23,42,0.88)', color: '#ffffff', fontWeight: 900, fontSize: 6.5, textAlign: 'center', padding: '1px 0' }}>{n.slice(0, 10)}</div>
+                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.55)' }}><span style={{ color: '#38bdf8', fontWeight: 900, fontSize: 26 }}>+</span></div>
+                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(15,23,42,0.88)', color: '#ffffff', fontWeight: 900, fontSize: 7.5, textAlign: 'center', padding: '1px 0' }}>{n.slice(0, 10)}</div>
                                 </div>
                               );
                             })}
