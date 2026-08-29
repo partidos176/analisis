@@ -1020,6 +1020,7 @@ export default function App() {
   };
 
   const handleResetContador = () => {
+    if (!window.confirm('¿Seguro que quieres poner todos los contadores a cero?')) return;
     setTimerSeconds(0);
     setActionLog([]);
     setGolesList([]);
