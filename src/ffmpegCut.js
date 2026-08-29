@@ -54,7 +54,27 @@ export async function cutVideoSingle(file, timeSecs, durationSecs, outputName, o
   await ffmpeg.writeFile(inputName, fileData);
   const parts = String(timeSecs).split(':').map(Number);
   const startSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
-  await ffmpeg.exec(['-ss', String(startSecs), '-t', String(durationSecs), '-i', inputName, '-c', 'copy', '-movflags', '+faststart', '-y', outputNameClean]);
+  const dur = Number.isFinite(durationSecs) ? durationSecs : 5;
+  const logs = [];
+  ffmpeg.on('log', ({ message }) => logs.push(message));
+  const baseArgs = [
+    '-ss', String(startSecs),
+    '-t', String(dur),
+    '-i', inputName,
+    '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+    '-movflags', '+faststart',
+    '-y', outputNameClean
+  ];
+  try {
+    await ffmpeg.exec([...baseArgs, '-c:a', 'aac']);
+  } catch (e1) {
+    try {
+      await ffmpeg.exec([...baseArgs, '-an']);
+    } catch (e2) {
+      const tail = logs.slice(-8).join(' || ');
+      throw new Error('ffmpeg no pudo generar el corte (start=' + startSecs + 's, dur=' + dur + 's). Detalle: ' + (tail || e2.message || e2));
+    }
+  }
   const data = await ffmpeg.readFile(outputNameClean);
   await ffmpeg.deleteFile(inputName);
   await ffmpeg.deleteFile(outputNameClean);
@@ -73,7 +93,11 @@ export async function cutVideoMultiple(file, cortes, onProgress) {
     const startSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
     const duracion = corte.duracion ? Math.max(1, parseInt(corte.duracion, 10)) : 5;
     const outName = `corte_${i}.mp4`;
-    await ffmpeg.exec(['-ss', String(startSecs), '-t', String(duracion), '-i', inputName, '-c', 'copy', '-movflags', '+faststart', '-y', outName]);
+    try {
+      await ffmpeg.exec(['-ss', String(startSecs), '-t', String(duracion), '-i', inputName, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-c:a', 'aac', '-movflags', '+faststart', '-y', outName]);
+    } catch (e1) {
+      await ffmpeg.exec(['-ss', String(startSecs), '-t', String(duracion), '-i', inputName, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-movflags', '+faststart', '-an', '-y', outName]);
+    }
     const data = await ffmpeg.readFile(outName);
     results.push({ name: (corte.name || 'corte') + '.mp4', blob: new Blob([data.buffer], { type: 'video/mp4' }) });
     await ffmpeg.deleteFile(outName);
