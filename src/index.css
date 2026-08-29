@@ -207,6 +207,18 @@ button {
 }
 .btn-secondary:hover { background: #475569; }
 
+.btn-danger {
+  background: #dc2626;
+  color: #f8fafc;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.btn-danger:hover { background: #b91c1c; }
+
 .btn-sm {
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;

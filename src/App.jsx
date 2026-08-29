@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update } from './firebase';
+import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update, remove } from './firebase';
 import Login from './components/Login';
 import TratamientoApp from './TratamientoApp';
 import { loadFFmpeg, cutVideoSingle, cutVideoMultiple, isBrowserCutSupported } from './ffmpegCut';
@@ -415,6 +415,16 @@ export default function App() {
     setHomeTeam(match.homeTeam);
     setAwayTeam(match.awayTeam);
     setMatchday(match.matchday);
+  };
+
+  const handleDeleteMatch = async (match) => {
+    if (!window.confirm(`¿Borrar el partido ${match.homeTeam} vs ${match.awayTeam} (J${match.matchday})?`)) return;
+    try {
+      await remove(ref(db, `matches/${match.id}`));
+    } catch (err) {
+      console.error('Error al borrar el partido:', err);
+      window.alert('No se pudo borrar el partido.');
+    }
   };
 
   const handleUpdateMatch = async (e) => {
@@ -6026,6 +6036,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </button>
                       <button className="btn-sm btn-secondary" onClick={() => handleEdit(m)}>
                         Editar
+                      </button>
+                      <button className="btn-sm btn-danger" onClick={() => handleDeleteMatch(m)}>
+                        Borrar
                       </button>
                     </div>
                   </div>
