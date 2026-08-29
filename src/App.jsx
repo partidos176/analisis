@@ -936,11 +936,8 @@ export default function App() {
     if (name === 'GOL' || name === 'PENAL + GOL') {
       setGolesList(prev => prev.slice(0, -1));
     }
-    if (name === 'GOL RIVAL' || name === 'PENAL + GOL RIVAL') {
+    if (name === 'GOL RIVAL') {
       setGolesRivalList(prev => prev.slice(0, -1));
-    }
-    if (name === 'PENAL + GOL RIVAL') {
-      setGolRivalCount(prev => Math.max(0, prev - 1));
     }
   };
 
@@ -3621,7 +3618,7 @@ export default function App() {
                         <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + GOL RIVAL', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalGolRivalCount(penalGolRivalCount + 1); setGolRivalCount(golRivalCount + 1); setGolesRivalList([...golesRivalList, { periodo, minuto: Math.floor(timerSeconds / 60), tipo: 'PENAL' }]); setActiveTab('acciones'); } }}
+                        onClick={() => { if (logAction('PENAL + GOL RIVAL', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalGolRivalCount(penalGolRivalCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL RIVAL</span>
