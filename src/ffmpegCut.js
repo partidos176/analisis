@@ -13,10 +13,18 @@ export async function loadFFmpeg(onProgress) {
   ffmpeg.on('progress', ({ progress }) => {
     if (onProgress) onProgress(progress);
   });
-  await ffmpeg.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-  });
+  const loadFrom = async (coreBase) => {
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${coreBase}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm'),
+    });
+  };
+  try {
+    await loadFrom(baseURL);
+  } catch (err) {
+    console.warn('[ffmpeg] core local falló, usando CDN', err);
+    await loadFrom('https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm');
+  }
   loaded = true;
   return ffmpeg;
 }
