@@ -70,7 +70,10 @@ function TratamientoApp({ videoInicial }) {
   const [modoCirculoClick, setModoCirculoClick] = useState(false);
   const [modoFlechaClick, setModoFlechaClick] = useState(false);
   const flechaOrigenRef = useRef(null);
+  const [modoLineaClick, setModoLineaClick] = useState(false);
+  const lineaOrigenRef = useRef(null);
   const elipsesSessionRef = useRef([]);
+  const cancelarVideoRef = useRef(false);
   const videoRef = useRef(null);
   const draggingRef = useRef(false);
   const clipRef = useRef(null);
@@ -118,7 +121,7 @@ function TratamientoApp({ videoInicial }) {
 
   const hojas = ['Presentación', 'Edición'];
 
-  const colores = ['#38bdf8', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#facc15', '#ffffff'];
+  const colores = ['#ef4444', '#3b82f6', '#22c55e', '#facc15', '#f97316', '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6', '#84cc16', '#d946ef', '#92400e', '#000000', '#ffffff'];
 
   const handleFile = (e) => {
     const f = e.target.files[0] || null;
@@ -183,6 +186,7 @@ function TratamientoApp({ videoInicial }) {
       let orig = null;
       let clipEls = [];
       try {
+      cancelarVideoRef.current = false;
       const w = original.videoWidth || 640;
       const h = original.videoHeight || 360;
       const clips = capturas.filter(c => c.videoUrl && c.insertarEn != null).sort((a, b) => a.insertarEn - b.insertarEn);
@@ -272,15 +276,17 @@ function TratamientoApp({ videoInicial }) {
         }
       };
 
-      const terminar = async (error) => {
+      const terminar = async (error, cancelado = false) => {
         if (terminado) return;
         terminado = true;
+        cancelarVideoRef.current = false;
         cancelAnimationFrame(raf);
         try { rec.stop(); } catch (e) { /* noop */ }
         try { document.body.removeChild(orig); } catch (e) { /* noop */ }
         try { document.body.removeChild(canvas); } catch (e) { /* noop */ }
         clipEls.forEach(({ v }) => { try { document.body.removeChild(v); } catch (e) { /* noop */ } });
         setExportando(false);
+        if (cancelado) { setAviso('Exportación cancelada'); return; }
         if (error) { setAviso('Error al exportar el video'); return; }
         await new Promise(res => { rec.onstop = res; });
         const blob = new Blob(chunks, { type: mime });
@@ -332,6 +338,7 @@ function TratamientoApp({ videoInicial }) {
       };
 
       const loop = () => {
+        if (cancelarVideoRef.current) { terminar(false, true); return; }
         if (!activeClip && clipIdx < clipEls.length && orig.currentTime >= clipEls[clipIdx].c.insertarEn) {
           orig.pause();
           activeClip = clipEls[clipIdx].v;
@@ -436,9 +443,15 @@ function TratamientoApp({ videoInicial }) {
     setFiguraSeleccionada(id);
   };
 
+  const anadirCirculoHueco = () => {
+    const id = Date.now();
+    setFiguras(prev => [...prev, { id, tipo: 'c', x: 0.5, y: 0.5, ancho: 0.1, alto: 0.1, color: '#38bdf8', opacidad: 1, grosor: 0.005, rot: 0, hueco: 90, crecimiento: 1 }]);
+    setFiguraSeleccionada(id);
+  };
+
   const anadirTexto = () => {
     const id = Date.now();
-    setFiguras(prev => [...prev, { id, tipo: 'texto', x: 0.5, y: 0.5, fontSize: 0.06, color: '#ffffff', opacidad: 1, texto: 'Texto' }]);
+    setFiguras(prev => [...prev, { id, tipo: 'texto', x: 0.5, y: 0.5, fontSize: 0.06, color: '#ffffff', opacidad: 1, texto: 'Texto', negrita: false }]);
     setFiguraSeleccionada(id);
   };
 
@@ -640,7 +653,7 @@ function TratamientoApp({ videoInicial }) {
       const y = f.y * d.h;
       const tam = (f.fontSize || 0.06) * d.h;
       const txt = String(f.texto || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return `<text x="${x}" y="${y}" font-size="${tam}" fill="${f.color}" fill-opacity="${(f.opacidad ?? 1) * e}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif">${txt}</text>`;
+      return `<text x="${x}" y="${y}" font-size="${tam}" fill="${f.color}" fill-opacity="${(f.opacidad ?? 1) * e}" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-weight="${f.negrita ? 800 : 400}">${txt}</text>`;
     }
 
     if (f.tipo === 'triangulo') {
@@ -648,12 +661,31 @@ function TratamientoApp({ videoInicial }) {
       const y = f.y * d.h;
       const ancho = f.ancho * d.w;
       const alto = f.alto * d.h;
-      const yBase = y + alto / 2;
+      const apexY = y - alto / 2;
       const hh = alto * e;
       const hw = (ancho / 2) * e;
+      const baseY = apexY + hh;
       const gradientId = `pilar_${f.id}`;
-      const pd = pathTrianguloRedondeado({ x, y: yBase - hh }, { x: x - hw, y: yBase }, { x: x + hw, y: yBase }, Math.min(ancho, alto) * 0.12);
-      return `${pat}<defs><linearGradient id="${gradientId}" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="${f.color}" stop-opacity="${f.opacidad ?? 1}"/><stop offset="100%" stop-color="${f.color}" stop-opacity="${(f.opacidad ?? 1) * 0.35}"/></linearGradient></defs><path d="${pd}" fill="url(#${gradientId})" />`;
+      const pd = pathTrianguloRedondeado({ x, y: apexY }, { x: x - hw, y: baseY }, { x: x + hw, y: baseY }, Math.min(ancho, alto) * 0.12 * e);
+      return `${pat}<defs><linearGradient id="${gradientId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${f.color}" stop-opacity="${f.opacidad ?? 1}"/><stop offset="100%" stop-color="${f.color}" stop-opacity="${(f.opacidad ?? 1) * 0.35}"/></linearGradient></defs><path d="${pd}" fill="url(#${gradientId})" />`;
+    }
+
+    if (f.tipo === 'c') {
+      const ex = f.x * d.w;
+      const ey = f.y * d.h;
+      const erx = (f.ancho / 2) * d.w * e;
+      const ery = (f.alto / 2) * d.h * e;
+      const hueco = f.hueco ?? 90;
+      const rot = f.rot ?? 0;
+      const a1 = (rot + hueco / 2) * Math.PI / 180;
+      const a2 = a1 + (360 - hueco) * Math.PI / 180;
+      const x1 = ex + Math.cos(a1) * erx;
+      const y1 = ey + Math.sin(a1) * ery;
+      const x2 = ex + Math.cos(a2) * erx;
+      const y2 = ey + Math.sin(a2) * ery;
+      const large = (360 - hueco) > 180 ? 1 : 0;
+      const sw = (f.grosor ?? 0.005) * d.h;
+      return `<path d="M ${x1} ${y1} A ${erx} ${ery} 0 ${large} 1 ${x2} ${y2}" fill="none" stroke="${f.color}" stroke-opacity="${f.opacidad ?? 1}" stroke-width="${sw}" stroke-linecap="round"/>`;
     }
 
     const cx = f.x * d.w;
@@ -1001,6 +1033,15 @@ function TratamientoApp({ videoInicial }) {
                     <line x1="12" y1="15" x2="12" y2="3" />
                   </svg>
                 </button>
+                {exportando && (
+                  <button
+                    onClick={() => { cancelarVideoRef.current = true; }}
+                    title="Cancelar exportación"
+                    style={{ position: 'absolute', top: '8px', right: '92px', background: 'rgba(220,38,38,0.9)', border: 'none', borderRadius: '8px', padding: '0.3rem 0.6rem', cursor: 'pointer', color: '#ffffff', fontSize: '0.8rem', fontWeight: 800, zIndex: 3 }}
+                  >
+                    Cancelar
+                  </button>
+                )}
                 <input
                   value={nombreVideo}
                   onChange={(e) => setNombreVideo(e.target.value)}
@@ -1229,14 +1270,37 @@ function TratamientoApp({ videoInicial }) {
               {figuraSeleccionada && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
                   {figuras.find(f => f.id === figuraSeleccionada)?.tipo === 'texto' && (
-                    <input
-                      value={figuras.find(f => f.id === figuraSeleccionada)?.texto || ''}
-                      onChange={(e) => actualizarFigura(figuraSeleccionada, { texto: e.target.value })}
-                      placeholder="Escribe el texto"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                      style={{ width: '180px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '0.5rem 0.6rem', fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: '#e2e8f0', outline: 'none' }}
-                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
+                      <input
+                        value={figuras.find(f => f.id === figuraSeleccionada)?.texto || ''}
+                        onChange={(e) => actualizarFigura(figuraSeleccionada, { texto: e.target.value })}
+                        placeholder="Escribe el texto"
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ width: '180px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '0.5rem 0.6rem', fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: '#e2e8f0', outline: 'none' }}
+                      />
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <button
+                          onClick={() => actualizarFigura(figuraSeleccionada, { negrita: !figuras.find(f => f.id === figuraSeleccionada)?.negrita })}
+                          title="Negrita"
+                          style={{ background: figuras.find(f => f.id === figuraSeleccionada)?.negrita ? '#0ea5e9' : '#334155', border: 'none', borderRadius: '8px', padding: '0.4rem 0.7rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', cursor: 'pointer' }}
+                        >
+                          B
+                        </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem' }}>
+                          <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '0.65rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tamaño</span>
+                          <input
+                            type="range"
+                            min="2"
+                            max="20"
+                            value={Math.round((figuras.find(f => f.id === figuraSeleccionada)?.fontSize ?? 0.06) * 100)}
+                            onChange={(e) => actualizarFigura(figuraSeleccionada, { fontSize: Number(e.target.value) / 100 })}
+                            title="Tamaño de la fuente"
+                            style={{ width: '110px', cursor: 'pointer' }}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   )}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.4rem', background: '#1e293b', padding: '0.6rem', borderRadius: '12px', border: '1px solid #334155' }}>
                     {colores.map(c => (
@@ -1248,7 +1312,7 @@ function TratamientoApp({ videoInicial }) {
                       />
                     ))}
                   </div>
-                  {[ 'linea', 'flecha', 'polilinea', 'circuito'].includes(figuras.find(f => f.id === figuraSeleccionada)?.tipo) ? (
+                  {[ 'linea', 'flecha', 'polilinea', 'circuito', 'c'].includes(figuras.find(f => f.id === figuraSeleccionada)?.tipo) ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
                       <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         Grosor
@@ -1264,6 +1328,22 @@ function TratamientoApp({ videoInicial }) {
                       />
                     </div>
                   ) : null}
+                  {figuras.find(f => f.id === figuraSeleccionada)?.tipo === 'c' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
+                      <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        Rotar
+                      </span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="360"
+                        value={Math.round(figuras.find(f => f.id === figuraSeleccionada)?.rot ?? 0)}
+                        onChange={(e) => actualizarFigura(figuraSeleccionada, { rot: Number(e.target.value) })}
+                        title="Rotación de la C"
+                        style={{ width: '120px', cursor: 'pointer' }}
+                      />
+                    </div>
+                  )}
                   {figuras.find(f => f.id === figuraSeleccionada)?.tipo === 'flecha' && (
                     <button
                       onClick={() => actualizarFigura(figuraSeleccionada, { discontinuo: !figuras.find(f => f.id === figuraSeleccionada)?.discontinuo })}
@@ -1306,6 +1386,15 @@ function TratamientoApp({ videoInicial }) {
               </svg>
             </button>
             <button
+              onClick={anadirCirculoHueco}
+              title="Añadir C"
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#0ea5e9', border: 'none', borderRadius: '12px', padding: '0.7rem', cursor: 'pointer' }}
+            >
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round">
+                <path d="M 18 5 A 9 9 0 1 0 18 19" />
+              </svg>
+            </button>
+            <button
               onClick={anadirTexto}
               title="Añadir texto"
               style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#0ea5e9', border: 'none', borderRadius: '12px', padding: '0.7rem', cursor: 'pointer' }}
@@ -1317,9 +1406,14 @@ function TratamientoApp({ videoInicial }) {
               </svg>
             </button>
             <button
-              onClick={anadirLinea}
-              title="Dibujar línea"
-              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#0ea5e9', border: 'none', borderRadius: '12px', padding: '0.7rem', cursor: 'pointer' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (modoCirculoClick) { setModoCirculoClick(false); elipsesSessionRef.current = []; }
+                lineaOrigenRef.current = null;
+                setModoLineaClick(prev => !prev);
+              }}
+              title={modoLineaClick ? 'Cancelar línea' : 'Añadir línea con clicks'}
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: modoLineaClick ? '#16a34a' : '#0ea5e9', border: 'none', borderRadius: '12px', padding: '0.7rem', cursor: 'pointer' }}
             >
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round">
                 <line x1="4" y1="20" x2="20" y2="4" />
@@ -1329,11 +1423,11 @@ function TratamientoApp({ videoInicial }) {
                 onClick={(e) => {
                   e.stopPropagation();
                   if (modoCirculoClick) { setModoCirculoClick(false); elipsesSessionRef.current = []; }
-                  setAviso('');
-                  anadirFlecha();
+                  flechaOrigenRef.current = null;
+                  setModoFlechaClick(prev => !prev);
                 }}
-                title="Añadir flecha"
-                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#0ea5e9', border: 'none', borderRadius: '12px', padding: '0.7rem', cursor: 'pointer' }}
+                title={modoFlechaClick ? 'Cancelar flecha' : 'Añadir flecha con clicks'}
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: modoFlechaClick ? '#16a34a' : '#0ea5e9', border: 'none', borderRadius: '12px', padding: '0.7rem', cursor: 'pointer' }}
               >
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="4" y1="20" x2="19" y2="5" />
@@ -1404,7 +1498,6 @@ function TratamientoApp({ videoInicial }) {
               if (p) {
                 if (!flechaOrigenRef.current) {
                   flechaOrigenRef.current = { x: Math.min(1, Math.max(0, p.x)), y: Math.min(1, Math.max(0, p.y)) };
-                  setAviso('Ahora click para colocar la punta');
                 } else {
                   const x1 = flechaOrigenRef.current.x;
                   const y1 = flechaOrigenRef.current.y;
@@ -1416,7 +1509,7 @@ function TratamientoApp({ videoInicial }) {
                   setFiguras(prev => [...prev, { id, tipo: 'flecha', x1, y1, x2, y2, cx, cy, color: '#38bdf8', opacidad: 1, grosor: 0.005, discontinuo: false, cabeza: 1, crecimiento: 0 }]);
                   setFiguraSeleccionada(id);
                   flechaOrigenRef.current = null;
-                  setAviso('');
+                  setModoFlechaClick(false);
                   if (flechaAnimRef.current) cancelAnimationFrame(flechaAnimRef.current);
                   const t0 = performance.now();
                   const paso = (t) => {
@@ -1427,6 +1520,26 @@ function TratamientoApp({ videoInicial }) {
                     else flechaAnimRef.current = null;
                   };
                   flechaAnimRef.current = requestAnimationFrame(paso);
+                }
+              }
+              return;
+            }
+            if (modoLineaClick) {
+              const p = puntoImagen(e);
+              if (p) {
+                if (!lineaOrigenRef.current) {
+                  lineaOrigenRef.current = { x: Math.min(1, Math.max(0, p.x)), y: Math.min(1, Math.max(0, p.y)) };
+                } else {
+                  const x1 = lineaOrigenRef.current.x;
+                  const y1 = lineaOrigenRef.current.y;
+                  const x2 = Math.min(1, Math.max(0, p.x));
+                  const y2 = Math.min(1, Math.max(0, p.y));
+                  const id = Date.now();
+                  setFiguras(prev => [...prev, { id, tipo: 'linea', x1, y1, x2: x1, y2: y1, color: '#38bdf8', opacidad: 1, grosor: 0.005 }]);
+                  setFiguras(prev => prev.map(f => f.id === id ? { ...f, x2, y2 } : f));
+                  setFiguraSeleccionada(id);
+                  lineaOrigenRef.current = null;
+                  setModoLineaClick(false);
                 }
               }
               return;
@@ -1559,8 +1672,8 @@ function TratamientoApp({ videoInicial }) {
                         const alto = f.alto * imgDim.h;
                         const sel = figuraSeleccionada === f.id;
                         const shapeProps = {
-                          fill: f.rayado ? `url(#rayado-${f.id})` : f.color,
-                          fillOpacity: f.opacidad ?? 0.5,
+                          fill: f.sinRelleno ? 'none' : (f.rayado ? `url(#rayado-${f.id})` : f.color),
+                          fillOpacity: f.sinRelleno ? 0 : (f.opacidad ?? 0.5),
                           stroke: f.color,
                           strokeWidth: sel ? 3 : 2,
                           style: { pointerEvents: 'all', cursor: 'move' },
@@ -1578,10 +1691,38 @@ function TratamientoApp({ videoInicial }) {
                             e.currentTarget.setPointerCapture(e.pointerId);
                           },
                         };
-const shape = f.tipo === 'triangulo'
-                          ? <path {...shapeProps} d={pathTrianguloRedondeado({ x, y: y - alto / 2 }, { x: x - ancho / 2, y: y + alto / 2 }, { x: x + ancho / 2, y: y + alto / 2 }, Math.min(ancho, alto) * 0.12)} />
-                          : f.tipo === 'circulo'
-                            ? <ellipse {...shapeProps} cx={x} cy={y} rx={ancho / 2} ry={alto / 2} />
+ const shape = f.tipo === 'triangulo'
+                          ? (() => {
+                              const eTri = f.crecimiento ?? 1;
+                              const apexYTri = y - alto / 2;
+                              const hhTri = alto * eTri;
+                              const hwTri = (ancho / 2) * eTri;
+                              const baseYTri = apexYTri + hhTri;
+                              const dTri = pathTrianguloRedondeado({ x, y: apexYTri }, { x: x - hwTri, y: baseYTri }, { x: x + hwTri, y: baseYTri }, Math.min(ancho, alto) * 0.12 * eTri);
+                              return <path {...shapeProps} d={dTri} />;
+                            })()
+                           : f.tipo === 'circulo'
+                             ? <ellipse {...shapeProps} cx={x} cy={y} rx={ancho / 2} ry={alto / 2} />
+                           : f.tipo === 'c'
+                             ? (() => {
+                                 const eC = f.crecimiento ?? 1;
+                                 const exC = x;
+                                 const eyC = y;
+                                 const erxC = (ancho / 2) * eC;
+                                 const eryC = (alto / 2) * eC;
+                                 const huecoC = f.hueco ?? 90;
+                                 const rotC = f.rot ?? 0;
+                                 const a1C = (rotC + huecoC / 2) * Math.PI / 180;
+                                 const a2C = a1C + (360 - huecoC) * Math.PI / 180;
+                                 const x1C = exC + Math.cos(a1C) * erxC;
+                                 const y1C = eyC + Math.sin(a1C) * eryC;
+                                 const x2C = exC + Math.cos(a2C) * erxC;
+                                 const y2C = eyC + Math.sin(a2C) * eryC;
+                                 const largeC = (360 - huecoC) > 180 ? 1 : 0;
+                                 const swC = (f.grosor ?? 0.005) * imgDim.h;
+                                 const dC = `M ${x1C} ${y1C} A ${erxC} ${eryC} 0 ${largeC} 1 ${x2C} ${y2C}`;
+                                 return <path {...shapeProps} d={dC} fill="none" stroke={f.color} strokeOpacity={f.opacidad ?? 1} strokeWidth={swC} strokeLinecap="round" />;
+                               })()
                             : f.tipo === 'linea'
                               ? <line
                                   x1={f.x1 * imgDim.w}
@@ -1683,7 +1824,7 @@ const shape = f.tipo === 'triangulo'
                                       </g>
                                     );
                                   })()
-                              : <text
+                                : <text
                                   x={x}
                                   y={y}
                                   fontSize={(f.fontSize || 0.06) * imgDim.h}
@@ -1693,6 +1834,7 @@ const shape = f.tipo === 'triangulo'
                                   strokeWidth={sel ? 1 : 0}
                                   textAnchor="middle"
                                   dominantBaseline="central"
+                                  fontWeight={f.negrita ? 800 : 400}
                                   style={{ pointerEvents: 'all', cursor: 'move', userSelect: 'none' }}
                                   onClick={shapeProps.onClick}
                                   onPointerDown={shapeProps.onPointerDown}
@@ -2035,6 +2177,14 @@ const shape = f.tipo === 'triangulo'
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(2,6,23,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '1.4rem 1.8rem', maxWidth: '340px', textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
             <p style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem', color: '#e2e8f0' }}>{aviso}</p>
+            {exportando && (
+              <button
+                onClick={() => { cancelarVideoRef.current = true; }}
+                style={{ marginTop: '1rem', marginRight: '0.6rem', background: '#dc2626', border: 'none', borderRadius: '8px', padding: '0.5rem 1.6rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.85rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+            )}
             <button
               onClick={() => {
                 if (abrirCarpetaAlOK) {
