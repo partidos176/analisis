@@ -1021,6 +1021,10 @@ export default function App() {
 
   const handleResetContador = () => {
     setTimerSeconds(0);
+    setActionLog([]);
+    setGolesList([]);
+    setGolesRivalList([]);
+    recomputeCountersFromLog([]);
   };
 
   useEffect(() => {
