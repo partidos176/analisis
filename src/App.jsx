@@ -322,6 +322,13 @@ export default function App() {
   const SERVER_URL = resolvedServerUrl;
 
   const [servidorCortesDisponible, setServidorCortesDisponible] = useState(null);
+  const [conectandoServidor, setConectandoServidor] = useState(false);
+
+  const conectarServidor = async () => {
+    setConectandoServidor(true);
+    await checkServerStatus();
+    setConectandoServidor(false);
+  };
   const [accionSeleccionada, setAccionSeleccionada] = useState(null);
   const [corteInicio, setCorteInicio] = useState(0);
   const [corteFin, setCorteFin] = useState(15);
@@ -3159,18 +3166,19 @@ export default function App() {
                           }}
                         />
                         <span style={{
-                          color: servidorCortesDisponible === true ? '#22c55e' : servidorCortesDisponible === false ? '#ef4444' : '#94a3b8',
+                          color: servidorCortesDisponible === true ? '#22c55e' : conectandoServidor || servidorCortesDisponible === null ? '#94a3b8' : (videoFile && isBrowserCutSupported(videoFile)) ? '#22c55e' : '#ef4444',
                           fontWeight: 700,
                           fontSize: '0.7rem'
                         }}>
-                          {servidorCortesDisponible === true ? '● Conectado' : servidorCortesDisponible === false ? '● Sin servidor' : '● ...'}
+                          {servidorCortesDisponible === true ? '● Conectado' : conectandoServidor ? '● Conectando…' : servidorCortesDisponible === null ? '● ...' : (videoFile && isBrowserCutSupported(videoFile)) ? '● Corte local (navegador)' : '● Sin servidor'}
                         </span>
                         <button
-                          onClick={() => checkServerStatus()}
-                          title="Reintentar conexión con el servidor de cortes"
-                          style={{ background: '#0ea5e9', border: 'none', borderRadius: '6px', padding: '0.3rem 0.7rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.7rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.04em', cursor: 'pointer' }}
+                          onClick={() => conectarServidor()}
+                          disabled={conectandoServidor}
+                          title={servidorCortesDisponible === false && videoFile && isBrowserCutSupported(videoFile) ? 'El corte funciona en el navegador sin servidor. Usa esto solo si quieres conectar un servidor externo.' : 'Reintentar conexión con el servidor de cortes'}
+                          style={{ background: conectandoServidor ? '#475569' : '#0ea5e9', border: 'none', borderRadius: '6px', padding: '0.3rem 0.7rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.7rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.04em', cursor: conectandoServidor ? 'default' : 'pointer', opacity: conectandoServidor ? 0.7 : 1 }}
                         >
-                          Conectar
+                          {conectandoServidor ? 'Conectando…' : 'Conectar'}
                         </button>
                         {resolvedServerUrl && (
                           <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.6rem', fontFamily: 'var(--font-mono)' }}>
