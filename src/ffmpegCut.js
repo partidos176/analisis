@@ -29,16 +29,45 @@ export async function loadFFmpeg(onProgress) {
   return ffmpeg;
 }
 
-function readFileAsUint8Array(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(new Uint8Array(reader.result));
-    reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
-    reader.readAsArrayBuffer(file);
-  });
+async function readFileAsUint8Array(file) {
+  const total = file && file.size ? file.size : 0;
+  const sizeMB = (total / 1024 / 1024).toFixed(0);
+  try {
+    if (typeof file.arrayBuffer === 'function') {
+      const buf = await file.arrayBuffer();
+      return new Uint8Array(buf);
+    }
+  } catch (e) {
+    console.warn('[ffmpeg] arrayBuffer falló, usando lectura por chunks', e);
+  }
+  const CHUNK = 256 * 1024 * 1024;
+  const parts = [];
+  let offset = 0;
+  try {
+    while (offset < total) {
+      const end = Math.min(offset + CHUNK, total);
+      const slice = file.slice(offset, end);
+      const buf = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error('lectura de chunk fallida'));
+        reader.readAsArrayBuffer(slice);
+      });
+      parts.push(new Uint8Array(buf));
+      offset = end;
+    }
+  } catch (e) {
+    throw new Error('No se pudo leer el archivo (tamaño ' + sizeMB + ' MB). Motivo: ' + (e && e.message ? e.message : e));
+  }
+  let length = 0;
+  for (const p of parts) length += p.length;
+  const out = new Uint8Array(length);
+  let pos = 0;
+  for (const p of parts) { out.set(p, pos); pos += p.length; }
+  return out;
 }
 
-const MAX_BROWSER_SIZE = 4 * 1024 * 1024 * 1024;
+const MAX_BROWSER_SIZE = 2 * 1024 * 1024 * 1024;
 
 export function isBrowserCutSupported(file) {
   return file && file.size <= MAX_BROWSER_SIZE;
@@ -46,7 +75,7 @@ export function isBrowserCutSupported(file) {
 
 export async function cutVideoSingle(file, timeSecs, durationSecs, outputName, onProgress) {
   if (!file) throw new Error('No se ha seleccionado ningún archivo de vídeo');
-  if (file.size > MAX_BROWSER_SIZE) throw new Error(`El archivo es demasiado grande (${(file.size / 1024 / 1024 / 1024).toFixed(1)} GB). Máximo soportado: 4 GB`);
+  if (file.size > MAX_BROWSER_SIZE) throw new Error(`El archivo es demasiado grande (${(file.size / 1024 / 1024 / 1024).toFixed(1)} GB) para el corte en navegador (máximo 2 GB de memoria wasm). Reduce/comprese el vídeo en la pestaña de vídeo o usa el servidor con: node server.js`);
   const ffmpeg = await loadFFmpeg(onProgress);
   const inputName = 'input.mp4';
   const outputNameClean = (outputName || 'corte') + '.mp4';
