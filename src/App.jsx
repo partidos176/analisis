@@ -175,6 +175,7 @@ export default function App() {
   const [playerStatus, setPlayerStatus] = useState('titular');
   const [players, setPlayers] = useState(defaultPlayersList());
   const [alineacionError, setAlineacionError] = useState(false);
+  const [menuJugadorIdx, setMenuJugadorIdx] = useState(null);
   const [draggingMapIdx, setDraggingMapIdx] = useState(null);
   const campoRef = useRef(null);
   const dragMovedRefGlobal = useRef(false);
@@ -2538,41 +2539,13 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                   gap: '0.5rem',
                   minWidth: '280px'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem' }}>
-                      <button
-                        onClick={() => {
-                          if (!currentMatch) { alert('Abre primero el partido donde quieres importar los datos'); return; }
-                          const inp = document.createElement('input');
-                          inp.type = 'file';
-                          inp.accept = '.xlsx,.xls';
-                          inp.onchange = async () => {
-                            const file = inp.files[0];
-                            if (!file) return;
-                            try {
-                              const XLSX = await import('xlsx');
-                              const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-                              const rawWs = wb.Sheets['RAW'];
-                              if (!rawWs) { alert('Este Excel no fue generado por "Guardar" (falta hoja RAW)'); return; }
-                              const rawText = XLSX.utils.sheet_to_json(rawWs, { header: 1 })[1]?.[0];
-                              const data = JSON.parse(rawText);
-                              applyMatchData(data, true);
-                              alert('Datos importados en el partido actual. Pulsa GUARDAR para conservarlos.');
-                            } catch (err) {
-                              alert('Error al importar Excel: ' + (err?.message || err));
-                            }
-                          };
-                          inp.click();
-                        }}
-                        style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.8rem', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
-                        IMPORTAR EXCEL
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
-                          try {
-                            await saveMatchData(currentMatch.id);
-                            const XLSX = await import('xlsx');
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <button
+                      onClick={async () => {
+                        if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
+                        try {
+                          await saveMatchData(currentMatch.id);
+                          const XLSX = await import('xlsx');
                             const resumen = {
                               matchday: currentMatch.matchday,
                               homeTeam: currentMatch.homeTeam,
@@ -2655,13 +2628,37 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
                             alert('Error al guardar: ' + (err?.message || err));
                           }
                         }}
-                        style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '6px', padding: '0.25rem 0.8rem', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
+                        style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
                         GUARDAR
                       </button>
-
-
+                      <button
+                        onClick={() => {
+                          if (!currentMatch) { alert('Abre primero el partido donde quieres importar los datos'); return; }
+                          const inp = document.createElement('input');
+                          inp.type = 'file';
+                          inp.accept = '.xlsx,.xls';
+                          inp.onchange = async () => {
+                            const file = inp.files[0];
+                            if (!file) return;
+                            try {
+                              const XLSX = await import('xlsx');
+                              const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+                              const rawWs = wb.Sheets['RAW'];
+                              if (!rawWs) { alert('Este Excel no fue generado por "Guardar" (falta hoja RAW)'); return; }
+                              const rawText = XLSX.utils.sheet_to_json(rawWs, { header: 1 })[1]?.[0];
+                              const data = JSON.parse(rawText);
+                              applyMatchData(data, true);
+                              alert('Datos importados en el partido actual. Pulsa GUARDAR para conservarlos.');
+                            } catch (err) {
+                              alert('Error al importar Excel: ' + (err?.message || err));
+                            }
+                          };
+                          inp.click();
+                        }}
+                        style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
+                        IMPORTAR EXCEL
+                      </button>
                     </div>
-                  </div>
                   <button
                     onClick={() => {
                       if (actionLog.length === 0) return;
@@ -5406,6 +5403,34 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         copy[idxDisponible] = { ...copy[idxDisponible], status: 'titular', mapX: pos?.x, mapY: pos?.y };
                         return copy;
                       });
+                      };
+
+                    const opcionesEstado = [
+                      { id: 'titular', label: 'TITULAR', color: '#38bdf8' },
+                      { id: 'suplente', label: 'SUPLENTE', color: '#f59e0b' },
+                      { id: 'lesion', label: 'LESION', color: '#ef4444' },
+                      { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000' },
+                      { id: 'division honor', label: 'DIV. HONOR', color: '#8b5cf6' },
+                    ];
+                    const aplicarEstado = (idx, status) => {
+                      setPlayers(prev => {
+                        const copy = [...prev];
+                        const cur = copy[idx];
+                        if (!cur || !cur.name) return prev;
+                        if (status === 'titular') {
+                          const titCount = copy.filter(q => q.status === 'titular').length;
+                          copy[idx] = { ...cur, status: 'titular' };
+                          if (cur.mapX == null) {
+                            const pos = FORMACION_11[titCount] || { x: 50, y: 50 };
+                            copy[idx].mapX = pos.x;
+                            copy[idx].mapY = pos.y;
+                          }
+                        } else {
+                          copy[idx] = { ...cur, status, mapX: undefined, mapY: undefined };
+                        }
+                        return copy;
+                      });
+                      setMenuJugadorIdx(null);
                     };
 
                     return (
@@ -5589,39 +5614,22 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           </div>
 
                         {/* Plantilla completa */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', order: -1 }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
                              {players.filter(p => p.name && p.status === '-').map(p => {
+                              const idx = players.indexOf(p);
                               const foto = jugadoresData[p.name]?.foto;
                               const isTit = p.status === 'titular';
                               const isSup = p.status === 'suplente';
                               const isNo = p.status === 'no convocado';
+                              const menuAbierto = menuJugadorIdx === idx;
                               return (
-                                <div
-                                  key={p.name + '_' + players.indexOf(p)}
-                                  onClick={() => {
-                                    const idx = players.indexOf(p);
-                                    setPlayers(prev => {
-                                      const copy = [...prev];
-                                      const cur = copy[idx];
-                                      if (cur.status === 'no convocado') return prev;
-                                      if (cur.status === '-' || cur.status === 'lesion' || cur.status === 'division honor') {
-                                        const titCount = copy.filter(q => q.status === 'titular').length;
-                                        copy[idx] = { ...cur, status: titCount < 11 ? 'titular' : 'suplente' };
-                                        if (copy[idx].status === 'titular' && cur.mapX == null) {
-                                          const pos = FORMACION_11[titCount] || { x: 50, y: 50 };
-                                          copy[idx].mapX = pos.x;
-                                          copy[idx].mapY = pos.y;
-                                        }
-                                      } else if (cur.status === 'titular') copy[idx] = { ...cur, status: 'suplente' };
-                                      else if (cur.status === 'suplente') copy[idx] = { ...cur, status: '-' };
-                                      return copy;
-                                    });
-                                  }}
+                                <div key={p.name + '_' + idx} style={{ position: 'relative' }}>
+                                  <div
+                                  onClick={() => setMenuJugadorIdx(prev => prev === idx ? null : idx)}
                                   onDoubleClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    const idx = players.indexOf(p);
                                     setPlayers(prev => {
                                       const copy = [...prev];
                                       const cur = copy[idx];
@@ -5630,8 +5638,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     });
                                   }}
                                   draggable={!!p.name && !isNo}
-                                  onDragStart={(e) => handleDragStart(e, players.indexOf(p))}
-                                  title={`${p.name} — ${p.status} (arrastra al campo o banquillo)`}
+                                  onDragStart={(e) => handleDragStart(e, idx)}
+                                  title={`${p.name} — click para elegir estado (titular, suplente, lesión, no convocado, Div. Honor)`}
                                    style={{
                                     width: 90,
                                     height: 90,
@@ -5639,17 +5647,27 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     border: `3px solid ${isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? '#000000' : '#334155'}`,
                                     overflow: 'hidden',
                                     position: 'relative',
-                                    cursor: isNo ? 'pointer' : 'grab',
+                                    cursor: 'pointer',
                                     background: '#0f172a',
-                                    opacity: isNo ? 1 : 1,
                                     boxShadow: isTit || isSup ? '0 2px 8px rgba(0,0,0,0.35)' : 'none'
                                   }}
                                 >
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: isNo ? 'grayscale(1) brightness(0.32)' : 'none' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                   {isNo && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.62)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#ffffff', fontWeight: 900, fontSize: 10 }}>NO</span></div>}
                                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? 'rgba(0,0,0,0.75)' : 'rgba(15,23,42,0.88)', color: isTit || isSup ? '#0f172a' : '#ffffff', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
-                                  <XBtn idx={players.indexOf(p)} />
+                                  <XBtn idx={idx} />
                                  </div>
+                                 {menuAbierto && (
+                                   <>
+                                     <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setMenuJugadorIdx(null)} />
+                                     <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 6, zIndex: 50, display: 'flex', flexDirection: 'column', gap: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 6, boxShadow: '0 6px 18px rgba(0,0,0,0.5)', minWidth: 140 }}>
+                                       {opcionesEstado.map(o => (
+                                         <button key={o.id} onClick={() => aplicarEstado(idx, o.id)} style={{ background: o.color, color: o.color === '#000000' ? '#ffffff' : '#0f172a', border: 'none', borderRadius: 6, padding: '0.35rem 0.6rem', fontWeight: 900, fontSize: '0.7rem', cursor: 'pointer', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{o.label}</button>
+                                       ))}
+                                     </div>
+                                   </>
+                                 )}
+                                </div>
                               );
                             })}
                             {/* Huecos vacíos para agregar nuevos nombres */}
@@ -5673,9 +5691,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                    title={`Arrastra o click para agregar ${n} al equipo`}
                                    style={{ width: 90, height: 90, borderRadius: '50%', border: '2px dashed #334155', overflow: 'hidden', position: 'relative', cursor: 'grab', background: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
-                                  {foto ? <img src={foto} alt={n} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }} /> : null}
-                                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.55)' }}><span style={{ color: '#38bdf8', fontWeight: 900, fontSize: 26 }}>+</span></div>
-                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(15,23,42,0.88)', color: '#ffffff', fontWeight: 900, fontSize: 7.5, textAlign: 'center', padding: '1px 0' }}>{n.slice(0, 10)}</div>
+                                   {foto ? <img src={foto} alt={n} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }} /> : null}
+                                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(15,23,42,0.88)', color: '#ffffff', fontWeight: 900, fontSize: 7.5, textAlign: 'center', padding: '1px 0' }}>{n.slice(0, 10)}</div>
                                 </div>
                               );
                             })}
