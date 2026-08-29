@@ -6009,7 +6009,15 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         J{m.matchday}
                       </span>
                       <span style={{ marginLeft: '1.5rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.1rem' }}>
-                        {m.golCount || 0} - {m.golRivalCount || 0}
+                        {(() => {
+                          const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
+                          const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
+                          const golesTenerife = (m.golesList || []).length;
+                          const golesRival = (m.golesRivalList || []).length;
+                          const homeScore = homeIsTenerife ? golesTenerife : golesRival;
+                          const awayScore = awayIsTenerife ? golesTenerife : golesRival;
+                          return `${homeScore} - ${awayScore}`;
+                        })()}
                       </span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
