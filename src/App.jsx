@@ -3635,7 +3635,7 @@ export default function App() {
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalFueraCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalGolCount(penalGolCount + 1); setGolesList([...golesList, { name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalGolCount(penalGolCount + 1); setGolesList([...golesList, { name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL</span>
