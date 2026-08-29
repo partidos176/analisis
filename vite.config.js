@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
-import { exec } from 'node:child_process';
+import { exec, spawn } from 'node:child_process';
 
 const require = createRequire(import.meta.url);
 const coreMain = require.resolve('@ffmpeg/core');
@@ -19,6 +19,24 @@ const copyFfmpegCore = (outDir) => {
 
 export default defineConfig({
   plugins: [
+    {
+      name: 'auto-start-cortes-server',
+      apply: 'serve',
+      configureServer() {
+        try {
+          const child = spawn('node', ['server.js'], { cwd: process.cwd(), windowsHide: true });
+          const tag = (d) => String(d).split('\n').filter(Boolean).map((l) => '[cortes-server] ' + l + '\n').join('');
+          if (child.stdout) child.stdout.on('data', (d) => process.stdout.write(tag(d)));
+          if (child.stderr) child.stderr.on('data', (d) => process.stderr.write(tag(d)));
+          const kill = () => { try { child.kill(); } catch (_) {} };
+          process.on('exit', kill);
+          process.on('SIGINT', kill);
+          process.on('SIGTERM', kill);
+        } catch (e) {
+          console.warn('[cortes-server] no se pudo auto-arrancar:', e.message);
+        }
+      }
+    },
     react(),
     {
       name: 'export-video',
@@ -82,10 +100,6 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-    },
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

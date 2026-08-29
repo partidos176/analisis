@@ -122,7 +122,8 @@ const matchTabs = [
   { id: 'resumengoles', label: 'TOTAL GOLES' },
   { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
   { id: 'jugadores', label: 'JUGADORES' },
-  { id: 'videos', label: 'VIDEOS' }
+  { id: 'videos', label: 'VIDEOS' },
+  { id: 'vario', label: 'VARIO' }
 ];
 
 export default function App() {
@@ -344,6 +345,46 @@ export default function App() {
   const [trailPointsPorCorte, setTrailPointsPorCorte] = useState({});
   const [variosIndex, setVariosIndex] = useState(-1);
   const [variosBaseTimes, setVariosBaseTimes] = useState({});
+  const [grabandoAudio, setGrabandoAudio] = useState(false);
+  const [audiosVario, setAudiosVario] = useState([]);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const toggleGrabarAudio = async () => {
+    try {
+      if (grabandoAudio) {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+        setGrabandoAudio(false);
+        return;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const mr = new MediaRecorder(stream);
+      mediaRecorderRef.current = mr;
+      mr.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data); };
+      mr.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+        const nombre = `audio-${ts}.webm`;
+        const minGrab = Math.floor(timerSeconds / 60);
+        const segGrab = Math.floor(timerSeconds % 60);
+        const minutoGrab = `${minGrab}:${String(segGrab).padStart(2, '0')}`;
+        setAudiosVario((prev) => [...prev, { url, nombre, fecha: ts, minuto: minutoGrab }]);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nombre;
+        a.click();
+        stream.getTracks().forEach((t) => t.stop());
+      };
+      mr.start();
+      setGrabandoAudio(true);
+    } catch (err) {
+      console.error('Error grabando audio:', err);
+      window.alert('No se pudo grabar audio: ' + (err && err.message ? err.message : err));
+    }
+  };
   const [trackingMode, setTrackingMode] = useState(false);
   const [trackingModel, setTrackingModel] = useState(null);
   const [modelLoading, setModelLoading] = useState(false);
@@ -414,6 +455,7 @@ export default function App() {
       setActiveTab('alineacion');
     } catch (err) {
       console.error('Error guardando partido:', err);
+      window.alert('Error al guardar el partido: ' + (err && err.message ? err.message : err));
     }
   };
 
@@ -430,7 +472,7 @@ export default function App() {
       await remove(ref(db, `matches/${match.id}`));
     } catch (err) {
       console.error('Error al borrar el partido:', err);
-      window.alert('No se pudo borrar el partido.');
+      window.alert('No se pudo borrar el partido: ' + (err && err.message ? err.message : err));
     }
   };
 
@@ -449,6 +491,7 @@ export default function App() {
       setMatchday('');
     } catch (err) {
       console.error('Error actualizando partido:', err);
+      window.alert('Error al actualizar el partido: ' + (err && err.message ? err.message : err));
     }
   };
 
@@ -2788,9 +2831,15 @@ export default function App() {
                             alert('Error al guardar: ' + (err?.message || err));
                           }
                         }}
-                        style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
+                        style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '1.8rem' }}>
                         GUARDAR
                       </button>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'stretch' }}>
+                        <button
+                          onClick={toggleGrabarAudio}
+                          style={{ background: grabandoAudio ? '#ef4444' : '#a855f7', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.7rem 1.8rem', fontWeight: 800, fontSize: '1.05rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '-1.6rem', left: '-6rem' }}>
+                          {grabandoAudio ? '■ PARAR' : 'VARIO'}
+                        </button>
                       <button
                         onClick={() => {
                           if (!currentMatch) { alert('Abre primero el partido donde quieres importar los datos'); return; }
@@ -2818,6 +2867,7 @@ export default function App() {
                         style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
                         IMPORTAR EXCEL
                       </button>
+                      </div>
                     </div>
                   <button
                     onClick={() => {
@@ -3642,6 +3692,37 @@ export default function App() {
                   </div>
                 </div>
                 </div>
+              </div>
+            )}
+            {activeTab === 'vario' && (
+              <div style={{
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '2rem',
+                minHeight: '400px'
+              }}>
+                {audiosVario.length === 0 ? (
+                  <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>
+                    Aún no hay audios. Pulsa el botón <strong>VARIO</strong> (arriba) para grabar uno.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {audiosVario.map((a, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center' }}>{a.minuto ? 'MIN ' + a.minuto : '—'}</span>
+                        <span style={{ flex: 1, fontWeight: 700, fontSize: '0.85rem', minWidth: '160px' }}>{a.nombre}</span>
+                        <audio controls src={a.url} style={{ flex: 2, minWidth: '240px' }} />
+                        <button
+                          onClick={() => setAudiosVario((prev) => prev.filter((_, j) => j !== i))}
+                          style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
+                        >
+                          &#10005;
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             {activeTab === 'finalizaciones' && (
