@@ -185,6 +185,9 @@ export default function App() {
   const [golCount, setGolCount] = useState(0);
   const [golRivalCount, setGolRivalCount] = useState(0);
   const [penalCount, setPenalCount] = useState(0);
+  const [penalFueraCount, setPenalFueraCount] = useState(0);
+  const [penalGolCount, setPenalGolCount] = useState(0);
+  const [penalGolRivalCount, setPenalGolRivalCount] = useState(0);
   const [saqueEsquinaFueraCount, setSaqueEsquinaFueraCount] = useState(0);
   const [infraccionCount, setInfraccionCount] = useState(0);
   const [ocasionCount, setOcasionCount] = useState(0);
@@ -476,6 +479,9 @@ export default function App() {
     setGolCount(0);
     setGolRivalCount(0);
     setPenalCount(0);
+    setPenalFueraCount(0);
+    setPenalGolCount(0);
+    setPenalGolRivalCount(0);
     setSaqueEsquinaFueraCount(0);
     setInfraccionCount(0);
     setOcasionCount(0);
@@ -543,6 +549,9 @@ export default function App() {
     setGolCount(match.golCount ?? 0);
     setGolRivalCount(match.golRivalCount ?? 0);
     setPenalCount(match.penalCount ?? 0);
+    setPenalFueraCount(match.penalFueraCount ?? 0);
+    setPenalGolCount(match.penalGolCount ?? 0);
+    setPenalGolRivalCount(match.penalGolRivalCount ?? 0);
     setSaqueEsquinaFueraCount(match.saqueEsquinaFueraCount ?? 0);
     setInfraccionCount(match.infraccionCount ?? 0);
     setOcasionCount(match.ocasionCount ?? 0);
@@ -611,6 +620,9 @@ export default function App() {
       golCount,
       golRivalCount,
       penalCount,
+      penalFueraCount,
+      penalGolCount,
+      penalGolRivalCount,
       saqueEsquinaFueraCount,
       infraccionCount,
       ocasionCount,
@@ -653,7 +665,12 @@ export default function App() {
       finalBocaCount,
       finalDespCount,
       finalFueraCount,
-      despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
+      despejeDefensaCount, despejePorteroCount, golCount,       golRivalCount,
+      penalCount,
+      penalFueraCount,
+      penalGolCount,
+      penalGolRivalCount,
+      saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
 
   const generarTodosLosCortes = async () => {
     if (!videoFile) {
@@ -907,9 +924,9 @@ export default function App() {
       'SAQUE DE ESQUINA': setSaqueEsquinaFueraCount,
       'GOL': setGolCount,
       'GOL RIVAL': setGolRivalCount,
-      'PENAL + FUERA': setPenalCount,
-      'PENAL + GOL': setPenalCount,
-      'PENAL + GOL RIVAL': setPenalCount,
+      'PENAL + FUERA': (fn) => { setPenalCount(fn); setPenalFueraCount(fn); },
+      'PENAL + GOL': (fn) => { setPenalCount(fn); setPenalGolCount(fn); },
+      'PENAL + GOL RIVAL': (fn) => { setPenalCount(fn); setPenalGolRivalCount(fn); },
       'INFRACCION': setInfraccionCount
     };
     const setter = map[name];
@@ -3604,25 +3621,25 @@ export default function App() {
                         <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + GOL RIVAL', 'finalizacion')) { setPenalCount(penalCount + 1); setGolRivalCount(golRivalCount + 1); setGolesRivalList([...golesRivalList, { periodo, minuto: Math.floor(timerSeconds / 60), tipo: 'PENAL' }]); setActiveTab('acciones'); } }}
+                        onClick={() => { if (logAction('PENAL + GOL RIVAL', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalGolRivalCount(penalGolRivalCount + 1); setGolRivalCount(golRivalCount + 1); setGolesRivalList([...golesRivalList, { periodo, minuto: Math.floor(timerSeconds / 60), tipo: 'PENAL' }]); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL RIVAL</span>
-                        <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
+                        <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalGolRivalCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + FUERA', 'finalizacion')) { setPenalCount(penalCount + 1); setActiveTab('acciones'); } }}
+                        onClick={() => { if (logAction('PENAL + FUERA', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalFueraCount(penalFueraCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + FUERA</span>
-                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalFueraCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setGolesList([...golesList, { name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalGolCount(penalGolCount + 1); setGolesList([...golesList, { name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL</span>
-                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalCount}</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalGolCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('INFRACCION', 'finalizacion')) { setInfraccionCount(infraccionCount + 1); setActiveTab('acciones'); } }}
