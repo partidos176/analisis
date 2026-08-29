@@ -3165,6 +3165,13 @@ export default function App() {
                         }}>
                           {servidorCortesDisponible === true ? '● Conectado' : servidorCortesDisponible === false ? '● Sin servidor' : '● ...'}
                         </span>
+                        <button
+                          onClick={() => checkServerStatus()}
+                          title="Reintentar conexión con el servidor de cortes"
+                          style={{ background: '#0ea5e9', border: 'none', borderRadius: '6px', padding: '0.3rem 0.7rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.7rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.04em', cursor: 'pointer' }}
+                        >
+                          Conectar
+                        </button>
                         {resolvedServerUrl && (
                           <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.6rem', fontFamily: 'var(--font-mono)' }}>
                             {resolvedServerUrl}

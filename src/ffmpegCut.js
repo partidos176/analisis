@@ -1,6 +1,8 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL } from '@ffmpeg/util';
 
+const baseURL = (import.meta.env.BASE_URL || '/') + 'ffmpeg';
+
 let ffmpegRef = null;
 let loaded = false;
 
@@ -11,7 +13,6 @@ export async function loadFFmpeg(onProgress) {
   ffmpeg.on('progress', ({ progress }) => {
     if (onProgress) onProgress(progress);
   });
-  const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
   await ffmpeg.load({
     coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
     wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
