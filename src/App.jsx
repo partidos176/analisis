@@ -3117,18 +3117,17 @@ export default function App() {
                       <input
                         type="file"
                         accept="video/*"
-                        onChange={async (e) => {
+                        onChange={(e) => {
                           const file = e.target.files && e.target.files[0];
                           if (file) {
                             if (videoUrl) URL.revokeObjectURL(videoUrl);
                             if (previewVideoUrl) URL.revokeObjectURL(previewVideoUrl);
                             let safeFile = file;
                             try {
-                              const buf = await file.arrayBuffer();
-                              safeFile = new Blob([buf], { type: file.type || 'video/mp4' });
+                              safeFile = new Blob([file], { type: file.type || 'video/mp4' });
                               try { safeFile.name = file.name; } catch (_) {}
                             } catch (err) {
-                              console.warn('[vídeo] no se pudo copiar a Blob, uso File original', err);
+                              console.warn('[vídeo] no se pudo crear Blob, uso File original', err);
                             }
                             setVideoFile(safeFile);
                             setVideoFileName(file.name);
@@ -3386,6 +3385,10 @@ export default function App() {
                               <button type="button" onClick={(ev) => {
                                 ev.stopPropagation();
                                 if (!videoFile) { setCorteError('Selecciona primero el archivo de vídeo'); return; }
+                                if (!servidorCortesDisponible && videoFile.size > 1024 * 1024 * 1024) {
+                                  setCorteError('El vídeo supera 1 GB y el corte en navegador no tiene memoria suficiente. Inicia el servidor local (node server.js) o comprímelo en la pestaña de vídeo.');
+                                  return;
+                                }
                                 const offsetSecs = videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0);
                                 const parts = String(e.time).split(':').map(Number);
                                 const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);

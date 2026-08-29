@@ -57,7 +57,11 @@ async function readFileAsUint8Array(file) {
       offset = end;
     }
   } catch (e) {
-    throw new Error('No se pudo leer el archivo (tamaño ' + sizeMB + ' MB). Motivo: ' + (e && e.message ? e.message : e));
+    const msg = (e && e.message ? e.message : String(e));
+    if (/alloc|memory|quota/i.test(msg)) {
+      throw new Error('No se pudo leer el archivo (tamaño ' + sizeMB + ' MB): el navegador no tiene memoria contigua suficiente. Para vídeos grandes usa el servidor local (node server.js) o comprímelo en la pestaña de vídeo.');
+    }
+    throw new Error('No se pudo leer el archivo (tamaño ' + sizeMB + ' MB). Motivo: ' + msg);
   }
   let length = 0;
   for (const p of parts) length += p.length;
