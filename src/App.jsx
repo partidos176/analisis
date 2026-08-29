@@ -71,6 +71,24 @@ const dedupePlayers = (list) => {
   });
 };
 
+// Firebase Realtime Database no acepta `undefined` ni arrays dispersos en `update`.
+// Convertimos `undefined` -> null y los arrays dispersos a arrays densos/objetos.
+const sanitizeForFirebase = (value) => {
+  if (value === undefined) return null;
+  if (value === null) return null;
+  if (Array.isArray(value)) {
+    return Array.from(value).map(sanitizeForFirebase);
+  }
+  if (typeof value === 'object') {
+    const out = {};
+    for (const key of Object.keys(value)) {
+      out[key] = sanitizeForFirebase(value[key]);
+    }
+    return out;
+  }
+  return value;
+};
+
 const defaultPlayersList = () => {
   const roster = Object.keys(jugadoresData);
   return Array(23).fill(null).map((_, i) => ({ name: roster[i] || '', status: '-' }));
@@ -276,6 +294,8 @@ export default function App() {
     return () => { clearTimeout(timer); document.removeEventListener('click', handler); };
   }, [posesionDropdownOpen]);
   const [dataLoadedId, setDataLoadedId] = useState(null);
+  const [saveError, setSaveError] = useState('');
+  const [alineacionGuardado, setAlineacionGuardado] = useState(false);
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const [videoFile, setVideoFile] = useState(null);
   const [videoFileName, setVideoFileName] = useState('');
@@ -541,8 +561,8 @@ export default function App() {
   };
 
   const saveMatchData = async (id) => {
-    const matchRef = ref(db, `matches/${id}`);
-    await update(matchRef, {
+    if (!id) return;
+    const payload = sanitizeForFirebase({
       tiroDerechaCount,
       tiroAreaCount,
       rivalTiroDerechaCount,
@@ -590,6 +610,14 @@ export default function App() {
       actionLog,
       sustituciones
     });
+    try {
+      const matchRef = ref(db, `matches/${id}`);
+      await update(matchRef, payload);
+      setSaveError('');
+    } catch (err) {
+      console.error('Error guardando datos del partido:', err);
+      setSaveError('No se pudieron guardar los datos: ' + (err && err.message ? err.message : err));
+    }
   };
 
   const handleBackToList = async () => {
@@ -606,7 +634,7 @@ export default function App() {
 
   useEffect(() => {
     if (!currentMatch) return;
-saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando datos del partido:', err));
+    saveMatchData(currentMatch.id);
   }, [currentMatch, tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, perdidasCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
 
   const generarTodosLosCortes = async () => {
@@ -1205,6 +1233,24 @@ saveMatchData(currentMatch.id).catch(err => console.error('Error auto-guardando 
 
         <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center' }}>
           <div style={{ width: '100%', maxWidth: activeTab === 'alineacion' ? '980px' : '800px' }}>
+            {saveError && (
+              <div style={{
+                background: '#dc2626',
+                color: '#ffffff',
+                fontWeight: 800,
+                fontSize: '0.9rem',
+                padding: '0.7rem 1rem',
+                borderRadius: '10px',
+                marginBottom: '1rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '1rem'
+              }}>
+                <span>{saveError}</span>
+                <button onClick={() => setSaveError('')} style={{ background: 'transparent', border: 'none', color: '#ffffff', fontWeight: 900, cursor: 'pointer', fontSize: '1rem' }}>✕</button>
+              </div>
+            )}
             {/* Info del partido */}
             <div style={{
               background: 'var(--bg-card)',
@@ -5134,8 +5180,32 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   })()}
                 </div>
               )}
-              {activeTab === 'alineacion' && (
+                  {activeTab === 'alineacion' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      onClick={async () => {
+                        if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
+                        await saveMatchData(currentMatch.id);
+                        setAlineacionGuardado(true);
+                        setTimeout(() => setAlineacionGuardado(false), 2000);
+                      }}
+                      style={{
+                        background: alineacionGuardado ? '#16a34a' : '#0284c7',
+                        color: '#ffffff',
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        padding: '0.5rem 1.4rem',
+                        borderRadius: 'var(--radius-full)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      {alineacionGuardado ? 'GUARDADO ✓' : 'GUARDAR'}
+                    </button>
+                  </div>
                   {alineacionError && (
                     <div style={{
                       position: 'fixed',
