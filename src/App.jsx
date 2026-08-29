@@ -363,15 +363,30 @@ export default function App() {
       const mr = new MediaRecorder(stream);
       mediaRecorderRef.current = mr;
       mr.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data); };
-      mr.onstop = () => {
+      mr.onstop = async () => {
         const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const url = URL.createObjectURL(blob);
         const ts = new Date().toISOString().replace(/[:.]/g, '-');
-        const nombre = `audio-${ts}.webm`;
         const minGrab = Math.floor(timerSeconds / 60);
         const segGrab = Math.floor(timerSeconds % 60);
         const minutoGrab = `${minGrab}:${String(segGrab).padStart(2, '0')}`;
-        setAudiosVario((prev) => [...prev, { url, nombre, fecha: ts, minuto: minutoGrab }]);
+        let url;
+        let nombre;
+        let tipo = 'audio/webm';
+        try {
+          const ffmpeg = await loadFFmpeg();
+          const inputData = new Uint8Array(await blob.arrayBuffer());
+          await ffmpeg.writeFile('audio_in.webm', inputData);
+          await ffmpeg.exec(['-i', 'audio_in.webm', '-c:a', 'libmp3lame', '-b:a', '192k', 'audio_out.mp3']);
+          const out = await ffmpeg.readFile('audio_out.mp3');
+          url = URL.createObjectURL(new Blob([out], { type: 'audio/mpeg' }));
+          nombre = `audio-${ts}.mp3`;
+          tipo = 'audio/mpeg';
+        } catch (e) {
+          console.warn('Conversión a mp3 falló, se guarda en webm', e);
+          url = URL.createObjectURL(blob);
+          nombre = `audio-${ts}.webm`;
+        }
+        setAudiosVario((prev) => [...prev, { url, nombre, fecha: ts, minuto: minutoGrab, tipo }]);
         const a = document.createElement('a');
         a.href = url;
         a.download = nombre;
