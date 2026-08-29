@@ -941,6 +941,66 @@ export default function App() {
     }
   };
 
+  // Recalcula todos los contadores a partir del listado de acciones para que
+  // siempre estén sincronizados (evita contadores "fantasma" al borrar acciones).
+  const ACCION_COUNTERS = {
+    'TIRO DERECHA': setTiroDerechaCount,
+    'TIRO AREA': setTiroAreaCount,
+    'TIRO IZQUIERDA': setTiroIzquierdaCount,
+    'TIRO FRONTAL': setTiroFrontalCount,
+    'FALTA DERECHA': setFaltaDerechaCount,
+    'FALTA IZQUIERDA': setFaltaIzquierdaCount,
+    'FALTA FRONTAL': setFaltaFrontalCount,
+    'CENTRO DERECHA': setCentroDerechaCount,
+    'CENTRO IZQUIERDA': setCentroIzquierdaCount,
+    'CORNER IZQUIERDA': setCornerIzquierdaCount,
+    'CORNER DERECHA': setCornerDerechaCount,
+    'RIVAL TIRO DERECHA': setRivalTiroDerechaCount,
+    'RIVAL TIRO AREA': setRivalTiroAreaCount,
+    'RIVAL TIRO IZQUIERDA': setRivalTiroIzquierdaCount,
+    'RIVAL TIRO FRONTAL': setRivalTiroFrontalCount,
+    'RIVAL FALTA DERECHA': setRivalFaltaDerechaCount,
+    'RIVAL FALTA IZQUIERDA': setRivalFaltaIzquierdaCount,
+    'RIVAL FALTA FRONTAL': setRivalFaltaFrontalCount,
+    'RIVAL CENTRO DERECHA': setRivalCentroDerechaCount,
+    'RIVAL CENTRO IZQUIERDA': setRivalCentroIzquierdaCount,
+    'RIVAL CORNER IZQUIERDA': setRivalCornerIzquierdaCount,
+    'RIVAL CORNER DERECHA': setRivalCornerDerechaCount,
+    'INICIO PROPIO': setInicioPropioCount,
+    'INICIO RIVAL': setInicioRivalCount,
+    'ON RIVAL': setOnRivalCount,
+    'ON NEUTRO': setOnNeutroCount,
+    'ON PROPIO': setOnNeutroCount,
+    'OFF RIVAL': setOffRivalCount,
+    'OFF NEUTRO': setOffNeutroCount,
+    'OFF PROPIO': setOffNeutroCount,
+    'PÉRDIDAS': setPerdidasCount,
+    'OCASION': setOcasionCount,
+    'FUERA': setFueraCount,
+    'BLOCAJE': setBlocajeCount,
+    'FINAL+BLOCA': setFinalBocaCount,
+    'FINAL+DESP': setFinalDespCount,
+    'FINAL+FUERA': setFinalFueraCount,
+    'DESPEJE DEFENSA': setDespejeDefensaCount,
+    'DESPEJE PORTERO': setDespejePorteroCount,
+    'SAQUE DE ESQUINA': setSaqueEsquinaFueraCount,
+    'GOL': setGolCount,
+    'GOL RIVAL': setGolRivalCount,
+    'PENAL + FUERA': setPenalFueraCount,
+    'PENAL + GOL': setPenalGolCount,
+    'PENAL + GOL RIVAL': setPenalGolRivalCount,
+    'INFRACCION': setInfraccionCount
+  };
+  const PENAL_NAMES = ['PENAL + FUERA', 'PENAL + GOL', 'PENAL + GOL RIVAL'];
+
+  const recomputeCountersFromLog = (log) => {
+    const counts = {};
+    (log || []).forEach((e) => { if (e && e.name) counts[e.name] = (counts[e.name] || 0) + 1; });
+    Object.entries(ACCION_COUNTERS).forEach(([name, setter]) => setter(counts[name] || 0));
+    const penalTotal = PENAL_NAMES.reduce((s, n) => s + (counts[n] || 0), 0);
+    setPenalCount(penalTotal);
+  };
+
   const handlePrimeraParte = () => {
     setPeriodo('1ª PARTE');
     setTimerSeconds(0);
@@ -2740,8 +2800,16 @@ export default function App() {
                   <button
                     onClick={() => {
                       if (actionLog.length === 0) return;
-                      decrementCounter(actionLog[0].name);
-                      setActionLog(actionLog.slice(1));
+                      const removed = actionLog[0];
+                      if (removed.name === 'GOL' || removed.name === 'PENAL + GOL') {
+                        setGolesList(prev => prev.slice(0, -1));
+                      }
+                      if (removed.name === 'GOL RIVAL') {
+                        setGolesRivalList(prev => prev.slice(0, -1));
+                      }
+                      const newLog = actionLog.slice(1);
+                      setActionLog(newLog);
+                      recomputeCountersFromLog(newLog);
                     }}
                     title="Borrar primera acción"
                     style={{
