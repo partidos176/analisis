@@ -177,6 +177,9 @@ export default function App() {
   const [perdidasCount, setPerdidasCount] = useState(0);
   const [fueraCount, setFueraCount] = useState(0);
   const [blocajeCount, setBlocajeCount] = useState(0);
+  const [finalBocaCount, setFinalBocaCount] = useState(0);
+  const [finalDespCount, setFinalDespCount] = useState(0);
+  const [finalFueraCount, setFinalFueraCount] = useState(0);
   const [despejeDefensaCount, setDespejeDefensaCount] = useState(0);
   const [despejePorteroCount, setDespejePorteroCount] = useState(0);
   const [golCount, setGolCount] = useState(0);
@@ -465,6 +468,9 @@ export default function App() {
     setOffNeutroCount(0);
     setFueraCount(0);
     setBlocajeCount(0);
+    setFinalBocaCount(0);
+    setFinalDespCount(0);
+    setFinalFueraCount(0);
     setDespejeDefensaCount(0);
     setDespejePorteroCount(0);
     setGolCount(0);
@@ -529,6 +535,9 @@ export default function App() {
     setPerdidasCount(Math.max(match.perdidasCount ?? 0, logAcciones['PÉRDIDAS'] || 0));
     setFueraCount(match.fueraCount ?? 0);
     setBlocajeCount(match.blocajeCount ?? 0);
+    setFinalBocaCount(match.finalBocaCount ?? 0);
+    setFinalDespCount(match.finalDespCount ?? 0);
+    setFinalFueraCount(match.finalFueraCount ?? 0);
     setDespejeDefensaCount(match.despejeDefensaCount ?? 0);
     setDespejePorteroCount(match.despejePorteroCount ?? 0);
     setGolCount(match.golCount ?? 0);
@@ -594,6 +603,9 @@ export default function App() {
       perdidasCount,
       fueraCount,
       blocajeCount,
+      finalBocaCount,
+      finalDespCount,
+      finalFueraCount,
       despejeDefensaCount,
       despejePorteroCount,
       golCount,
@@ -635,7 +647,13 @@ export default function App() {
   useEffect(() => {
     if (!currentMatch) return;
     saveMatchData(currentMatch.id);
-  }, [currentMatch, tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, perdidasCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
+  }, [currentMatch, tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount,       perdidasCount,
+      fueraCount,
+      blocajeCount,
+      finalBocaCount,
+      finalDespCount,
+      finalFueraCount,
+      despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount, saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
 
   const generarTodosLosCortes = async () => {
     if (!videoFile) {
@@ -3532,6 +3550,27 @@ export default function App() {
                       >
                         <span>BLOCAJE</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{blocajeCount}</span>
+                      </button>
+                      <button
+                        onClick={() => { if (logAction('FINAL+BOCA', 'finalizacion')) { setFinalBocaCount(finalBocaCount + 1); setActiveTab('acciones'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>FINAL+BOCA</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{finalBocaCount}</span>
+                      </button>
+                      <button
+                        onClick={() => { if (logAction('FINAL+DESP', 'finalizacion')) { setFinalDespCount(finalDespCount + 1); setActiveTab('acciones'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>FINAL+DESP</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{finalDespCount}</span>
+                      </button>
+                      <button
+                        onClick={() => { if (logAction('FINAL+FUERA', 'finalizacion')) { setFinalFueraCount(finalFueraCount + 1); setActiveTab('acciones'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>FINAL+FUERA</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{finalFueraCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('DESPEJE DEFENSA', 'finalizacion')) { setDespejeDefensaCount(despejeDefensaCount + 1); setActiveTab('acciones'); } }}
