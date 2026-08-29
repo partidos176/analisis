@@ -3117,14 +3117,22 @@ export default function App() {
                       <input
                         type="file"
                         accept="video/*"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files && e.target.files[0];
                           if (file) {
                             if (videoUrl) URL.revokeObjectURL(videoUrl);
                             if (previewVideoUrl) URL.revokeObjectURL(previewVideoUrl);
-                            setVideoFile(file);
+                            let safeFile = file;
+                            try {
+                              const buf = await file.arrayBuffer();
+                              safeFile = new Blob([buf], { type: file.type || 'video/mp4' });
+                              try { safeFile.name = file.name; } catch (_) {}
+                            } catch (err) {
+                              console.warn('[vídeo] no se pudo copiar a Blob, uso File original', err);
+                            }
+                            setVideoFile(safeFile);
                             setVideoFileName(file.name);
-                            setVideoUrl(URL.createObjectURL(file));
+                            setVideoUrl(URL.createObjectURL(safeFile));
                             setVideoTimeOffset(null);
                             setAccionSeleccionada(null);
                             setPreviewVideoUrl(null);
