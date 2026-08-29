@@ -72,7 +72,7 @@ export async function cutVideoSingle(file, timeSecs, durationSecs, outputName, o
       await ffmpeg.exec([...baseArgs, '-an']);
     } catch (e2) {
       const tail = logs.slice(-8).join(' || ');
-      throw new Error('ffmpeg no pudo generar el corte (start=' + startSecs + 's, dur=' + dur + 's). Detalle: ' + (tail || e2.message || e2));
+      throw new Error('ffmpeg falló (time=' + timeSecs + ', start=' + startSecs + 's, dur=' + dur + 's). ffmpeg: ' + (tail || e2.message || e2));
     }
   }
   const data = await ffmpeg.readFile(outputNameClean);
