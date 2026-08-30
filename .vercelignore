@@ -1,0 +1,6 @@
+node_modules
+.video-cache
+.vercel
+.firebase
+dev.pid
+*.log
