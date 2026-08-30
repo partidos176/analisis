@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update, remove } from './firebase';
 import Login from './components/Login';
 import TratamientoApp from './TratamientoApp';
+import html2canvas from 'html2canvas';
 import { loadFFmpeg, cutVideoSingle, cutVideoMultiple, isBrowserCutSupported } from './ffmpegCut';
 import { compositeVideoWithOverlay } from './compositeVideo';
 import descargaImg from './descarga.png';
@@ -304,8 +305,10 @@ export default function App() {
   const [saveError, setSaveError] = useState('');
   const [alineacionGuardado, setAlineacionGuardado] = useState(false);
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
+  const fichaJugadorRef = useRef(null);
   const [videoFile, setVideoFile] = useState(null);
   const [videoFileName, setVideoFileName] = useState('');
+  const [videoUploaded, setVideoUploaded] = useState(false);
   const [videoUrl, setVideoUrl] = useState(null);
   const [videoTimeOffset, setVideoTimeOffset] = useState(null);
   const [videoTimeOffset2, setVideoTimeOffset2] = useState(null);
@@ -424,6 +427,16 @@ export default function App() {
       } catch {}
     }
     setServidorCortesDisponible(false);
+  };
+
+  const uploadVideoToServer = async () => {
+    if (videoUploaded) return;
+    if (!videoFile || !SERVER_URL) throw new Error('No hay vídeo o servidor no disponible');
+    const formData = new FormData();
+    formData.append('video', videoFile);
+    const resp = await fetch(SERVER_URL + '/api/upload', { method: 'POST', body: formData });
+    if (!resp.ok) { const errData = await resp.json().catch(() => ({})); throw new Error(errData.error || 'Error al subir vídeo'); }
+    setVideoUploaded(true);
   };
 
   useEffect(() => {
@@ -777,10 +790,18 @@ export default function App() {
         return { time: adjustedTime, name: `${base}_corte_${adjustedTime}`, duracion: String(duracion) };
       });
       const tryServerBatch = async () => {
-        const formData = new FormData();
-        formData.append('video', videoFile);
-        formData.append('cortes', JSON.stringify(cortes));
-        const resp = await fetch(SERVER_URL + '/api/cortar', { method: 'POST', body: formData });
+        if (!videoUploaded) {
+          const formData = new FormData();
+          formData.append('video', videoFile);
+          const uploadResp = await fetch(SERVER_URL + '/api/upload', { method: 'POST', body: formData });
+          if (!uploadResp.ok) { const errData = await uploadResp.json().catch(() => ({})); throw new Error(errData.error || 'Error al subir vídeo'); }
+          setVideoUploaded(true);
+        }
+        const resp = await fetch(SERVER_URL + '/api/cortar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cortes })
+        });
         if (!resp.ok) { const errData = await resp.json().catch(() => ({})); throw new Error(errData.error || 'Error en el servidor'); }
         const contentType = resp.headers.get('content-type') || '';
         if (contentType.includes('application/zip')) {
@@ -1455,6 +1476,33 @@ export default function App() {
               <span style={{ fontSize: ['tiempojugado', 'resumengoles', 'resumenacciones', 'videos', 'posesion', 'jugadores'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
                 {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : activeTab === 'jugadores' ? 'JUGADORES' : `JORNADA ${currentMatch.matchday}`}
               </span>
+              {activeTab === 'jugadores' && jugadorSeleccionado && (
+                <button
+                  onClick={async () => {
+                    if (!fichaJugadorRef.current) return;
+                    const canvas = await html2canvas(fichaJugadorRef.current, { backgroundColor: '#0f172a', scale: 2 });
+                    const link = document.createElement('a');
+                    link.download = `ficha_${jugadorSeleccionado}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                  }}
+                  style={{
+                    background: '#7c3aed',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: 'var(--radius-full)',
+                    padding: '0.3rem 0.8rem',
+                    fontWeight: 800,
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    letterSpacing: '0.05em',
+                    fontFamily: 'var(--font-mono)'
+                  }}
+                >
+                  CAPTURAR FICHA
+                </button>
+              )}
               {activeTab === 'alineacion' && (
                 <button
                   onClick={handleAceptar}
@@ -1593,7 +1641,7 @@ export default function App() {
                   flexDirection: 'column',
                   gap: '1rem',
                   alignItems: 'flex-start',
-                  marginLeft: '-2rem'
+marginLeft: '-6rem'
                 }}>
                   <button
                     onClick={() => {
@@ -2817,7 +2865,7 @@ export default function App() {
                             const wsPos = XLSX.utils.json_to_sheet(posRows.length ? posRows : [{ periodo: 'SIN DATOS', propio: '', rival: '', neutro: '' }]);
                             XLSX.utils.book_append_sheet(wb, wsPos, 'Posesion');
                             const accionesDatos = ['TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS'];
-                            const finalizacionesDatos = ['OCASION','FUERA','BLOCAJE','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','INFRACCION'];
+                            const finalizacionesDatos = ['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'];
                             const matrizDatos = {};
                             accionesDatos.forEach(a => { matrizDatos[a] = {}; finalizacionesDatos.forEach(f => { matrizDatos[a][f] = 0; }); });
                             let ultimaAccion = null;
@@ -3196,6 +3244,7 @@ export default function App() {
                             }
                             setVideoFile(safeFile);
                             setVideoFileName(file.name);
+                            setVideoUploaded(false);
                             setVideoUrl(URL.createObjectURL(safeFile));
                             setVideoTimeOffset(null);
                             setAccionSeleccionada(null);
@@ -3474,41 +3523,34 @@ export default function App() {
                                 const videoName = filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : (() => { const sameName = accionesFiltradas.filter(a => a.name === e.name); const correlative = sameName.indexOf(e) + 1; return sameName.length > 1 ? e.name + ' ' + correlative : e.name; })();
                                 const doCut = async () => {
                                   const tryServer = async () => {
-                                    return await new Promise((resolve, reject) => {
-                                      let serverProgressInterval = null;
-                                      const formData = new FormData();
-                                      formData.append('video', videoFile);
-                                      formData.append('cortes', JSON.stringify([{ time: adjustedTime, name: videoName, duracion: String(duracion) }]));
-                                      const xhr = new XMLHttpRequest();
-                                      xhr.open('POST', SERVER_URL + '/api/cortar');
-                                      xhr.upload.onprogress = (ev) => {
-                                        if (ev.lengthComputable) {
-                                          setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round((ev.loaded / ev.total) * 90) }));
-                                        }
-                                      };
-                                      xhr.onload = () => {
-                                        if (serverProgressInterval) clearInterval(serverProgressInterval);
-                                        setProgresoAccion(prev => ({ ...prev, [actionKey]: 95 }));
-                                        if (xhr.status >= 200 && xhr.status < 300) {
-                                          resolve(new Blob([xhr.response], { type: 'video/mp4' }));
-                                        } else {
-                                          try { const errData = JSON.parse(xhr.responseText); reject(new Error(errData.error || 'Error en el servidor')); } catch { reject(new Error('Error en el servidor')); }
-                                        }
-                                      };
-                                      xhr.onerror = () => {
-                                        if (serverProgressInterval) clearInterval(serverProgressInterval);
-                                        reject(new Error('No se pudo conectar al servidor'));
-                                      };
-                                      xhr.responseType = 'blob';
-                                      xhr.send(formData);
-                                      serverProgressInterval = setInterval(() => {
-                                        setProgresoAccion(prev => {
-                                          const cur = prev[actionKey] || 90;
-                                          if (cur < 98) return { ...prev, [actionKey]: cur + 1 };
-                                          return prev;
-                                        });
-                                      }, 2000);
+                                    if (!videoUploaded) {
+                                      await new Promise((resolve, reject) => {
+                                        const formData = new FormData();
+                                        formData.append('video', videoFile);
+                                        const xhr = new XMLHttpRequest();
+                                        xhr.open('POST', SERVER_URL + '/api/upload');
+                                        xhr.upload.onprogress = (ev) => {
+                                          if (ev.lengthComputable) {
+                                            setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round((ev.loaded / ev.total) * 40) }));
+                                          }
+                                        };
+                                        xhr.onload = () => {
+                                          if (xhr.status >= 200 && xhr.status < 300) { setVideoUploaded(true); resolve(); } else { reject(new Error('Error al subir vídeo')); }
+                                        };
+                                        xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
+                                        xhr.responseType = 'json';
+                                        xhr.send(formData);
+                                      });
+                                    }
+                                    setProgresoAccion(prev => ({ ...prev, [actionKey]: 50 }));
+                                    const resp = await fetch(SERVER_URL + '/api/cortar', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ cortes: [{ time: adjustedTime, name: videoName, duracion: String(duracion) }] })
                                     });
+                                    setProgresoAccion(prev => ({ ...prev, [actionKey]: 90 }));
+                                    if (!resp.ok) { const errData = await resp.json().catch(() => ({})); throw new Error(errData.error || 'Error en el servidor'); }
+                                    return await resp.blob();
                                   };
                                   if (servidorCortesDisponible) {
                                     try {
@@ -4017,7 +4059,7 @@ export default function App() {
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                               <thead>
                                 <tr>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
+<th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
                                   <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
                                   <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PIE</th>
                                   <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>CABEZA</th>
@@ -4232,7 +4274,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       });
                       return t;
                     };
-                    const finalizacionesOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'GOL RIVAL', 'INFRACCION'];
+                    const finalizacionesOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'PENAL + GOL RIVAL', 'GOL RIVAL', 'INFRACCION'];
                     const accionesOrder = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'];
                     const cruce = {};
                     const cruceTotal = {};
@@ -4452,6 +4494,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     });
                     const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
                     names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; totalTitular[n] += liveMin.titular[n]; totalSuplente[n] += liveMin.suplente[n]; });
+                    let totalPartidosDuracion = 0;
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      totalPartidosDuracion += m.timerSeconds || 0;
+                    });
+                    totalPartidosDuracion += timerSeconds;
                     const titularCount = {};
                     const suplenteCount = {};
                     const noConvocadoCount = {};
@@ -4568,8 +4616,17 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       contarRivalGoals(m, m.sustituciones);
                     });
                     contarRivalGoals({ players, golesRivalList, timerSeconds }, sustituciones);
+                    const minutosPorJornada = [];
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
+                      minutosPorJornada.push({ name: `J${m.matchday || '?'} `, minutos: mMin.minutos[jugadorSeleccionado] || 0 });
+                    });
+                    const liveMinJugador = calcMatchMinutes(players, sustituciones, timerSeconds);
+                    minutosPorJornada.push({ name: `J${currentMatch?.matchday || 'Ahora'}`, minutos: liveMinJugador.minutos[jugadorSeleccionado] || 0 });
                     return (
-                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
+                  <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                     <select
@@ -4586,7 +4643,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         textTransform: 'uppercase',
                         cursor: 'pointer',
                         width: '150px',
-                        marginTop: '-1.5rem'
+                        marginTop: '0.5rem'
                       }}
                     >
                       <option value="">-</option>
@@ -4599,6 +4656,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </option>
                       ))}
                     </select>
+
                     {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].foto && (
                       <img
                         src={jugadoresData[jugadorSeleccionado].foto}
@@ -4628,6 +4686,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     {jugadorSeleccionado && (
                       <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
                         DISPUTA {formatTime(totalMinutos[jugadorSeleccionado] || 0)} MIN. = TITULAR {formatTime(totalTitular[jugadorSeleccionado] || 0)} + SUPLENTE {formatTime(totalSuplente[jugadorSeleccionado] || 0)}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
+                        % JUGADO: {totalPartidosDuracion > 0 ? Math.round(((totalMinutos[jugadorSeleccionado] || 0) / totalPartidosDuracion) * 100) : 0}%
                       </span>
                     )}
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -4714,6 +4777,22 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           )}
                         </tbody>
                       </table>
+                    )}
+                    {jugadorSeleccionado && minutosPorJornada.length > 0 && (
+                      <div style={{ marginTop: '1.5rem', width: '100%', marginLeft: '-2rem' }}>
+                        <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', marginLeft: '6rem' }}>
+                          EVOLUCIÓN MINUTOS
+                        </span>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <LineChart data={minutosPorJornada} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
+                            <YAxis stroke="#94a3b8" fontSize={12} />
+                            <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} />
+                            <Line type="monotone" dataKey="minutos" stroke="#a78bfa" strokeWidth={2} dot={{ fill: '#a78bfa', r: 4 }} activeDot={{ r: 6 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
                     )}
                     </div>
                     </div>
@@ -5073,8 +5152,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       'ON RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF RIVAL', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'
                     ];
                     const finalizaciones = [
-                      'OCASION', 'FUERA', 'BLOCAJE', 'DESPEJE DEFENSA', 'DESPEJE PORTERO',
-                      'SAQUE DE ESQUINA', 'GOL', 'GOL RIVAL', 'PENAL + FUERA', 'PENAL + GOL', 'INFRACCION'
+                      'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA',
+                      'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'GOL', 'GOL RIVAL',
+                      'PENAL + FUERA', 'PENAL + GOL', 'PENAL + GOL RIVAL', 'INFRACCION'
                     ];
                     const matriz = {};
                     acciones.forEach(a => matriz[a] = {});
@@ -5354,12 +5434,16 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     };
                     const totalMinutos = {};
                     names.forEach(n => totalMinutos[n] = 0);
+                    let totalPartidosDuracion = 0;
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
                       const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
-                      const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
+                      const mDur = m.timerSeconds || 0;
+                      totalPartidosDuracion += mDur;
+                      const mMin = calcMatchMinutes(pl, m.sustituciones, mDur);
                       names.forEach(n => totalMinutos[n] += mMin[n]);
                     });
+                    totalPartidosDuracion += timerSeconds;
                     const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
                     names.forEach(n => totalMinutos[n] += liveMin[n]);
                     const filas = Object.entries(totalMinutos).sort((a, b) => b[1] - a[1]);
@@ -5389,25 +5473,27 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                           <thead>
                             <tr>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TITULAR</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>SUPLENTE</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>NO CONVOCADO</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>LESIONADO</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>DIV. HONOR</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>MINUTOS</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>JUGADOR</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>MINUTOS</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>% JUGADO</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TITULAR</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>SUPLENTE</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>NO CONVOCADO</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>LESIONADO</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>DIV. HONOR</th>
                             </tr>
                           </thead>
                           <tbody>
                             {filas.map(([n, m]) => (
                               <tr key={n}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{formatTime(m)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{titularCount[n]}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{suplenteCount[n]}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{formatTime(m)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{suplenteCount[n]}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
                               </tr>
                             ))}
                           </tbody>

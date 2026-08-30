@@ -95,7 +95,8 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
 
     let cortes;
     try {
-      cortes = JSON.parse(req.body.cortes || '[]');
+      const raw = req.body.cortes;
+      cortes = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : JSON.parse(raw || '[]'));
     } catch {
       return res.status(400).json({ error: 'Formato de cortes inválido' });
     }

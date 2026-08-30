@@ -90,22 +90,20 @@ export async function cutVideoSingle(file, timeSecs, durationSecs, outputName, o
   const dur = Number.isFinite(durationSecs) ? durationSecs : 5;
   const logs = [];
   ffmpeg.on('log', ({ message }) => logs.push(message));
-  const baseArgs = [
-    '-ss', String(startSecs),
-    '-t', String(dur),
-    '-i', inputName,
-    '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
-    '-movflags', '+faststart',
-    '-y', outputNameClean
-  ];
+  const seekArgs = ['-ss', String(startSecs), '-t', String(dur), '-i', inputName];
+  const commonEnd = ['-movflags', '+faststart', '-y', outputNameClean];
   try {
-    await ffmpeg.exec([...baseArgs, '-c:a', 'aac']);
+    await ffmpeg.exec([...seekArgs, '-c:v', 'copy', '-c:a', 'copy', ...commonEnd]);
   } catch (e1) {
     try {
-      await ffmpeg.exec([...baseArgs, '-an']);
+      await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-c:a', 'aac', ...commonEnd]);
     } catch (e2) {
-      const tail = logs.slice(-8).join(' || ');
-      throw new Error('ffmpeg falló (time=' + timeSecs + ', start=' + startSecs + 's, dur=' + dur + 's). ffmpeg: ' + (tail || e2.message || e2));
+      try {
+        await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', ...commonEnd, '-an']);
+      } catch (e3) {
+        const tail = logs.slice(-8).join(' || ');
+        throw new Error('ffmpeg falló (time=' + timeSecs + ', start=' + startSecs + 's, dur=' + dur + 's). ffmpeg: ' + (tail || e3.message || e3));
+      }
     }
   }
   const data = await ffmpeg.readFile(outputNameClean);
@@ -114,27 +112,40 @@ export async function cutVideoSingle(file, timeSecs, durationSecs, outputName, o
   return new Blob([data.buffer], { type: 'video/mp4' });
 }
 
+const MAX_PARALLEL_CUTS = 3;
+
+async function _runSingleCut(ffmpeg, inputName, corte, index) {
+  const parts = String(corte.time).split(':').map(Number);
+  const startSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
+  const duracion = corte.duracion ? Math.max(1, parseInt(corte.duracion, 10)) : 5;
+  const outName = `corte_${index}.mp4`;
+  const seekArgs = ['-ss', String(startSecs), '-t', String(duracion), '-i', inputName];
+  const commonEnd = ['-movflags', '+faststart', '-y', outName];
+  try {
+    await ffmpeg.exec([...seekArgs, '-c:v', 'copy', '-c:a', 'copy', ...commonEnd]);
+  } catch (e1) {
+    try {
+      await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-c:a', 'aac', ...commonEnd]);
+    } catch (e2) {
+      await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', ...commonEnd, '-an']);
+    }
+  }
+  const data = await ffmpeg.readFile(outName);
+  await ffmpeg.deleteFile(outName);
+  return { name: (corte.name || 'corte') + '.mp4', blob: new Blob([data.buffer], { type: 'video/mp4' }) };
+}
+
 export async function cutVideoMultiple(file, cortes, onProgress) {
   const ffmpeg = await loadFFmpeg(onProgress);
   const inputName = 'input.mp4';
   const fileData = await readFileAsUint8Array(file);
   await ffmpeg.writeFile(inputName, fileData);
   const results = [];
-  for (let i = 0; i < cortes.length; i++) {
-    const corte = cortes[i];
-    const parts = String(corte.time).split(':').map(Number);
-    const startSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
-    const duracion = corte.duracion ? Math.max(1, parseInt(corte.duracion, 10)) : 5;
-    const outName = `corte_${i}.mp4`;
-    try {
-      await ffmpeg.exec(['-ss', String(startSecs), '-t', String(duracion), '-i', inputName, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-c:a', 'aac', '-movflags', '+faststart', '-y', outName]);
-    } catch (e1) {
-      await ffmpeg.exec(['-ss', String(startSecs), '-t', String(duracion), '-i', inputName, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-movflags', '+faststart', '-an', '-y', outName]);
-    }
-    const data = await ffmpeg.readFile(outName);
-    results.push({ name: (corte.name || 'corte') + '.mp4', blob: new Blob([data.buffer], { type: 'video/mp4' }) });
-    await ffmpeg.deleteFile(outName);
-    if (onProgress) onProgress((i + 1) / cortes.length);
+  for (let i = 0; i < cortes.length; i += MAX_PARALLEL_CUTS) {
+    const batch = cortes.slice(i, i + MAX_PARALLEL_CUTS);
+    const batchResults = await Promise.all(batch.map((corte, j) => _runSingleCut(ffmpeg, inputName, corte, i + j)));
+    results.push(...batchResults);
+    if (onProgress) onProgress(Math.min(1, (i + batch.length) / cortes.length));
   }
   await ffmpeg.deleteFile(inputName);
   return results;
