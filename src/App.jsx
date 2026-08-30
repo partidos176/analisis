@@ -6,8 +6,7 @@ import html2canvas from 'html2canvas';
 import { loadFFmpeg, cutVideoSingle, cutVideoMultiple, isBrowserCutSupported } from './ffmpegCut';
 import { compositeVideoWithOverlay } from './compositeVideo';
 import descargaImg from './descarga.png';
-import alexImg from './jugadores/alex.jpg';
-import alvaroImg from './jugadores/alvaro.jpg';
+import cardenesImg from './jugadores/cardenes.jpg';
 import ancorImg from './jugadores/ancor.jpg';
 import cardonaImg from './jugadores/cardona.jpg';
 import daniImg from './jugadores/dani.jpg';
@@ -15,23 +14,23 @@ import davidImg from './jugadores/david.jpg';
 import diegoImg from './jugadores/diego.jpg';
 import emilianoImg from './jugadores/emiliano.jpg';
 import hectorImg from './jugadores/hector.jpg';
-import ismaImg from './jugadores/isma.jpg';
 import jonasImg from './jugadores/jonas.jpg';
 import jorgeImg from './jugadores/jorge.png';
 import juandaImg from './jugadores/juanda.jpg';
 import kevinImg from './jugadores/kevin.jpg';
 import lucasImg from './jugadores/lucas.jpg';
+import lramirezImg from './jugadores/lramirez.jpg';
 import oscarImg from './jugadores/oscar.jpg';
 import raveloImg from './jugadores/ravelo.jpg';
 import santanaImg from './jugadores/santana.jpg';
 import santosImg from './jugadores/santos.jpg';
+import nuhaImg from './jugadores/nuha.jpg';
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 
 const jugadoresData = {
-  ALEX: { foto: alexImg, pos1: 'CENTRAL' },
-  ALVARO: { foto: alvaroImg },
+  CARDENES: { foto: cardenesImg },
   ANCOR: { foto: ancorImg, pos1: 'MEDIO CENTRO' },
   CARDONA: { foto: cardonaImg },
   CADETE: {},
@@ -40,16 +39,17 @@ const jugadoresData = {
   DIEGO: { foto: diegoImg },
   EMILIANO: { foto: emilianoImg, pos1: 'PORTERO' },
   HECTOR: { foto: hectorImg, pos1: 'PORTERO' },
-  ISMA: { foto: ismaImg, pos1: 'DELANTERO' },
   JONAS: { foto: jonasImg },
   JORGE: { foto: jorgeImg },
   JUANDA: { foto: juandaImg },
   KEVIN: { foto: kevinImg, pos1: 'CENTRAL' },
   LUCAS: { foto: lucasImg, pos1: 'CENTRAL' },
+  'L. RAMIREZ': { foto: lramirezImg, pos1: 'PORTERO' },
   OSCAR: { foto: oscarImg, pos1: 'LATERAL DERECHO' },
   RAVELO: { foto: raveloImg, pos1: 'LATERAL IZQUIERDO' },
   SANTANA: { foto: santanaImg, pos1: 'LATERAL IZQUIERDO' },
-  SANTOS: { foto: santosImg }
+  SANTOS: { foto: santosImg },
+  NUHA: { foto: nuhaImg }
 };
 
 const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'PEDRO': 'CADETE', 'JUAN ': 'JUANDA' };
@@ -95,7 +95,7 @@ const defaultPlayersList = () => {
   return Array(23).fill(null).map((_, i) => ({ name: roster[i] || '', status: '-' }));
 };
 
-const playerOptions = ['ALEX', 'ALVARO', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'ISMA', 'JONAS', 'JORGE', 'JUANDA', 'KEVIN', 'LUCAS', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE'];
+const playerOptions = ['CARDENES', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'JONAS', 'JORGE', 'JUANDA', 'KEVIN', 'L. RAMIREZ', 'LUCAS', 'NUHA', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE'];
 
 const FORMACION_11 = [
   { x: 50, y: 10 },
@@ -198,6 +198,7 @@ export default function App() {
   const [fromRival, setFromRival] = useState(false);
   const [periodo, setPeriodo] = useState('1ª PARTE');
   const [selectedPlayer, setSelectedPlayer] = useState('');
+  const [selectedJornadaTiempo, setSelectedJornadaTiempo] = useState('');
   const [playerStatus, setPlayerStatus] = useState('titular');
   const [players, setPlayers] = useState(defaultPlayersList());
   const [alineacionError, setAlineacionError] = useState(false);
@@ -705,8 +706,8 @@ export default function App() {
       finalFueraCount,
       despejeDefensaCount,
       despejePorteroCount,
-      golCount,
-      golRivalCount,
+      golCount: golesList.length,
+      golRivalCount: golesRivalList.length,
       penalCount,
       penalFueraCount,
       penalGolCount,
@@ -2822,7 +2823,7 @@ marginLeft: '-6rem'
                               rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount,
                               rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount,
                               inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, perdidasCount,
-                              fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount, golRivalCount, penalCount,
+                              fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount: golesList.length, golRivalCount: golesRivalList.length, penalCount,
                               saqueEsquinaFueraCount, infraccionCount, ocasionCount, timerSeconds
                             };
                             const wb = XLSX.utils.book_new();
@@ -3851,21 +3852,21 @@ marginLeft: '-6rem'
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(golCount + 1); setGolesList([...golesList, { name: '', tipo: '', name2: '', accion: [...actionLog].find(e => e.type === 'accion') ? [...actionLog].find(e => e.type === 'accion').name : '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: [...actionLog].find(e => e.type === 'accion') ? [...actionLog].find(e => e.type === 'accion').name : '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
-                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golesList.length}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(golRivalCount + 1); setGolesRivalList([...golesRivalList, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
+                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolesRivalList(prev => [...prev, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
-                        <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
+                        <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golesRivalList.length}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + GOL RIVAL', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalGolRivalCount(penalGolRivalCount + 1); setGolesRivalList([...golesRivalList, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
+                        onClick={() => { if (logAction('PENAL + GOL RIVAL', 'finalizacion')) { setPenalCount(prev => prev + 1); setPenalGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL RIVAL</span>
@@ -3879,7 +3880,7 @@ marginLeft: '-6rem'
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalFueraCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalGolCount(penalGolCount + 1); setGolesList([...golesList, { name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('PENAL + GOL', 'finalizacion')) { setPenalCount(prev => prev + 1); setPenalGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + GOL</span>
@@ -3989,17 +3990,15 @@ marginLeft: '-6rem'
                       const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
                       if (gl.length) {
                         contarGolesRival(gl);
-                      } else if (m.golRivalCount) {
-                        totalGolesRival += m.golRivalCount;
-                        sinMinutoRival += m.golRivalCount;
+                      } else {
+                        const n = m.golRivalCount ?? 0;
+                        totalGolesRival += n;
+                        sinMinutoRival += n;
                       }
                     });
                     const currentGl = Array.isArray(golesRivalList) ? golesRivalList : (golesRivalList ? Object.values(golesRivalList) : []);
                     if (currentGl.length) {
                       contarGolesRival(currentGl);
-                    } else if (golRivalCount) {
-                      totalGolesRival += golRivalCount;
-                      sinMinutoRival += golRivalCount;
                     }
                     const chartDataRival = periodosRival
                       .map(p => ({
@@ -4029,8 +4028,9 @@ marginLeft: '-6rem'
                     ];
                     const golesRivalTotal = matches.reduce((s, m) => {
                       if (currentMatch && m.id === currentMatch.id) return s;
-                      return s + (m.golRivalCount ?? 0);
-                    }, 0) + golRivalCount;
+                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                      return s + (gl.length || (m.golRivalCount ?? 0));
+                    }, 0) + currentGl.length;
                     const golesRivalPorJornada = {};
                     const contarJornadaRival = (md, n) => {
                       const jornada = Number(md);
@@ -4039,9 +4039,10 @@ marginLeft: '-6rem'
                     };
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
-                      contarJornadaRival(m.matchday, m.golRivalCount ?? 0);
+                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                      contarJornadaRival(m.matchday, gl.length || (m.golRivalCount ?? 0));
                     });
-                    if (currentMatch) contarJornadaRival(currentMatch.matchday, golRivalCount);
+                    if (currentMatch) contarJornadaRival(currentMatch.matchday, currentGl.length);
                     const rangoGolesRival = (a, b) => Object.entries(golesRivalPorJornada).filter(([md]) => md >= a && md <= b).reduce((s, [, v]) => s + v, 0);
                     const tramosRival = [
                       { name: 'J1-J12', value: rangoGolesRival(1, 12) },
@@ -4247,7 +4248,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   {(() => {
                     const live = {
                       ocasionCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount,
-                      saqueEsquinaFueraCount, golCount, golRivalCount, penalCount, infraccionCount,
+                      saqueEsquinaFueraCount, golCount: golesList.length, golRivalCount: golesRivalList.length, penalCount, infraccionCount,
                       tiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount,
                       faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount,
                       centroDerechaCount, centroIzquierdaCount,
@@ -4681,7 +4682,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         ASISTENCIAS: {asistPerPlayer[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && (
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
                       <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', marginLeft: '9rem' }}>
                         TOTAL DE GOLES: {golCountPerPlayer[jugadorSeleccionado] || 0}
                       </span>
@@ -4693,17 +4694,17 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         TITULAR: {titularCount[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && (
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
                       <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', marginLeft: '12rem' }}>
                         PIE: {golPiePerPlayer[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && (
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
                       <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
                         CABEZA: {golCabezaPerPlayer[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && (
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
                       <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
                         PENAL: {golPenalPerPlayer[jugadorSeleccionado] || 0}
                       </span>
@@ -4729,12 +4730,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         DIV. HONOR: {divHonorCount[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado === 'HECTOR' || jugadorSeleccionado === 'EMILIANO' ? (
+                    {jugadorSeleccionado === 'HECTOR' || jugadorSeleccionado === 'EMILIANO' || jugadorSeleccionado === 'L. RAMIREZ' ? (
                       <span style={{ color: '#ff4d4d', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
                         GOLES ENCAJADOS: {rivalGoalsWhilePlaying[jugadorSeleccionado] || 0}
                       </span>
                     ) : null}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'EMILIANO' && (
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'L. RAMIREZ' && (
                       <table style={{ borderCollapse: 'collapse', marginTop: '1rem', fontFamily: 'var(--font-mono)' }}>
                         <thead>
                           <tr>
@@ -4797,6 +4798,22 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     GOLES
                   </span>
+                  {(() => {
+                    const currentMin = Math.floor(timerSeconds / 60);
+                    const titulars = players.filter(p => p.status === 'titular').map(p => p.name).filter(Boolean);
+                    const subs = (Array.isArray(sustituciones) ? sustituciones : []).filter(s => s && s.sale && s.entra);
+                    const onField = [...titulars];
+                    subs.sort((a, b) => (a.minuto || 0) - (b.minuto || 0)).forEach(s => {
+                      if (s.minuto <= currentMin) {
+                        const outIdx = onField.indexOf(s.sale);
+                        if (outIdx !== -1) { onField.splice(outIdx, 1); }
+                        if (!onField.includes(s.entra)) { onField.push(s.entra); }
+                      }
+                    });
+                    const onFieldUp = [...new Set(onField.map(n => n.toUpperCase()))];
+                    window.__onFieldPlayers = onFieldUp;
+                    return null;
+                  })()}
                   {/* TODOS LOS GOLES */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {golesList.length === 0 && (
@@ -4809,10 +4826,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <select
                             value={g.name}
                             onChange={(e) => {
-                              const newGoles = [...golesList];
-                              newGoles[i] = { ...newGoles[i], name: e.target.value };
-                              setGolesList(newGoles);
-                              if (e.target.value && newGoles[i].tipo && newGoles[i].name2) { setActiveTab('acciones'); }
+                              const val = e.target.value;
+                              setGolesList(prev => {
+                                const updated = [...prev];
+                                updated[i] = { ...updated[i], name: val };
+                                if (val && updated[i].tipo && updated[i].name2) { setActiveTab('acciones'); }
+                                return updated;
+                              });
                             }}
                             style={{
                               background: 'var(--bg-secondary)',
@@ -4828,26 +4848,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             }}
                           >
                             <option value="">-</option>
-                            <option value="ALEX">ALEX</option>
-                          <option value="ALVARO">ALVARO</option>
-                          <option value="ANCOR">ANCOR</option>
-                          <option value="CARDONA">CARDONA</option>
-                          <option value="DANI">DANI</option>
-                          <option value="DAVID">DAVID</option>
-                          <option value="DIEGO">DIEGO</option>
-                          <option value="EMILIANO">EMILIANO</option>
-                          <option value="HECTOR">HECTOR</option>
-                          <option value="ISMA">ISMA</option>
-                          <option value="JONAS">JONAS</option>
-                          <option value="JORGE">JORGE</option>
-                          <option value="JUANDA">JUANDA</option>
-                          <option value="KEVIN">KEVIN</option>
-                          <option value="LUCAS">LUCAS</option>
-                          <option value="OSCAR">OSCAR</option>
-                          <option value="RAVELO">RAVELO</option>
-                          <option value="SANTANA">SANTANA</option>
-                          <option value="SANTOS">SANTOS</option>
-                            <option value="CADETE">CADETE</option>
+                            {(window.__onFieldPlayers || []).map(name => (
+                              <option key={name} value={name}>{name}</option>
+                            ))}
                         </select>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
@@ -4855,10 +4858,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <select
                             value={g.tipo}
                             onChange={(e) => {
-                              const newGoles = [...golesList];
-                              newGoles[i] = { ...newGoles[i], tipo: e.target.value };
-                              setGolesList(newGoles);
-                              if (newGoles[i].name && e.target.value && newGoles[i].name2) { setActiveTab('acciones'); }
+                              const val = e.target.value;
+                              setGolesList(prev => {
+                                const updated = [...prev];
+                                updated[i] = { ...updated[i], tipo: val };
+                                if (updated[i].name && val && updated[i].name2) { setActiveTab('acciones'); }
+                                return updated;
+                              });
                             }}
                             style={{
                               background: 'var(--bg-secondary)',
@@ -4884,10 +4890,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <select
                             value={g.name2}
                             onChange={(e) => {
-                              const newGoles = [...golesList];
-                              newGoles[i] = { ...newGoles[i], name2: e.target.value };
-                              setGolesList(newGoles);
-                              if (newGoles[i].name && newGoles[i].tipo && e.target.value) { setActiveTab('acciones'); }
+                              const val = e.target.value;
+                              setGolesList(prev => {
+                                const updated = [...prev];
+                                updated[i] = { ...updated[i], name2: val };
+                                if (updated[i].name && updated[i].tipo && val) { setActiveTab('acciones'); }
+                                return updated;
+                              });
                             }}
                             style={{
                               background: 'var(--bg-secondary)',
@@ -4903,43 +4912,25 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             }}
                           >
                             <option value="">-</option>
-                            <option value="ALEX">ALEX</option>
-                            <option value="ALVARO">ALVARO</option>
-                            <option value="ANCOR">ANCOR</option>
-                            <option value="CARDONA">CARDONA</option>
-                            <option value="DANI">DANI</option>
-                            <option value="DAVID">DAVID</option>
-                            <option value="DIEGO">DIEGO</option>
-                            <option value="EMILIANO">EMILIANO</option>
-                            <option value="HECTOR">HECTOR</option>
-                            <option value="ISMA">ISMA</option>
-                            <option value="JONAS">JONAS</option>
-                            <option value="JORGE">JORGE</option>
-                            <option value="JUANDA">JUANDA</option>
-                            <option value="KEVIN">KEVIN</option>
-                            <option value="LUCAS">LUCAS</option>
-                            <option value="OSCAR">OSCAR</option>
-                            <option value="RAVELO">RAVELO</option>
-                            <option value="SANTANA">SANTANA</option>
-                            <option value="SANTOS">SANTOS</option>
-                            <option value="CADETE">CADETE</option>
+                            {(window.__onFieldPlayers || []).map(name => (
+                              <option key={name} value={name}>{name}</option>
+                            ))}
                             <option value="SIN ASISTENCIA">SIN ASISTENCIA</option>
                           </select>
                         </div>
                         <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '48px', textAlign: 'center' }}>{g.minuto}'</span>
                         <button
                           onClick={() => {
-                            const newGoles = golesList.filter((_, idx) => idx !== i);
-                            setGolesList(newGoles);
                             if (g.team === 'away') {
-                              setGolRivalCount(Math.max(0, golRivalCount - 1));
-                              const rivalIdx = golesRivalList.findIndex(rg => rg.periodo === g.periodo && rg.minuto === g.minuto);
-                              if (rivalIdx !== -1) {
-                                setGolesRivalList(golesRivalList.filter((_, j) => j !== rivalIdx));
-                              }
-                            } else {
-                              setGolCount(Math.max(0, golCount - 1));
+                              setGolesRivalList(prev => {
+                                const rivalIdx = prev.findIndex(rg => rg.periodo === g.periodo && rg.minuto === g.minuto);
+                                if (rivalIdx !== -1) {
+                                  return prev.filter((_, j) => j !== rivalIdx);
+                                }
+                                return prev;
+                              });
                             }
+                            setGolesList(prev => prev.filter((_, idx) => idx !== i));
                           }}
                           style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
                         >X</button>
@@ -5226,7 +5217,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                 const matchOptions = matches
                   .filter(m => m.matchday)
                   .map(m => {
-                    const score = ` (${m.golCount ?? 0}-${m.golRivalCount ?? 0})`;
+                    const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                    const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                    const score = ` (${homeGl.length}-${awayGl.length})`;
                     return { id: m.id, matchday: m.matchday, label: 'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
                   })
                   .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
@@ -5244,7 +5237,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   if (ps) { pds.push({ start: ps, end: null }); }
                   const md = m.matchday || 0;
                   const teamInfo = (m.homeTeam || '') + ' vs ' + (m.awayTeam || '');
-                  const score = ' (' + (m.golCount ?? 0) + '-' + (m.golRivalCount ?? 0) + ')';
+                  const homeGl2 = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                  const awayGl2 = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                  const score = ' (' + homeGl2.length + '-' + awayGl2.length + ')';
                   const rws = pds.map(p => {
                     const startTime = parseTime(p.start.time);
                     const endTime = p.end ? parseTime(p.end.time) : timerSeconds;
@@ -5451,35 +5446,105 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       });
                     });
                     return (
-                      <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
-                          <thead>
-                            <tr>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>JUGADOR</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>MINUTOS</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>% JUGADO</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TITULAR</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>SUPLENTE</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>NO CONVOCADO</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>LESIONADO</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>DIV. HONOR</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filas.map(([n, m]) => (
-                              <tr key={n}>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{formatTime(m)}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{titularCount[n]}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{suplenteCount[n]}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <thead>
+                              <tr>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>JUGADOR</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>MINUTOS</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>% JUGADO</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TITULAR</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>SUPLENTE</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>NO CONVOCADO</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>LESIONADO</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>DIV. HONOR</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {filas.map(([n, m]) => (
+                                <tr key={n}>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{formatTime(m)}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{titularCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{suplenteCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div>
+                          <div style={{ marginBottom: '0.8rem' }}>
+                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>MINUTOS JUGADOS:</label>
+                            <select
+                              value={selectedJornadaTiempo}
+                              onChange={e => setSelectedJornadaTiempo(e.target.value)}
+                              style={{
+                                background: 'var(--bg-secondary)',
+                                color: '#ffffff',
+                                border: '1px solid var(--border-subtle)',
+                                borderRadius: 'var(--radius-md)',
+                                padding: '0.4rem 0.8rem',
+                                fontWeight: 700,
+                                fontSize: '0.8rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <option value="">Seleccionar jornada</option>
+                              {matches.filter(m => m.matchday).sort((a, b) => a.matchday - b.matchday).map(m => (
+                                <option key={m.id} value={m.id}>J{m.matchday} — {m.homeTeam} vs {m.awayTeam}</option>
+                              ))}
+                              {currentMatch && <option value={currentMatch.id}>J{currentMatch.matchday} — {currentMatch.homeTeam} vs {currentMatch.awayTeam} (ahora)</option>}
+                            </select>
+                          </div>
+                          {selectedJornadaTiempo && (() => {
+                            const selMatch = matches.find(m => m.id === selectedJornadaTiempo) || (currentMatch && currentMatch.id === selectedJornadaTiempo ? currentMatch : null);
+                            if (!selMatch) return <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Partido no encontrado</span>;
+                            const pl = Array.isArray(selMatch.players) ? selMatch.players : (selMatch.players ? Object.values(selMatch.players) : []);
+                            const mDur = selMatch.timerSeconds || 0;
+                            const mMin = calcMatchMinutes(pl, selMatch.sustituciones, mDur);
+                            const rolOrder = { titular: 0, suplente: 1, lesion: 2, 'division honor': 3, 'no convocado': 4 };
+                            const jornadaFilas = Object.entries(mMin).sort((a, b) => {
+                              const sa = pl.find(p => p && p.name === a[0]);
+                              const sb = pl.find(p => p && p.name === b[0]);
+                              const ra = rolOrder[sa ? sa.status : 'no convocado'] ?? 5;
+                              const rb = rolOrder[sb ? sb.status : 'no convocado'] ?? 5;
+                              return ra - rb || b[1] - a[1];
+                            });
+                            return (
+                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>JUGADOR</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>ROL</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>MINUTOS</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {jornadaFilas.map(([n, m]) => {
+                                    const status = pl.find(p => p && p.name === n);
+                                    const rol = status ? status.status : 'no convocado';
+                                    const rolColor = rol === 'titular' ? '#39ff14' : rol === 'suplente' ? '#eab308' : rol === 'lesion' ? '#38bdf8' : rol === 'division honor' ? '#f472b6' : '#ef4444';
+                                    return (
+                                      <tr key={n}>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: rolColor, fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem' }}>{rol}</td>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{m > 0 ? formatTime(m) : '-'}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            );
+                          })()}
+                          {!selectedJornadaTiempo && (
+                            <span style={{ color: '#64748b', fontSize: '0.85rem', fontStyle: 'italic' }}>Selecciona una jornada para ver los minutos jugados</span>
+                          )}
+                        </div>
                       </div>
                     );
                   })()}
