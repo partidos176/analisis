@@ -119,12 +119,15 @@ const matchTabs = [
   { id: 'sustituciones', label: 'SUSTITUCIONES' },
   { id: 'datos', label: 'DATOS' },
   { id: 'posesion', label: 'POSESION' },
-  { id: 'tiempojugado', label: 'TOTAL JUGADO' },
-  { id: 'resumengoles', label: 'TOTAL GOLES' },
-  { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
-  { id: 'jugadores', label: 'JUGADORES' },
   { id: 'videos', label: 'VIDEOS' },
   { id: 'vario', label: 'VARIO' }
+];
+
+const totalesTabsDef = [
+  { id: 'resumengoles', label: 'TOTAL GOLES' },
+  { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
+  { id: 'tiempojugado', label: 'TOTAL JUGADO' },
+  { id: 'jugadores', label: 'JUGADORES' }
 ];
 
 export default function App() {
@@ -148,6 +151,7 @@ export default function App() {
   const [editingId, setEditingId] = useState(null);
   const [currentMatch, setCurrentMatch] = useState(null);
   const [activeTab, setActiveTab] = useState('acciones');
+  const [totalesTab, setTotalesTab] = useState('resumengoles');
   const [tiroDerechaCount, setTiroDerechaCount] = useState(0);
   const [tiroAreaCount, setTiroAreaCount] = useState(0);
   const [rivalTiroDerechaCount, setRivalTiroDerechaCount] = useState(0);
@@ -1318,7 +1322,8 @@ export default function App() {
   if (vista === 'menu') {
     const opciones = [
       { id: 'analisis', titulo: 'ANÁLISIS', descripcion: '', color: '#0284c7' },
-      { id: 'tratamiento', titulo: 'EDICIÓN', descripcion: '', color: '#8b5cf6' }
+      { id: 'tratamiento', titulo: 'EDICIÓN', descripcion: '', color: '#8b5cf6' },
+      { id: 'totales', titulo: 'TOTALES', descripcion: '', color: '#f59e0b' }
     ];
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -1399,6 +1404,1104 @@ export default function App() {
     );
   }
 
+  // Vista de Totales
+  if (vista === 'totales') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <header className="app-header">
+          <button className="btn-sm btn-secondary app-back-btn" onClick={() => setVista('menu')}>&#8592;</button>
+          <nav className="app-tabs">
+            {totalesTabsDef.map((tab) => (
+              <button
+                key={tab.id}
+                className={`tab-btn${totalesTab === tab.id ? ' active' : ''}`}
+                onClick={() => setTotalesTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+          <div className="app-header-actions">
+            <button
+              onClick={() => setVista('menu')}
+              title="Volver al menú"
+              style={{ background: '#0284c7', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.4)' }}
+            >
+              &#8592; MENÚ
+            </button>
+            <button className="btn-sm btn-secondary" onClick={handleLogout}>Salir</button>
+          </div>
+        </header>
+        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ width: '100%', maxWidth: '800px' }}>
+              {totalesTab === 'resumengoles' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  {(() => {
+                    const stats = {};
+                    const addGoal = (name, tipo) => {
+                      if (!name) return;
+                      if (!stats[name]) stats[name] = { total: 0, pie: 0, cabeza: 0, penal: 0 };
+                      stats[name].total += 1;
+                      if (tipo === 'PIE') stats[name].pie += 1;
+                      else if (tipo === 'CABEZA') stats[name].cabeza += 1;
+                      else if (tipo === 'PENAL') stats[name].penal += 1;
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                      gl.forEach(g => { if (g && g.name) addGoal(g.name, g.tipo); });
+                    });
+                    golesList.forEach(g => { if (g && g.name) addGoal(g.name, g.tipo); });
+                    const filas = Object.entries(stats).sort((a, b) => b[1].total - a[1].total);
+                    const asistStats = {};
+                    const addAsist = (name2) => {
+                      if (!name2 || name2.toUpperCase() === 'SIN ASISTENCIA') return;
+                      asistStats[name2] = (asistStats[name2] || 0) + 1;
+                    };
+                    const contarAsist = (gl) => {
+                      gl.forEach(g => { if (g && g.name2) addAsist(g.name2); });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                      contarAsist(gl);
+                    });
+                    contarAsist(golesList);
+                    const filasAsist = Object.entries(asistStats).sort((a, b) => b[1] - a[1]);
+                    let totalGoles = 0;
+                    const periodos = [
+                      { name: 'MIN. 0-15', desde: 0, hasta: 15 },
+                      { name: 'MIN 16-30', desde: 16, hasta: 30 },
+                      { name: 'MIN 31-45', desde: 31, hasta: 45 },
+                      { name: 'MIN 46-60', desde: 46, hasta: 60 },
+                      { name: 'MIN 61-75', desde: 61, hasta: 75 },
+                      { name: 'MIN 76-90', desde: 76, hasta: 90 }
+                    ];
+                    const contarGoles = (gl) => {
+                      gl.forEach(g => {
+                        if (!g || !g.name) return;
+                        totalGoles += 1;
+                        const min = g.minuto || 0;
+                        const p = periodos.find(p => min >= p.desde && min <= p.hasta) || periodos[periodos.length - 1];
+                        p.goles = (p.goles || 0) + 1;
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                      contarGoles(gl);
+                    });
+                    contarGoles(golesList);
+                    const chartData = periodos.map(p => ({
+                      name: p.name,
+                      value: p.goles || 0,
+                      pct: totalGoles > 0 ? ((p.goles || 0) / totalGoles) * 100 : 0
+                    }));
+                    let totalGolesRival = 0;
+                    let sinMinutoRival = 0;
+                    const periodosRival = periodos.map(p => ({ ...p, goles: 0 }));
+                    const contarGolesRival = (gl) => {
+                      gl.forEach(g => {
+                        if (!g) return;
+                        totalGolesRival += 1;
+                        const min = g.minuto;
+                        if (min === undefined || min === null) {
+                          sinMinutoRival += 1;
+                          return;
+                        }
+                        const p = periodosRival.find(p => min >= p.desde && min <= p.hasta) || periodosRival[periodosRival.length - 1];
+                        p.goles = (p.goles || 0) + 1;
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                      if (gl.length) {
+                        contarGolesRival(gl);
+                      } else {
+                        const n = m.golRivalCount ?? 0;
+                        totalGolesRival += n;
+                        sinMinutoRival += n;
+                      }
+                    });
+                    const currentGl = Array.isArray(golesRivalList) ? golesRivalList : (golesRivalList ? Object.values(golesRivalList) : []);
+                    if (currentGl.length) {
+                      contarGolesRival(currentGl);
+                    }
+                    const chartDataRival = periodosRival
+                      .map(p => ({
+                        name: p.name,
+                        value: p.goles || 0,
+                        pct: totalGolesRival > 0 ? ((p.goles || 0) / totalGolesRival) * 100 : 0
+                      }))
+                      .filter(p => p.value > 0);
+                    const COLORS = ['#118DFF', '#12239E', '#E66C37', '#6B007B', '#E044A7', '#744EC2', '#94a3b8'];
+                    const golesPorJornada = {};
+                    const contarJornada = (gl, md) => {
+                      const jornada = Number(md);
+                      if (!gl || !jornada) return;
+                      const n = gl.filter(g => g && g.name).length;
+                      golesPorJornada[jornada] = (golesPorJornada[jornada] || 0) + n;
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      contarJornada(m.golesList, m.matchday);
+                    });
+                    if (currentMatch) contarJornada(golesList, currentMatch.matchday);
+                    const rangoGoles = (a, b) => Object.entries(golesPorJornada).filter(([md]) => md >= a && md <= b).reduce((s, [, v]) => s + v, 0);
+                    const tramos = [
+                      { name: 'J1-J12', value: rangoGoles(1, 12) },
+                      { name: 'J13-J24', value: rangoGoles(13, 24) },
+                      { name: 'J25-J36', value: rangoGoles(25, 36) }
+                    ];
+                    const golesRivalTotal = matches.reduce((s, m) => {
+                      if (currentMatch && m.id === currentMatch.id) return s;
+                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                      return s + (gl.length || (m.golRivalCount ?? 0));
+                    }, 0) + currentGl.length;
+                    const golesRivalPorJornada = {};
+                    const contarJornadaRival = (md, n) => {
+                      const jornada = Number(md);
+                      if (!jornada || !n) return;
+                      golesRivalPorJornada[jornada] = (golesRivalPorJornada[jornada] || 0) + n;
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                      contarJornadaRival(m.matchday, gl.length || (m.golRivalCount ?? 0));
+                    });
+                    if (currentMatch) contarJornadaRival(currentMatch.matchday, currentGl.length);
+                    const rangoGolesRival = (a, b) => Object.entries(golesRivalPorJornada).filter(([md]) => md >= a && md <= b).reduce((s, [, v]) => s + v, 0);
+                    const tramosRival = [
+                      { name: 'J1-J12', value: rangoGolesRival(1, 12) },
+                      { name: 'J13-J24', value: rangoGolesRival(13, 24) },
+                      { name: 'J25-J36', value: rangoGolesRival(25, 36) }
+                    ];
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+                          <div style={{ flex: 1, minWidth: '320px', overflowX: 'auto' }}>
+                            <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>GOLES</span>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                              <thead>
+                                <tr>
+<th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PIE</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>CABEZA</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PENAL</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filas.map(([n, s]) => (
+                                  <tr key={n}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.pie}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.cabeza}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.penal}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div style={{ minWidth: '320px', marginLeft: 'auto', overflowX: 'auto' }}>
+                            <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem', marginLeft: '-14rem' }}>ASISTENCIAS</span>
+                            <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                              <thead>
+                                <tr>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JUGADOR</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filasAsist.map(([n, v]) => (
+                                  <tr key={n}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0', alignItems: 'center' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1, margin: 0, padding: 0 }}>GOLES A FAVOR</span>
+                        <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'flex-start', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
+                          <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <thead>
+                              <tr>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {tramos.map((t) => (
+                                <tr key={t.name}>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value}</td>
+                                </tr>
+                              ))}
+                              <tr>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramos.reduce((s, t) => s + t.value, 0)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        {chartData.length > 0 && (
+                          <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center' }}>
+                            <PieChart width={600} height={480} margin={{ top: 50, right: 80, bottom: 20, left: 80 }}>
+                              <Pie
+                                data={chartData}
+                                cx="50%"
+                                cy="30%"
+                                outerRadius={90}
+                                dataKey="value"
+                                isAnimationActive={false}
+                                labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
+                                label={(props) => {
+                                  if ((props.value || 0) === 0) return null;
+                                  const pct = (props.percent || 0) * 100;
+                                  const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
+                                  return (
+                                    <text
+                                      x={props.x}
+                                      y={props.y}
+                                      dy={4}
+                                      textAnchor={props.textAnchor}
+                                      fill="#ffffff"
+                                      fontSize={14}
+                                      fontWeight={700}
+                                      stroke="none"
+                                    >
+                                      {props.name}  {props.value} ({pctTxt}%)
+                                    </text>
+                                  );
+                                }}
+                              >
+                                {chartData.map((_, i) => (
+                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip />
+                            </PieChart>
+                          </div>
+                        )}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1rem 2rem', marginTop: '-13rem' }}>
+                          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES EN CONTRA</span>
+                          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-10rem' }}>
+                          <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <thead>
+                              <tr>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {tramosRival.map((t) => (
+                                <tr key={t.name}>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value}</td>
+                                </tr>
+                              ))}
+                              <tr>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramosRival.reduce((s, t) => s + t.value, 0)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          </div>
+                          {chartDataRival.length > 0 && (
+                            <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center', marginLeft: '6rem' }}>
+<PieChart width={520} height={460} margin={{ top: 40, right: 80, bottom: 60, left: 80 }}>
+                                <Pie
+                                  data={chartDataRival}
+                                  cx="50%"
+                                  cy="30%"
+                                  outerRadius={90}
+                                  dataKey="value"
+                                  isAnimationActive={false}
+                                  labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
+                                  label={(props) => {
+                                    if ((props.value || 0) === 0) return null;
+                                    const pct = (props.percent || 0) * 100;
+const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
+                                    return (
+                                      <text
+                                        x={props.x}
+                                        y={props.y}
+                                        dy={4}
+                                        textAnchor={props.textAnchor}
+                                        fill="#ffffff"
+                                        fontSize={14}
+                                        fontWeight={700}
+                                        stroke="none"
+                                      >
+                                        {props.name}  {props.value} ({pctTxt}%)
+                                      </text>
+                                    );
+                                  }}
+                                >
+                                  {chartDataRival.map((_, i) => (
+                                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                  ))}
+                                </Pie>
+                                <Tooltip />
+                              </PieChart>
+                            </div>
+                          )}
+                          </div>
+                        </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              {totalesTab === 'resumenacciones' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}                >
+                  {(() => {
+                    const live = {
+                      ocasionCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount,
+                      saqueEsquinaFueraCount, golCount: golesList.length, golRivalCount: golesRivalList.length, penalCount, infraccionCount,
+                      tiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount,
+                      faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount,
+                      centroDerechaCount, centroIzquierdaCount,
+                      cornerIzquierdaCount, cornerDerechaCount,
+                      inicioPropioCount, inicioRivalCount,
+                      onRivalCount, offRivalCount, onNeutroCount, offNeutroCount,
+                      rivalTiroDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount,
+                      rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount,
+                      rivalCentroDerechaCount, rivalCentroIzquierdaCount,
+                      rivalCornerIzquierdaCount, rivalCornerDerechaCount
+                    };
+                    const grupos = [];
+                    const totalPor = (key) => {
+                      let t = (live[key] || 0);
+                      matches.forEach(m => {
+                        if (currentMatch && m.id === currentMatch.id) return;
+                        t += (m[key] ?? 0);
+                      });
+                      return t;
+                    };
+                    const finalizacionesOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'PENAL + GOL RIVAL', 'GOL RIVAL', 'INFRACCION'];
+                    const accionesOrder = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'];
+                    const cruce = {};
+                    const cruceTotal = {};
+                    const cruceRows = {};
+                    finalizacionesOrder.forEach(f => { cruceTotal[f] = 0; });
+                    const procesarLog = (al) => {
+                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
+                      const crono = [...logArr].reverse();
+                      let ultimaAccion = '';
+                      crono.forEach(entry => {
+                        if (!entry) return;
+                        if (entry.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(entry.name)) {
+                          ultimaAccion = entry.name;
+                        } else if (entry.type === 'finalizacion') {
+                          const acc = ultimaAccion || 'SIN ACCION';
+                          cruce[acc] = cruce[acc] || {};
+                          cruce[acc][entry.name] = (cruce[acc][entry.name] || 0) + 1;
+                          cruceTotal[entry.name] = (cruceTotal[entry.name] || 0) + 1;
+                          cruceRows[acc] = (cruceRows[acc] || 0) + 1;
+                        }
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      procesarLog(m.actionLog);
+                    });
+                    procesarLog(actionLog);
+                    const cruceAcciones = Object.keys(cruce).sort((a, b) => {
+                      const ia = accionesOrder.indexOf(a);
+                      const ib = accionesOrder.indexOf(b);
+                      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib) || a.localeCompare(b);
+                    });
+                    const cruceFinalizaciones = Object.keys(cruceTotal).filter(f => cruceTotal[f] > 0).sort((a, b) => {
+                      const ia = finalizacionesOrder.indexOf(a);
+                      const ib = finalizacionesOrder.indexOf(b);
+                      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+                    });
+                    const cruceRivalAcciones = cruceAcciones.filter(a => a.startsWith('RIVAL '));
+                    const crucePropiasAcciones = cruceAcciones.filter(a => !a.startsWith('RIVAL '));
+                    const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && crucePropiasAcciones.some(a => (cruce[a][f] || 0) > 0));
+                    const cruceRivalFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL' && f !== 'PENAL + GOL' && cruceRivalAcciones.some(a => (cruce[a][f] || 0) > 0));
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        {crucePropiasAcciones.length > 0 && crucePropiasFinalizaciones.length > 0 && (
+                          <div>
+                            <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES PROPIAS</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                              <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
+                                    {crucePropiasFinalizaciones.map(f => (
+                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
+                                    ))}
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {crucePropiasAcciones.map(a => (
+                                    <tr key={a}>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
+                                      {crucePropiasFinalizaciones.map(f => (
+                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
+                                      ))}
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
+                                    </tr>
+                                  ))}
+                                  <tr>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    {crucePropiasFinalizaciones.map(f => (
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
+                                    ))}
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                        {cruceRivalAcciones.length > 0 && cruceRivalFinalizaciones.length > 0 && (
+                          <div>
+                            <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES RIVAL</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                              <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
+                                    {cruceRivalFinalizaciones.map(f => (
+                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
+                                    ))}
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {cruceRivalAcciones.map(a => (
+                                    <tr key={a}>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
+                                      {cruceRivalFinalizaciones.map(f => (
+                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
+                                      ))}
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
+                                    </tr>
+                                  ))}
+                                  <tr>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    {cruceRivalFinalizaciones.map(f => (
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
+                                    ))}
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+                        {grupos.map(([titulo, filasDef]) => (
+                          <div key={titulo}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                              <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{titulo}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                              <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {filasDef.map(([label, key]) => (
+                                    <tr key={key}>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{label}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPor(key)}</td>
+                                    </tr>
+                                  ))}
+                                  <tr>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasDef.reduce((s, [, key]) => s + totalPor(key), 0)}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              {totalesTab === 'jugadores' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  {(() => {
+                    const nombres = new Set(Object.keys(jugadoresData));
+                    const names = [...nombres];
+                    const calcMatchMinutes = (pl, subs, durationSec) => {
+                      const minutos = {};
+                      const titular = {};
+                      const suplente = {};
+                      names.forEach(n => { minutos[n] = 0; titular[n] = 0; suplente[n] = 0; });
+                      const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
+                      names.forEach(n => {
+                        const empiezaTitular = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular');
+                        let entrySec = empiezaTitular ? 0 : null;
+                        subsSorted.forEach(s => {
+                          const subSec = (s.minuto || 0) * 60;
+                          if (s.sale === n && entrySec !== null) {
+                            const added = Math.max(0, subSec - entrySec);
+                            minutos[n] += added;
+                            if (empiezaTitular) titular[n] += added; else suplente[n] += added;
+                            entrySec = null;
+                          } else if (s.entra === n) {
+                            entrySec = subSec;
+                          }
+                        });
+                        if (entrySec !== null) {
+                          const added = Math.max(0, (durationSec || 0) - entrySec);
+                          minutos[n] += added;
+                          if (empiezaTitular) titular[n] += added; else suplente[n] += added;
+                        }
+                      });
+                      return { minutos, titular, suplente };
+                    };
+                    const totalMinutos = {};
+                    const totalTitular = {};
+                    const totalSuplente = {};
+                    names.forEach(n => { totalMinutos[n] = 0; totalTitular[n] = 0; totalSuplente[n] = 0; });
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
+                      names.forEach(n => { totalMinutos[n] += mMin.minutos[n]; totalTitular[n] += mMin.titular[n]; totalSuplente[n] += mMin.suplente[n]; });
+                    });
+                    const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
+                    names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; totalTitular[n] += liveMin.titular[n]; totalSuplente[n] += liveMin.suplente[n]; });
+                    let totalPartidosDuracion = 0;
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      totalPartidosDuracion += m.timerSeconds || 0;
+                    });
+                    totalPartidosDuracion += timerSeconds;
+                    const titularCount = {};
+                    const suplenteCount = {};
+                    const noConvocadoCount = {};
+                    const lesionadoCount = {};
+                    const divHonorCount = {};
+                    names.forEach(n => { titularCount[n] = 0; suplenteCount[n] = 0; noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      pl.forEach(p => {
+                        if (p && p.name && p.status === 'titular') titularCount[p.name] += 1;
+                        if (p && p.name && p.status === 'suplente') suplenteCount[p.name] += 1;
+                        if (p && p.name && p.status === 'no convocado') noConvocadoCount[p.name] += 1;
+                        if (p && p.name && p.status === 'lesion') lesionadoCount[p.name] += 1;
+                        if (p && p.name && p.status === 'division honor') divHonorCount[p.name] += 1;
+                      });
+                    });
+                    (Array.isArray(players) ? players : []).forEach(p => {
+                      if (p && p.name && p.status === 'titular') titularCount[p.name] += 1;
+                      if (p && p.name && p.status === 'suplente') suplenteCount[p.name] += 1;
+                      if (p && p.name && p.status === 'no convocado') noConvocadoCount[p.name] += 1;
+                      if (p && p.name && p.status === 'lesion') lesionadoCount[p.name] += 1;
+                      if (p && p.name && p.status === 'division honor') divHonorCount[p.name] += 1;
+                    });
+                    const golCountPerPlayer = {};
+                    const golPiePerPlayer = {};
+                    const golCabezaPerPlayer = {};
+                    const golPenalPerPlayer = {};
+                    const asistPerPlayer = {};
+                    names.forEach(n => { golCountPerPlayer[n] = 0; golPiePerPlayer[n] = 0; golCabezaPerPlayer[n] = 0; golPenalPerPlayer[n] = 0; asistPerPlayer[n] = 0; });
+                    const contarGoles = (gl) => {
+                      const arr = Array.isArray(gl) ? gl : (gl ? Object.values(gl) : []);
+                      arr.forEach(g => {
+                        if (g && g.name) {
+                          golCountPerPlayer[g.name] += 1;
+                          if ((g.tipo || '').toUpperCase() === 'PIE') golPiePerPlayer[g.name] += 1;
+                          if ((g.tipo || '').toUpperCase() === 'CABEZA') golCabezaPerPlayer[g.name] += 1;
+                          if ((g.tipo || '').toUpperCase() === 'PENAL') golPenalPerPlayer[g.name] += 1;
+                        }
+                        if (g && g.name2 && g.name2.toUpperCase() !== 'SIN ASISTENCIA') asistPerPlayer[g.name2] += 1;
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      contarGoles(m.golesList);
+                    });
+                    contarGoles(golesList);
+                    const golesAccion = {};
+                    const derivarAcciones = (al) => {
+                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
+                      const crono = [...logArr].reverse();
+                      const res = [];
+                      let ultimaAccion = '';
+                      crono.forEach(entry => {
+                        if (entry && entry.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(entry.name)) {
+                          ultimaAccion = entry.name;
+                        } else if (entry && entry.name === 'GOL') {
+                          res.push(ultimaAccion || 'GOL');
+                        } else if (entry && entry.name === 'PENAL + GOL') {
+                          res.push('PENAL');
+                        }
+                      });
+                      return res;
+                    };
+                    const contarAccionGoles = (gl, al) => {
+                      const arr = Array.isArray(gl) ? gl : (gl ? Object.values(gl) : []);
+                      const acciones = derivarAcciones(al);
+                      arr.forEach((g, idx) => {
+                        if (g && g.name && g.name === jugadorSeleccionado) {
+                          const accion = g.accion || acciones[idx] || '';
+                          golesAccion[accion] = (golesAccion[accion] || 0) + 1;
+                        }
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      contarAccionGoles(m.golesList, m.actionLog);
+                    });
+                    contarAccionGoles(golesList, actionLog);
+                    const rivalGoalsWhilePlaying = {};
+                    names.forEach(n => { rivalGoalsWhilePlaying[n] = 0; });
+                    const contarRivalGoals = (m, subs) => {
+                      if (!m) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const rgl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                      const subsArr = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && (s.sale || s.entra));
+                      const matchEnd = Math.max(Math.floor((m.timerSeconds || 0) / 60), ...rgl.map(g => (g && g.minuto) || 0));
+                      names.forEach(n => {
+                        const p = pl.find(x => x && x.name === n);
+                        if (!p) return;
+                        let entry = null;
+                        let exit = null;
+                        if (p.status === 'titular') {
+                          entry = 0;
+                          const sale = subsArr.find(s => s.sale === n);
+                          if (sale) exit = sale.minuto || 0;
+                        } else if (p.status === 'suplente') {
+                          const entra = subsArr.find(s => s.entra === n);
+                          if (entra) {
+                            entry = entra.minuto || 0;
+                            const sale = subsArr.find(s => s.sale === n);
+                            if (sale) exit = sale.minuto || 0;
+                          }
+                        }
+                        if (entry === null) return;
+                        const fin = exit === null ? matchEnd : exit;
+                        rgl.forEach(g => {
+                          if (g && g.minuto >= entry && g.minuto <= fin) rivalGoalsWhilePlaying[n] += 1;
+                        });
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      contarRivalGoals(m, m.sustituciones);
+                    });
+                    contarRivalGoals({ players, golesRivalList, timerSeconds }, sustituciones);
+                    const minutosPorJornada = [];
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
+                      minutosPorJornada.push({ name: `J${m.matchday || '?'} `, minutos: mMin.minutos[jugadorSeleccionado] || 0 });
+                    });
+                    const liveMinJugador = calcMatchMinutes(players, sustituciones, timerSeconds);
+                    minutosPorJornada.push({ name: `J${currentMatch?.matchday || 'Ahora'}`, minutos: liveMinJugador.minutos[jugadorSeleccionado] || 0 });
+                    return (
+                  <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
+                    <select
+                      value={jugadorSeleccionado}
+                      onChange={(e) => setJugadorSeleccionado(e.target.value)}
+                      style={{
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        padding: '0.5rem 0.8rem',
+                        textTransform: 'uppercase',
+                        cursor: 'pointer',
+                        width: '150px',
+                        marginTop: '0.5rem'
+                      }}
+                    >
+                      <option value="">-</option>
+                      {names.sort().map((n) => (
+                        <option key={n} value={n}>
+                          {jugadoresData[n] && jugadoresData[n].foto && (
+                            <img src={jugadoresData[n].foto} alt="" style={{ width: '20px', height: '26px', objectFit: 'cover', verticalAlign: 'middle', marginRight: '6px', borderRadius: '3px' }} />
+                          )}
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+
+                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].foto && (
+                      <img
+                        src={jugadoresData[jugadorSeleccionado].foto}
+                        alt={jugadorSeleccionado}
+                        style={{
+                          width: '150px',
+                          height: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '12px',
+                          border: '2px solid var(--border-subtle)',
+                          marginTop: '0.5rem'
+                        }}
+                      />
+                    )}
+                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].pos1 && (
+                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '150px', textAlign: 'center' }}>
+                        {jugadoresData[jugadorSeleccionado].pos1}
+                      </span>
+                    )}
+                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].pos2 && (
+                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '150px', textAlign: 'center' }}>
+                        {jugadoresData[jugadorSeleccionado].pos2}
+                      </span>
+                    )}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
+                        DISPUTA {formatTime(totalMinutos[jugadorSeleccionado] || 0)} MIN. = TITULAR {formatTime(totalTitular[jugadorSeleccionado] || 0)} + SUPLENTE {formatTime(totalSuplente[jugadorSeleccionado] || 0)}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
+                        % JUGADO: {totalPartidosDuracion > 0 ? Math.round(((totalMinutos[jugadorSeleccionado] || 0) / totalPartidosDuracion) * 100) : 0}%
+                      </span>
+                    )}
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#e044a7', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        ASISTENCIAS: {asistPerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
+                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', marginLeft: '9rem' }}>
+                        TOTAL DE GOLES: {golCountPerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem', marginLeft: '9rem' }}>
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', marginLeft: '-9rem' }}>
+                        TITULAR: {titularCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
+                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', marginLeft: '12rem' }}>
+                        PIE: {golPiePerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
+                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        CABEZA: {golCabezaPerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
+                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        PENAL: {golPenalPerPlayer[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    </div>
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        SUPLENTE: {suplenteCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        NO CONVOCADO: {noConvocadoCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        LESIONADO: {lesionadoCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        DIV. HONOR: {divHonorCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
+                    {jugadorSeleccionado === 'HECTOR' || jugadorSeleccionado === 'EMILIANO' || jugadorSeleccionado === 'L. RAMIREZ' ? (
+                      <span style={{ color: '#ff4d4d', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        GOLES ENCAJADOS: {rivalGoalsWhilePlaying[jugadorSeleccionado] || 0}
+                      </span>
+                    ) : null}
+                    {jugadorSeleccionado && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'L. RAMIREZ' && (
+                      <table style={{ borderCollapse: 'collapse', marginTop: '1rem', fontFamily: 'var(--font-mono)' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#00ff87', fontSize: '0.9rem', textTransform: 'uppercase', textAlign: 'left' }}>ACCIÓN</th>
+                            <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#00ff87', fontSize: '0.9rem', textTransform: 'uppercase', textAlign: 'center' }}>GOLES</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.keys(golesAccion).length === 0 ? (
+                            <tr>
+                              <td colSpan="2" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem' }}>
+                                -
+                              </td>
+                            </tr>
+                          ) : (
+                            Object.keys(golesAccion).sort().map(accion => (
+                              <tr key={accion}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem' }}>{accion}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem', textAlign: 'center' }}>{golesAccion[accion]}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    )}
+                    {jugadorSeleccionado && minutosPorJornada.length > 0 && (
+                      <div style={{ marginTop: '1.5rem', width: '100%', marginLeft: '-2rem' }}>
+                        <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', marginLeft: '6rem' }}>
+                          EVOLUCIÓN MINUTOS
+                        </span>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <LineChart data={minutosPorJornada} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
+                            <YAxis stroke="#94a3b8" fontSize={12} />
+                            <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} />
+                            <Line type="monotone" dataKey="minutos" stroke="#a78bfa" strokeWidth={2} dot={{ fill: '#a78bfa', r: 4 }} activeDot={{ r: 6 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+                    </div>
+                    </div>
+                  </div>
+                    );
+                  })()}
+                </div>
+              )}
+              {totalesTab === 'tiempojugado' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  {(() => {
+                    const names = [...new Set([...players.map(p => p.name).filter(Boolean), ...Object.keys(jugadoresData)])];
+                    const calcMatchMinutes = (pl, subs, durationSec) => {
+                      const minutos = {};
+                      names.forEach(n => { minutos[n] = 0; });
+                      const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
+                      names.forEach(n => {
+                        let entrySec = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular') ? 0 : null;
+                        subsSorted.forEach(s => {
+                          const subSec = (s.minuto || 0) * 60;
+                          if (s.sale === n && entrySec !== null) {
+                            minutos[n] += Math.max(0, subSec - entrySec);
+                            entrySec = null;
+                          } else if (s.entra === n) {
+                            entrySec = subSec;
+                          }
+                        });
+                        if (entrySec !== null) {
+                          minutos[n] += Math.max(0, (durationSec || 0) - entrySec);
+                        }
+                      });
+                      return minutos;
+                    };
+                    const totalMinutos = {};
+                    names.forEach(n => totalMinutos[n] = 0);
+                    let totalPartidosDuracion = 0;
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const mDur = m.timerSeconds || 0;
+                      totalPartidosDuracion += mDur;
+                      const mMin = calcMatchMinutes(pl, m.sustituciones, mDur);
+                      names.forEach(n => totalMinutos[n] += mMin[n]);
+                    });
+                    totalPartidosDuracion += timerSeconds;
+                    const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
+                    names.forEach(n => totalMinutos[n] += liveMin[n]);
+                    const filas = Object.entries(totalMinutos).sort((a, b) => b[1] - a[1]);
+                    const titularCount = {};
+                    const suplenteCount = {};
+                    const noConvocadoCount = {};
+                    const lesionadoCount = {};
+                    const divHonorCount = {};
+                    names.forEach(n => { titularCount[n] = 0; suplenteCount[n] = 0; noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
+                    matches.forEach(m => {
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const titulars = new Set(pl.filter(p => p && p.status === 'titular').map(p => p.name).filter(Boolean));
+                      const suplentes = new Set(pl.filter(p => p && p.status === 'suplente').map(p => p.name).filter(Boolean));
+                      const noConvocados = new Set(pl.filter(p => p && p.status === 'no convocado').map(p => p.name).filter(Boolean));
+                      const lesionados = new Set(pl.filter(p => p && p.status === 'lesion').map(p => p.name).filter(Boolean));
+                      const divHonor = new Set(pl.filter(p => p && p.status === 'division honor').map(p => p.name).filter(Boolean));
+                      names.forEach(n => {
+                        if (titulars.has(n)) titularCount[n] += 1;
+                        if (suplentes.has(n)) suplenteCount[n] += 1;
+                        if (noConvocados.has(n)) noConvocadoCount[n] += 1;
+                        if (lesionados.has(n)) lesionadoCount[n] += 1;
+                        if (divHonor.has(n)) divHonorCount[n] += 1;
+                      });
+                    });
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <thead>
+                              <tr>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>JUGADOR</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>MINUTOS</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>% JUGADO</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TITULAR</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>SUPLENTE</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>NO CONVOCADO</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>LESIONADO</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>DIV. HONOR</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filas.map(([n, m]) => (
+                                <tr key={n}>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{formatTime(m)}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{titularCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{suplenteCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div>
+                          <div style={{ marginBottom: '0.8rem' }}>
+                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>MINUTOS JUGADOS:</label>
+                            <select
+                              value={selectedJornadaTiempo}
+                              onChange={e => setSelectedJornadaTiempo(e.target.value)}
+                              style={{
+                                background: 'var(--bg-secondary)',
+                                color: '#ffffff',
+                                border: '1px solid var(--border-subtle)',
+                                borderRadius: 'var(--radius-md)',
+                                padding: '0.4rem 0.8rem',
+                                fontWeight: 700,
+                                fontSize: '0.8rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              <option value="">Seleccionar jornada</option>
+                              {matches.filter(m => m.matchday).sort((a, b) => a.matchday - b.matchday).map(m => (
+                                <option key={m.id} value={m.id}>J{m.matchday} — {m.homeTeam} vs {m.awayTeam}</option>
+                              ))}
+                              {currentMatch && <option value={currentMatch.id}>J{currentMatch.matchday} — {currentMatch.homeTeam} vs {currentMatch.awayTeam} (ahora)</option>}
+                            </select>
+                          </div>
+                          {selectedJornadaTiempo && (() => {
+                            const selMatch = matches.find(m => m.id === selectedJornadaTiempo) || (currentMatch && currentMatch.id === selectedJornadaTiempo ? currentMatch : null);
+                            if (!selMatch) return <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Partido no encontrado</span>;
+                            const pl = Array.isArray(selMatch.players) ? selMatch.players : (selMatch.players ? Object.values(selMatch.players) : []);
+                            const mDur = selMatch.timerSeconds || 0;
+                            const mMin = calcMatchMinutes(pl, selMatch.sustituciones, mDur);
+                            const rolOrder = { titular: 0, suplente: 1, lesion: 2, 'division honor': 3, 'no convocado': 4 };
+                            const jornadaFilas = Object.entries(mMin).sort((a, b) => {
+                              const sa = pl.find(p => p && p.name === a[0]);
+                              const sb = pl.find(p => p && p.name === b[0]);
+                              const ra = rolOrder[sa ? sa.status : 'no convocado'] ?? 5;
+                              const rb = rolOrder[sb ? sb.status : 'no convocado'] ?? 5;
+                              return ra - rb || b[1] - a[1];
+                            });
+                            return (
+                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>JUGADOR</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>ROL</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>MINUTOS</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {jornadaFilas.map(([n, m]) => {
+                                    const status = pl.find(p => p && p.name === n);
+                                    const rol = status ? status.status : 'no convocado';
+                                    const rolColor = rol === 'titular' ? '#39ff14' : rol === 'suplente' ? '#eab308' : rol === 'lesion' ? '#38bdf8' : rol === 'division honor' ? '#f472b6' : '#ef4444';
+                                    return (
+                                      <tr key={n}>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: rolColor, fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem' }}>{rol}</td>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{m > 0 ? formatTime(m) : '-'}</td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            );
+                          })()}
+                          {!selectedJornadaTiempo && (
+                            <span style={{ color: '#64748b', fontSize: '0.85rem', fontStyle: 'italic' }}>Selecciona una jornada para ver los minutos jugados</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // Página del partido
   if (currentMatch) {
     return (
@@ -1420,7 +2523,13 @@ export default function App() {
             ))}
           </nav>
           <div className="app-header-actions">
-            <button className="btn-sm btn-secondary" onClick={() => setVista('tratamiento')}>Tratamiento Dibujos</button>
+            <button
+              onClick={() => setVista('menu')}
+              title="Volver al menú"
+              style={{ background: '#0284c7', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.4)' }}
+            >
+              &#8592; MENÚ
+            </button>
             <button className="btn-sm btn-secondary" onClick={handleLogout}>Salir</button>
           </div>
         </header>
@@ -1474,36 +2583,9 @@ export default function App() {
               </div>
               </>
               )}
-              <span style={{ fontSize: ['tiempojugado', 'resumengoles', 'resumenacciones', 'videos', 'posesion', 'jugadores'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
-                {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : activeTab === 'jugadores' ? 'JUGADORES' : activeTab === 'resumenacciones' ? `JORNADA ${currentMatch.matchday} — TOTAL ACCIONES` : activeTab === 'resumengoles' ? `JORNADA ${currentMatch.matchday} — TOTAL GOLES` : `JORNADA ${currentMatch.matchday}`}
+              <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
+                {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : `JORNADA ${currentMatch.matchday}`}
               </span>
-              {activeTab === 'jugadores' && jugadorSeleccionado && (
-                <button
-                  onClick={async () => {
-                    if (!fichaJugadorRef.current) return;
-                    const canvas = await html2canvas(fichaJugadorRef.current, { backgroundColor: '#0f172a', scale: 2 });
-                    const link = document.createElement('a');
-                    link.download = `ficha_${jugadorSeleccionado}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                  }}
-                  style={{
-                    background: '#7c3aed',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: 'var(--radius-full)',
-                    padding: '0.3rem 0.8rem',
-                    fontWeight: 800,
-                    fontSize: '0.75rem',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    letterSpacing: '0.05em',
-                    fontFamily: 'var(--font-mono)'
-                  }}
-                >
-                  CAPTURAR FICHA
-                </button>
-              )}
               {activeTab === 'alineacion' && (
                 <button
                   onClick={handleAceptar}
@@ -3897,893 +4979,6 @@ marginLeft: '-6rem'
                   </div>
                 </div>
               )}
-              {activeTab === 'resumengoles' && (
-                <div style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '2rem',
-                  minHeight: '400px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem'
-                }}>
-                  {(() => {
-                    const stats = {};
-                    const addGoal = (name, tipo) => {
-                      if (!name) return;
-                      if (!stats[name]) stats[name] = { total: 0, pie: 0, cabeza: 0, penal: 0 };
-                      stats[name].total += 1;
-                      if (tipo === 'PIE') stats[name].pie += 1;
-                      else if (tipo === 'CABEZA') stats[name].cabeza += 1;
-                      else if (tipo === 'PENAL') stats[name].penal += 1;
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                      gl.forEach(g => { if (g && g.name) addGoal(g.name, g.tipo); });
-                    });
-                    golesList.forEach(g => { if (g && g.name) addGoal(g.name, g.tipo); });
-                    const filas = Object.entries(stats).sort((a, b) => b[1].total - a[1].total);
-                    const asistStats = {};
-                    const addAsist = (name2) => {
-                      if (!name2 || name2.toUpperCase() === 'SIN ASISTENCIA') return;
-                      asistStats[name2] = (asistStats[name2] || 0) + 1;
-                    };
-                    const contarAsist = (gl) => {
-                      gl.forEach(g => { if (g && g.name2) addAsist(g.name2); });
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                      contarAsist(gl);
-                    });
-                    contarAsist(golesList);
-                    const filasAsist = Object.entries(asistStats).sort((a, b) => b[1] - a[1]);
-                    let totalGoles = 0;
-                    const periodos = [
-                      { name: 'MIN. 0-15', desde: 0, hasta: 15 },
-                      { name: 'MIN 16-30', desde: 16, hasta: 30 },
-                      { name: 'MIN 31-45', desde: 31, hasta: 45 },
-                      { name: 'MIN 46-60', desde: 46, hasta: 60 },
-                      { name: 'MIN 61-75', desde: 61, hasta: 75 },
-                      { name: 'MIN 76-90', desde: 76, hasta: 90 }
-                    ];
-                    const contarGoles = (gl) => {
-                      gl.forEach(g => {
-                        if (!g || !g.name) return;
-                        totalGoles += 1;
-                        const min = g.minuto || 0;
-                        const p = periodos.find(p => min >= p.desde && min <= p.hasta) || periodos[periodos.length - 1];
-                        p.goles = (p.goles || 0) + 1;
-                      });
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                      contarGoles(gl);
-                    });
-                    contarGoles(golesList);
-                    const chartData = periodos.map(p => ({
-                      name: p.name,
-                      value: p.goles || 0,
-                      pct: totalGoles > 0 ? ((p.goles || 0) / totalGoles) * 100 : 0
-                    }));
-                    let totalGolesRival = 0;
-                    let sinMinutoRival = 0;
-                    const periodosRival = periodos.map(p => ({ ...p, goles: 0 }));
-                    const contarGolesRival = (gl) => {
-                      gl.forEach(g => {
-                        if (!g) return;
-                        totalGolesRival += 1;
-                        const min = g.minuto;
-                        if (min === undefined || min === null) {
-                          sinMinutoRival += 1;
-                          return;
-                        }
-                        const p = periodosRival.find(p => min >= p.desde && min <= p.hasta) || periodosRival[periodosRival.length - 1];
-                        p.goles = (p.goles || 0) + 1;
-                      });
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                      if (gl.length) {
-                        contarGolesRival(gl);
-                      } else {
-                        const n = m.golRivalCount ?? 0;
-                        totalGolesRival += n;
-                        sinMinutoRival += n;
-                      }
-                    });
-                    const currentGl = Array.isArray(golesRivalList) ? golesRivalList : (golesRivalList ? Object.values(golesRivalList) : []);
-                    if (currentGl.length) {
-                      contarGolesRival(currentGl);
-                    }
-                    const chartDataRival = periodosRival
-                      .map(p => ({
-                        name: p.name,
-                        value: p.goles || 0,
-                        pct: totalGolesRival > 0 ? ((p.goles || 0) / totalGolesRival) * 100 : 0
-                      }))
-                      .filter(p => p.value > 0);
-                    const COLORS = ['#118DFF', '#12239E', '#E66C37', '#6B007B', '#E044A7', '#744EC2', '#94a3b8'];
-                    const golesPorJornada = {};
-                    const contarJornada = (gl, md) => {
-                      const jornada = Number(md);
-                      if (!gl || !jornada) return;
-                      const n = gl.filter(g => g && g.name).length;
-                      golesPorJornada[jornada] = (golesPorJornada[jornada] || 0) + n;
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      contarJornada(m.golesList, m.matchday);
-                    });
-                    if (currentMatch) contarJornada(golesList, currentMatch.matchday);
-                    const rangoGoles = (a, b) => Object.entries(golesPorJornada).filter(([md]) => md >= a && md <= b).reduce((s, [, v]) => s + v, 0);
-                    const tramos = [
-                      { name: 'J1-J12', value: rangoGoles(1, 12) },
-                      { name: 'J13-J24', value: rangoGoles(13, 24) },
-                      { name: 'J25-J36', value: rangoGoles(25, 36) }
-                    ];
-                    const golesRivalTotal = matches.reduce((s, m) => {
-                      if (currentMatch && m.id === currentMatch.id) return s;
-                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                      return s + (gl.length || (m.golRivalCount ?? 0));
-                    }, 0) + currentGl.length;
-                    const golesRivalPorJornada = {};
-                    const contarJornadaRival = (md, n) => {
-                      const jornada = Number(md);
-                      if (!jornada || !n) return;
-                      golesRivalPorJornada[jornada] = (golesRivalPorJornada[jornada] || 0) + n;
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                      contarJornadaRival(m.matchday, gl.length || (m.golRivalCount ?? 0));
-                    });
-                    if (currentMatch) contarJornadaRival(currentMatch.matchday, currentGl.length);
-                    const rangoGolesRival = (a, b) => Object.entries(golesRivalPorJornada).filter(([md]) => md >= a && md <= b).reduce((s, [, v]) => s + v, 0);
-                    const tramosRival = [
-                      { name: 'J1-J12', value: rangoGolesRival(1, 12) },
-                      { name: 'J13-J24', value: rangoGolesRival(13, 24) },
-                      { name: 'J25-J36', value: rangoGolesRival(25, 36) }
-                    ];
-                    return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                          <div style={{ flex: 1, minWidth: '320px', overflowX: 'auto' }}>
-                            <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>GOLES</span>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
-                              <thead>
-                                <tr>
-<th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PIE</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>CABEZA</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PENAL</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {filas.map(([n, s]) => (
-                                  <tr key={n}>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.pie}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.cabeza}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.penal}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                          <div style={{ minWidth: '320px', marginLeft: 'auto', overflowX: 'auto' }}>
-                            <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem', marginLeft: '-14rem' }}>ASISTENCIAS</span>
-                            <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
-                              <thead>
-                                <tr>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JUGADOR</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {filasAsist.map(([n, v]) => (
-                                  <tr key={n}>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0', alignItems: 'center' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1, margin: 0, padding: 0 }}>GOLES A FAVOR</span>
-                        <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'flex-start', justifyContent: 'center' }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
-                          <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
-                            <thead>
-                              <tr>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {tramos.map((t) => (
-                                <tr key={t.name}>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value}</td>
-                                </tr>
-                              ))}
-                              <tr>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramos.reduce((s, t) => s + t.value, 0)}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                        {chartData.length > 0 && (
-                          <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center' }}>
-                            <PieChart width={600} height={480} margin={{ top: 50, right: 80, bottom: 20, left: 80 }}>
-                              <Pie
-                                data={chartData}
-                                cx="50%"
-                                cy="30%"
-                                outerRadius={90}
-                                dataKey="value"
-                                isAnimationActive={false}
-                                labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
-                                label={(props) => {
-                                  if ((props.value || 0) === 0) return null;
-                                  const pct = (props.percent || 0) * 100;
-                                  const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
-                                  return (
-                                    <text
-                                      x={props.x}
-                                      y={props.y}
-                                      dy={4}
-                                      textAnchor={props.textAnchor}
-                                      fill="#ffffff"
-                                      fontSize={14}
-                                      fontWeight={700}
-                                      stroke="none"
-                                    >
-                                      {props.name}  {props.value} ({pctTxt}%)
-                                    </text>
-                                  );
-                                }}
-                              >
-                                {chartData.map((_, i) => (
-                                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                ))}
-                              </Pie>
-                              <Tooltip />
-                            </PieChart>
-                          </div>
-                        )}
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1rem 2rem', marginTop: '-13rem' }}>
-                          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES EN CONTRA</span>
-                          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', justifyContent: 'center' }}>
-                          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-10rem' }}>
-                          <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
-                            <thead>
-                              <tr>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {tramosRival.map((t) => (
-                                <tr key={t.name}>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value}</td>
-                                </tr>
-                              ))}
-                              <tr>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramosRival.reduce((s, t) => s + t.value, 0)}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                          </div>
-                          {chartDataRival.length > 0 && (
-                            <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center', marginLeft: '6rem' }}>
-<PieChart width={520} height={460} margin={{ top: 40, right: 80, bottom: 60, left: 80 }}>
-                                <Pie
-                                  data={chartDataRival}
-                                  cx="50%"
-                                  cy="30%"
-                                  outerRadius={90}
-                                  dataKey="value"
-                                  isAnimationActive={false}
-                                  labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
-                                  label={(props) => {
-                                    if ((props.value || 0) === 0) return null;
-                                    const pct = (props.percent || 0) * 100;
-const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
-                                    return (
-                                      <text
-                                        x={props.x}
-                                        y={props.y}
-                                        dy={4}
-                                        textAnchor={props.textAnchor}
-                                        fill="#ffffff"
-                                        fontSize={14}
-                                        fontWeight={700}
-                                        stroke="none"
-                                      >
-                                        {props.name}  {props.value} ({pctTxt}%)
-                                      </text>
-                                    );
-                                  }}
-                                >
-                                  {chartDataRival.map((_, i) => (
-                                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                  ))}
-                                </Pie>
-                                <Tooltip />
-                              </PieChart>
-                            </div>
-                          )}
-                          </div>
-                        </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-              {activeTab === 'resumenacciones' && (
-                <div style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '2rem',
-                  minHeight: '400px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem'
-                }}                >
-                  {(() => {
-                    const live = {
-                      ocasionCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount,
-                      saqueEsquinaFueraCount, golCount: golesList.length, golRivalCount: golesRivalList.length, penalCount, infraccionCount,
-                      tiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount,
-                      faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount,
-                      centroDerechaCount, centroIzquierdaCount,
-                      cornerIzquierdaCount, cornerDerechaCount,
-                      inicioPropioCount, inicioRivalCount,
-                      onRivalCount, offRivalCount, onNeutroCount, offNeutroCount,
-                      rivalTiroDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount,
-                      rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount,
-                      rivalCentroDerechaCount, rivalCentroIzquierdaCount,
-                      rivalCornerIzquierdaCount, rivalCornerDerechaCount
-                    };
-                    const grupos = [];
-                    const totalPor = (key) => {
-                      let t = (live[key] || 0);
-                      matches.forEach(m => {
-                        if (currentMatch && m.id === currentMatch.id) return;
-                        t += (m[key] ?? 0);
-                      });
-                      return t;
-                    };
-                    const finalizacionesOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'PENAL + GOL RIVAL', 'GOL RIVAL', 'INFRACCION'];
-                    const accionesOrder = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'];
-                    const cruce = {};
-                    const cruceTotal = {};
-                    const cruceRows = {};
-                    finalizacionesOrder.forEach(f => { cruceTotal[f] = 0; });
-                    const procesarLog = (al) => {
-                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
-                      const crono = [...logArr].reverse();
-                      let ultimaAccion = '';
-                      crono.forEach(entry => {
-                        if (!entry) return;
-                        if (entry.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(entry.name)) {
-                          ultimaAccion = entry.name;
-                        } else if (entry.type === 'finalizacion') {
-                          const acc = ultimaAccion || 'SIN ACCION';
-                          cruce[acc] = cruce[acc] || {};
-                          cruce[acc][entry.name] = (cruce[acc][entry.name] || 0) + 1;
-                          cruceTotal[entry.name] = (cruceTotal[entry.name] || 0) + 1;
-                          cruceRows[acc] = (cruceRows[acc] || 0) + 1;
-                        }
-                      });
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      procesarLog(m.actionLog);
-                    });
-                    procesarLog(actionLog);
-                    const cruceAcciones = Object.keys(cruce).sort((a, b) => {
-                      const ia = accionesOrder.indexOf(a);
-                      const ib = accionesOrder.indexOf(b);
-                      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib) || a.localeCompare(b);
-                    });
-                    const cruceFinalizaciones = Object.keys(cruceTotal).filter(f => cruceTotal[f] > 0).sort((a, b) => {
-                      const ia = finalizacionesOrder.indexOf(a);
-                      const ib = finalizacionesOrder.indexOf(b);
-                      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
-                    });
-                    const cruceRivalAcciones = cruceAcciones.filter(a => a.startsWith('RIVAL '));
-                    const crucePropiasAcciones = cruceAcciones.filter(a => !a.startsWith('RIVAL '));
-                    const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && crucePropiasAcciones.some(a => (cruce[a][f] || 0) > 0));
-                    const cruceRivalFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL' && f !== 'PENAL + GOL' && cruceRivalAcciones.some(a => (cruce[a][f] || 0) > 0));
-                    return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        {crucePropiasAcciones.length > 0 && crucePropiasFinalizaciones.length > 0 && (
-                          <div>
-                            <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES PROPIAS</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                              <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                                <thead>
-                                  <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
-                                    {crucePropiasFinalizaciones.map(f => (
-                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
-                                    ))}
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {crucePropiasAcciones.map(a => (
-                                    <tr key={a}>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
-                                      {crucePropiasFinalizaciones.map(f => (
-                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
-                                      ))}
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
-                                    </tr>
-                                  ))}
-                                  <tr>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                    {crucePropiasFinalizaciones.map(f => (
-                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
-                                    ))}
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        )}
-                        {cruceRivalAcciones.length > 0 && cruceRivalFinalizaciones.length > 0 && (
-                          <div>
-                            <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES RIVAL</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                              <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                                <thead>
-                                  <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
-                                    {cruceRivalFinalizaciones.map(f => (
-                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
-                                    ))}
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {cruceRivalAcciones.map(a => (
-                                    <tr key={a}>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
-                                      {cruceRivalFinalizaciones.map(f => (
-                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
-                                      ))}
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
-                                    </tr>
-                                  ))}
-                                  <tr>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                    {cruceRivalFinalizaciones.map(f => (
-                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
-                                    ))}
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalAcciones.reduce((s, a) => s + (cruceRows[a] || 0), 0)}</td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        )}
-                        {grupos.map(([titulo, filasDef]) => (
-                          <div key={titulo}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{titulo}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                              <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
-                                <thead>
-                                  <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {filasDef.map(([label, key]) => (
-                                    <tr key={key}>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{label}</td>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPor(key)}</td>
-                                    </tr>
-                                  ))}
-                                  <tr>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasDef.reduce((s, [, key]) => s + totalPor(key), 0)}</td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-              {activeTab === 'jugadores' && (
-                <div style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '2rem',
-                  minHeight: '400px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem'
-                }}>
-                  {(() => {
-                    const nombres = new Set(Object.keys(jugadoresData));
-                    const names = [...nombres];
-                    const calcMatchMinutes = (pl, subs, durationSec) => {
-                      const minutos = {};
-                      const titular = {};
-                      const suplente = {};
-                      names.forEach(n => { minutos[n] = 0; titular[n] = 0; suplente[n] = 0; });
-                      const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
-                      names.forEach(n => {
-                        const empiezaTitular = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular');
-                        let entrySec = empiezaTitular ? 0 : null;
-                        subsSorted.forEach(s => {
-                          const subSec = (s.minuto || 0) * 60;
-                          if (s.sale === n && entrySec !== null) {
-                            const added = Math.max(0, subSec - entrySec);
-                            minutos[n] += added;
-                            if (empiezaTitular) titular[n] += added; else suplente[n] += added;
-                            entrySec = null;
-                          } else if (s.entra === n) {
-                            entrySec = subSec;
-                          }
-                        });
-                        if (entrySec !== null) {
-                          const added = Math.max(0, (durationSec || 0) - entrySec);
-                          minutos[n] += added;
-                          if (empiezaTitular) titular[n] += added; else suplente[n] += added;
-                        }
-                      });
-                      return { minutos, titular, suplente };
-                    };
-                    const totalMinutos = {};
-                    const totalTitular = {};
-                    const totalSuplente = {};
-                    names.forEach(n => { totalMinutos[n] = 0; totalTitular[n] = 0; totalSuplente[n] = 0; });
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
-                      const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
-                      names.forEach(n => { totalMinutos[n] += mMin.minutos[n]; totalTitular[n] += mMin.titular[n]; totalSuplente[n] += mMin.suplente[n]; });
-                    });
-                    const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
-                    names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; totalTitular[n] += liveMin.titular[n]; totalSuplente[n] += liveMin.suplente[n]; });
-                    let totalPartidosDuracion = 0;
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      totalPartidosDuracion += m.timerSeconds || 0;
-                    });
-                    totalPartidosDuracion += timerSeconds;
-                    const titularCount = {};
-                    const suplenteCount = {};
-                    const noConvocadoCount = {};
-                    const lesionadoCount = {};
-                    const divHonorCount = {};
-                    names.forEach(n => { titularCount[n] = 0; suplenteCount[n] = 0; noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
-                      pl.forEach(p => {
-                        if (p && p.name && p.status === 'titular') titularCount[p.name] += 1;
-                        if (p && p.name && p.status === 'suplente') suplenteCount[p.name] += 1;
-                        if (p && p.name && p.status === 'no convocado') noConvocadoCount[p.name] += 1;
-                        if (p && p.name && p.status === 'lesion') lesionadoCount[p.name] += 1;
-                        if (p && p.name && p.status === 'division honor') divHonorCount[p.name] += 1;
-                      });
-                    });
-                    (Array.isArray(players) ? players : []).forEach(p => {
-                      if (p && p.name && p.status === 'titular') titularCount[p.name] += 1;
-                      if (p && p.name && p.status === 'suplente') suplenteCount[p.name] += 1;
-                      if (p && p.name && p.status === 'no convocado') noConvocadoCount[p.name] += 1;
-                      if (p && p.name && p.status === 'lesion') lesionadoCount[p.name] += 1;
-                      if (p && p.name && p.status === 'division honor') divHonorCount[p.name] += 1;
-                    });
-                    const golCountPerPlayer = {};
-                    const golPiePerPlayer = {};
-                    const golCabezaPerPlayer = {};
-                    const golPenalPerPlayer = {};
-                    const asistPerPlayer = {};
-                    names.forEach(n => { golCountPerPlayer[n] = 0; golPiePerPlayer[n] = 0; golCabezaPerPlayer[n] = 0; golPenalPerPlayer[n] = 0; asistPerPlayer[n] = 0; });
-                    const contarGoles = (gl) => {
-                      const arr = Array.isArray(gl) ? gl : (gl ? Object.values(gl) : []);
-                      arr.forEach(g => {
-                        if (g && g.name) {
-                          golCountPerPlayer[g.name] += 1;
-                          if ((g.tipo || '').toUpperCase() === 'PIE') golPiePerPlayer[g.name] += 1;
-                          if ((g.tipo || '').toUpperCase() === 'CABEZA') golCabezaPerPlayer[g.name] += 1;
-                          if ((g.tipo || '').toUpperCase() === 'PENAL') golPenalPerPlayer[g.name] += 1;
-                        }
-                        if (g && g.name2 && g.name2.toUpperCase() !== 'SIN ASISTENCIA') asistPerPlayer[g.name2] += 1;
-                      });
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      contarGoles(m.golesList);
-                    });
-                    contarGoles(golesList);
-                    const golesAccion = {};
-                    const derivarAcciones = (al) => {
-                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
-                      const crono = [...logArr].reverse();
-                      const res = [];
-                      let ultimaAccion = '';
-                      crono.forEach(entry => {
-                        if (entry && entry.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(entry.name)) {
-                          ultimaAccion = entry.name;
-                        } else if (entry && entry.name === 'GOL') {
-                          res.push(ultimaAccion || 'GOL');
-                        } else if (entry && entry.name === 'PENAL + GOL') {
-                          res.push('PENAL');
-                        }
-                      });
-                      return res;
-                    };
-                    const contarAccionGoles = (gl, al) => {
-                      const arr = Array.isArray(gl) ? gl : (gl ? Object.values(gl) : []);
-                      const acciones = derivarAcciones(al);
-                      arr.forEach((g, idx) => {
-                        if (g && g.name && g.name === jugadorSeleccionado) {
-                          const accion = g.accion || acciones[idx] || '';
-                          golesAccion[accion] = (golesAccion[accion] || 0) + 1;
-                        }
-                      });
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      contarAccionGoles(m.golesList, m.actionLog);
-                    });
-                    contarAccionGoles(golesList, actionLog);
-                    const rivalGoalsWhilePlaying = {};
-                    names.forEach(n => { rivalGoalsWhilePlaying[n] = 0; });
-                    const contarRivalGoals = (m, subs) => {
-                      if (!m) return;
-                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
-                      const rgl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                      const subsArr = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && (s.sale || s.entra));
-                      const matchEnd = Math.max(Math.floor((m.timerSeconds || 0) / 60), ...rgl.map(g => (g && g.minuto) || 0));
-                      names.forEach(n => {
-                        const p = pl.find(x => x && x.name === n);
-                        if (!p) return;
-                        let entry = null;
-                        let exit = null;
-                        if (p.status === 'titular') {
-                          entry = 0;
-                          const sale = subsArr.find(s => s.sale === n);
-                          if (sale) exit = sale.minuto || 0;
-                        } else if (p.status === 'suplente') {
-                          const entra = subsArr.find(s => s.entra === n);
-                          if (entra) {
-                            entry = entra.minuto || 0;
-                            const sale = subsArr.find(s => s.sale === n);
-                            if (sale) exit = sale.minuto || 0;
-                          }
-                        }
-                        if (entry === null) return;
-                        const fin = exit === null ? matchEnd : exit;
-                        rgl.forEach(g => {
-                          if (g && g.minuto >= entry && g.minuto <= fin) rivalGoalsWhilePlaying[n] += 1;
-                        });
-                      });
-                    };
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      contarRivalGoals(m, m.sustituciones);
-                    });
-                    contarRivalGoals({ players, golesRivalList, timerSeconds }, sustituciones);
-                    const minutosPorJornada = [];
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
-                      const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
-                      minutosPorJornada.push({ name: `J${m.matchday || '?'} `, minutos: mMin.minutos[jugadorSeleccionado] || 0 });
-                    });
-                    const liveMinJugador = calcMatchMinutes(players, sustituciones, timerSeconds);
-                    minutosPorJornada.push({ name: `J${currentMatch?.matchday || 'Ahora'}`, minutos: liveMinJugador.minutos[jugadorSeleccionado] || 0 });
-                    return (
-                  <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
-                    <select
-                      value={jugadorSeleccionado}
-                      onChange={(e) => setJugadorSeleccionado(e.target.value)}
-                      style={{
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: '8px',
-                        color: '#ffffff',
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
-                        padding: '0.5rem 0.8rem',
-                        textTransform: 'uppercase',
-                        cursor: 'pointer',
-                        width: '150px',
-                        marginTop: '0.5rem'
-                      }}
-                    >
-                      <option value="">-</option>
-                      {names.sort().map((n) => (
-                        <option key={n} value={n}>
-                          {jugadoresData[n] && jugadoresData[n].foto && (
-                            <img src={jugadoresData[n].foto} alt="" style={{ width: '20px', height: '26px', objectFit: 'cover', verticalAlign: 'middle', marginRight: '6px', borderRadius: '3px' }} />
-                          )}
-                          {n}
-                        </option>
-                      ))}
-                    </select>
-
-                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].foto && (
-                      <img
-                        src={jugadoresData[jugadorSeleccionado].foto}
-                        alt={jugadorSeleccionado}
-                        style={{
-                          width: '150px',
-                          height: '200px',
-                          objectFit: 'cover',
-                          borderRadius: '12px',
-                          border: '2px solid var(--border-subtle)',
-                          marginTop: '0.5rem'
-                        }}
-                      />
-                    )}
-                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].pos1 && (
-                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '150px', textAlign: 'center' }}>
-                        {jugadoresData[jugadorSeleccionado].pos1}
-                      </span>
-                    )}
-                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].pos2 && (
-                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '150px', textAlign: 'center' }}>
-                        {jugadoresData[jugadorSeleccionado].pos2}
-                      </span>
-                    )}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
-                        DISPUTA {formatTime(totalMinutos[jugadorSeleccionado] || 0)} MIN. = TITULAR {formatTime(totalTitular[jugadorSeleccionado] || 0)} + SUPLENTE {formatTime(totalSuplente[jugadorSeleccionado] || 0)}
-                      </span>
-                    )}
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
-                        % JUGADO: {totalPartidosDuracion > 0 ? Math.round(((totalMinutos[jugadorSeleccionado] || 0) / totalPartidosDuracion) * 100) : 0}%
-                      </span>
-                    )}
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#e044a7', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        ASISTENCIAS: {asistPerPlayer[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
-                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', marginLeft: '9rem' }}>
-                        TOTAL DE GOLES: {golCountPerPlayer[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    </div>
-                    <div style={{ display: 'flex', gap: '1rem', marginLeft: '9rem' }}>
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', marginLeft: '-9rem' }}>
-                        TITULAR: {titularCount[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
-                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', marginLeft: '12rem' }}>
-                        PIE: {golPiePerPlayer[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
-                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        CABEZA: {golCabezaPerPlayer[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
-                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        PENAL: {golPenalPerPlayer[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    </div>
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        SUPLENTE: {suplenteCount[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        NO CONVOCADO: {noConvocadoCount[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        LESIONADO: {lesionadoCount[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        DIV. HONOR: {divHonorCount[jugadorSeleccionado] || 0}
-                      </span>
-                    )}
-                    {jugadorSeleccionado === 'HECTOR' || jugadorSeleccionado === 'EMILIANO' || jugadorSeleccionado === 'L. RAMIREZ' ? (
-                      <span style={{ color: '#ff4d4d', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
-                        GOLES ENCAJADOS: {rivalGoalsWhilePlaying[jugadorSeleccionado] || 0}
-                      </span>
-                    ) : null}
-                    {jugadorSeleccionado && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'L. RAMIREZ' && (
-                      <table style={{ borderCollapse: 'collapse', marginTop: '1rem', fontFamily: 'var(--font-mono)' }}>
-                        <thead>
-                          <tr>
-                            <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#00ff87', fontSize: '0.9rem', textTransform: 'uppercase', textAlign: 'left' }}>ACCIÓN</th>
-                            <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#00ff87', fontSize: '0.9rem', textTransform: 'uppercase', textAlign: 'center' }}>GOLES</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.keys(golesAccion).length === 0 ? (
-                            <tr>
-                              <td colSpan="2" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem' }}>
-                                -
-                              </td>
-                            </tr>
-                          ) : (
-                            Object.keys(golesAccion).sort().map(accion => (
-                              <tr key={accion}>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem' }}>{accion}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontSize: '0.9rem', textAlign: 'center' }}>{golesAccion[accion]}</td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    )}
-                    {jugadorSeleccionado && minutosPorJornada.length > 0 && (
-                      <div style={{ marginTop: '1.5rem', width: '100%', marginLeft: '-2rem' }}>
-                        <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', marginLeft: '6rem' }}>
-                          EVOLUCIÓN MINUTOS
-                        </span>
-                        <ResponsiveContainer width="100%" height={250}>
-                          <LineChart data={minutosPorJornada} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                            <YAxis stroke="#94a3b8" fontSize={12} />
-                            <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} />
-                            <Line type="monotone" dataKey="minutos" stroke="#a78bfa" strokeWidth={2} dot={{ fill: '#a78bfa', r: 4 }} activeDot={{ r: 6 }} />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                    )}
-                    </div>
-                    </div>
-                  </div>
-                    );
-                  })()}
-                </div>
-              )}
               {activeTab === 'goles' && (
                 <div style={{
                   background: 'var(--bg-card)',
@@ -5375,181 +5570,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                 </div>
                 );
               })()}
-              {activeTab === 'tiempojugado' && (
-                <div style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '2rem',
-                  minHeight: '400px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem'
-                }}>
-                  {(() => {
-                    const names = [...new Set([...players.map(p => p.name).filter(Boolean), ...Object.keys(jugadoresData)])];
-                    const calcMatchMinutes = (pl, subs, durationSec) => {
-                      const minutos = {};
-                      names.forEach(n => { minutos[n] = 0; });
-                      const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
-                      names.forEach(n => {
-                        let entrySec = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular') ? 0 : null;
-                        subsSorted.forEach(s => {
-                          const subSec = (s.minuto || 0) * 60;
-                          if (s.sale === n && entrySec !== null) {
-                            minutos[n] += Math.max(0, subSec - entrySec);
-                            entrySec = null;
-                          } else if (s.entra === n) {
-                            entrySec = subSec;
-                          }
-                        });
-                        if (entrySec !== null) {
-                          minutos[n] += Math.max(0, (durationSec || 0) - entrySec);
-                        }
-                      });
-                      return minutos;
-                    };
-                    const totalMinutos = {};
-                    names.forEach(n => totalMinutos[n] = 0);
-                    let totalPartidosDuracion = 0;
-                    matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
-                      const mDur = m.timerSeconds || 0;
-                      totalPartidosDuracion += mDur;
-                      const mMin = calcMatchMinutes(pl, m.sustituciones, mDur);
-                      names.forEach(n => totalMinutos[n] += mMin[n]);
-                    });
-                    totalPartidosDuracion += timerSeconds;
-                    const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
-                    names.forEach(n => totalMinutos[n] += liveMin[n]);
-                    const filas = Object.entries(totalMinutos).sort((a, b) => b[1] - a[1]);
-                    const titularCount = {};
-                    const suplenteCount = {};
-                    const noConvocadoCount = {};
-                    const lesionadoCount = {};
-                    const divHonorCount = {};
-                    names.forEach(n => { titularCount[n] = 0; suplenteCount[n] = 0; noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
-                    matches.forEach(m => {
-                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
-                      const titulars = new Set(pl.filter(p => p && p.status === 'titular').map(p => p.name).filter(Boolean));
-                      const suplentes = new Set(pl.filter(p => p && p.status === 'suplente').map(p => p.name).filter(Boolean));
-                      const noConvocados = new Set(pl.filter(p => p && p.status === 'no convocado').map(p => p.name).filter(Boolean));
-                      const lesionados = new Set(pl.filter(p => p && p.status === 'lesion').map(p => p.name).filter(Boolean));
-                      const divHonor = new Set(pl.filter(p => p && p.status === 'division honor').map(p => p.name).filter(Boolean));
-                      names.forEach(n => {
-                        if (titulars.has(n)) titularCount[n] += 1;
-                        if (suplentes.has(n)) suplenteCount[n] += 1;
-                        if (noConvocados.has(n)) noConvocadoCount[n] += 1;
-                        if (lesionados.has(n)) lesionadoCount[n] += 1;
-                        if (divHonor.has(n)) divHonorCount[n] += 1;
-                      });
-                    });
-                    return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <div style={{ overflowX: 'auto' }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
-                            <thead>
-                              <tr>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>JUGADOR</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>MINUTOS</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>% JUGADO</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TITULAR</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>SUPLENTE</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>NO CONVOCADO</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>LESIONADO</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>DIV. HONOR</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filas.map(([n, m]) => (
-                                <tr key={n}>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{formatTime(m)}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{titularCount[n]}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{suplenteCount[n]}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        <div>
-                          <div style={{ marginBottom: '0.8rem' }}>
-                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>MINUTOS JUGADOS:</label>
-                            <select
-                              value={selectedJornadaTiempo}
-                              onChange={e => setSelectedJornadaTiempo(e.target.value)}
-                              style={{
-                                background: 'var(--bg-secondary)',
-                                color: '#ffffff',
-                                border: '1px solid var(--border-subtle)',
-                                borderRadius: 'var(--radius-md)',
-                                padding: '0.4rem 0.8rem',
-                                fontWeight: 700,
-                                fontSize: '0.8rem',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              <option value="">Seleccionar jornada</option>
-                              {matches.filter(m => m.matchday).sort((a, b) => a.matchday - b.matchday).map(m => (
-                                <option key={m.id} value={m.id}>J{m.matchday} — {m.homeTeam} vs {m.awayTeam}</option>
-                              ))}
-                              {currentMatch && <option value={currentMatch.id}>J{currentMatch.matchday} — {currentMatch.homeTeam} vs {currentMatch.awayTeam} (ahora)</option>}
-                            </select>
-                          </div>
-                          {selectedJornadaTiempo && (() => {
-                            const selMatch = matches.find(m => m.id === selectedJornadaTiempo) || (currentMatch && currentMatch.id === selectedJornadaTiempo ? currentMatch : null);
-                            if (!selMatch) return <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Partido no encontrado</span>;
-                            const pl = Array.isArray(selMatch.players) ? selMatch.players : (selMatch.players ? Object.values(selMatch.players) : []);
-                            const mDur = selMatch.timerSeconds || 0;
-                            const mMin = calcMatchMinutes(pl, selMatch.sustituciones, mDur);
-                            const rolOrder = { titular: 0, suplente: 1, lesion: 2, 'division honor': 3, 'no convocado': 4 };
-                            const jornadaFilas = Object.entries(mMin).sort((a, b) => {
-                              const sa = pl.find(p => p && p.name === a[0]);
-                              const sb = pl.find(p => p && p.name === b[0]);
-                              const ra = rolOrder[sa ? sa.status : 'no convocado'] ?? 5;
-                              const rb = rolOrder[sb ? sb.status : 'no convocado'] ?? 5;
-                              return ra - rb || b[1] - a[1];
-                            });
-                            return (
-                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
-                                <thead>
-                                  <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>JUGADOR</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>ROL</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>MINUTOS</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {jornadaFilas.map(([n, m]) => {
-                                    const status = pl.find(p => p && p.name === n);
-                                    const rol = status ? status.status : 'no convocado';
-                                    const rolColor = rol === 'titular' ? '#39ff14' : rol === 'suplente' ? '#eab308' : rol === 'lesion' ? '#38bdf8' : rol === 'division honor' ? '#f472b6' : '#ef4444';
-                                    return (
-                                      <tr key={n}>
-                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
-                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: rolColor, fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem' }}>{rol}</td>
-                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{m > 0 ? formatTime(m) : '-'}</td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
-                            );
-                          })()}
-                          {!selectedJornadaTiempo && (
-                            <span style={{ color: '#64748b', fontSize: '0.85rem', fontStyle: 'italic' }}>Selecciona una jornada para ver los minutos jugados</span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
                   {activeTab === 'alineacion' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%' }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -6173,8 +6193,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
           <span style={{ fontWeight: 800, fontSize: '1.15rem' }}>FútbolTotal Análisis</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <button className="btn-sm btn-secondary" onClick={() => setVista('tratamiento')}>Tratamiento Dibujos</button>
-          <button className="btn-sm btn-secondary" onClick={() => setVista('menu')}>Menú</button>
+          <button
+            onClick={() => setVista('menu')}
+            title="Volver al menú"
+            style={{ background: '#0284c7', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.4)' }}
+          >
+            &#8592; MENÚ
+          </button>
           <button className="btn-sm btn-secondary" onClick={handleLogout}>Salir</button>
         </div>
       </header>
