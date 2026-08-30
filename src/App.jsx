@@ -1474,7 +1474,7 @@ export default function App() {
               </>
               )}
               <span style={{ fontSize: ['tiempojugado', 'resumengoles', 'resumenacciones', 'videos', 'posesion', 'jugadores'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
-                {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : activeTab === 'jugadores' ? 'JUGADORES' : `JORNADA ${currentMatch.matchday}`}
+                {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : activeTab === 'jugadores' ? 'JUGADORES' : activeTab === 'resumenacciones' ? `JORNADA ${currentMatch.matchday} — TOTAL ACCIONES` : activeTab === 'resumengoles' ? `JORNADA ${currentMatch.matchday} — TOTAL GOLES` : `JORNADA ${currentMatch.matchday}`}
               </span>
               {activeTab === 'jugadores' && jugadorSeleccionado && (
                 <button
@@ -3907,9 +3907,6 @@ marginLeft: '-6rem'
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
-                    RESUMEN GOLES
-                  </span>
                   {(() => {
                     const stats = {};
                     const addGoal = (name, tipo) => {
@@ -4246,10 +4243,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1.5rem'
-                }}>
-<span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
-                    RESUMEN ACCIONES
-                  </span>
+                }}                >
                   {(() => {
                     const live = {
                       ocasionCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount,
@@ -4320,12 +4314,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {crucePropiasAcciones.length > 0 && crucePropiasFinalizaciones.length > 0 && (
                           <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
                               <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES PROPIAS</span>
-                              <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION',...crucePropiasFinalizaciones,'TOTAL']; const rows=crucePropiasAcciones.map(a=>[a,...crucePropiasFinalizaciones.map(f=>cruce[a][f]||''),cruceRows[a]||0]); rows.push(['TOTAL',...crucePropiasFinalizaciones.map(f=>cruceTotal[f]||0),crucePropiasAcciones.reduce((s,a)=>s+(cruceRows[a]||0),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Propias'); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='total_acciones_propias.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar Excel</button>
-                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importadas propias xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; if(f.name.endsWith('.json')){ const d=JSON.parse(t); console.log('Importadas propias',d);} else { alert('Importado: '+f.name+' ('+t.length+' bytes)'); } }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar Excel</button>
-                              </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
@@ -4362,12 +4352,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         )}
                         {cruceRivalAcciones.length > 0 && cruceRivalFinalizaciones.length > 0 && (
                           <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
                               <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES RIVAL</span>
-                              <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION',...cruceRivalFinalizaciones,'TOTAL']; const rows=cruceRivalAcciones.map(a=>[a,...cruceRivalFinalizaciones.map(f=>cruce[a][f]||''),cruceRows[a]||0]); rows.push(['TOTAL',...cruceRivalFinalizaciones.map(f=>cruceTotal[f]||0),cruceRivalAcciones.reduce((s,a)=>s+(cruceRows[a]||0),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Rival'); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='total_acciones_rival.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar Excel</button>
-                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importadas rival xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; if(f.name.endsWith('.json')){ const d=JSON.parse(t); console.log('Importadas rival',d);} else { alert('Importado: '+f.name+' ('+t.length+' bytes)'); } }catch(err){ alert('Error al importar: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar Excel</button>
-                              </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
@@ -4406,10 +4392,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <div key={titulo}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                               <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{titulo}</span>
-                              <div style={{ display: 'flex', gap: '0.4rem' }}>
-                                <button onClick={async () => { const XLSX=await import('xlsx'); const headers=['ACCION','TOTAL']; const rows=filasDef.map(([label,key])=>[label,totalPor(key)]); rows.push(['TOTAL',filasDef.reduce((s,[,key])=>s+totalPor(key),0)]); const ws=XLSX.utils.aoa_to_sheet([headers,...rows]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,titulo.slice(0,31)); const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'}); const blob=new Blob([wbout],{type:'application/octet-stream'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=titulo.replace(/\s+/g,'_').toLowerCase()+'.xlsx'; a.click(); URL.revokeObjectURL(url); }} style={{ background:'#10b981', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Exportar Excel</button>
-                                <button onClick={() => { const inp=document.createElement('input'); inp.type='file'; inp.accept='.xlsx,.xls,.csv,.json'; inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); if(f.name.endsWith('.xlsx')||f.name.endsWith('.xls')){ r.onload=async()=>{ try{ const XLSX=await import('xlsx'); const wb=XLSX.read(r.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const data=XLSX.utils.sheet_to_json(ws,{header:1}); console.log('Importado grupo xlsx',data); alert('Importado Excel: '+f.name+' ('+data.length+' filas)'); }catch(err){ alert('Error: '+err.message); } }; r.readAsArrayBuffer(f); } else { r.onload=()=>{ try{ const t=r.result; alert('Importado: '+f.name+' ('+t.length+' bytes)'); }catch(err){ alert('Error: '+err.message); } }; r.readAsText(f); } }; inp.click(); }} style={{ background:'#f97316', color:'#fff', border:'none', borderRadius:'6px', padding:'0.25rem 0.6rem', fontWeight:800, fontSize:'0.65rem', cursor:'pointer' }}>Importar Excel</button>
-                              </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
