@@ -1992,6 +1992,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             if (empiezaTitular) titular[n] += added; else suplente[n] += added;
                             entrySec = null;
                           } else if (s.entra === n) {
+                            if (entrySec !== null) {
+                              const added = Math.max(0, subSec - entrySec);
+                              minutos[n] += added;
+                              if (empiezaTitular) titular[n] += added; else suplente[n] += added;
+                            }
                             entrySec = subSec;
                           }
                         });
@@ -2142,10 +2147,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       if (currentMatch && m.id === currentMatch.id) return;
                       const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
                       const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
-                      minutosPorJornada.push({ name: `J${m.matchday || '?'} `, minutos: mMin.minutos[jugadorSeleccionado] || 0, titular: mMin.titular[jugadorSeleccionado] || 0, suplente: mMin.suplente[jugadorSeleccionado] || 0 });
+                      minutosPorJornada.push({ name: `J${m.matchday || '?'} — ${m.homeTeam || '?'} vs ${m.awayTeam || '?'}`, minutos: mMin.minutos[jugadorSeleccionado] || 0, titular: mMin.titular[jugadorSeleccionado] || 0, suplente: mMin.suplente[jugadorSeleccionado] || 0 });
                     });
                     const liveMinJugador = calcMatchMinutes(players, sustituciones, timerSeconds);
-                    minutosPorJornada.push({ name: `J${currentMatch?.matchday || 'Ahora'}`, minutos: liveMinJugador.minutos[jugadorSeleccionado] || 0, titular: liveMinJugador.titular[jugadorSeleccionado] || 0, suplente: liveMinJugador.suplente[jugadorSeleccionado] || 0 });
+                    minutosPorJornada.push({ name: `J${currentMatch?.matchday || 'Ahora'} — ${currentMatch?.homeTeam || '?'} vs ${currentMatch?.awayTeam || '?'}`, minutos: liveMinJugador.minutos[jugadorSeleccionado] || 0, titular: liveMinJugador.titular[jugadorSeleccionado] || 0, suplente: liveMinJugador.suplente[jugadorSeleccionado] || 0 });
                     return (
                   <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -2317,35 +2322,29 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       )}
                       {jugadorSeleccionado && minutosPorJornada.length > 0 && (
                         <div style={{ marginTop: '1rem', width: '100%', overflowX: 'auto' }}>
-                          <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', marginLeft: '6rem' }}>
+                          <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block' }}>
                             MINUTOS POR JORNADA
                           </span>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.75rem', marginLeft: '6rem' }}>
+                          <table style={{ borderCollapse: 'collapse', fontFamily: 'var(--font-mono, monospace)', fontSize: '1.15rem' }}>
                             <thead>
                               <tr>
-                                <th style={{ padding: '0.3rem 0.5rem', color: '#94a3b8', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid #334155', position: 'sticky', left: 0, background: '#0f172a', zIndex: 1 }}></th>
-                                {minutosPorJornada.map((j, i) => (
-                                  <th key={i} style={{ padding: '0.3rem 0.5rem', color: '#a78bfa', fontWeight: 700, textAlign: 'center', borderBottom: '1px solid #334155', minWidth: '50px' }}>{j.name}</th>
-                                ))}
+                                <th style={{ padding: '0.5rem 1rem', color: '#a78bfa', fontWeight: 800, textAlign: 'left', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>JORNADA</th>
+                                <th style={{ padding: '0.5rem 1rem', color: '#39ff14', fontWeight: 800, textAlign: 'center', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>TITULAR</th>
+                                <th style={{ padding: '0.5rem 1rem', color: '#eab308', fontWeight: 800, textAlign: 'center', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>SUPLENTE</th>
                               </tr>
                             </thead>
                             <tbody>
-                              <tr>
-                                <td style={{ padding: '0.3rem 0.5rem', color: '#22c55e', fontWeight: 700, borderBottom: '1px solid #1e293b', position: 'sticky', left: 0, background: '#0f172a', zIndex: 1 }}>TITULAR</td>
-                                {minutosPorJornada.map((j, i) => (
-                                  <td key={i} style={{ padding: '0.3rem 0.5rem', color: j.titular > 0 ? '#22c55e' : '#475569', fontWeight: j.titular > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
+                              {minutosPorJornada.map((j, i) => (
+                                <tr key={i}>
+                                  <td style={{ padding: '0.5rem 1rem', color: '#ffffff', fontWeight: 700, borderBottom: '1px solid #1e293b' }}>{j.name}</td>
+                                  <td style={{ padding: '0.5rem 1rem', color: j.titular > 0 ? '#39ff14' : '#475569', fontWeight: j.titular > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
                                     {j.titular > 0 ? formatTime(j.titular) : '-'}
                                   </td>
-                                ))}
-                              </tr>
-                              <tr>
-                                <td style={{ padding: '0.3rem 0.5rem', color: '#eab308', fontWeight: 700, position: 'sticky', left: 0, background: '#0f172a', zIndex: 1 }}>SUPLENTE</td>
-                                {minutosPorJornada.map((j, i) => (
-                                  <td key={i} style={{ padding: '0.3rem 0.5rem', color: j.suplente > 0 ? '#eab308' : '#475569', fontWeight: j.suplente > 0 ? 700 : 400, textAlign: 'center' }}>
+                                  <td style={{ padding: '0.5rem 1rem', color: j.suplente > 0 ? '#eab308' : '#475569', fontWeight: j.suplente > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
                                     {j.suplente > 0 ? formatTime(j.suplente) : '-'}
                                   </td>
-                                ))}
-                              </tr>
+                                </tr>
+                              ))}
                             </tbody>
                           </table>
                         </div>
@@ -2372,27 +2371,41 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const names = [...new Set([...players.map(p => p.name).filter(Boolean), ...Object.keys(jugadoresData)])];
                     const calcMatchMinutes = (pl, subs, durationSec) => {
                       const minutos = {};
-                      names.forEach(n => { minutos[n] = 0; });
+                      const titular = {};
+                      const suplente = {};
+                      names.forEach(n => { minutos[n] = 0; titular[n] = 0; suplente[n] = 0; });
                       const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
                       names.forEach(n => {
-                        let entrySec = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular') ? 0 : null;
+                        const empiezaTitular = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular');
+                        let entrySec = empiezaTitular ? 0 : null;
                         subsSorted.forEach(s => {
                           const subSec = (s.minuto || 0) * 60;
                           if (s.sale === n && entrySec !== null) {
-                            minutos[n] += Math.max(0, subSec - entrySec);
+                            const added = Math.max(0, subSec - entrySec);
+                            minutos[n] += added;
+                            if (empiezaTitular) titular[n] += added; else suplente[n] += added;
                             entrySec = null;
                           } else if (s.entra === n) {
+                            if (entrySec !== null) {
+                              const added = Math.max(0, subSec - entrySec);
+                              minutos[n] += added;
+                              if (empiezaTitular) titular[n] += added; else suplente[n] += added;
+                            }
                             entrySec = subSec;
                           }
                         });
                         if (entrySec !== null) {
-                          minutos[n] += Math.max(0, (durationSec || 0) - entrySec);
+                          const added = Math.max(0, (durationSec || 0) - entrySec);
+                          minutos[n] += added;
+                          if (empiezaTitular) titular[n] += added; else suplente[n] += added;
                         }
                       });
-                      return minutos;
+                      return { minutos, titular, suplente };
                     };
                     const totalMinutos = {};
-                    names.forEach(n => totalMinutos[n] = 0);
+                    const totalTitular = {};
+                    const totalSuplente = {};
+                    names.forEach(n => { totalMinutos[n] = 0; totalTitular[n] = 0; totalSuplente[n] = 0; });
                     let totalPartidosDuracion = 0;
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
@@ -2400,28 +2413,22 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       const mDur = m.timerSeconds || 0;
                       totalPartidosDuracion += mDur;
                       const mMin = calcMatchMinutes(pl, m.sustituciones, mDur);
-                      names.forEach(n => totalMinutos[n] += mMin[n]);
+                      names.forEach(n => { totalMinutos[n] += mMin.minutos[n]; totalTitular[n] += mMin.titular[n]; totalSuplente[n] += mMin.suplente[n]; });
                     });
                     totalPartidosDuracion += timerSeconds;
                     const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
-                    names.forEach(n => totalMinutos[n] += liveMin[n]);
+                    names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; totalTitular[n] += liveMin.titular[n]; totalSuplente[n] += liveMin.suplente[n]; });
                     const filas = Object.entries(totalMinutos).sort((a, b) => b[1] - a[1]);
-                    const titularCount = {};
-                    const suplenteCount = {};
                     const noConvocadoCount = {};
                     const lesionadoCount = {};
                     const divHonorCount = {};
-                    names.forEach(n => { titularCount[n] = 0; suplenteCount[n] = 0; noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
+                    names.forEach(n => { noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
                     matches.forEach(m => {
                       const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
-                      const titulars = new Set(pl.filter(p => p && p.status === 'titular').map(p => p.name).filter(Boolean));
-                      const suplentes = new Set(pl.filter(p => p && p.status === 'suplente').map(p => p.name).filter(Boolean));
                       const noConvocados = new Set(pl.filter(p => p && p.status === 'no convocado').map(p => p.name).filter(Boolean));
                       const lesionados = new Set(pl.filter(p => p && p.status === 'lesion').map(p => p.name).filter(Boolean));
                       const divHonor = new Set(pl.filter(p => p && p.status === 'division honor').map(p => p.name).filter(Boolean));
                       names.forEach(n => {
-                        if (titulars.has(n)) titularCount[n] += 1;
-                        if (suplentes.has(n)) suplenteCount[n] += 1;
                         if (noConvocados.has(n)) noConvocadoCount[n] += 1;
                         if (lesionados.has(n)) lesionadoCount[n] += 1;
                         if (divHonor.has(n)) divHonorCount[n] += 1;
@@ -2449,8 +2456,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{formatTime(m)}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{titularCount[n]}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{suplenteCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalTitular[n] > 0 ? formatTime(totalTitular[n]) : '0:00'}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalSuplente[n] > 0 ? formatTime(totalSuplente[n]) : '0:00'}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
