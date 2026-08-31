@@ -127,7 +127,8 @@ const totalesTabsDef = [
   { id: 'resumengoles', label: 'TOTAL GOLES' },
   { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
   { id: 'tiempojugado', label: 'TOTAL JUGADO' },
-  { id: 'jugadores', label: 'JUGADORES' }
+  { id: 'minutosjugados', label: 'MINUTOS JUGADOS' },
+  { id: 'jugadores', label: 'DATOS JUGADOR' }
 ];
 
 export default function App() {
@@ -2158,8 +2159,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         borderRadius: '8px',
                         color: '#ffffff',
                         fontWeight: 700,
-                        fontSize: '0.9rem',
-                        padding: '0.5rem 0.8rem',
+                        fontSize: '1.3rem',
+                        padding: '0.2rem 0.4rem',
                         textTransform: 'uppercase',
                         cursor: 'pointer',
                         width: '150px',
@@ -2210,7 +2211,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     )}
                     {jugadorSeleccionado && (
                       <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
-                        % JUGADO: {totalPartidosDuracion > 0 ? Math.round(((totalMinutos[jugadorSeleccionado] || 0) / totalPartidosDuracion) * 100) : 0}%
+                        JUGADO: {totalPartidosDuracion > 0 ? Math.round(((totalMinutos[jugadorSeleccionado] || 0) / totalPartidosDuracion) * 100) : 0}%
                       </span>
                     )}
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -2423,9 +2424,64 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             </tbody>
                           </table>
                         </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              {totalesTab === 'minutosjugados' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  {(() => {
+                    const names = [...new Set([...players.map(p => p.name).filter(Boolean), ...Object.keys(jugadoresData)])];
+                    const calcMatchMinutes = (pl, subs, durationSec) => {
+                      const minutos = {};
+                      names.forEach(n => { minutos[n] = 0; });
+                      const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
+                      names.forEach(n => {
+                        let entrySec = (Array.isArray(pl) ? pl : []).some(p => p && p.name === n && p.status === 'titular') ? 0 : null;
+                        subsSorted.forEach(s => {
+                          const subSec = (s.minuto || 0) * 60;
+                          if (s.sale === n && entrySec !== null) {
+                            minutos[n] += Math.max(0, subSec - entrySec);
+                            entrySec = null;
+                          } else if (s.entra === n) {
+                            entrySec = subSec;
+                          }
+                        });
+                        if (entrySec !== null) {
+                          minutos[n] += Math.max(0, (durationSec || 0) - entrySec);
+                        }
+                      });
+                      return minutos;
+                    };
+                    const totalMinutos = {};
+                    names.forEach(n => totalMinutos[n] = 0);
+                    let totalPartidosDuracion = 0;
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                      const mDur = m.timerSeconds || 0;
+                      totalPartidosDuracion += mDur;
+                      const mMin = calcMatchMinutes(pl, m.sustituciones, mDur);
+                      names.forEach(n => totalMinutos[n] += mMin[n]);
+                    });
+                    totalPartidosDuracion += timerSeconds;
+                    const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
+                    names.forEach(n => totalMinutos[n] += liveMin[n]);
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div>
                           <div style={{ marginBottom: '0.8rem' }}>
-                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>MINUTOS JUGADOS:</label>
+                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>MINUTOS JUGADOS POR JORNADA:</label>
                             <select
                               value={selectedJornadaTiempo}
                               onChange={e => setSelectedJornadaTiempo(e.target.value)}
