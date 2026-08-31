@@ -2142,10 +2142,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       if (currentMatch && m.id === currentMatch.id) return;
                       const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
                       const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
-                      minutosPorJornada.push({ name: `J${m.matchday || '?'} `, minutos: mMin.minutos[jugadorSeleccionado] || 0 });
+                      minutosPorJornada.push({ name: `J${m.matchday || '?'} `, minutos: mMin.minutos[jugadorSeleccionado] || 0, titular: mMin.titular[jugadorSeleccionado] || 0, suplente: mMin.suplente[jugadorSeleccionado] || 0 });
                     });
                     const liveMinJugador = calcMatchMinutes(players, sustituciones, timerSeconds);
-                    minutosPorJornada.push({ name: `J${currentMatch?.matchday || 'Ahora'}`, minutos: liveMinJugador.minutos[jugadorSeleccionado] || 0 });
+                    minutosPorJornada.push({ name: `J${currentMatch?.matchday || 'Ahora'}`, minutos: liveMinJugador.minutos[jugadorSeleccionado] || 0, titular: liveMinJugador.titular[jugadorSeleccionado] || 0, suplente: liveMinJugador.suplente[jugadorSeleccionado] || 0 });
                     return (
                   <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -2311,10 +2311,45 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <YAxis stroke="#94a3b8" fontSize={12} />
                             <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} />
                             <Line type="monotone" dataKey="minutos" stroke="#a78bfa" strokeWidth={2} dot={{ fill: '#a78bfa', r: 4 }} activeDot={{ r: 6 }} />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                    )}
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                      {jugadorSeleccionado && minutosPorJornada.length > 0 && (
+                        <div style={{ marginTop: '1rem', width: '100%', overflowX: 'auto' }}>
+                          <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', marginLeft: '6rem' }}>
+                            MINUTOS POR JORNADA
+                          </span>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.75rem', marginLeft: '6rem' }}>
+                            <thead>
+                              <tr>
+                                <th style={{ padding: '0.3rem 0.5rem', color: '#94a3b8', fontWeight: 700, textAlign: 'left', borderBottom: '1px solid #334155', position: 'sticky', left: 0, background: '#0f172a', zIndex: 1 }}></th>
+                                {minutosPorJornada.map((j, i) => (
+                                  <th key={i} style={{ padding: '0.3rem 0.5rem', color: '#a78bfa', fontWeight: 700, textAlign: 'center', borderBottom: '1px solid #334155', minWidth: '50px' }}>{j.name}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td style={{ padding: '0.3rem 0.5rem', color: '#22c55e', fontWeight: 700, borderBottom: '1px solid #1e293b', position: 'sticky', left: 0, background: '#0f172a', zIndex: 1 }}>TITULAR</td>
+                                {minutosPorJornada.map((j, i) => (
+                                  <td key={i} style={{ padding: '0.3rem 0.5rem', color: j.titular > 0 ? '#22c55e' : '#475569', fontWeight: j.titular > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
+                                    {j.titular > 0 ? formatTime(j.titular) : '-'}
+                                  </td>
+                                ))}
+                              </tr>
+                              <tr>
+                                <td style={{ padding: '0.3rem 0.5rem', color: '#eab308', fontWeight: 700, position: 'sticky', left: 0, background: '#0f172a', zIndex: 1 }}>SUPLENTE</td>
+                                {minutosPorJornada.map((j, i) => (
+                                  <td key={i} style={{ padding: '0.3rem 0.5rem', color: j.suplente > 0 ? '#eab308' : '#475569', fontWeight: j.suplente > 0 ? 700 : 400, textAlign: 'center' }}>
+                                    {j.suplente > 0 ? formatTime(j.suplente) : '-'}
+                                  </td>
+                                ))}
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                     </div>
                   </div>
