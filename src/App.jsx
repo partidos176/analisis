@@ -5283,7 +5283,7 @@ marginLeft: '-6rem'
                             }}
                           >
                             <option value="">-</option>
-                            {[...new Set(players.filter(p => p.status === 'titular').map(p => p.name).filter(Boolean))].map(name => (
+                            {[...new Set(players.filter(p => p.status === 'titular').map(p => p.name).filter(Boolean).filter(name => !sustituciones.some((s, i) => i !== row && s && s.sale === name)))].map(name => (
                               <option key={name} value={name}>{name}</option>
                             ))}
                           </select>
@@ -5315,7 +5315,7 @@ marginLeft: '-6rem'
                             }}
                           >
                             <option value="">-</option>
-                            {[...new Set(players.filter(p => p.status === 'suplente').map(p => p.name).filter(Boolean))].map(name => (
+                            {[...new Set(players.filter(p => p.status === 'suplente').map(p => p.name).filter(Boolean).filter(name => !sustituciones.some((s, i) => i !== row && s && s.entra === name)))].map(name => (
                               <option key={name} value={name}>{name}</option>
                             ))}
                           </select>
