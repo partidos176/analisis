@@ -2181,7 +2181,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 alignSelf: 'flex-end'
                         }}
                       >
-                        DESCARGAR JPG
+                        DESCARGAR
                       </button>
                     )}
                     <select
