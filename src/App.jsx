@@ -127,7 +127,7 @@ const totalesTabsDef = [
   { id: 'resumengoles', label: 'TOTAL GOLES' },
   { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
   { id: 'tiempojugado', label: 'TOTAL JUGADO' },
-  { id: 'minutosjugados', label: 'MINUTOS JUGADOS' },
+  { id: 'minutosjugados', label: 'MINUTOS JORNADA' },
   { id: 'jugadores', label: 'DATOS JUGADOR' }
 ];
 
@@ -2149,8 +2149,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
                       minutosPorJornada.push({ name: `J${m.matchday || '?'} — ${m.homeTeam || '?'} vs ${m.awayTeam || '?'}`, minutos: mMin.minutos[jugadorSeleccionado] || 0, titular: mMin.titular[jugadorSeleccionado] || 0, suplente: mMin.suplente[jugadorSeleccionado] || 0 });
                     });
-                    const liveMinJugador = calcMatchMinutes(players, sustituciones, timerSeconds);
-                    minutosPorJornada.push({ name: `J${currentMatch?.matchday || 'Ahora'} — ${currentMatch?.homeTeam || '?'} vs ${currentMatch?.awayTeam || '?'}`, minutos: liveMinJugador.minutos[jugadorSeleccionado] || 0, titular: liveMinJugador.titular[jugadorSeleccionado] || 0, suplente: liveMinJugador.suplente[jugadorSeleccionado] || 0 });
                     return (
                   <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
@@ -2306,29 +2304,29 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     )}
                     {jugadorSeleccionado && minutosPorJornada.length > 0 && (
                       <div style={{ marginTop: '1.5rem', width: '100%', marginLeft: '-2rem' }}>
-                        <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', marginLeft: '6rem' }}>
+                        <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
                           EVOLUCIÓN MINUTOS
                         </span>
                         <ResponsiveContainer width="100%" height={250}>
                           <LineChart data={minutosPorJornada} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                            <YAxis stroke="#94a3b8" fontSize={12} />
-                            <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} />
-                            <Line type="monotone" dataKey="minutos" stroke="#a78bfa" strokeWidth={2} dot={{ fill: '#a78bfa', r: 4 }} activeDot={{ r: 6 }} />
+                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} interval={0} tickFormatter={(v) => v.split('—')[0].trim()} />
+                            <YAxis stroke="#94a3b8" fontSize={10} tickFormatter={(v) => Math.round(v / 60)} />
+                            <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => [`${Math.round(value / 60)} min`, 'Minutos']} />
+                            <Line type="monotone" dataKey="minutos" stroke="#ffffff" strokeWidth={3} dot={{ fill: '#ffffff', r: 4 }} activeDot={{ r: 6 }} />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
                       )}
                       {jugadorSeleccionado && minutosPorJornada.length > 0 && (
                         <div style={{ marginTop: '1rem', width: '100%', overflowX: 'auto' }}>
-                          <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block' }}>
-                            MINUTOS POR JORNADA
+                          <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
+                            MINUTOS JORNADA
                           </span>
                           <table style={{ borderCollapse: 'collapse', fontFamily: 'var(--font-mono, monospace)', fontSize: '1.15rem' }}>
                             <thead>
                               <tr>
-                                <th style={{ padding: '0.5rem 1rem', color: '#a78bfa', fontWeight: 800, textAlign: 'left', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>JORNADA</th>
+                                <th style={{ padding: '0.5rem 1rem', color: '#ffffff', fontWeight: 800, textAlign: 'left', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>JORNADA</th>
                                 <th style={{ padding: '0.5rem 1rem', color: '#39ff14', fontWeight: 800, textAlign: 'center', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>TITULAR</th>
                                 <th style={{ padding: '0.5rem 1rem', color: '#eab308', fontWeight: 800, textAlign: 'center', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>SUPLENTE</th>
                               </tr>
@@ -2413,11 +2411,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       const mDur = m.timerSeconds || 0;
                       totalPartidosDuracion += mDur;
                       const mMin = calcMatchMinutes(pl, m.sustituciones, mDur);
-                      names.forEach(n => { totalMinutos[n] += mMin.minutos[n]; totalTitular[n] += mMin.titular[n]; totalSuplente[n] += mMin.suplente[n]; });
+                      names.forEach(n => { totalMinutos[n] += mMin.minutos[n]; if (mMin.titular[n] > 0) totalTitular[n] += 1; if (mMin.suplente[n] > 0) totalSuplente[n] += 1; });
                     });
                     totalPartidosDuracion += timerSeconds;
                     const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
-                    names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; totalTitular[n] += liveMin.titular[n]; totalSuplente[n] += liveMin.suplente[n]; });
+                    names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; if (liveMin.titular[n] > 0) totalTitular[n] += 1; if (liveMin.suplente[n] > 0) totalSuplente[n] += 1; });
                     const filas = Object.entries(totalMinutos).sort((a, b) => b[1] - a[1]);
                     const noConvocadoCount = {};
                     const lesionadoCount = {};
@@ -2523,7 +2521,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div>
                           <div style={{ marginBottom: '0.8rem' }}>
-                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>MINUTOS JUGADOS POR JORNADA:</label>
+                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>MINUTOS JORNADA:</label>
                             <select
                               value={selectedJornadaTiempo}
                               onChange={e => setSelectedJornadaTiempo(e.target.value)}
@@ -2539,7 +2537,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               }}
                             >
                               <option value="">Seleccionar jornada</option>
-                              {matches.filter(m => m.matchday).sort((a, b) => a.matchday - b.matchday).map(m => (
+                              {matches.filter(m => m.matchday).sort((a, b) => b.matchday - a.matchday).map(m => (
                                 <option key={m.id} value={m.id}>J{m.matchday} — {m.homeTeam} vs {m.awayTeam}</option>
                               ))}
                               {currentMatch && <option value={currentMatch.id}>J{currentMatch.matchday} — {currentMatch.homeTeam} vs {currentMatch.awayTeam} (ahora)</option>}
