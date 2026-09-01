@@ -2205,6 +2205,37 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         {jugadoresData[jugadorSeleccionado].pos2}
                       </span>
                     )}
+                    {jugadorSeleccionado && (
+                      <button
+                        onClick={async () => {
+                          if (!fichaJugadorRef.current) return;
+                          try {
+                            const canvas = await html2canvas(fichaJugadorRef.current, { backgroundColor: '#0b0f19', scale: 2 });
+                            const link = document.createElement('a');
+                            link.download = `${jugadorSeleccionado}_ficha.jpg`;
+                            link.href = canvas.toDataURL('image/jpeg', 0.95);
+                            link.click();
+                          } catch (err) {
+                            console.error('Error exportando imagen:', err);
+                          }
+                        }}
+                        style={{
+                          background: '#38bdf8',
+                          color: '#000',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '0.3rem 0.6rem',
+                          cursor: 'pointer',
+                          fontWeight: 700,
+                          fontSize: '0.75rem',
+                          textTransform: 'uppercase',
+                          marginTop: '0.5rem',
+                          width: '150px'
+                        }}
+                      >
+                        DESCARGAR JPG
+                      </button>
+                    )}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     {jugadorSeleccionado && (
