@@ -2144,7 +2144,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     contarRivalGoals({ players, golesRivalList, timerSeconds }, sustituciones);
                     const minutosPorJornada = [];
                     matches.forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
                       const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
                       const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
                       minutosPorJornada.push({ name: `J${m.matchday || '?'} — ${m.homeTeam || '?'} vs ${m.awayTeam || '?'}`, minutos: mMin.minutos[jugadorSeleccionado] || 0, titular: mMin.titular[jugadorSeleccionado] || 0, suplente: mMin.suplente[jugadorSeleccionado] || 0 });
