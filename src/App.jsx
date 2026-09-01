@@ -5336,8 +5336,8 @@ marginLeft: '-6rem'
                             ))}
                           </select>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: '35px' }}>
-                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>MINUTO</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: '25px' }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>MIN.</span>
                           <input
                             type="number"
                             min="0"
@@ -5357,9 +5357,9 @@ marginLeft: '-6rem'
                               color: '#ffffff',
                               fontWeight: 900,
                               fontSize: '0.9rem',
-                              padding: '0.4rem 0.6rem',
+                              padding: '0.4rem 0.3rem',
                               textAlign: 'center',
-                              flex: 1
+                              width: '35px'
                             }}
                           />
                         </div>
