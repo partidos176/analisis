@@ -2411,11 +2411,19 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       const mDur = m.timerSeconds || 0;
                       totalPartidosDuracion += mDur;
                       const mMin = calcMatchMinutes(pl, m.sustituciones, mDur);
-                      names.forEach(n => { totalMinutos[n] += mMin.minutos[n]; if (mMin.titular[n] > 0) totalTitular[n] += 1; if (mMin.suplente[n] > 0) totalSuplente[n] += 1; });
+                      names.forEach(n => { totalMinutos[n] += mMin.minutos[n]; });
+                      pl.forEach(p => {
+                        if (p && p.status === 'titular') totalTitular[p.name] = (totalTitular[p.name] || 0) + 1;
+                        else if (p && p.status === 'suplente') totalSuplente[p.name] = (totalSuplente[p.name] || 0) + 1;
+                      });
                     });
                     totalPartidosDuracion += timerSeconds;
                     const liveMin = calcMatchMinutes(players, sustituciones, timerSeconds);
-                    names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; if (liveMin.titular[n] > 0) totalTitular[n] += 1; if (liveMin.suplente[n] > 0) totalSuplente[n] += 1; });
+                    names.forEach(n => { totalMinutos[n] += liveMin.minutos[n]; });
+                    players.forEach(p => {
+                      if (p && p.status === 'titular') totalTitular[p.name] = (totalTitular[p.name] || 0) + 1;
+                      else if (p && p.status === 'suplente') totalSuplente[p.name] = (totalSuplente[p.name] || 0) + 1;
+                    });
                     const filas = Object.entries(totalMinutos).sort((a, b) => b[1] - a[1]);
                     const noConvocadoCount = {};
                     const lesionadoCount = {};
@@ -2454,8 +2462,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{formatTime(m)}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalTitular[n] > 0 ? formatTime(totalTitular[n]) : '0:00'}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalSuplente[n] > 0 ? formatTime(totalSuplente[n]) : '0:00'}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalTitular[n] || 0}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalSuplente[n] || 0}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
