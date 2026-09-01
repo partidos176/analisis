@@ -2150,8 +2150,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       minutosPorJornada.push({ name: `J${m.matchday || '?'} — ${m.homeTeam || '?'} vs ${m.awayTeam || '?'}`, minutos: mMin.minutos[jugadorSeleccionado] || 0, titular: mMin.titular[jugadorSeleccionado] || 0, suplente: mMin.suplente[jugadorSeleccionado] || 0 });
                     });
                     return (
-                  <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginBottom: '0.5rem' }}>
                     {jugadorSeleccionado && (
                       <button
                         onClick={async () => {
@@ -2182,6 +2182,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </button>
                     )}
                     </div>
+                  <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                     <select
@@ -2381,6 +2382,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       )}
                     </div>
                     </div>
+                  </div>
                   </div>
                     );
                   })()}
