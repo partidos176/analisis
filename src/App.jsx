@@ -2334,11 +2334,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </tbody>
                       </table>
                     )}
-                    </div>
-                    </div>
-                  </div>
                       {jugadorSeleccionado && minutosPorJornada.length > 0 && (
-                        <div style={{ marginTop: '1.5rem', width: 'calc(100% + 4rem)', marginLeft: '-2rem' }}>
+                        <div style={{ marginTop: '1.5rem', width: '100%' }}>
                           <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
                             EVOLUCIÓN MINUTOS
                           </span>
@@ -2355,6 +2352,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           </ResponsiveContainer>
                         </div>
                       )}
+                    </div>
+                    </div>
+                  </div>
                       {jugadorSeleccionado && minutosPorJornada.length > 0 && (
                       <div style={{ marginTop: '1rem', width: '100%', overflowX: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                           <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
