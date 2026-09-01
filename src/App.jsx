@@ -2167,18 +2167,18 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           }
                         }}
                         style={{
-                          background: '#38bdf8',
+                          background: '#22c55e',
                           color: '#000',
                           border: 'none',
                           borderRadius: '8px',
                           padding: '0.3rem 0.6rem',
                           cursor: 'pointer',
                           fontWeight: 700,
-                          fontSize: '0.75rem',
+                          fontSize: '1.1rem',
                           textTransform: 'uppercase'
                         }}
                       >
-                        DESCARGAR
+                        ↓
                       </button>
                     )}
                     </div>
