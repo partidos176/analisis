@@ -1854,7 +1854,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         {crucePropiasAcciones.length > 0 && crucePropiasFinalizaciones.length > 0 && (
                           <div>
                             <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES PROPIAS</span>
+                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES PROPIAS</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
@@ -1892,7 +1892,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         {cruceRivalAcciones.length > 0 && cruceRivalFinalizaciones.length > 0 && (
                           <div>
                             <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES RIVAL</span>
+                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES RIVAL</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.8rem' }}>
