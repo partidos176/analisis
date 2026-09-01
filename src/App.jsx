@@ -2151,8 +2151,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     });
                     return (
                   <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
                     {jugadorSeleccionado && (
                       <button
                         onClick={async () => {
@@ -2176,14 +2175,15 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           cursor: 'pointer',
                           fontWeight: 700,
                           fontSize: '0.75rem',
-                          textTransform: 'uppercase',
-                          width: '150px',
-alignSelf: 'flex-end'
+                          textTransform: 'uppercase'
                         }}
                       >
                         DESCARGAR
                       </button>
                     )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                     <select
                       value={jugadorSeleccionado}
                       onChange={(e) => setJugadorSeleccionado(e.target.value)}
