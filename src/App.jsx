@@ -2178,7 +2178,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           fontSize: '0.75rem',
                           textTransform: 'uppercase',
                           width: '150px',
-                          alignSelf: 'center'
+alignSelf: 'flex-end'
                         }}
                       >
                         DESCARGAR JPG
