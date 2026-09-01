@@ -2208,8 +2208,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     {jugadorSeleccionado && (
-                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
-                        DISPUTA {formatTime(totalMinutos[jugadorSeleccionado] || 0)} MIN. = TITULAR {formatTime(totalTitular[jugadorSeleccionado] || 0)} + SUPLENTE {formatTime(totalSuplente[jugadorSeleccionado] || 0)}
+                      <span style={{ fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
+                        <span style={{ color: '#39ff14' }}>DISPUTA {formatTime(totalMinutos[jugadorSeleccionado] || 0)} MIN.</span>
+                        <span style={{ color: '#ffffff' }}> = TITULAR {formatTime(totalTitular[jugadorSeleccionado] || 0)} + SUPLENTE {formatTime(totalSuplente[jugadorSeleccionado] || 0)}</span>
                       </span>
                     )}
                     {jugadorSeleccionado && (
