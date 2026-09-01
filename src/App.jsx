@@ -2334,27 +2334,27 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </tbody>
                       </table>
                     )}
-                    {jugadorSeleccionado && minutosPorJornada.length > 0 && (
-                      <div style={{ marginTop: '1.5rem', width: 'calc(100% + 4rem)', marginLeft: '-2rem' }}>
-                        <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
-                          EVOLUCIÓN MINUTOS
-                        </span>
-                        <ResponsiveContainer width="100%" height={250}>
-                          <LineChart data={minutosPorJornada} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                            <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} interval={0} tickFormatter={(v) => v.split('—')[0].trim()} />
-                            <YAxis stroke="#94a3b8" fontSize={10} tickFormatter={(v) => Math.round(v / 60)} />
-                            <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => [`${Math.round(value / 60)} min`, 'Minutos']} />
-                            <Line type="monotone" dataKey="minutos" stroke="#ffffff" strokeWidth={3} dot={{ fill: '#ffffff', r: 4 }} activeDot={{ r: 6 }} />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      )}
                     </div>
                     </div>
                   </div>
                       {jugadorSeleccionado && minutosPorJornada.length > 0 && (
-                        <div style={{ marginTop: '1rem', width: '100%', overflowX: 'auto' }}>
+                        <div style={{ marginTop: '1.5rem', width: 'calc(100% + 4rem)', marginLeft: '-2rem' }}>
+                          <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
+                            EVOLUCIÓN MINUTOS
+                          </span>
+                          <ResponsiveContainer width="100%" height={250}>
+                            <LineChart data={minutosPorJornada} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                              <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} interval={0} tickFormatter={(v) => v.split('—')[0].trim()} />
+                              <YAxis stroke="#94a3b8" fontSize={10} tickFormatter={(v) => Math.round(v / 60)} />
+                              <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => [`${Math.round(value / 60)} min`, 'Minutos']} />
+                              <Line type="monotone" dataKey="minutos" stroke="#ffffff" strokeWidth={3} dot={{ fill: '#ffffff', r: 4 }} activeDot={{ r: 6 }} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                      {jugadorSeleccionado && minutosPorJornada.length > 0 && (
+                      <div style={{ marginTop: '1rem', width: '100%', overflowX: 'auto' }}>
                           <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
                             MINUTOS JORNADA
                           </span>
