@@ -5359,8 +5359,10 @@ marginLeft: '-6rem'
                               fontSize: '0.9rem',
                               padding: '0.4rem 0.3rem',
                               textAlign: 'center',
-                              width: '45px'
+                              width: '45px',
+                              MozAppearance: 'textfield'
                             }}
+                            className="no-spinner"
                           />
                         </div>
                         <button
