@@ -2236,7 +2236,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </span>
                     )}
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '1rem' }}>
                     {jugadorSeleccionado && (
                       <span style={{ fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
                         <span style={{ color: '#39ff14' }}>DISPUTA {formatTime(totalMinutos[jugadorSeleccionado] || 0)} MIN.</span>
