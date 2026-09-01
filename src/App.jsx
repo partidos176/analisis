@@ -25,7 +25,7 @@ import raveloImg from './jugadores/ravelo.jpg';
 import santanaImg from './jugadores/santana.jpg';
 import santosImg from './jugadores/santos.jpg';
 import nuhaImg from './jugadores/nuha.jpg';
-import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 
@@ -2346,7 +2346,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <LineChart data={minutosPorJornada} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                               <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} interval={0} tickFormatter={(v) => v.split('—')[0].trim()} />
-                              <YAxis stroke="#94a3b8" fontSize={10} tickFormatter={(v) => Math.round(v / 60)} />
+                              <YAxis stroke="#94a3b8" fontSize={10} tickFormatter={(v) => Math.round(v / 60)}>
+                                <Label value="MINUTOS" angle={-90} position="insideLeft" style={{ fill: '#94a3b8', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', textAnchor: 'middle' }} />
+                              </YAxis>
                               <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => [`${Math.round(value / 60)} min`, 'Minutos']} />
                               <Line type="monotone" dataKey="minutos" stroke="#ffffff" strokeWidth={3} dot={{ fill: '#ffffff', r: 4 }} activeDot={{ r: 6 }} />
                             </LineChart>
