@@ -2219,7 +2219,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         style={{
                           width: '150px',
                           height: '200px',
-                          objectFit: 'cover',
+                          objectFit: 'contain',
                           borderRadius: '12px',
                           border: '2px solid var(--border-subtle)',
                           marginTop: '0.5rem'
