@@ -2335,7 +2335,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </table>
                     )}
                     {jugadorSeleccionado && minutosPorJornada.length > 0 && (
-                      <div style={{ marginTop: '1.5rem', width: '100%', marginLeft: '-2rem' }}>
+                      <div style={{ marginTop: '1.5rem', width: '100%', marginLeft: '-4rem' }}>
                         <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
                           EVOLUCIÓN MINUTOS
                         </span>
