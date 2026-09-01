@@ -5254,7 +5254,23 @@ marginLeft: '-6rem'
                     SUSTITUCIONES
                   </span>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {[0, 1, 2, 3, 4].map(row => (
+                    {(() => {
+                        const onFieldForRow = (r) => {
+                          const titulares = players.filter(p => p.status === 'titular').map(p => p.name).filter(Boolean);
+                          const field = [...titulares];
+                          for (let i = 0; i < r; i++) {
+                            const s = sustituciones[i];
+                            if (s && s.sale && s.entra) {
+                              const outIdx = field.indexOf(s.sale);
+                              if (outIdx !== -1) field.splice(outIdx, 1);
+                              if (!field.includes(s.entra)) field.push(s.entra);
+                            }
+                          }
+                          return field;
+                        };
+                        return [0, 1, 2, 3, 4].map(row => {
+                        const onField = onFieldForRow(row);
+                        return (
                       <div key={row} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem', minWidth: '24px', textAlign: 'center' }}>{row + 1}</span>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -5283,7 +5299,7 @@ marginLeft: '-6rem'
                             }}
                           >
                             <option value="">-</option>
-                            {[...new Set(players.filter(p => p.status === 'titular').map(p => p.name).filter(Boolean).filter(name => !sustituciones.some((s, i) => i !== row && s && s.sale === name)))].map(name => (
+                            {onField.filter(name => !sustituciones.some((s, i) => i < row && s && s.sale === name)).map(name => (
                               <option key={name} value={name}>{name}</option>
                             ))}
                           </select>
@@ -5356,7 +5372,9 @@ marginLeft: '-6rem'
                           style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
                         >X</button>
                       </div>
-                    ))}
+                      );
+                      });
+                      })()}
                   </div>
                 </div>
               )}
