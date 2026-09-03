@@ -4226,7 +4226,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         <button
                           onClick={toggleGrabarAudio}
                           style={{ background: grabandoAudio ? '#ef4444' : '#a855f7', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.7rem 1.8rem', fontWeight: 800, fontSize: '1.05rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '-1.6rem', left: '-6rem' }}>
-                          {grabandoAudio ? '■ PARAR' : 'VARIO'}
+                          {grabandoAudio ? '■ PARAR' : 'NOTA DE VOZ'}
                         </button>
                       <button
                         onClick={() => {
