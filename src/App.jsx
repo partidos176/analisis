@@ -1412,10 +1412,23 @@ export default function App() {
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         <header className="app-header">
           <button className="btn-sm btn-secondary app-back-btn" onClick={() => setVista('menu')}>&#8592;</button>
-          <span style={{ fontWeight: 800, fontSize: '1.15rem' }}>OFF LIVE</span>
+          <nav className="app-tabs">
+            <button className="tab-btn active">TIMELINE</button>
+          </nav>
         </header>
-        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>Próximamente</span>
+        <main style={{ flex: 1, padding: '2rem' }}>
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '2rem',
+            minHeight: '400px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem'
+          }}>
+            <span style={{ color: '#94a3b8', fontSize: '1.2rem', textAlign: 'center' }}>TIMELINE — Próximamente</span>
+          </div>
         </main>
       </div>
     );
