@@ -1563,7 +1563,7 @@ export default function App() {
                     </td>
                     <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)' }}>
                       <select style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.4rem', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
-                        <option value="">Seleccionar finalización...</option>
+                        <option value="">-</option>
                         {['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'].map(f => (
                           <option key={f} value={f}>{f}</option>
                         ))}
