@@ -1595,7 +1595,12 @@ export default function App() {
               <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', marginTop: '0.5rem', textDecoration: 'underline' }}>
                 1ª PARTE
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem', tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '42%' }} />
+                  <col style={{ width: '38%' }} />
+                  <col style={{ width: '20%' }} />
+                </colgroup>
                 <tbody>
                   {timelineRows.map((row, idx) => (
                     <tr key={idx}>
@@ -1650,7 +1655,12 @@ export default function App() {
                 2ª PARTE
               </div>
               {timelineRows2.length > 0 && (
-                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem', tableLayout: 'fixed' }}>
+                  <colgroup>
+                    <col style={{ width: '42%' }} />
+                    <col style={{ width: '38%' }} />
+                    <col style={{ width: '20%' }} />
+                  </colgroup>
                   <tbody>
                     {timelineRows2.map((row, idx) => (
                       <tr key={idx}>
