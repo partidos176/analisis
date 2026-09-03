@@ -4034,9 +4034,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           IGUALAR CONTADOR
                         </div>
                       )}
-                      </div>
-                      </div>
-                      <button
+                       </div>
+                       </div>
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
+                       <button
                         onClick={() => {
                           if (logAction('OFF PROPIO')) {
                             setOffNeutroCount(offNeutroCount + 1);
@@ -4119,6 +4120,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           {offRivalCount}
                         </span>
                       </button>
+                      </div>
                        </div>
                        </div>
                 {/* Listado de acciones */}
