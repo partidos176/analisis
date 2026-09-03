@@ -1497,7 +1497,7 @@ export default function App() {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', marginTop: '0.5rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button onClick={() => setFin1Time(timelineTime)} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                    <button onClick={() => { setFin1Time(timelineTime); setTimelineRows(prev => [...prev, { action: 'INICIO 1ª PARTE', finalization: '-', time: timelineTime }]); }} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       INICIO 1ª PARTE
                     </button>
                     {fin1Time !== null && (
@@ -1507,7 +1507,7 @@ export default function App() {
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button onClick={() => setInicio2Time(timelineTime)} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                    <button onClick={() => { setInicio2Time(timelineTime); setTimelineRows(prev => [...prev, { action: 'INICIO 2ª PARTE', finalization: '-', time: timelineTime }]); }} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       INICIO 2ª PARTE
                     </button>
                     {inicio2Time !== null && (
@@ -1519,7 +1519,7 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button onClick={() => setFin1EndTime(timelineTime)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                    <button onClick={() => { setFin1EndTime(timelineTime); setTimelineRows(prev => [...prev, { action: 'FIN 1ª PARTE', finalization: '-', time: timelineTime }]); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       FIN 1ª PARTE
                     </button>
                     {fin1EndTime !== null && (
@@ -1529,7 +1529,7 @@ export default function App() {
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button onClick={() => setFin2EndTime(timelineTime)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                    <button onClick={() => { setFin2EndTime(timelineTime); setTimelineRows(prev => [...prev, { action: 'FIN 2ª PARTE', finalization: '-', time: timelineTime }]); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       FIN 2ª PARTE
                     </button>
                     {fin2EndTime !== null && (
