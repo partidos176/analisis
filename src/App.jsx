@@ -3963,10 +3963,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </span>
                       </button>
                       </div>
-                </div>
-                </div>
-                <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                       <button
                         onClick={() => {
                           if (onNeutroCount !== offNeutroCount) {
@@ -4014,6 +4010,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           {onRivalCount}
                         </span>
                       </button>
+                </div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                       <div style={{ position: 'relative' }}>
                       <button
                         onClick={() => {
