@@ -1495,7 +1495,7 @@ export default function App() {
                   INICIO 1ª PARTE
                 </button>
                 {fin1Time !== null && (
-                  <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: 'rgba(0,0,0,0.5)', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                  <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#0284c7', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
                     {String(Math.floor(fin1Time / 60)).padStart(2, '0')}:{String(fin1Time % 60).padStart(2, '0')}
                   </span>
                 )}
