@@ -1596,7 +1596,7 @@ export default function App() {
                             return String(Math.floor(elapsed / 60)).padStart(2, '0') + ':' + String(elapsed % 60).padStart(2, '0');
                           })() : '--:--'}
                         </span>
-                        {timelineRows.length > 1 && (
+                        {timelineRows.length > 0 && (
                           <button onClick={() => {
                             const updated = timelineRows.filter((_, i) => i !== idx);
                             setTimelineRows(updated);
