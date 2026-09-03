@@ -137,6 +137,7 @@ export default function App() {
   const [vista, setVista] = useState('menu');
   const [timelineVideo, setTimelineVideo] = useState(null);
   const [timelineTime, setTimelineTime] = useState(0);
+  const [fin1Time, setFin1Time] = useState(null);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
 
   useEffect(() => {
@@ -1489,9 +1490,16 @@ export default function App() {
                   {String(Math.floor(timelineTime / 60)).padStart(2, '0')}:{String(timelineTime % 60).padStart(2, '0')}
                 </span>
               </div>
-              <button style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', marginTop: '0.5rem', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-                Fin 1ª parte
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+                <button onClick={() => setFin1Time(timelineTime)} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                  Fin 1ª parte
+                </button>
+                {fin1Time !== null && (
+                  <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: 'rgba(0,0,0,0.5)', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                    {String(Math.floor(fin1Time / 60)).padStart(2, '0')}:{String(fin1Time % 60).padStart(2, '0')}
+                  </span>
+                )}
+              </div>
               </>
             ) : (
               <label style={{
