@@ -1441,6 +1441,7 @@ export default function App() {
             alignItems: 'center'
           }}>
             {timelineVideo ? (
+              <>
               <div style={{ position: 'relative', width: '50%' }}>
                 <video
                   src={timelineVideoUrl}
@@ -1488,6 +1489,10 @@ export default function App() {
                   {String(Math.floor(timelineTime / 60)).padStart(2, '0')}:{String(timelineTime % 60).padStart(2, '0')}
                 </span>
               </div>
+              <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '1rem', color: '#ffffff', marginTop: '0.5rem' }}>
+                Fin 1ª parte
+              </div>
+              </>
             ) : (
               <label style={{
                 display: 'flex',
