@@ -4127,7 +4127,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       )}
                     </div>
                     </div>
-                  </div>
                 {/* Listado de acciones */}
                 <div style={{
                   display: 'flex',
@@ -4342,6 +4341,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     </div>
                   ))}
                   </div>
+                </div>
                 </div>
               </div>
             )}
