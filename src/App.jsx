@@ -1569,6 +1569,14 @@ export default function App() {
                         ))}
                       </select>
                     </td>
+                    <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center' }}>
+                      <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
+                        {fin1Time !== null ? (() => {
+                          const elapsed = Math.max(0, timelineTime - fin1Time);
+                          return String(Math.floor(elapsed / 60)).padStart(2, '0') + ':' + String(elapsed % 60).padStart(2, '0');
+                        })() : '--:--'}
+                      </span>
+                    </td>
                   </tr>
                 </tbody>
               </table>
