@@ -1324,7 +1324,8 @@ export default function App() {
     const opciones = [
       { id: 'analisis', titulo: 'ANÁLISIS', descripcion: '', color: '#0284c7' },
       { id: 'tratamiento', titulo: 'EDICIÓN', descripcion: '', color: '#8b5cf6' },
-      { id: 'totales', titulo: 'TOTALES', descripcion: '', color: '#f59e0b' }
+      { id: 'totales', titulo: 'TOTALES', descripcion: '', color: '#f59e0b' },
+      { id: 'offlive', titulo: 'OFF LIVE', descripcion: '', color: '#22c55e' }
     ];
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -1402,6 +1403,21 @@ export default function App() {
         </button>
         <TratamientoApp videoInicial={videoParaTratamiento} />
       </>
+    );
+  }
+
+  // Vista de OFF LIVE
+  if (vista === 'offlive') {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <header className="app-header">
+          <button className="btn-sm btn-secondary app-back-btn" onClick={() => setVista('menu')}>&#8592;</button>
+          <span style={{ fontWeight: 800, fontSize: '1.15rem' }}>OFF LIVE</span>
+        </header>
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ color: '#94a3b8', fontSize: '1.2rem' }}>Próximamente</span>
+        </main>
+      </div>
     );
   }
 
