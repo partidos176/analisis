@@ -3873,8 +3873,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     }}>
                       {inicioRivalCount}
                     </span>
-                      </button>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                       </button>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
                       <button
                         onClick={() => {
                           if (onRivalCount !== offRivalCount) {
@@ -3923,48 +3924,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </button>
                       <button
                         onClick={() => {
-                          if (logAction('OFF PROPIO')) {
-                            setOffNeutroCount(offNeutroCount + 1);
-                          }
-                        }}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: '#f97316',
-                          color: '#ffffff',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          padding: '1rem',
-                          borderRadius: '50%',
-                          width: '75px',
-                          height: '75px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          gap: '0.2rem',
-                          cursor: 'pointer',
-                          border: 'none'
-                        }}
-                      >
-                        <span>OFF</span>
-                        <span>PROPIO</span>
-                        <span style={{
-                          background: '#ffffff',
-                          color: '#f97316',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          padding: '0.1rem 0.4rem',
-                          borderRadius: '8px',
-                          minWidth: '20px',
-                          textAlign: 'center'
-                        }}>
-                          {offNeutroCount}
-                        </span>
-                      </button>
-                      </div>
-                      <button
-                        onClick={() => {
                           if (onNeutroCount !== offNeutroCount) {
                             setIgualarAviso(true);
                             setTimeout(() => setIgualarAviso(false), 2500);
@@ -4010,6 +3969,93 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           {onRivalCount}
                         </span>
                       </button>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
+                      <button
+                        onClick={() => {
+                          if (logAction('OFF PROPIO')) {
+                            setOffNeutroCount(offNeutroCount + 1);
+                          }
+                        }}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#f97316',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          padding: '1rem',
+                          borderRadius: '50%',
+                          width: '75px',
+                          height: '75px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          gap: '0.2rem',
+                          cursor: 'pointer',
+                          border: 'none'
+                        }}
+                      >
+                        <span>OFF</span>
+                        <span>PROPIO</span>
+                        <span style={{
+                          background: '#ffffff',
+                          color: '#f97316',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '8px',
+                          minWidth: '20px',
+                          textAlign: 'center'
+                        }}>
+                          {offNeutroCount}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (logAction('OFF RIVAL')) {
+                            setFromRival(true);
+                            setOffRivalCount(offRivalCount + 1);
+                          }
+                        }}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#6b7280',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          padding: '1rem',
+                          borderRadius: '50%',
+                          width: '75px',
+                          height: '75px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          gap: '0.2rem',
+                          cursor: 'pointer',
+                          border: 'none'
+                        }}
+                      >
+                        <span>OFF</span>
+                        <span>RIVAL</span>
+                        <span style={{
+                          background: '#ffffff',
+                          color: '#6b7280',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '8px',
+                          minWidth: '20px',
+                          textAlign: 'center'
+                        }}>
+                          {offRivalCount}
+                        </span>
+                      </button>
+                      </div>
+                      </div>
                 </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
@@ -4080,50 +4126,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </div>
                       )}
                     </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                      <button
-                        onClick={() => {
-                          if (logAction('OFF RIVAL')) {
-                            setFromRival(true);
-                            setOffRivalCount(offRivalCount + 1);
-                          }
-                        }}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: '#6b7280',
-                          color: '#ffffff',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          padding: '1rem',
-                          borderRadius: '50%',
-                          width: '75px',
-                          height: '75px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          gap: '0.2rem',
-                          cursor: 'pointer',
-                          border: 'none'
-                        }}
-                      >
-                        <span>OFF</span>
-                        <span>RIVAL</span>
-                        <span style={{
-                          background: '#ffffff',
-                          color: '#6b7280',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          padding: '0.1rem 0.4rem',
-                          borderRadius: '8px',
-                          minWidth: '20px',
-                          textAlign: 'center'
-                        }}>
-                          {offRivalCount}
-                        </span>
-                      </button>
                     </div>
                   </div>
                 {/* Listado de acciones */}
