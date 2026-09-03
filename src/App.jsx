@@ -143,7 +143,6 @@ export default function App() {
   const [fin2EndTime, setFin2EndTime] = useState(null);
   const [timelineRows, setTimelineRows] = useState([{ action: '', finalization: '-', time: null }]);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
-  const allFourSet = useRef(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -152,18 +151,6 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
-
-  useEffect(() => {
-    if (fin1Time != null && fin1EndTime != null && inicio2Time != null && fin2EndTime != null) {
-      if (!allFourSet.current) {
-        allFourSet.current = true;
-        const baseTime = Math.min(fin1Time, fin1EndTime, inicio2Time, fin2EndTime);
-        setTimelineRows(prev => [...prev, { action: '', finalization: '-', time: baseTime }]);
-      }
-    } else {
-      allFourSet.current = false;
-    }
-  }, [fin1Time, fin1EndTime, inicio2Time, fin2EndTime]);
 
   const [homeTeam, setHomeTeam] = useState('');
   const [awayTeam, setAwayTeam] = useState('');
@@ -1510,7 +1497,7 @@ export default function App() {
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', marginTop: '0.5rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button onClick={() => { setFin1Time(timelineTime); setTimelineRows(prev => [...prev, { action: 'INICIO 1ª PARTE', finalization: '-', time: timelineTime }]); }} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                    <button onClick={() => { setFin1Time(timelineTime); }} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       INICIO 1ª PARTE
                     </button>
                     {fin1Time !== null && (
@@ -1520,7 +1507,7 @@ export default function App() {
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button onClick={() => { setInicio2Time(timelineTime); setTimelineRows(prev => [...prev, { action: 'INICIO 2ª PARTE', finalization: '-', time: timelineTime }]); }} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                    <button onClick={() => { setInicio2Time(timelineTime); }} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       INICIO 2ª PARTE
                     </button>
                     {inicio2Time !== null && (
@@ -1532,7 +1519,7 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button onClick={() => { setFin1EndTime(timelineTime); setTimelineRows(prev => [...prev, { action: 'FIN 1ª PARTE', finalization: '-', time: timelineTime }]); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                    <button onClick={() => { setFin1EndTime(timelineTime); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       FIN 1ª PARTE
                     </button>
                     {fin1EndTime !== null && (
@@ -1542,7 +1529,7 @@ export default function App() {
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button onClick={() => { setFin2EndTime(timelineTime); setTimelineRows(prev => [...prev, { action: 'FIN 2ª PARTE', finalization: '-', time: timelineTime }]); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                    <button onClick={() => { setFin2EndTime(timelineTime); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       FIN 2ª PARTE
                     </button>
                     {fin2EndTime !== null && (
@@ -1570,14 +1557,7 @@ export default function App() {
                     <tr key={idx}>
                       <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)' }}>
                         <select value={row.action} onChange={(e) => {
-                          const val = e.target.value;
-                          setTimelineRows(prev => {
-                            const updated = prev.map((r, i) => i === idx ? { ...r, action: val, time: val !== '' ? timelineTime : null } : r);
-                            if (val !== '') {
-                              updated.push({ action: '', finalization: '-', time: null });
-                            }
-                            return updated;
-                          });
+                          setTimelineRows(prev => prev.map((r, i) => i === idx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r));
                         }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.4rem', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                           <option value="">Seleccionar acción...</option>
                           {['INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS'].map(a => (
@@ -1587,14 +1567,7 @@ export default function App() {
                       </td>
                       <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)' }}>
                         <select value={row.finalization} onChange={(e) => {
-                          const val = e.target.value;
-                          setTimelineRows(prev => {
-                            const updated = prev.map((r, i) => i === idx ? { ...r, finalization: val } : r);
-                            if (val !== '-' && val !== '') {
-                              updated.push({ action: '', finalization: '-' });
-                            }
-                            return updated;
-                          });
+                          setTimelineRows(prev => prev.map((r, i) => i === idx ? { ...r, finalization: e.target.value } : r));
                         }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.4rem', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                           <option value="-">-</option>
                           {['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'].map(f => (
