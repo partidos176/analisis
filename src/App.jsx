@@ -1489,9 +1489,9 @@ export default function App() {
                   {String(Math.floor(timelineTime / 60)).padStart(2, '0')}:{String(timelineTime % 60).padStart(2, '0')}
                 </span>
               </div>
-              <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '1rem', color: '#ffffff', marginTop: '0.5rem' }}>
+              <button style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', marginTop: '0.5rem', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                 Fin 1ª parte
-              </div>
+              </button>
               </>
             ) : (
               <label style={{
