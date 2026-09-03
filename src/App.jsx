@@ -141,7 +141,7 @@ export default function App() {
   const [fin1EndTime, setFin1EndTime] = useState(null);
   const [inicio2Time, setInicio2Time] = useState(null);
   const [fin2EndTime, setFin2EndTime] = useState(null);
-  const [timelineRows, setTimelineRows] = useState([{ action: '', finalization: '-' }]);
+  const [timelineRows, setTimelineRows] = useState([{ action: '', finalization: '-', time: null }]);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
 
   useEffect(() => {
@@ -1591,7 +1591,7 @@ export default function App() {
                       </td>
                       <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                         <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
-                          {row.time !== null && fin1Time !== null ? (() => {
+                          {row.time != null && fin1Time != null ? (() => {
                             const elapsed = Math.max(0, row.time - fin1Time);
                             return String(Math.floor(elapsed / 60)).padStart(2, '0') + ':' + String(elapsed % 60).padStart(2, '0');
                           })() : '--:--'}
