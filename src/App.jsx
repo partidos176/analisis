@@ -1570,7 +1570,7 @@ export default function App() {
                           const val = e.target.value;
                           setTimelineRows(prev => {
                             const updated = prev.map((r, i) => i === idx ? { ...r, finalization: val } : r);
-                            if (val !== '-' && val !== '' && updated[idx].action !== '') {
+                            if (val === '-' && updated[idx].action !== '') {
                               updated.push({ action: '', finalization: '-', time: null });
                             }
                             return updated;
