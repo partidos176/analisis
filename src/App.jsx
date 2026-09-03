@@ -1557,9 +1557,7 @@ export default function App() {
                     <tr key={idx}>
                       <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)' }}>
                         <select value={row.action} onChange={(e) => {
-                          const updated = [...timelineRows];
-                          updated[idx] = { ...updated[idx], action: e.target.value };
-                          setTimelineRows(updated);
+                          setTimelineRows(prev => prev.map((r, i) => i === idx ? { ...r, action: e.target.value } : r));
                         }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.4rem', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                           <option value="">Seleccionar acción...</option>
                           {['INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS'].map(a => (
@@ -1569,12 +1567,14 @@ export default function App() {
                       </td>
                       <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)' }}>
                         <select value={row.finalization} onChange={(e) => {
-                          const updated = [...timelineRows];
-                          updated[idx] = { ...updated[idx], finalization: e.target.value };
-                          if (e.target.value !== '-' && e.target.value !== '') {
-                            updated.push({ action: '', finalization: '-' });
-                          }
-                          setTimelineRows(updated);
+                          const val = e.target.value;
+                          setTimelineRows(prev => {
+                            const updated = prev.map((r, i) => i === idx ? { ...r, finalization: val } : r);
+                            if (val !== '-' && val !== '') {
+                              updated.push({ action: '', finalization: '-' });
+                            }
+                            return updated;
+                          });
                         }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.4rem', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                           <option value="-">-</option>
                           {['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'].map(f => (
