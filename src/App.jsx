@@ -2890,6 +2890,24 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       FIN 1ª PARTE
                     </button>
                     <button
+                      onClick={handleFin}
+                      style={{
+                        background: '#dc2626',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        fontSize: '0.75rem',
+                        padding: '0.3rem 0.8rem',
+                        borderRadius: 'var(--radius-full)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        minWidth: '80px',
+                        textAlign: 'center',
+                        flex: 1
+                      }}
+                    >
+                      FIN 2ª PARTE
+                    </button>
+                    <button
                       onClick={handleResetContador}
                       style={{
                         background: '#64748b',
