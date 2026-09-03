@@ -3792,13 +3792,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     </span>
                   </button>
                 </div>
-                </div>
                 {/* Botones INICIO PROPIO e INICIO RIVAL */}
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1rem',
-                  marginLeft: '0rem'
+                  alignItems: 'flex-start'
                 }}>
                   <button
                     onClick={() => {
@@ -3875,7 +3874,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       {inicioRivalCount}
                     </span>
                   </button>
-                  <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
+                </div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                       <button
                         onClick={() => {
@@ -4123,7 +4124,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </button>
                     </div>
                   </div>
-                </div>
                 {/* Listado de acciones */}
                 <div style={{
                   display: 'flex',
