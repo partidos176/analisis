@@ -1418,6 +1418,15 @@ export default function App() {
           <nav className="app-tabs">
             <button className="tab-btn active">TIMELINE</button>
           </nav>
+          <div className="app-header-actions">
+            <button
+              onClick={() => setVista('menu')}
+              title="Volver al menú"
+              style={{ background: '#0284c7', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.4)' }}
+            >
+              &#8592; MENÚ
+            </button>
+          </div>
         </header>
         <main style={{ flex: 1, padding: '2rem' }}>
           <div style={{
