@@ -4119,8 +4119,16 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           IGUALAR CONTADOR
                         </div>
                       )}
-                       </div>
-                       </div>
+                </div>
+              </div>
+              {fin1Time !== null && inicio2Time !== null && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'Inter, sans-serif' }}>DESCANSO:</span>
+                  <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#6366f1', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                    {String(Math.floor((inicio2Time - fin1Time) / 60)).padStart(2, '0')}:{String((inicio2Time - fin1Time) % 60).padStart(2, '0')}
+                  </span>
+                </div>
+              )}
                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
                        <button
                         onClick={() => {
