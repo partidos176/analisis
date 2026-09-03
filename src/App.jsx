@@ -3969,8 +3969,73 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           {onRivalCount}
                         </span>
                       </button>
+                      <div style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => {
+                          if (logAction('PÉRDIDAS')) {
+                            setPerdidasCount(perdidasCount + 1);
+                          }
+                        }}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#ffffff',
+                          color: '#334155',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          padding: '1rem',
+                          borderRadius: '50%',
+                          width: '75px',
+                          height: '75px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          gap: '0.2rem',
+                          cursor: 'pointer',
+                          border: 'none'
+                        }}
+                      >
+                        <span>PÉRDIDAS</span>
+                        <span style={{
+                          background: '#334155',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '8px',
+                          minWidth: '20px',
+                          textAlign: 'center'
+                        }}>
+                          {perdidasCount}
+                        </span>
+                      </button>
+                      {igualarAviso && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '5px',
+                          right: '-80px',
+                          background: '#dc2626',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.55rem',
+                          width: '58px',
+                          height: '58px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          textAlign: 'center',
+                          lineHeight: '1.1',
+                          padding: '4px',
+                          zIndex: 10,
+                          animation: 'blink 0.5s infinite'
+                        }}>
+                          IGUALAR CONTADOR
+                        </div>
+                      )}
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
+                      </div>
                       <button
                         onClick={() => {
                           if (logAction('OFF PROPIO')) {
@@ -4054,79 +4119,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           {offRivalCount}
                         </span>
                       </button>
-                      </div>
-                      </div>
-                </div>
-                </div>
-                <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                      <div style={{ position: 'relative' }}>
-                      <button
-                        onClick={() => {
-                          if (logAction('PÉRDIDAS')) {
-                            setPerdidasCount(perdidasCount + 1);
-                          }
-                        }}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: '#ffffff',
-                          color: '#334155',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          padding: '1rem',
-                          borderRadius: '50%',
-                          width: '75px',
-                          height: '75px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          gap: '0.2rem',
-                          cursor: 'pointer',
-                          border: 'none'
-                        }}
-                      >
-                        <span>PÉRDIDAS</span>
-                        <span style={{
-                          background: '#334155',
-                          color: '#ffffff',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          padding: '0.1rem 0.4rem',
-                          borderRadius: '8px',
-                          minWidth: '20px',
-                          textAlign: 'center'
-                        }}>
-                          {perdidasCount}
-                        </span>
-                      </button>
-                      {igualarAviso && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '5px',
-                          right: '-80px',
-                          background: '#dc2626',
-                          color: '#ffffff',
-                          fontWeight: 900,
-                          fontSize: '0.55rem',
-                          width: '58px',
-                          height: '58px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          textAlign: 'center',
-                          lineHeight: '1.1',
-                          padding: '4px',
-                          zIndex: 10,
-                          animation: 'blink 0.5s infinite'
-                        }}>
-                          IGUALAR CONTADOR
-                        </div>
-                      )}
-                    </div>
-                    </div>
+                       </div>
+                       </div>
                 {/* Listado de acciones */}
                 <div style={{
                   display: 'flex',
