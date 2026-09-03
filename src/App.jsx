@@ -141,7 +141,7 @@ export default function App() {
   const [fin1EndTime, setFin1EndTime] = useState(null);
   const [inicio2Time, setInicio2Time] = useState(null);
   const [fin2EndTime, setFin2EndTime] = useState(null);
-  const [timelineRows, setTimelineRows] = useState([{ action: '', finalization: '-', time: null }]);
+  const [timelineRows, setTimelineRows] = useState([]);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
 
   useEffect(() => {
