@@ -2849,7 +2849,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         flex: 1
                       }}
                     >
-                      1ª PARTE
+                      INICIO 1ª PARTE
                     </button>
                     <button
                       onClick={handleSegundaParte}
