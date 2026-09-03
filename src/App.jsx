@@ -1546,6 +1546,9 @@ export default function App() {
                   <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#22c55e', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
                     {String(Math.floor((inicio2Time - fin1EndTime) / 60)).padStart(2, '0')}:{String((inicio2Time - fin1EndTime) % 60).padStart(2, '0')}
                   </span>
+                  <button onClick={() => setTimelineRows(prev => [...prev, { action: '', finalization: '-', time: null }])} style={{ background: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.3rem 0.8rem', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                    GENERAR
+                  </button>
                 </div>
               )}
               <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', marginTop: '0.5rem', textDecoration: 'underline' }}>
