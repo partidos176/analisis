@@ -1446,7 +1446,7 @@ export default function App() {
                   src={timelineVideoUrl}
                   controls
                   onTimeUpdate={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
-                  style={{ width: '100%', maxHeight: '500px', borderRadius: '8px' }}
+                  style={{ width: '100%', height: 'auto', borderRadius: '8px', display: 'block' }}
                 />
                 <button
                   onClick={() => { setTimelineVideo(null); setTimelineTime(0); }}
