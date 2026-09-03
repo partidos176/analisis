@@ -1602,6 +1602,9 @@ export default function App() {
                   ))}
                 </tbody>
               </table>
+              <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', marginTop: '0.5rem', textDecoration: 'underline' }}>
+                2ª PARTE
+              </div>
               </>
             ) : (
               <label style={{
