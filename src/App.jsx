@@ -1539,11 +1539,11 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              {fin1Time !== null && inicio2Time !== null && (
+              {fin1EndTime !== null && inicio2Time !== null && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
                   <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', background: '#22c55e', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>DESCANSO:</span>
                   <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#22c55e', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
-                    {String(Math.floor((inicio2Time - fin1Time) / 60)).padStart(2, '0')}:{String((inicio2Time - fin1Time) % 60).padStart(2, '0')}
+                    {String(Math.floor((inicio2Time - fin1EndTime) / 60)).padStart(2, '0')}:{String((inicio2Time - fin1EndTime) % 60).padStart(2, '0')}
                   </span>
                 </div>
               )}
