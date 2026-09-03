@@ -1559,9 +1559,9 @@ export default function App() {
                         <select value={row.action} onChange={(e) => {
                           const val = e.target.value;
                           setTimelineRows(prev => {
-                            const updated = prev.map((r, i) => i === idx ? { ...r, action: val } : r);
+                            const updated = prev.map((r, i) => i === idx ? { ...r, action: val, time: val !== '' ? timelineTime : null } : r);
                             if (val !== '') {
-                              updated.push({ action: '', finalization: '-' });
+                              updated.push({ action: '', finalization: '-', time: null });
                             }
                             return updated;
                           });
@@ -1591,8 +1591,8 @@ export default function App() {
                       </td>
                       <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                         <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
-                          {fin1Time !== null ? (() => {
-                            const elapsed = Math.max(0, timelineTime - fin1Time);
+                          {row.time !== null && fin1Time !== null ? (() => {
+                            const elapsed = Math.max(0, row.time - fin1Time);
                             return String(Math.floor(elapsed / 60)).padStart(2, '0') + ':' + String(elapsed % 60).padStart(2, '0');
                           })() : '--:--'}
                         </span>
