@@ -2867,7 +2867,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         flex: 1
                       }}
                     >
-                      2ª PARTE
+                      INICIO 2ª PARTE
                     </button>
                   </div>
                   <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'stretch' }}>
