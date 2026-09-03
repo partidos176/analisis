@@ -1441,7 +1441,7 @@ export default function App() {
             alignItems: 'center'
           }}>
             {timelineVideo ? (
-              <div style={{ position: 'relative', width: '100%' }}>
+              <div style={{ position: 'relative', width: '50%' }}>
                 <video
                   src={timelineVideoUrl}
                   controls
