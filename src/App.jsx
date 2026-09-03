@@ -1425,9 +1425,32 @@ export default function App() {
             minHeight: '400px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '1.5rem'
+            gap: '1.5rem',
+            alignItems: 'center'
           }}>
-            <span style={{ color: '#94a3b8', fontSize: '1.2rem', textAlign: 'center' }}>TIMELINE — Próximamente</span>
+            <label style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '300px',
+              height: '150px',
+              border: '2px dashed var(--border-subtle)',
+              borderRadius: '12px',
+              cursor: 'pointer',
+              color: '#94a3b8',
+              fontSize: '1rem',
+              gap: '0.5rem',
+              transition: 'border-color 0.2s'
+            }}>
+              <span style={{ fontSize: '2rem' }}>+</span>
+              <span>Seleccionar archivo</span>
+              <input
+                type="file"
+                style={{ display: 'none' }}
+                accept="video/*,image/*"
+              />
+            </label>
           </div>
         </main>
       </div>
