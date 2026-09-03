@@ -153,6 +153,21 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (vista !== 'offlive') return;
+      if (e.key === 'ArrowRight') {
+        const video = document.querySelector('video');
+        if (video) {
+          e.preventDefault();
+          video.currentTime = Math.min(video.duration, video.currentTime + 5);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [vista]);
+
   const [homeTeam, setHomeTeam] = useState('');
   const [awayTeam, setAwayTeam] = useState('');
   const [matchday, setMatchday] = useState('');
