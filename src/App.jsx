@@ -1550,6 +1550,28 @@ export default function App() {
               <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', marginTop: '0.5rem', textDecoration: 'underline' }}>
                 1ª PARTE
               </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)' }}>
+                      <select style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.4rem', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
+                        <option value="">Seleccionar acción...</option>
+                        {['TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS'].map(a => (
+                          <option key={a} value={a}>{a}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)' }}>
+                      <select style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.4rem', fontWeight: 600, fontSize: '0.8rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
+                        <option value="">Seleccionar finalización...</option>
+                        {['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'].map(f => (
+                          <option key={f} value={f}>{f}</option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
               </>
             ) : (
               <label style={{
