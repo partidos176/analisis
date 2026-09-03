@@ -139,6 +139,7 @@ export default function App() {
   const [timelineTime, setTimelineTime] = useState(0);
   const [fin1Time, setFin1Time] = useState(null);
   const [fin1EndTime, setFin1EndTime] = useState(null);
+  const [inicio2Time, setInicio2Time] = useState(null);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
 
   useEffect(() => {
@@ -1491,23 +1492,39 @@ export default function App() {
                   {String(Math.floor(timelineTime / 60)).padStart(2, '0')}:{String(timelineTime % 60).padStart(2, '0')}
                 </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-                <button onClick={() => setFin1Time(timelineTime)} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-                  INICIO 1ª PARTE
-                </button>
-                {fin1Time !== null && (
-                  <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#0284c7', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
-                    {String(Math.floor(fin1Time / 60)).padStart(2, '0')}:{String(fin1Time % 60).padStart(2, '0')}
-                  </span>
-                )}
-                <button onClick={() => setFin1EndTime(timelineTime)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
-                  FIN 1ª PARTE
-                </button>
-                {fin1EndTime !== null && (
-                  <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#ef4444', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
-                    {String(Math.floor(fin1EndTime / 60)).padStart(2, '0')}:{String(fin1EndTime % 60).padStart(2, '0')}
-                  </span>
-                )}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', marginTop: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button onClick={() => setFin1Time(timelineTime)} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                      INICIO 1ª PARTE
+                    </button>
+                    {fin1Time !== null && (
+                      <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#0284c7', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                        {String(Math.floor(fin1Time / 60)).padStart(2, '0')}:{String(fin1Time % 60).padStart(2, '0')}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button onClick={() => setInicio2Time(timelineTime)} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                      INICIO 2ª PARTE
+                    </button>
+                    {inicio2Time !== null && (
+                      <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#0284c7', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                        {String(Math.floor(inicio2Time / 60)).padStart(2, '0')}:{String(inicio2Time % 60).padStart(2, '0')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <button onClick={() => setFin1EndTime(timelineTime)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                    FIN 1ª PARTE
+                  </button>
+                  {fin1EndTime !== null && (
+                    <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#ef4444', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                      {String(Math.floor(fin1EndTime / 60)).padStart(2, '0')}:{String(fin1EndTime % 60).padStart(2, '0')}
+                    </span>
+                  )}
+                </div>
               </div>
               </>
             ) : (
