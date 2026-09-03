@@ -1649,8 +1649,9 @@ export default function App() {
                         </td>
                         <td style={{ padding: '0.4rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                           <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
-                            {row.time != null && fin1Time != null ? (() => {
-                              const elapsed = Math.max(0, row.time - fin1Time);
+                            {row.time != null && fin1Time != null && inicio2Time != null && fin1EndTime != null ? (() => {
+                              const descanso = inicio2Time - fin1EndTime;
+                              const elapsed = Math.max(0, row.time - descanso - fin1Time);
                               return String(Math.floor(elapsed / 60)).padStart(2, '0') + ':' + String(elapsed % 60).padStart(2, '0');
                             })() : '--:--'}
                           </span>
