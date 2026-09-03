@@ -1556,6 +1556,40 @@ export default function App() {
                   }} style={{ background: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.3rem 0.8rem', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
                     GENERAR
                   </button>
+                  <button onClick={() => {
+                    const toMatchTime = (rawTime, isParte2) => {
+                      if (fin1Time == null) return null;
+                      if (isParte2 && inicio2Time != null && fin1EndTime != null) {
+                        const descanso = inicio2Time - fin1EndTime;
+                        return Math.max(0, rawTime - descanso - fin1Time);
+                      }
+                      return Math.max(0, rawTime - fin1Time);
+                    };
+                    const fmt = (secs) => {
+                      if (secs == null) return '--:--';
+                      const s = Math.floor(secs);
+                      return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+                    };
+                    const data = {
+                      tiempoInicio1: fin1Time,
+                      tiempoFin1: fin1EndTime,
+                      tiempoInicio2: inicio2Time,
+                      tiempoFin2: fin2EndTime,
+                      partes: [
+                        ...timelineRows.map(r => ({ parte: '1ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, false)) })),
+                        ...timelineRows2.map(r => ({ parte: '2ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, true)) }))
+                      ]
+                    };
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'timeline_data.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }} style={{ background: '#f59e0b', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.3rem 0.8rem', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                    EXPORTAR
+                  </button>
                 </div>
               )}
               <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', marginTop: '0.5rem', textDecoration: 'underline' }}>
@@ -4523,6 +4557,35 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
                     Acciones
                   </span>
+                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: '#f59e0b', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.3rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                    IMPORTAR TIMELINE
+                    <input type="file" accept=".json" style={{ display: 'none' }} onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        try {
+                          const data = JSON.parse(ev.target.result);
+                          if (data.partes && Array.isArray(data.partes)) {
+                            const newEntries = [];
+                            data.partes.forEach(row => {
+                              if (row.accion && row.accion !== '') {
+                                newEntries.push({ name: row.accion, time: row.tiempoMatch || '--:--', type: 'accion' });
+                              }
+                              if (row.finalizacion && row.finalizacion !== '' && row.finalizacion !== '-') {
+                                newEntries.push({ name: row.finalizacion, time: row.tiempoMatch || '--:--', type: 'finalizacion' });
+                              }
+                            });
+                            setActionLog(prev => [...newEntries.reverse(), ...prev]);
+                          }
+                        } catch (err) {
+                          console.error('Error al importar:', err);
+                        }
+                      };
+                      reader.readAsText(file);
+                      e.target.value = '';
+                    }} />
+                  </label>
                   {actionLog.length === 0 && (
                     <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
                       Sin acciones aún
