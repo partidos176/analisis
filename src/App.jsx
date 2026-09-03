@@ -120,7 +120,7 @@ const matchTabs = [
   { id: 'datos', label: 'DATOS' },
   { id: 'posesion', label: 'POSESION' },
   { id: 'videos', label: 'VIDEOS' },
-  { id: 'vario', label: 'VARIO' }
+  { id: 'vario', label: 'NOTA DE VOZ' }
 ];
 
 const totalesTabsDef = [
