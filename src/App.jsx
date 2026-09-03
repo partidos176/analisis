@@ -138,6 +138,7 @@ export default function App() {
   const [timelineVideo, setTimelineVideo] = useState(null);
   const [timelineTime, setTimelineTime] = useState(0);
   const [fin1Time, setFin1Time] = useState(null);
+  const [fin1EndTime, setFin1EndTime] = useState(null);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
 
   useEffect(() => {
@@ -1497,6 +1498,14 @@ export default function App() {
                 {fin1Time !== null && (
                   <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#0284c7', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
                     {String(Math.floor(fin1Time / 60)).padStart(2, '0')}:{String(fin1Time % 60).padStart(2, '0')}
+                  </span>
+                )}
+                <button onClick={() => setFin1EndTime(timelineTime)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+                  FIN 1ª PARTE
+                </button>
+                {fin1EndTime !== null && (
+                  <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#ef4444', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                    {String(Math.floor(fin1EndTime / 60)).padStart(2, '0')}:{String(fin1EndTime % 60).padStart(2, '0')}
                   </span>
                 )}
               </div>
