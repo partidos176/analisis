@@ -143,6 +143,7 @@ export default function App() {
   const [fin2EndTime, setFin2EndTime] = useState(null);
   const [timelineRows, setTimelineRows] = useState([{ action: '', finalization: '-', time: null }]);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
+  const allFourSet = useRef(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -151,6 +152,18 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (fin1Time != null && fin1EndTime != null && inicio2Time != null && fin2EndTime != null) {
+      if (!allFourSet.current) {
+        allFourSet.current = true;
+        const baseTime = Math.min(fin1Time, fin1EndTime, inicio2Time, fin2EndTime);
+        setTimelineRows(prev => [...prev, { action: '', finalization: '-', time: baseTime }]);
+      }
+    } else {
+      allFourSet.current = false;
+    }
+  }, [fin1Time, fin1EndTime, inicio2Time, fin2EndTime]);
 
   const [homeTeam, setHomeTeam] = useState('');
   const [awayTeam, setAwayTeam] = useState('');
