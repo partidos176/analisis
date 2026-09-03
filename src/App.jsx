@@ -1547,6 +1547,9 @@ export default function App() {
                   </span>
                 </div>
               )}
+              <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', marginTop: '0.5rem', textDecoration: 'underline' }}>
+                1ª PARTE
+              </div>
               </>
             ) : (
               <label style={{
