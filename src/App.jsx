@@ -1448,6 +1448,30 @@ export default function App() {
                   onTimeUpdate={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
                   style={{ width: '100%', maxHeight: '500px', borderRadius: '8px' }}
                 />
+                <button
+                  onClick={() => { setTimelineVideo(null); setTimelineTime(0); }}
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    background: '#ef4444',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    fontSize: '1rem',
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 10,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
+                  }}
+                >
+                  ✕
+                </button>
                 <span style={{
                   position: 'absolute',
                   bottom: '32px',
