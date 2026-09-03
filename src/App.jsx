@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update, remove } from './firebase';
 import Login from './components/Login';
 import TratamientoApp from './TratamientoApp';
@@ -137,6 +137,7 @@ export default function App() {
   const [vista, setVista] = useState('menu');
   const [timelineVideo, setTimelineVideo] = useState(null);
   const [timelineTime, setTimelineTime] = useState(0);
+  const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -1433,7 +1434,7 @@ export default function App() {
             {timelineVideo ? (
               <div style={{ position: 'relative', width: '100%' }}>
                 <video
-                  src={URL.createObjectURL(timelineVideo)}
+                  src={timelineVideoUrl}
                   controls
                   onTimeUpdate={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
                   style={{ width: '100%', maxHeight: '500px', borderRadius: '8px' }}
