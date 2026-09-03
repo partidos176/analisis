@@ -2961,13 +2961,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     INICIAR CONTADOR
                   </div>
                 )}
+                <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center' }}>
                 {/* Columna izquierda - Botones de acción */}
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1rem',
-                  alignItems: 'flex-start',
-marginLeft: '-6rem'
+                  alignItems: 'flex-start'
                 }}>
                   <button
                     onClick={() => {
@@ -3382,8 +3382,7 @@ marginLeft: '-6rem'
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1rem',
-                  alignItems: 'flex-start',
-                  marginLeft: '4rem'
+                  alignItems: 'flex-start'
                 }}>
                   <button
                     onClick={() => {
@@ -3792,6 +3791,7 @@ marginLeft: '-6rem'
                       {rivalCornerDerechaCount}
                     </span>
                   </button>
+                </div>
                 </div>
                 {/* Botones INICIO PROPIO e INICIO RIVAL */}
                 <div style={{
