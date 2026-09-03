@@ -135,6 +135,8 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [vista, setVista] = useState('menu');
+  const [timelineVideo, setTimelineVideo] = useState(null);
+  const [timelineTime, setTimelineTime] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -1428,29 +1430,59 @@ export default function App() {
             gap: '1.5rem',
             alignItems: 'center'
           }}>
-            <label style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '300px',
-              height: '150px',
-              border: '2px dashed var(--border-subtle)',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              color: '#94a3b8',
-              fontSize: '1rem',
-              gap: '0.5rem',
-              transition: 'border-color 0.2s'
-            }}>
-              <span style={{ fontSize: '2rem' }}>+</span>
-              <span>Seleccionar archivo</span>
-              <input
-                type="file"
-                style={{ display: 'none' }}
-                accept="video/*,image/*"
-              />
-            </label>
+            {timelineVideo ? (
+              <div style={{ position: 'relative', width: '100%' }}>
+                <video
+                  src={URL.createObjectURL(timelineVideo)}
+                  controls
+                  onTimeUpdate={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
+                  style={{ width: '100%', maxHeight: '500px', borderRadius: '8px' }}
+                />
+                <span style={{
+                  position: 'absolute',
+                  bottom: '32px',
+                  left: '50px',
+                  background: 'rgba(0,0,0,0.7)',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.9rem',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '6px',
+                  fontFamily: 'var(--font-mono)',
+                  zIndex: 10
+                }}>
+                  {String(Math.floor(timelineTime / 60)).padStart(2, '0')}:{String(timelineTime % 60).padStart(2, '0')}
+                </span>
+              </div>
+            ) : (
+              <label style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '300px',
+                height: '150px',
+                border: '2px dashed var(--border-subtle)',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                color: '#94a3b8',
+                fontSize: '1rem',
+                gap: '0.5rem',
+                transition: 'border-color 0.2s'
+              }}>
+                <span style={{ fontSize: '2rem' }}>+</span>
+                <span>Seleccionar video</span>
+                <input
+                  type="file"
+                  style={{ display: 'none' }}
+                  accept="video/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) setTimelineVideo(file);
+                  }}
+                />
+              </label>
+            )}
           </div>
         </main>
       </div>
