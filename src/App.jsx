@@ -1465,8 +1465,8 @@ export default function App() {
           }}>
             {timelineVideo ? (
               <>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '2rem', marginTop: '0.5rem' }}>
-                <div style={{ position: 'relative', width: '50%' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+                <div style={{ position: 'relative', width: '100%' }}>
                   <video
                     src={timelineVideoUrl}
                     controls
@@ -1513,8 +1513,8 @@ export default function App() {
                     {String(Math.floor(timelineTime / 60)).padStart(2, '0')}:{String(timelineTime % 60).padStart(2, '0')}
                   </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', order: -1, width: '100%', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                     <button onClick={() => { setFin1Time(timelineTime); setTimelineRows(prev => [...prev, { action: 'INICIO 1ª PARTE', finalization: '', time: timelineTime }, { action: '', finalization: '-', time: null }]); }} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       INICIO 1ª PARTE
                     </button>
@@ -1532,7 +1532,7 @@ export default function App() {
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                     <button onClick={() => setInicio2Time(timelineTime)} style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.5rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                       INICIO 2ª PARTE
                     </button>
@@ -1551,14 +1551,14 @@ export default function App() {
                     )}
                   </div>
                   {fin1EndTime !== null && inicio2Time !== null && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
                       <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'Inter, sans-serif', background: '#22c55e', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>DESCANSO:</span>
                       <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: '#22c55e', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
                         {String(Math.floor((inicio2Time - fin1EndTime) / 60)).padStart(2, '0')}:{String((inicio2Time - fin1EndTime) % 60).padStart(2, '0')}
                       </span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
                     <button onClick={() => {
                       if (timelineRows.length > 0 && timelineRows[timelineRows.length - 1].action === 'FIN 1ª PARTE') {
                         setTimelineRows2(prev => [...prev, { action: '', finalization: '-', time: null }]);
