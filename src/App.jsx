@@ -4610,16 +4610,46 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         try {
                           const data = JSON.parse(ev.target.result);
                           if (data.partes && Array.isArray(data.partes)) {
+                            const mapTimelineAction = (a) => {
+                              if (a === 'INICIO 1ª PARTE') return '1ª PARTE';
+                              if (a === 'INICIO 2ª PARTE') return '2ª PARTE';
+                              if (a === 'FIN 1ª PARTE' || a === 'FIN 2ª PARTE') return 'FIN';
+                              return a;
+                            };
+                            const parseMinuto = (t) => {
+                              const p = String(t || '').split(':').map(Number);
+                              if (p.length < 2 || isNaN(p[0])) return 0;
+                              return (p[0] || 0);
+                            };
                             const newEntries = [];
+                            const newGoles = [];
+                            const newGolesRival = [];
                             data.partes.forEach(row => {
+                              const mappedAccion = mapTimelineAction(row.accion);
+                              const t = row.tiempoMatch || '--:--';
                               if (row.accion && row.accion !== '') {
-                                newEntries.push({ name: row.accion, time: row.tiempoMatch || '--:--', type: 'accion' });
+                                newEntries.push({ name: mappedAccion, time: t, type: 'accion' });
                               }
                               if (row.finalizacion && row.finalizacion !== '' && row.finalizacion !== '-') {
-                                newEntries.push({ name: row.finalizacion, time: row.tiempoMatch || '--:--', type: 'finalizacion' });
+                                newEntries.push({ name: row.finalizacion, time: t, type: 'finalizacion' });
+                                const min = parseMinuto(t);
+                                const per = row.parte || periodo;
+                                if (row.finalizacion === 'GOL') {
+                                  newGoles.push({ name: '', tipo: '', name2: '', accion: mappedAccion, team: 'home', periodo: per, minuto: min });
+                                } else if (row.finalizacion === 'GOL RIVAL') {
+                                  newGolesRival.push({ periodo: per, minuto: min });
+                                } else if (row.finalizacion === 'PENAL + GOL') {
+                                  newGoles.push({ name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo: per, minuto: min });
+                                } else if (row.finalizacion === 'PENAL + GOL RIVAL') {
+                                  newGolesRival.push({ periodo: per, minuto: min });
+                                }
                               }
                             });
-                            setActionLog(prev => [...newEntries.reverse(), ...prev]);
+                            const merged = [...newEntries.reverse(), ...actionLog];
+                            setActionLog(merged);
+                            recomputeCountersFromLog(merged);
+                            if (newGoles.length > 0) setGolesList(prev => [...prev, ...newGoles.reverse()]);
+                            if (newGolesRival.length > 0) setGolesRivalList(prev => [...prev, ...newGolesRival.reverse()]);
                           }
                         } catch (err) {
                           console.error('Error al importar:', err);
