@@ -1348,7 +1348,7 @@ export default function App() {
   // Menú principal con 2 opciones
   if (vista === 'menu') {
     const opciones = [
-      { id: 'analisis', titulo: 'ANÁLISIS', descripcion: '', color: '#0284c7' },
+      { id: 'analisis', titulo: 'ON LIVE', descripcion: '', color: '#0284c7' },
       { id: 'tratamiento', titulo: 'EDICIÓN', descripcion: '', color: '#8b5cf6' },
       { id: 'totales', titulo: 'TOTALES', descripcion: '', color: '#f59e0b' },
       { id: 'offlive', titulo: 'OFF LIVE', descripcion: '', color: '#22c55e' }
