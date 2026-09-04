@@ -1466,7 +1466,7 @@ export default function App() {
             {timelineVideo ? (
               <>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-                <div style={{ position: 'relative', width: '100%' }}>
+                <div style={{ position: 'relative', width: '70%' }}>
                   <video
                     src={timelineVideoUrl}
                     controls
