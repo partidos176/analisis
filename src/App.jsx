@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update, remove } from './firebase';
+import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update, remove, storage, storageRef, uploadBytes, getDownloadURL, deleteObject } from './firebase';
 import Login from './components/Login';
 import TratamientoApp from './TratamientoApp';
 import html2canvas from 'html2canvas';
@@ -404,6 +404,7 @@ export default function App() {
         const minGrab = Math.floor(timerSeconds / 60);
         const segGrab = Math.floor(timerSeconds % 60);
         const minutoGrab = `${minGrab}:${String(segGrab).padStart(2, '0')}`;
+        let finalBlob;
         let url;
         let nombre;
         let tipo = 'audio/webm';
@@ -413,16 +414,29 @@ export default function App() {
           await ffmpeg.writeFile('audio_in.webm', inputData);
           await ffmpeg.exec(['-i', 'audio_in.webm', '-c:a', 'libmp3lame', '-b:a', '192k', 'audio_out.mp3']);
           const out = await ffmpeg.readFile('audio_out.mp3');
-          url = URL.createObjectURL(new Blob([out], { type: 'audio/mpeg' }));
+          finalBlob = new Blob([out], { type: 'audio/mpeg' });
+          url = URL.createObjectURL(finalBlob);
           nombre = `audio-${ts}.mp3`;
           tipo = 'audio/mpeg';
         } catch (e) {
           console.warn('Conversión a mp3 falló, se guarda en webm', e);
+          finalBlob = blob;
           url = URL.createObjectURL(blob);
           nombre = `audio-${ts}.webm`;
         }
-        setAudiosVario((prev) => [...prev, { url, nombre, fecha: ts, minuto: minutoGrab, tipo }]);
+        const idAud = 'a' + Date.now() + Math.floor(Math.random() * 1000000);
+        setAudiosVario((prev) => [...prev, { id: idAud, url, nombre, fecha: ts, minuto: minutoGrab, tipo, subiendo: true, downloadURL: null, storagePath: null, errorSubida: null }]);
         stream.getTracks().forEach((t) => t.stop());
+        try {
+          const matchId = (currentMatch && currentMatch.id) || 'sin-partido';
+          const ruta = `audios/${matchId}/${ts}_${nombre}`;
+          await uploadBytes(storageRef(storage, ruta), finalBlob, { contentType: tipo });
+          const dl = await getDownloadURL(storageRef(storage, ruta));
+          setAudiosVario((prev) => prev.map((a) => (a.id === idAud ? { ...a, subiendo: false, downloadURL: dl, storagePath: ruta } : a)));
+        } catch (err) {
+          console.error('Error subiendo audio a la nube:', err);
+          setAudiosVario((prev) => prev.map((a) => (a.id === idAud ? { ...a, subiendo: false, errorSubida: 'No se pudo subir a la nube (solo local)' } : a)));
+        }
       };
       mr.start();
       setGrabandoAudio(true);
@@ -608,6 +622,7 @@ export default function App() {
     setTimerRunning(false);
     setActionLog([]);
     setSustituciones([]);
+    setAudiosVario([]);
     setFromRival(false);
     setPeriodo('1ª PARTE');
   };
@@ -689,6 +704,9 @@ export default function App() {
     setTimerRunning(match.timerRunning ?? false);
     setActionLog(normalizeArray(match.actionLog));
     setSustituciones(normalizeArray(match.sustituciones));
+    if (match.audios !== undefined) {
+      setAudiosVario(normalizeArray(match.audios).map((a) => ({ ...a, url: a.downloadURL || a.url || null, subiendo: false, errorSubida: null })));
+    }
     if (!keepCurrent) setCurrentMatch(match);
   };
 
@@ -751,7 +769,8 @@ export default function App() {
       timerSeconds,
       timerRunning,
       actionLog,
-      sustituciones
+      sustituciones,
+      audios: audiosVario.filter((a) => a.downloadURL).map((a) => ({ nombre: a.nombre, fecha: a.fecha, minuto: a.minuto, tipo: a.tipo, storagePath: a.storagePath, downloadURL: a.downloadURL }))
     });
     try {
       const matchRef = ref(db, `matches/${id}`);
@@ -789,7 +808,7 @@ export default function App() {
       penalFueraCount,
       penalGolCount,
       penalGolRivalCount,
-      saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
+      saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones, audiosVario]);
 
   const generarTodosLosCortes = async () => {
     if (!videoFile) {
@@ -4491,7 +4510,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             const datosRows = filasDatos.map(a => ({ ACCION: a, ...Object.fromEntries(colsDatos.map(f => [f, matrizDatos[a][f] || ''])), TOTAL: colsDatos.reduce((s, f) => s + matrizDatos[a][f], 0) }));
                             const wsDatos = XLSX.utils.json_to_sheet(datosRows.length ? datosRows : [{ ACCION: 'SIN DATOS' }]);
                             XLSX.utils.book_append_sheet(wb, wsDatos, 'Datos');
-                            const rawData = { ...resumen, players, actionLog, golesList, golesRivalList, sustituciones, timerSeconds, timerRunning };
+                            const rawData = { ...resumen, players, actionLog, golesList, golesRivalList, sustituciones, timerSeconds, timerRunning, audios: audiosVario.filter((a) => a.downloadURL).map((a) => ({ nombre: a.nombre, fecha: a.fecha, minuto: a.minuto, tipo: a.tipo, storagePath: a.storagePath, downloadURL: a.downloadURL })) };
                             const wsRaw = XLSX.utils.aoa_to_sheet([['DATOS'], [JSON.stringify(rawData)]]);
                             XLSX.utils.book_append_sheet(wb, wsRaw, 'RAW');
                             const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -5443,15 +5462,26 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: '8px', flexWrap: 'wrap' }}>
                         <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center' }}>{a.minuto ? 'MIN ' + a.minuto : '—'}</span>
                         <span style={{ flex: 1, fontWeight: 700, fontSize: '0.85rem', minWidth: '160px' }}>{a.nombre}</span>
-                        <audio controls src={a.url} style={{ flex: 2, minWidth: '240px' }} />
+                        <audio controls src={a.downloadURL || a.url} style={{ flex: 2, minWidth: '240px' }} />
+                        {a.subiendo && (
+                          <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.75rem' }}>Subiendo a la nube…</span>
+                        )}
+                        {a.errorSubida && (
+                          <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.75rem' }}>{a.errorSubida}</span>
+                        )}
                         <button
-                          onClick={() => { const link = document.createElement('a'); link.href = a.url; link.download = a.nombre; link.click(); }}
+                          onClick={() => { const link = document.createElement('a'); link.href = a.downloadURL || a.url; link.download = a.nombre; link.click(); }}
                           style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
                         >
                           Descargar
                         </button>
                         <button
-                          onClick={() => setAudiosVario((prev) => prev.filter((_, j) => j !== i))}
+                          onClick={() => {
+                            const objetivo = audiosVario[i];
+                            if (objetivo && objetivo.storagePath) { deleteObject(storageRef(storage, objetivo.storagePath)).catch((err) => console.warn('No se pudo borrar el audio de la nube:', err)); }
+                            if (objetivo && objetivo.url && String(objetivo.url).startsWith('blob:')) { try { URL.revokeObjectURL(objetivo.url); } catch (_) {} }
+                            setAudiosVario((prev) => prev.filter((_, j) => j !== i));
+                          }}
                           style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
                         >
                           &#10005;
