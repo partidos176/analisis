@@ -6076,7 +6076,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                 const grandTotal = { label: 'TOTAL GENERAL', ownPct: String(grandDur > 0 ? Math.round((grandOwn / grandDur) * 100) : 0), rivalPct: String(grandDur > 0 ? Math.round((grandRiv / grandDur) * 100) : 0), neutroPct: String(grandDur > 0 ? Math.round(Math.max(0, grandDur - grandOwn - grandRiv) / grandDur * 100) : 0) };
                 const toggleMatch = (id) => { setPosesionMatchIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]); };
                 const toggleAll = () => { if (posesionMatchIds.length === matchOptions.length) { setPosesionMatchIds([]); } else { setPosesionMatchIds(matchOptions.map(o => o.id)); } };
-                const dropdownLabel = selectedIds.length === 0 ? 'Seleccionar jornada' : selectedIds.length === matchOptions.length ? 'Todas' : selectedIds.length + ' jornada' + (selectedIds.length > 1 ? 's' : '');
+                const dropdownLabel = selectedIds.length === 0 ? 'Seleccionar jornada' : selectedIds.length === matchOptions.length ? 'Todas' : selectedIds.length === 1 ? 'jornada' : selectedIds.length + ' jornadas';
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
                   <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto' }}>
