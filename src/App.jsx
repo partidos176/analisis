@@ -422,10 +422,6 @@ export default function App() {
           nombre = `audio-${ts}.webm`;
         }
         setAudiosVario((prev) => [...prev, { url, nombre, fecha: ts, minuto: minutoGrab, tipo }]);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = nombre;
-        a.click();
         stream.getTracks().forEach((t) => t.stop());
       };
       mr.start();
@@ -5448,6 +5444,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center' }}>{a.minuto ? 'MIN ' + a.minuto : '—'}</span>
                         <span style={{ flex: 1, fontWeight: 700, fontSize: '0.85rem', minWidth: '160px' }}>{a.nombre}</span>
                         <audio controls src={a.url} style={{ flex: 2, minWidth: '240px' }} />
+                        <button
+                          onClick={() => { const link = document.createElement('a'); link.href = a.url; link.download = a.nombre; link.click(); }}
+                          style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
+                        >
+                          Descargar
+                        </button>
                         <button
                           onClick={() => setAudiosVario((prev) => prev.filter((_, j) => j !== i))}
                           style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
