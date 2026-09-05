@@ -152,14 +152,6 @@ export default function App() {
       setUser(currentUser);
       setLoading(false);
     });
-    try {
-      const tGen = Number(localStorage.getItem('ft_dbg_gen') || 0);
-      if (tGen && Date.now() - tGen < 300000) {
-        localStorage.removeItem('ft_dbg_gen');
-        const hace = Math.round((Date.now() - tGen) / 1000);
-        setTimeout(() => window.alert(`Diagnóstico: la página se RECARGÓ ${hace}s después de pulsar Generar. No es la app la que vuelve al menú: el navegador recarga la pestaña (normalmente por falta de memoria con vídeos muy grandes).`), 1500);
-      }
-    } catch (_) {}
     return () => unsubscribe();
   }, []);
 
@@ -5349,7 +5341,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 const videoTimeOffsetSnapshot = videoTimeOffset;
                                 const videoName = filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : (() => { const sameName = accionesFiltradas.filter(a => a.name === e.name); const correlative = sameName.indexOf(e) + 1; return sameName.length > 1 ? e.name + ' ' + correlative : e.name; })();
                                 const doCut = async () => {
-                                  try { localStorage.setItem('ft_dbg_gen', String(Date.now())); } catch (_) {}
                                   const tryServer = async () => {
                                     if (!videoUploaded) {
                                       await subirVideoAlServidor((f) => setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round(f * 40) })));
