@@ -4740,9 +4740,24 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       borderRadius: '8px',
                       padding: entry.type === 'finalizacion' ? '0.2rem 0.6rem' : '0.4rem 0.8rem'
                     }}>
-                      <span style={{ color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : '#ffffff'), fontWeight: 700, fontSize: entry.type === 'finalizacion' ? '0.7rem' : '0.85rem', textTransform: 'uppercase' }}>
-                        {entry.name === '1ª PARTE' ? 'INICIO 1ª PARTE' : entry.name === '2ª PARTE' ? 'INICIO 2ª PARTE' : entry.name}
-                      </span>
+                      <select
+                        value={entry.type === 'finalizacion' ? entry.name : (entry.name === '1ª PARTE' ? 'INICIO 1ª PARTE' : entry.name === '2ª PARTE' ? 'INICIO 2ª PARTE' : entry.name)}
+                        onChange={(ev) => {
+                          const v = ev.target.value;
+                          const nombre = entry.type === 'finalizacion' ? v : (v === 'INICIO 1ª PARTE' ? '1ª PARTE' : v === 'INICIO 2ª PARTE' ? '2ª PARTE' : v);
+                          const nuevo = actionLog.map((x, j) => (j === idx ? { ...x, name: nombre } : x));
+                          setActionLog(nuevo);
+                          recomputeCountersFromLog(nuevo);
+                        }}
+                        style={{ background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : '#ffffff'), fontWeight: 700, fontSize: entry.type === 'finalizacion' ? '0.7rem' : '0.85rem', textTransform: 'uppercase', cursor: 'pointer', padding: '0.1rem 0.3rem', maxWidth: '100%' }}
+                      >
+                        {(entry.type === 'finalizacion'
+                          ? ['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION']
+                          : ['INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE','FIN','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS']
+                        ).map((op) => (
+                          <option key={op} value={op} style={{ background: '#1e293b', color: '#ffffff' }}>{op}</option>
+                        ))}
+                      </select>
                       {entry.type !== 'finalizacion' && (
                         <span style={{ fontFamily: 'var(--font-mono)', color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : '#38bdf8'), fontWeight: 900, fontSize: entry.type === 'finalizacion' ? '0.75rem' : '0.9rem' }}>
                           {entry.time}
