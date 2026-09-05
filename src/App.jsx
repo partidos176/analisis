@@ -6088,7 +6088,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               <div style={{ position: 'relative' }}>
                                 <div
                                   onClick={() => setPosesionDropdownOpen(!posesionDropdownOpen)}
-                                  style={{ background: 'transparent', color: '#ffffff', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', userSelect: 'none' }}
+                                  style={{ background: 'transparent', color: '#ffffff', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', userSelect: 'none' }}
                                 >
                                   {dropdownLabel} ▾
                                 </div>
