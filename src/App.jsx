@@ -661,6 +661,32 @@ export default function App() {
 
   const isFinMarker = (n) => n === 'FIN' || n === 'FIN 1ª PARTE' || n === 'FIN 2ª PARTE';
   const isPeriodMarker = (n) => n === '1ª PARTE' || n === '2ª PARTE' || isFinMarker(n);
+  const periodoDeAccion = (entry) => {
+    let periodo = '1ª PARTE';
+    const crono = [...actionLog].reverse();
+    for (const e of crono) {
+      if (!e) continue;
+      if (e.name === '2ª PARTE') periodo = '2ª PARTE';
+      if (e === entry) return periodo;
+    }
+    return periodo;
+  };
+  const offsetParaPeriodo = (p) => {
+    if (p === '2ª PARTE') return videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0);
+    return videoTimeOffset != null ? Math.floor(videoTimeOffset) : (videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : 0);
+  };
+  const offsetParaVideo = (v) => {
+    if (videoTimeOffset != null && videoTimeOffset2 != null) {
+      const fin1 = [...actionLog].reverse().find((e) => e && (e.name === 'FIN 1ª PARTE' || e.name === 'FIN'));
+      if (fin1 && fin1.time) {
+        const p = String(fin1.time).split(':').map(Number);
+        const limite = ((p[0] || 0) * 60 + (p[1] || 0)) + Math.floor(videoTimeOffset);
+        if (v < limite) return Math.floor(videoTimeOffset);
+      }
+      return Math.floor(videoTimeOffset2);
+    }
+    return offsetParaPeriodo('2ª PARTE');
+  };
 
   const applyMatchData = (match, keepCurrent = false) => {
     resetMatchData();
@@ -847,8 +873,8 @@ export default function App() {
     setCortandoTodos(true);
     try {
       const base = videoFileName.replace(/\.[^.]+$/, '') || 'partido';
-      const offsetSecs = videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0);
       const cortes = acciones.map(e => {
+        const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
         const parts = String(e.time).split(':').map(Number);
         const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
         const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
@@ -982,8 +1008,8 @@ export default function App() {
     setCorteError('');
     try {
       const base = videoFileName.replace(/\.[^.]+$/, '') || 'partido';
-      const offsetSecs = videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0);
       const cortes = acciones.map(e => {
+        const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
         const parts = String(e.time).split(':').map(Number);
         const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
         const ajuste = ajusteAcciones[e.name + '_' + e.time] || 0;
@@ -4781,7 +4807,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ position: 'absolute', bottom: '32px', left: '50px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
                           {(() => {
-                            const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0));
+                            const offset = offsetParaVideo(videoCurrentTime);
                             const adjusted = Math.max(0, Math.floor(videoCurrentTime - offset));
                             return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
                           })()}
@@ -4908,7 +4934,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 
                   <select
                     value={filtroAccion}
-                    onChange={(e) => { const isSelectingVarios = e.target.value === '__varios__'; const wasVarios = filtroAccion === '__varios__'; setFiltroAccion(e.target.value); if (isSelectingVarios && !wasVarios) { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.max(0, Math.floor(videoCurrentTime - offset) - 2) })); } } }}
+                    onChange={(e) => { const isSelectingVarios = e.target.value === '__varios__'; const wasVarios = filtroAccion === '__varios__'; setFiltroAccion(e.target.value); if (isSelectingVarios && !wasVarios) { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = offsetParaPeriodo(periodoDeAccion(allActions[nextIdx - 1])); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.max(0, Math.floor(videoCurrentTime - offset) - 2) })); } } }}
                     style={{
                       padding: '0.4rem 0.8rem',
                       borderRadius: '8px',
@@ -5056,7 +5082,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         if (entry.time && entry.type !== 'finalizacion' && videoRef.current && videoUrl) {
                           const parts = String(entry.time).split(':').map(Number);
                           const secs = (parts[0] || 0) * 60 + (parts[1] || 0);
-                          const offset = videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0));
+                          const offset = offsetParaPeriodo(periodoDeAccion(entry));
                           const videoSecs = Math.max(0, secs + offset);
                           videoRef.current.currentTime = videoSecs;
                           setAccionSeleccionada(entry);
@@ -5104,7 +5130,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             </span>
                           </div>
                           {accionesFiltradas.map((e, idx) => {
-                            const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                            const offset = offsetParaPeriodo(periodoDeAccion(e));
                             const parts = String(e.time).split(':').map(Number);
                             const actionKey = e.name + '_' + e.time;
                             let baseTime;
@@ -5137,10 +5163,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <div onClick={() => {
                               if (videoRef.current && e.time) {
                                 if (filtroAccion === '__varios__') {
-                                  const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                                  const offset = offsetParaPeriodo(periodoDeAccion(e));
                                   videoRef.current.currentTime = Math.max(0, secs + offset);
                                 } else {
-                                   const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                                   const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                    videoRef.current.currentTime = Math.max(0, secs + offsetSecs);
                                  }
 
@@ -5158,7 +5184,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     if (videoRef.current && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
-                                      const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                                      const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                       videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
@@ -5172,7 +5198,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     if (videoRef.current && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
-                                      const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                                      const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                       videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
@@ -5188,7 +5214,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     if (videoRef.current && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
-                                      const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                                      const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                       const inicioAjuste = ajusteAcciones[actionKey] || 0;
                                       videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
                                     }
@@ -5203,7 +5229,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     if (videoRef.current && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
-                                      const offsetSecs = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0);
+                                      const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                       const inicioAjuste = ajusteAcciones[actionKey] || 0;
                                       videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
                                     }
@@ -5218,7 +5244,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   setCorteError('El vídeo supera 1 GB y el corte en navegador no tiene memoria suficiente. Inicia el servidor local (node server.js) o comprímelo en la pestaña de vídeo.');
                                   return;
                                 }
-                                const offsetSecs = videoTimeOffset2 != null ? Math.floor(videoTimeOffset2) : (videoTimeOffset != null ? Math.floor(videoTimeOffset) : 0);
+                                const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                 const parts = String(e.time).split(':').map(Number);
                                 const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
                                 const ajusteInicio = ajusteAcciones[actionKey] || 0;
@@ -5387,7 +5413,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'center' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)', background: 'rgba(0,0,0,0.4)', padding: '0.2rem 0.8rem', borderRadius: '6px' }}>
                           {(() => {
-                            const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0));
+                            const offset = offsetParaVideo(videoCurrentTime);
                             const adjusted = Math.max(0, Math.floor(videoCurrentTime - offset));
                             return Math.floor(adjusted / 60) + ':' + String(Math.floor(adjusted % 60)).padStart(2, '0');
                           })()}
