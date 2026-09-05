@@ -6677,10 +6677,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     );
                     const circulo = (p, size = 56, extraStyle = {}) => {
                       const foto = jugadoresData[p.name]?.foto;
-                      const isNoConvocado = p.status === 'no convocado';
                       return (
                         <div
                           key={p.idx ?? p.name}
+                          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: size + 24, flexShrink: 0 }}
+                        >
+                        <div
                           draggable={!!p.name && p.status !== 'no convocado'}
                           onDragStart={(e) => handleDragStart(e, p.idx)}
                           onClick={() => {
@@ -6735,11 +6737,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           ) : (
                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
                           )}
-                           <div style={{ position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)', background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'no convocado' ? '#e2e8f0' : '#334155', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a',                             fontWeight: 900, fontSize: Math.max(10, size * 0.22), padding: '0 4px', borderRadius: 4, whiteSpace: 'nowrap', lineHeight: 1.1, maxWidth: size + 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
                            {!!p.name && <XBtn idx={p.idx} />}
                          </div>
-                       );
-                     };
+                         <div style={{ marginTop: 2, background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'no convocado' ? '#e2e8f0' : '#334155', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: Math.max(10, size * 0.22), padding: '0 4px', borderRadius: 4, lineHeight: 1.2, textAlign: 'center', overflowWrap: 'break-word', maxWidth: '100%' }}>{p.name}</div>
+                        </div>
+                      );
+                    };
 
                     const handleCampoClick = (e) => {
                       if (draggingMapIdx != null) return;
