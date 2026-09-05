@@ -4675,7 +4675,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       padding: entry.type === 'finalizacion' ? '0.2rem 0.6rem' : '0.4rem 0.8rem'
                     }}>
                       <span style={{ color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : '#ffffff'), fontWeight: 700, fontSize: entry.type === 'finalizacion' ? '0.7rem' : '0.85rem', textTransform: 'uppercase' }}>
-                        {entry.name}
+                        {entry.name === '1ª PARTE' ? 'INICIO 1ª PARTE' : entry.name === '2ª PARTE' ? 'INICIO 2ª PARTE' : entry.name}
                       </span>
                       {entry.type !== 'finalizacion' && (
                         <span style={{ fontFamily: 'var(--font-mono)', color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : '#38bdf8'), fontWeight: 900, fontSize: entry.type === 'finalizacion' ? '0.75rem' : '0.9rem' }}>
