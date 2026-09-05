@@ -156,19 +156,49 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const pickVideo = () => {
+      const a = document.activeElement;
+      if (a && a.tagName === 'VIDEO') return a;
+      if (videoRef.current && videoRef.current.isConnected) return videoRef.current;
+      return document.querySelector('video');
+    };
+    const esEditable = () => {
+      const t = (document.activeElement && document.activeElement.tagName) || '';
+      return t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT';
+    };
     const handleKeyDown = (e) => {
-      if (vista !== 'offlive') return;
-      if (e.key === 'ArrowRight') {
-        const video = document.querySelector('video');
-        if (video) {
-          e.preventDefault();
-          video.currentTime = Math.min(video.duration, video.currentTime + 5);
+      const tag = (document.activeElement && document.activeElement.tagName) || '';
+      if (e.code === 'Space' && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT' && tag !== 'BUTTON') {
+        e.preventDefault();
+        const v = pickVideo();
+        if (v) {
+          if (v.paused) v.play(); else v.pause();
         }
+      }
+      if (e.code === 'Home' && !esEditable()) {
+        e.preventDefault();
+        const v = pickVideo();
+        if (v) v.currentTime = Math.max(0, v.currentTime - 5);
+      }
+      if (e.code === 'End' && !esEditable()) {
+        e.preventDefault();
+        const v = pickVideo();
+        if (v) v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
+      }
+      if (e.code === 'ArrowRight' && !esEditable()) {
+        e.preventDefault();
+        const v = pickVideo();
+        if (v) v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
+      }
+      if (e.code === 'ArrowLeft' && !esEditable()) {
+        e.preventDefault();
+        const v = pickVideo();
+        if (v) v.currentTime = Math.max(0, v.currentTime - 5);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [vista]);
+  }, []);
 
   const [homeTeam, setHomeTeam] = useState('');
   const [awayTeam, setAwayTeam] = useState('');
@@ -1221,40 +1251,6 @@ export default function App() {
     setGolesRivalList([]);
     recomputeCountersFromLog([]);
   };
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
-        e.preventDefault();
-        const v = videoRef.current;
-        if (v) {
-          if (v.paused) v.play(); else v.pause();
-        }
-      }
-      if (e.code === 'Home' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
-        e.preventDefault();
-        const v = videoRef.current;
-        if (v) v.currentTime = Math.max(0, v.currentTime - 5);
-      }
-      if (e.code === 'End' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
-        e.preventDefault();
-        const v = videoRef.current;
-        if (v) v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
-      }
-      if (e.code === 'ArrowRight' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
-        e.preventDefault();
-        const v = videoRef.current;
-        if (v) v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
-      }
-      if (e.code === 'ArrowLeft' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT') {
-        e.preventDefault();
-        const v = videoRef.current;
-        if (v) v.currentTime = Math.max(0, v.currentTime - 5);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   useEffect(() => {
     let interval = null;
