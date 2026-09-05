@@ -5458,28 +5458,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
             )}
             {activeTab === 'finalizaciones' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
-                  {/* Botón OCASION centrado arriba */}
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <button
-                      onClick={() => { if (logAction('OCASION', 'finalizacion')) setOcasionCount(ocasionCount + 1); }}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#f97316', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                    >
-                      <span>OCASION</span>
-                      <span style={{ background: '#ffffff', color: '#f97316', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{ocasionCount}</span>
-                    </button>
-                  </div>
-                  {/* Botón volver */}
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-                    <button
-                      onClick={() => setActiveTab('acciones')}
-                      title="Volver a acciones"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#334155', color: '#ffffff', fontWeight: 900, fontSize: '1.8rem', padding: '0.8rem 2.2rem', borderRadius: '12px', minWidth: 'fit-content', cursor: 'pointer', border: 'none' }}
-                    >
-                      <span>&#8629;</span>
-                    </button>
-                  </div>
-                  {/* Dos columnas debajo */}
-                  <div style={{ display: 'flex', gap: '2rem' }}>
+                  {/* Tres columnas a la misma altura */}
+                  <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
                     {/* Columna izquierda */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
@@ -5530,6 +5510,23 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       >
                         <span>DESPEJE PORTERO</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejePorteroCount}</span>
+                      </button>
+                    </div>
+                    {/* Columna central: OCASION + volver */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                      <button
+                        onClick={() => { if (logAction('OCASION', 'finalizacion')) setOcasionCount(ocasionCount + 1); }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#f97316', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>OCASION</span>
+                        <span style={{ background: '#ffffff', color: '#f97316', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{ocasionCount}</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('acciones')}
+                        title="Volver a acciones"
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#334155', color: '#ffffff', fontWeight: 900, fontSize: '1.8rem', padding: '0.8rem 2.2rem', borderRadius: '12px', minWidth: 'fit-content', cursor: 'pointer', border: 'none', marginTop: '1.5rem' }}
+                      >
+                        <span>&#8629;</span>
                       </button>
                     </div>
                     {/* Columna derecha */}
