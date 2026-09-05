@@ -380,6 +380,7 @@ export default function App() {
   const [alineacionGuardado, setAlineacionGuardado] = useState(false);
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const fichaJugadorRef = useRef(null);
+  const alineacionRef = useRef(null);
   const [videoFile, setVideoFile] = useState(null);
   const [videoFileName, setVideoFileName] = useState('');
   const [videoUploaded, setVideoUploaded] = useState(false);
@@ -6440,7 +6441,35 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
               })()}
                   {activeTab === 'alineacion' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem' }}>
+                    <button
+                      onClick={async () => {
+                        if (!alineacionRef.current) return;
+                        try {
+                          const canvas = await html2canvas(alineacionRef.current, { backgroundColor: '#0b0f19', scale: 2 });
+                          const link = document.createElement('a');
+                          link.download = `alineacion_J${currentMatch?.matchday || '?'}_${currentMatch?.homeTeam || ''}_vs_${currentMatch?.awayTeam || ''}.jpg`;
+                          link.href = canvas.toDataURL('image/jpeg', 0.95);
+                          link.click();
+                        } catch (err) {
+                          console.error('Error exportando imagen:', err);
+                        }
+                      }}
+                      title="Exportar alineación en JPG"
+                      style={{
+                        background: '#22c55e',
+                        color: '#000',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '0.3rem 0.6rem',
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        fontSize: '1.1rem',
+                        textTransform: 'uppercase'
+                      }}
+                    >
+                      ↓
+                    </button>
                     <button
                       onClick={async () => {
                         if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
@@ -6485,6 +6514,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 
 
                   {/* === MAPA DE CAMPO === */}
+                  <div ref={alineacionRef} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%', overflow: 'visible' }}>
                   {(() => {
                     const titulares = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'titular');
                     const suplentes = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'suplente');
@@ -7034,6 +7064,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </div>
                     );
                   })()}
+                  </div>
                 </div>
               )}
             </div>
