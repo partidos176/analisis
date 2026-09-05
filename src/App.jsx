@@ -5468,6 +5468,16 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <span style={{ background: '#ffffff', color: '#f97316', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{ocasionCount}</span>
                     </button>
                   </div>
+                  {/* Botón volver */}
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => setActiveTab('acciones')}
+                      title="Volver a acciones"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#334155', color: '#ffffff', fontWeight: 900, fontSize: '1.2rem', padding: '0.5rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', cursor: 'pointer', border: 'none' }}
+                    >
+                      <span>&#8629;</span>
+                    </button>
+                  </div>
                   {/* Dos columnas debajo */}
                   <div style={{ display: 'flex', gap: '2rem' }}>
                     {/* Columna izquierda */}
