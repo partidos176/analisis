@@ -5469,6 +5469,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         {a.errorSubida && (
                           <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.75rem' }}>{a.errorSubida}</span>
                         )}
+                        {a.downloadURL && !a.subiendo && (
+                          <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.75rem' }}>☁ Nube</span>
+                        )}
                         <button
                           onClick={() => { const link = document.createElement('a'); link.href = a.downloadURL || a.url; link.download = a.nombre; link.click(); }}
                           style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
