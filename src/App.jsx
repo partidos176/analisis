@@ -5030,7 +5030,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     </label>
                   )}
                   {videoFile && (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', width: '100%', maxWidth: '900px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', width: '100%', maxWidth: '900px', order: -1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Servidor:</span>
                         <input
