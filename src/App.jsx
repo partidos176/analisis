@@ -4848,7 +4848,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     </div>
                   )}
                   {videoUrl && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', order: -1, flexWrap: 'wrap', justifyContent: 'center' }}>
                       {videoTimeOffset === null && (
                         <button
                           onClick={() => {
