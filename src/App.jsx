@@ -4751,7 +4751,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         </span>
                       </div>
                       <button
-                        onClick={() => { if (videoRef.current) { videoRef.current.pause(); } setVideoUrl(null); setVideoFile(null); setVideoFileName(''); setVideoTimeOffset(null); setAccionSeleccionada(null); setPreviewVideoUrl(null); }}
+                        onClick={() => { if (videoRef.current) { videoRef.current.pause(); } setVideoUrl(null); setVideoFile(null); setVideoFileName(''); setVideoTimeOffset(null); setVideoTimeOffset2(null); setAccionSeleccionada(null); setPreviewVideoUrl(null); }}
                         style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.85)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, zIndex: 10 }}
                       >×</button>
                     </div>
@@ -4924,6 +4924,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             setVideoUploaded(false);
                             setVideoUrl(URL.createObjectURL(safeFile));
                             setVideoTimeOffset(null);
+                            setVideoTimeOffset2(null);
                             setAccionSeleccionada(null);
                             setPreviewVideoUrl(null);
                             setPreviewNombres([]);
