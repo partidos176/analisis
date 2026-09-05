@@ -521,25 +521,67 @@ export default function App() {
     setServidorCortesDisponible(false);
   };
 
-  const subirVideoAlServidor = (onProgress) => new Promise((resolve, reject) => {
-    if (!videoFile || !SERVER_URL) { reject(new Error('No hay vídeo o servidor no disponible')); return; }
-    const formData = new FormData();
-    formData.append('video', videoFile);
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', SERVER_URL + '/api/upload');
-    if (onProgress) {
-      xhr.upload.onprogress = (ev) => { if (ev.lengthComputable && ev.total > 0) onProgress(ev.loaded / ev.total); };
+  const TAMANO_FRAGMENTO = 64 * 1024 * 1024;
+  const subirVideoAlServidor = async (onProgress) => {
+    if (!videoFile || !SERVER_URL) throw new Error('No hay vídeo o servidor no disponible');
+    if (videoFile.size > 256 * 1024 * 1024) {
+      const total = Math.ceil(videoFile.size / TAMANO_FRAGMENTO);
+      const initResp = await fetch(SERVER_URL + '/api/upload-init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ totalChunks: total, name: videoFileName || 'video' })
+      });
+      if (!initResp.ok) throw new Error('No se pudo iniciar la subida');
+      const { uploadId } = await initResp.json();
+      for (let i = 0; i < total; i++) {
+        const parte = videoFile.slice(i * TAMANO_FRAGMENTO, Math.min((i + 1) * TAMANO_FRAGMENTO, videoFile.size));
+        const fd = new FormData();
+        fd.append('uploadId', uploadId);
+        fd.append('index', String(i));
+        fd.append('chunk', parte, 'chunk');
+        let ok = false;
+        let ultimoError = null;
+        for (let intento = 0; intento < 3 && !ok; intento++) {
+          try {
+            const r = await fetch(SERVER_URL + '/api/upload-chunk', { method: 'POST', body: fd });
+            if (!r.ok) { const ed = await r.json().catch(() => ({})); throw new Error((ed && ed.error) || 'Error en fragmento'); }
+            ok = true;
+          } catch (e) {
+            ultimoError = e;
+            await new Promise((res) => setTimeout(res, 1000));
+          }
+        }
+        if (!ok) throw ultimoError;
+        if (onProgress) onProgress((i + 1) / total);
+      }
+      const finResp = await fetch(SERVER_URL + '/api/upload-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uploadId })
+      });
+      if (!finResp.ok) { const ed = await finResp.json().catch(() => ({})); throw new Error((ed && ed.error) || 'Error completando subida'); }
+      setVideoUploaded(true);
+      return;
     }
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) { setVideoUploaded(true); resolve(); return; }
-      let msg = 'Error al subir vídeo';
-      try { const d = typeof xhr.response === 'string' ? JSON.parse(xhr.response) : xhr.response; if (d && d.error) msg = d.error; } catch (_) {}
-      reject(new Error(msg));
-    };
-    xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
-    xhr.responseType = 'json';
-    xhr.send(formData);
-  });
+    await new Promise((resolve, reject) => {
+      const formData = new FormData();
+      formData.append('video', videoFile);
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', SERVER_URL + '/api/upload');
+      if (onProgress) {
+        xhr.upload.onprogress = (ev) => { if (ev.lengthComputable && ev.total > 0) onProgress(ev.loaded / ev.total); };
+      }
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) { setVideoUploaded(true); resolve(); return; }
+        let msg = 'Error al subir vídeo';
+        try { const d = typeof xhr.response === 'string' ? JSON.parse(xhr.response) : xhr.response; if (d && d.error) msg = d.error; } catch (_) {}
+        reject(new Error(msg));
+      };
+      xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
+      xhr.responseType = 'json';
+      xhr.send(formData);
+    });
+  };
 
   useEffect(() => {
     checkServerStatus();

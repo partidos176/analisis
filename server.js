@@ -75,6 +75,57 @@ app.post('/api/upload', upload.single('video'), async (req, res) => {
   }
 });
 
+// Subida por fragmentos para vídeos muy grandes (evita colgar el navegador)
+const chunkUpload = multer({ storage: multer.diskStorage({ destination: (req, file, cb) => { const d = tmpDir(); req._chunkDir = d; cb(null, d); }, filename: (req, file, cb) => cb(null, 'chunk') }) });
+const pendingUploads = {};
+
+app.post('/api/upload-init', (req, res) => {
+  try {
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    const dir = tmpDir();
+    pendingUploads[id] = { dir, target: path.join(dir, 'input.mp4'), total: Number(req.body.totalChunks) || 0, done: 0, name: String(req.body.name || 'video').slice(0, 200) };
+    fs.writeFileSync(pendingUploads[id].target, Buffer.alloc(0));
+    res.json({ ok: true, uploadId: id });
+  } catch (err) {
+    res.status(500).json({ error: 'Error iniciando subida: ' + err.message });
+  }
+});
+
+app.post('/api/upload-chunk', chunkUpload.single('chunk'), (req, res) => {
+  try {
+    const id = req.body.uploadId;
+    const job = pendingUploads[id];
+    if (!job) return res.status(400).json({ error: 'Subida no iniciada o caducada' });
+    if (!req.file) return res.status(400).json({ error: 'Falta el fragmento' });
+    const data = fs.readFileSync(req.file.path);
+    fs.appendFileSync(job.target, data);
+    job.done += 1;
+    rmrf(req._chunkDir);
+    res.json({ ok: true, done: job.done, total: job.total });
+  } catch (err) {
+    res.status(500).json({ error: 'Error en fragmento: ' + err.message });
+  }
+});
+
+app.post('/api/upload-complete', (req, res) => {
+  try {
+    const id = req.body.uploadId;
+    const job = pendingUploads[id];
+    if (!job) return res.status(400).json({ error: 'Subida no iniciada o caducada' });
+    const cachedPath = path.join(videoCacheDir, 'cached.mp4');
+    fs.copyFileSync(job.target, cachedPath);
+    cachedVideoPath = cachedPath;
+    cachedVideoName = job.name;
+    const size = fs.statSync(cachedPath).size;
+    rmrf(job.dir);
+    delete pendingUploads[id];
+    console.log('Video cached (por fragmentos):', cachedVideoName, size, 'bytes');
+    res.json({ ok: true, name: cachedVideoName, size });
+  } catch (err) {
+    res.status(500).json({ error: 'Error completando subida: ' + err.message });
+  }
+});
+
 app.post('/api/cortar', upload.single('video'), async (req, res) => {
   let dir = null;
   try {
