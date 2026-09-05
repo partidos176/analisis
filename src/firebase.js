@@ -18,14 +18,6 @@ import {
   createUserWithEmailAndPassword,
   signOut
 } from "firebase/auth";
-import {
-  getStorage,
-  ref as storageRef,
-  uploadBytes,
-  uploadBytesResumable,
-  getDownloadURL,
-  deleteObject
-} from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB3JFhrBA8NhUKa0cwchGQeusjMn9ZelwM",
@@ -42,18 +34,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
-const storage = getStorage(app);
 
 export {
   app,
   db,
   auth,
-  storage,
-  storageRef,
-  uploadBytes,
-  uploadBytesResumable,
-  getDownloadURL,
-  deleteObject,
   ref, 
   set, 
   push, 
