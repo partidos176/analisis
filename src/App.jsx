@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update, remove, storage, storageRef, uploadBytes, getDownloadURL, deleteObject } from './firebase';
+import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update, remove, storage, storageRef, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject } from './firebase';
 import Login from './components/Login';
 import TratamientoApp from './TratamientoApp';
 import html2canvas from 'html2canvas';
@@ -430,12 +430,30 @@ export default function App() {
         try {
           const matchId = (currentMatch && currentMatch.id) || 'sin-partido';
           const ruta = `audios/${matchId}/${ts}_${nombre}`;
-          await uploadBytes(storageRef(storage, ruta), finalBlob, { contentType: tipo });
-          const dl = await getDownloadURL(storageRef(storage, ruta));
-          setAudiosVario((prev) => prev.map((a) => (a.id === idAud ? { ...a, subiendo: false, downloadURL: dl, storagePath: ruta } : a)));
+          const tarea = uploadBytesResumable(storageRef(storage, ruta), finalBlob, { contentType: tipo });
+          const dl = await new Promise((resolve, reject) => {
+            const temporizador = setTimeout(() => {
+              try { tarea.cancel(); } catch (_) {}
+              reject(new Error('Tiempo de espera agotado (2 min) subiendo a la nube'));
+            }, 120000);
+            tarea.on('state_changed',
+              (snap) => {
+                const pct = snap.totalBytes > 0 ? Math.round((snap.bytesTransferred / snap.totalBytes) * 100) : 0;
+                setAudiosVario((prev) => prev.map((a) => (a.id === idAud ? { ...a, progresoSubida: pct } : a)));
+              },
+              (err) => { clearTimeout(temporizador); reject(err); },
+              async () => {
+                clearTimeout(temporizador);
+                try {
+                  resolve(await getDownloadURL(tarea.snapshot.ref));
+                } catch (e) { reject(e); }
+              }
+            );
+          });
+          setAudiosVario((prev) => prev.map((a) => (a.id === idAud ? { ...a, subiendo: false, progresoSubida: 100, downloadURL: dl, storagePath: ruta } : a)));
         } catch (err) {
           console.error('Error subiendo audio a la nube:', err);
-          setAudiosVario((prev) => prev.map((a) => (a.id === idAud ? { ...a, subiendo: false, errorSubida: 'No se pudo subir a la nube (solo local)' } : a)));
+          setAudiosVario((prev) => prev.map((a) => (a.id === idAud ? { ...a, subiendo: false, errorSubida: 'No se pudo subir a la nube: ' + ((err && (err.code || err.message)) || err) } : a)));
         }
       };
       mr.start();
@@ -5464,7 +5482,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         <span style={{ flex: 1, fontWeight: 700, fontSize: '0.85rem', minWidth: '160px' }}>{a.nombre}</span>
                         <audio controls src={a.downloadURL || a.url} style={{ flex: 2, minWidth: '240px' }} />
                         {a.subiendo && (
-                          <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.75rem' }}>Subiendo a la nube…</span>
+                          <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.75rem' }}>Subiendo a la nube{a.progresoSubida != null ? ` ${a.progresoSubida}%` : ''}…</span>
                         )}
                         {a.errorSubida && (
                           <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.75rem' }}>{a.errorSubida}</span>

@@ -22,6 +22,7 @@ import {
   getStorage,
   ref as storageRef,
   uploadBytes,
+  uploadBytesResumable,
   getDownloadURL,
   deleteObject
 } from "firebase/storage";
@@ -50,6 +51,7 @@ export {
   storage,
   storageRef,
   uploadBytes,
+  uploadBytesResumable,
   getDownloadURL,
   deleteObject,
   ref, 
