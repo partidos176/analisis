@@ -622,11 +622,14 @@ export default function App() {
     return Object.values(v);
   };
 
+  const isFinMarker = (n) => n === 'FIN' || n === 'FIN 1ª PARTE' || n === 'FIN 2ª PARTE';
+  const isPeriodMarker = (n) => n === '1ª PARTE' || n === '2ª PARTE' || isFinMarker(n);
+
   const applyMatchData = (match, keepCurrent = false) => {
     resetMatchData();
     const logAcciones = {};
     normalizeArray(match.actionLog).forEach(e => {
-      if (e && e.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(e.name)) {
+      if (e && e.type === 'accion' && !isPeriodMarker(e.name)) {
         logAcciones[e.name] = (logAcciones[e.name] || 0) + 1;
       }
     });
@@ -797,7 +800,7 @@ export default function App() {
       setCorteError('Selecciona primero el archivo de vídeo');
       return;
     }
-    const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN'];
+    const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'];
     const acciones = actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && (filtroAccion === '' || e.name === filtroAccion));
     if (acciones.length === 0) {
       setCorteError('No hay acciones registradas para cortar');
@@ -932,7 +935,7 @@ export default function App() {
       setCorteError('Selecciona primero el archivo de vídeo');
       return;
     }
-    const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN'];
+    const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'];
     const acciones = actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && (filtroAccion === '' || e.name === filtroAccion));
     if (acciones.length === 0) {
       setCorteError('No hay acciones para generar');
@@ -1001,7 +1004,7 @@ export default function App() {
   };
 
   const logAction = (name, type = 'accion') => {
-    const isTimerButton = name === '1ª PARTE' || name === '2ª PARTE' || name === 'FIN';
+    const isTimerButton = isPeriodMarker(name);
     if (!timerRunning && !isTimerButton) {
       setContadorWarning(true);
       setTimeout(() => setContadorWarning(false), 2500);
@@ -1142,9 +1145,9 @@ export default function App() {
     logAction('2ª PARTE');
   };
 
-  const handleFin = () => {
+  const handleFin = (name = 'FIN') => {
     setTimerRunning(false);
-    logAction('FIN');
+    logAction(name);
   };
 
   const handleResetContador = () => {
@@ -2193,7 +2196,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       let ultimaAccion = '';
                       crono.forEach(entry => {
                         if (!entry) return;
-                        if (entry.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(entry.name)) {
+                        if (entry.type === 'accion' && !isPeriodMarker(entry.name)) {
                           ultimaAccion = entry.name;
                         } else if (entry.type === 'finalizacion') {
                           const acc = ultimaAccion || 'SIN ACCION';
@@ -2454,7 +2457,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       const res = [];
                       let ultimaAccion = '';
                       crono.forEach(entry => {
-                        if (entry && entry.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(entry.name)) {
+                        if (entry && entry.type === 'accion' && !isPeriodMarker(entry.name)) {
                           ultimaAccion = entry.name;
                         } else if (entry && entry.name === 'GOL') {
                           res.push(ultimaAccion || 'GOL');
@@ -3161,7 +3164,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   </div>
                   <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'stretch' }}>
                     <button
-                      onClick={handleFin}
+                      onClick={() => handleFin('FIN 1ª PARTE')}
                       style={{
                         background: '#dc2626',
                         color: '#ffffff',
@@ -3179,7 +3182,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       FIN 1ª PARTE
                     </button>
                     <button
-                      onClick={handleFin}
+                      onClick={() => handleFin('FIN 2ª PARTE')}
                       style={{
                         background: '#dc2626',
                         color: '#ffffff',
@@ -4455,7 +4458,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             let psPos = null;
                             [...logPos].reverse().forEach(e => {
                               if (e.name === '1ª PARTE' || e.name === '2ª PARTE') { psPos = e; }
-                              else if (e.name === 'FIN' && psPos) { pdsPos.push({ start: psPos, end: e }); psPos = null; }
+                              else if (isFinMarker(e.name) && psPos) { pdsPos.push({ start: psPos, end: e }); psPos = null; }
                             });
                             if (psPos) pdsPos.push({ start: psPos, end: null });
                             const posRows = pdsPos.map(p => {
@@ -4610,10 +4613,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         try {
                           const data = JSON.parse(ev.target.result);
                           if (data.partes && Array.isArray(data.partes)) {
-                            const mapTimelineAction = (a) => {
+                            const mapTimelineAction = (a, parte) => {
                               if (a === 'INICIO 1ª PARTE') return '1ª PARTE';
                               if (a === 'INICIO 2ª PARTE') return '2ª PARTE';
-                              if (a === 'FIN 1ª PARTE' || a === 'FIN 2ª PARTE') return 'FIN';
+                              if (a === 'FIN 1ª PARTE' || a === 'FIN 2ª PARTE') return parte === '2ª PARTE' ? 'FIN 2ª PARTE' : 'FIN 1ª PARTE';
                               return a;
                             };
                             const parseMinuto = (t) => {
@@ -4625,7 +4628,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             const newGoles = [];
                             const newGolesRival = [];
                             data.partes.forEach(row => {
-                              const mappedAccion = mapTimelineAction(row.accion);
+                              const mappedAccion = mapTimelineAction(row.accion, row.parte);
                               const t = row.tiempoMatch || '--:--';
                               if (row.accion && row.accion !== '') {
                                 newEntries.push({ name: mappedAccion, time: t, type: 'accion' });
@@ -4868,7 +4871,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 
                   <select
                     value={filtroAccion}
-                    onChange={(e) => { const isSelectingVarios = e.target.value === '__varios__'; const wasVarios = filtroAccion === '__varios__'; setFiltroAccion(e.target.value); if (isSelectingVarios && !wasVarios) { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.max(0, Math.floor(videoCurrentTime - offset) - 2) })); } } }}
+                    onChange={(e) => { const isSelectingVarios = e.target.value === '__varios__'; const wasVarios = filtroAccion === '__varios__'; setFiltroAccion(e.target.value); if (isSelectingVarios && !wasVarios) { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = videoTimeOffset2 != null ? videoTimeOffset2 : (videoTimeOffset != null ? videoTimeOffset : 0); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.max(0, Math.floor(videoCurrentTime - offset) - 2) })); } } }}
                     style={{
                       padding: '0.4rem 0.8rem',
                       borderRadius: '8px',
@@ -4881,7 +4884,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   >
                     <option value="" style={{ color: '#ffffff' }}>Todas las acciones</option>
                     <option value="__varios__" style={{ color: '#ef4444' }}>VARIOS</option>
-                    {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name)).map(e => e.name))].map(name => (
+                    {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name)).map(e => e.name))].map(name => (
                       <option key={name} value={name}>{name}</option>
                     ))}
                   </select>
@@ -5003,7 +5006,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       padding: '1rem'
                     }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
-                      Acciones ({actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name) && (filtroAccion === '' || e.name === filtroAccion)).length})
+                      Acciones ({actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name) && (filtroAccion === '' || e.name === filtroAccion)).length})
                     </span>
                     {actionLog.length === 0 && (
                       <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
@@ -5045,7 +5048,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     </div>
                     {/* Acciones seleccionadas por el filtro */}
                     {filtroAccion && (() => {
-                      const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN'];
+                      const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'];
                       const allAccionesFiltradas = (filtroAccion === '__varios__'
                         ? actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && !['ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name))
                         : actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && e.name === filtroAccion && !['ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name))).sort((a, b) => {
@@ -6014,7 +6017,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   let periodStart = null;
                   [...arr].reverse().forEach(e => {
                     if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { periodStart = e; }
-                    else if (e && e.time && e.name === 'FIN' && periodStart) { periods.push({ start: periodStart, end: e }); periodStart = null; }
+                    else if (e && e.time && isFinMarker(e.name) && periodStart) { periods.push({ start: periodStart, end: e }); periodStart = null; }
                   });
                   if (periodStart) { periods.push({ start: periodStart, end: null }); }
                   if (periods.length === 0) return null;
@@ -6058,7 +6061,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   let ps = null;
                   [...log].reverse().forEach(e => {
                     if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { ps = e; }
-                    else if (e && e.time && e.name === 'FIN' && ps) { pds.push({ start: ps, end: e }); ps = null; }
+                    else if (e && e.time && isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
                   });
                   if (ps) { pds.push({ start: ps, end: null }); }
                   const md = m.matchday || 0;
