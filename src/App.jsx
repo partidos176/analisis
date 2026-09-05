@@ -6912,24 +6912,31 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     left: `${x}%`,
                                     top: `${y}%`,
                                     transform: 'translate(-50%, -50%)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    zIndex: draggingMapIdx === p.idx ? 10 : 2,
+                                    touchAction: 'none',
+                                    userSelect: 'none',
+                                    cursor: draggingMapIdx === p.idx ? 'grabbing' : 'grab'
+                                  }}
+                                  title={`${p.name} — arrastra libremente por el campo o al banquillo · click: quitar (vuelve a la plantilla) · doble click: no convocado`}
+                                >
+                                  <div style={{
                                      width: 100,
                                     height: 100,
                                     borderRadius: '50%',
                                     border: `3px solid ${isNoConvocado ? '#000000' : '#38bdf8'}`,
                                     overflow: 'hidden',
                                     background: '#0f172a',
-                                    cursor: draggingMapIdx === p.idx ? 'grabbing' : 'grab',
-                                    boxShadow: draggingMapIdx === p.idx ? '0 6px 18px rgba(0,0,0,0.5)' : '0 2px 10px rgba(0,0,0,0.4)',
-                                    zIndex: draggingMapIdx === p.idx ? 10 : 2,
-                                    touchAction: 'none',
-                                    userSelect: 'none'
-                                  }}
-                                  title={`${p.name} — arrastra libremente por el campo o al banquillo · click: quitar (vuelve a la plantilla) · doble click: no convocado`}
-                                >
+                                    position: 'relative',
+                                    boxShadow: draggingMapIdx === p.idx ? '0 6px 18px rgba(0,0,0,0.5)' : '0 2px 10px rgba(0,0,0,0.4)'
+                                  }}>
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
-                                  <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: p.status === 'titular' ? 'rgba(56,189,248,0.95)' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'no convocado' ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 13, textAlign: 'center', padding: '1px 0', letterSpacing: '0.02em', lineHeight: 1.1 }}>{p.name}</div>
                                    {!!p.name && <XBtn idx={p.idx} />}
-                                 </div>
+                                  </div>
+                                  <div style={{ marginTop: 2, maxWidth: 124, background: p.status === 'titular' ? 'rgba(56,189,248,0.95)' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'no convocado' ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 12, textAlign: 'center', padding: '1px 4px', letterSpacing: '0.02em', lineHeight: 1.2, borderRadius: 4, overflowWrap: 'break-word' }}>{p.name}</div>
+                                  </div>
                               );
                             })}
                           </div>
