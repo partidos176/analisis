@@ -5469,11 +5469,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     </button>
                   </div>
                   {/* Botón volver */}
-                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
                     <button
                       onClick={() => setActiveTab('acciones')}
                       title="Volver a acciones"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#334155', color: '#ffffff', fontWeight: 900, fontSize: '1.2rem', padding: '0.5rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', cursor: 'pointer', border: 'none' }}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#334155', color: '#ffffff', fontWeight: 900, fontSize: '1.8rem', padding: '0.8rem 2.2rem', borderRadius: '12px', minWidth: 'fit-content', cursor: 'pointer', border: 'none' }}
                     >
                       <span>&#8629;</span>
                     </button>
