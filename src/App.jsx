@@ -819,7 +819,8 @@ export default function App() {
       setVideoUrl(g.url);
       setVideoTimeOffset(g.offset ?? null);
       setVideoTimeOffset2(g.offset2 ?? null);
-      setVideoUploaded(!!g.uploaded);
+      setVideoUploaded(false);
+      if (g.file) comprobarCacheServidor(g.file, g.fileName);
     } else {
       setVideoFile(null);
       setVideoFileName('');
