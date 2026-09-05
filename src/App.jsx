@@ -4745,9 +4745,22 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         onChange={(ev) => {
                           const v = ev.target.value;
                           const nombre = entry.type === 'finalizacion' ? v : (v === 'INICIO 1ª PARTE' ? '1ª PARTE' : v === 'INICIO 2ª PARTE' ? '2ª PARTE' : v);
+                          if (nombre === entry.name) return;
+                          const eraGol = entry.name === 'GOL' || entry.name === 'PENAL + GOL';
+                          const eraGolRival = entry.name === 'GOL RIVAL' || entry.name === 'PENAL + GOL RIVAL';
+                          const esGol = nombre === 'GOL' || nombre === 'PENAL + GOL';
+                          const esGolRival = nombre === 'GOL RIVAL' || nombre === 'PENAL + GOL RIVAL';
                           const nuevo = actionLog.map((x, j) => (j === idx ? { ...x, name: nombre } : x));
                           setActionLog(nuevo);
                           recomputeCountersFromLog(nuevo);
+                          if (eraGol) setGolesList((prev) => prev.slice(0, -1));
+                          if (eraGolRival) setGolesRivalList((prev) => prev.slice(0, -1));
+                          if (esGol || esGolRival) {
+                            const p = String(entry.time || '').split(':').map(Number);
+                            const per = periodoDeAccion(entry);
+                            if (esGol) setGolesList((prev) => [...prev, { name: '', tipo: nombre === 'PENAL + GOL' ? 'PENAL' : '', name2: '', accion: nombre === 'PENAL + GOL' ? 'PENAL' : '', team: 'home', periodo: per, minuto: (p[0] || 0) }]);
+                            else setGolesRivalList((prev) => [...prev, { periodo: per, minuto: (p[0] || 0) }]);
+                          }
                         }}
                         style={{ background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : '#ffffff'), fontWeight: 700, fontSize: entry.type === 'finalizacion' ? '0.7rem' : '0.85rem', textTransform: 'uppercase', cursor: 'pointer', padding: '0.1rem 0.3rem', maxWidth: '100%' }}
                       >
