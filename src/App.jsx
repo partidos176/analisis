@@ -6731,13 +6731,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           }}
                         >
                           {foto ? (
-                            <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: isNoConvocado ? 'grayscale(1) brightness(0.35)' : 'none' }} />
+                            <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                           ) : (
                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
                           )}
                           {isNoConvocado && (
-                            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <span style={{ color: '#ffffff', fontWeight: 900, fontSize: size * 0.18, letterSpacing: '0.04em' }}>NO</span>
+                            <div style={{ position: 'absolute', top: 2, left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+                              <span style={{ background: 'rgba(0,0,0,0.8)', color: '#ffffff', fontWeight: 900, fontSize: size * 0.18, letterSpacing: '0.04em', borderRadius: 6, padding: '0 6px' }}>NO</span>
                             </div>
                           )}
                            <div style={{ position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)', background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : '#334155', color: '#0f172a',                             fontWeight: 900, fontSize: Math.max(10, size * 0.22), padding: '0 4px', borderRadius: 4, whiteSpace: 'nowrap', lineHeight: 1.1, maxWidth: size + 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
@@ -6928,8 +6928,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   }}
                                   title={`${p.name} — arrastra libremente por el campo o al banquillo · click: quitar (vuelve a la plantilla) · doble click: no convocado`}
                                 >
-                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: isNoConvocado ? 'grayscale(1) brightness(0.35)' : 'none' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
-                                  {isNoConvocado && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }} />}
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {isNoConvocado && <div style={{ position: 'absolute', top: 2, left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}><span style={{ background: 'rgba(0,0,0,0.8)', color: '#ffffff', fontWeight: 900, fontSize: 11, borderRadius: 6, padding: '0 6px' }}>NO</span></div>}
                                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isNoConvocado ? 'rgba(0,0,0,0.75)' : 'rgba(56,189,248,0.95)', color: isNoConvocado ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 13, textAlign: 'center', padding: '1px 0', letterSpacing: '0.02em', lineHeight: 1.1 }}>{p.name}</div>
                                    {!!p.name && <XBtn idx={p.idx} />}
                                  </div>
@@ -7014,8 +7014,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     boxShadow: isTit || isSup ? '0 2px 8px rgba(0,0,0,0.35)' : 'none'
                                   }}
                                 >
-                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', filter: isNo ? 'grayscale(1) brightness(0.32)' : 'none' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
-                                  {isNo && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.62)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ color: '#ffffff', fontWeight: 900, fontSize: 10 }}>NO</span></div>}
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {isNo && <div style={{ position: 'absolute', top: 2, left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}><span style={{ background: 'rgba(0,0,0,0.8)', color: '#ffffff', fontWeight: 900, fontSize: 10, borderRadius: 6, padding: '0 6px' }}>NO</span></div>}
                                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? 'rgba(0,0,0,0.75)' : 'rgba(15,23,42,0.88)', color: isTit || isSup ? '#0f172a' : '#ffffff', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
                                  </div>
@@ -7060,7 +7060,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             })}
                           </div>
                           {players.filter(p => p.status === 'no convocado').length > 0 && (
-                            <span style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 600 }}>No convocados aparecen en negro. Doble click de nuevo para quitar el efecto.</span>
+                            <span style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 600 }}>No convocados con borde negro y etiqueta NO. Doble click de nuevo para quitar el efecto.</span>
                           )}
                         </div>
                         </div>
