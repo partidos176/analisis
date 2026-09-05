@@ -172,7 +172,11 @@ export default function App() {
         e.preventDefault();
         const v = pickVideo();
         if (v) {
-          if (v.paused) v.play(); else v.pause();
+          const willPlay = v.paused;
+          setTimeout(() => {
+            if (willPlay) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+            else v.pause();
+          }, 0);
         }
       }
       if (e.code === 'Home' && !esEditable()) {
