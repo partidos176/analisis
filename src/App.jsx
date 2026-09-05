@@ -7055,9 +7055,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               );
                             })}
                           </div>
-                          {players.filter(p => p.status === 'no convocado').length > 0 && (
-                            <span style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 600 }}>No convocados con borde negro y etiqueta NO. Doble click de nuevo para quitar el efecto.</span>
-                          )}
                         </div>
                         </div>
                       </div>
