@@ -5534,6 +5534,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           const newLog = actionLog.slice(1);
                           setActionLog(newLog);
                           recomputeCountersFromLog(newLog);
+                          setActiveTab('acciones');
                         }}
                         title="Eliminar última acción cargada"
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#eab308', color: '#000000', fontWeight: 900, fontSize: '2.6rem', lineHeight: '1', padding: '0.6rem 2rem', borderRadius: '12px', minWidth: 'fit-content', cursor: 'pointer', border: 'none', marginTop: '1.5rem' }}
