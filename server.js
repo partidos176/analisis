@@ -43,10 +43,29 @@ fs.mkdirSync(videoCacheDir, { recursive: true });
 
 let cachedVideoPath = null;
 let cachedVideoName = null;
+let cachedVideoSize = 0;
+const metaPath = path.join(videoCacheDir, 'meta.json');
+try {
+  const cachedPath = path.join(videoCacheDir, 'cached.mp4');
+  if (fs.existsSync(cachedPath) && fs.existsSync(metaPath)) {
+    const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+    if (meta && meta.name && fs.statSync(cachedPath).size > 0) {
+      cachedVideoPath = cachedPath;
+      cachedVideoName = meta.name;
+      cachedVideoSize = fs.statSync(cachedPath).size;
+      console.log('Cache restaurada:', cachedVideoName, cachedVideoSize, 'bytes');
+    }
+  }
+} catch (err) {
+  console.warn('No se pudo restaurar la caché:', err.message);
+}
+const guardarMetaCache = () => {
+  try { fs.writeFileSync(metaPath, JSON.stringify({ name: cachedVideoName, size: cachedVideoSize })); } catch {}
+};
 
 app.get('/api/cortar', (req, res) => {
   console.log('GET /api/cortar - health check');
-  res.json({ ok: true, cached: !!cachedVideoPath, cachedName: cachedVideoName });
+  res.json({ ok: true, cached: !!cachedVideoPath, cachedName: cachedVideoName, cachedSize: cachedVideoSize });
 });
 
 app.options('/api/cortar', (req, res) => {
@@ -66,6 +85,8 @@ app.post('/api/upload', upload.single('video'), async (req, res) => {
     fs.copyFileSync(inputPath, cachedPath);
     cachedVideoPath = cachedPath;
     cachedVideoName = req.file.originalname;
+    cachedVideoSize = req.file.size;
+    guardarMetaCache();
     rmrf(path.dirname(inputPath));
     console.log('Video cached:', cachedVideoName, req.file.size, 'bytes');
     res.json({ ok: true, name: cachedVideoName, size: req.file.size });
@@ -117,6 +138,8 @@ app.post('/api/upload-complete', (req, res) => {
     cachedVideoPath = cachedPath;
     cachedVideoName = job.name;
     const size = fs.statSync(cachedPath).size;
+    cachedVideoSize = size;
+    guardarMetaCache();
     rmrf(job.dir);
     delete pendingUploads[id];
     console.log('Video cached (por fragmentos):', cachedVideoName, size, 'bytes');
@@ -137,6 +160,8 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
       fs.copyFileSync(inputPath, cachedPath);
       cachedVideoPath = cachedPath;
       cachedVideoName = req.file.originalname;
+      cachedVideoSize = req.file.size;
+      guardarMetaCache();
       rmrf(path.dirname(inputPath));
       dir = null;
       inputPath = cachedPath;

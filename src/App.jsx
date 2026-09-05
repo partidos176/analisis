@@ -398,7 +398,28 @@ export default function App() {
   const conectarServidor = async () => {
     setConectandoServidor(true);
     await checkServerStatus();
+    await comprobarCacheServidor();
     setConectandoServidor(false);
+  };
+
+  const comprobarCacheServidor = async (archivo, nombreArchivo) => {
+    const f = archivo || videoFile;
+    const nomb = nombreArchivo || videoFileName;
+    if (!f) return false;
+    const urls = [customServerUrl, 'http://localhost:3001', BUILD_SERVER_URL].filter(Boolean);
+    for (const url of urls) {
+      try {
+        const r = await fetch(url + '/api/cortar');
+        const d = await r.json();
+        if (d && d.ok === true && d.cached && d.cachedName === (f.name || nomb) && Number(d.cachedSize) === f.size) {
+          setResolvedServerUrl(url);
+          setServidorCortesDisponible(true);
+          setVideoUploaded(true);
+          return true;
+        }
+      } catch (_) {}
+    }
+    return false;
   };
   const [accionSeleccionada, setAccionSeleccionada] = useState(null);
   const [corteInicio, setCorteInicio] = useState(0);
@@ -5063,6 +5084,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             setVideoFile(safeFile);
                             setVideoFileName(file.name);
                             setVideoUploaded(false);
+                            comprobarCacheServidor(safeFile, file.name);
                             setVideoUrl(URL.createObjectURL(safeFile));
                             setVideoTimeOffset(null);
                             setVideoTimeOffset2(null);
@@ -5110,7 +5132,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           fontWeight: 700,
                           fontSize: '0.7rem'
                         }}>
-                          {servidorCortesDisponible === true ? '● Conectado' : conectandoServidor ? '● Conectando…' : servidorCortesDisponible === null ? '● ...' : (videoFile && isBrowserCutSupported(videoFile)) ? '● Corte local (navegador)' : '● Sin servidor'}
+                          {servidorCortesDisponible === true ? (videoUploaded ? '● Conectado (vídeo ya en servidor)' : '● Conectado') : conectandoServidor ? '● Conectando…' : servidorCortesDisponible === null ? '● ...' : (videoFile && isBrowserCutSupported(videoFile)) ? '● Corte local (navegador)' : '● Sin servidor'}
                         </span>
                         <button
                           onClick={() => conectarServidor()}
