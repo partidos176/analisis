@@ -5524,7 +5524,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <button
                         onClick={() => setActiveTab('acciones')}
                         title="Volver a acciones"
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#334155', color: '#ffffff', fontWeight: 900, fontSize: '1.8rem', padding: '0.8rem 2.2rem', borderRadius: '12px', minWidth: 'fit-content', cursor: 'pointer', border: 'none', marginTop: '1.5rem' }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '1.8rem', padding: '0.8rem 2.2rem', borderRadius: '12px', minWidth: 'fit-content', cursor: 'pointer', border: 'none', marginTop: '1.5rem' }}
                       >
                         <span>&#8629;</span>
                       </button>
