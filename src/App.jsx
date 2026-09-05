@@ -796,6 +796,44 @@ export default function App() {
     return offsetParaPeriodo('2ª PARTE');
   };
 
+  const videosPorPartidoRef = useRef({});
+
+  const guardarVideoActual = () => {
+    if (currentMatch && currentMatch.id) {
+      videosPorPartidoRef.current[currentMatch.id] = {
+        file: videoFile,
+        fileName: videoFileName,
+        url: videoUrl,
+        offset: videoTimeOffset,
+        offset2: videoTimeOffset2,
+        uploaded: videoUploaded
+      };
+    }
+  };
+
+  const restaurarVideoPartido = (matchId) => {
+    const g = videosPorPartidoRef.current[matchId];
+    if (g && g.url) {
+      setVideoFile(g.file);
+      setVideoFileName(g.fileName || '');
+      setVideoUrl(g.url);
+      setVideoTimeOffset(g.offset ?? null);
+      setVideoTimeOffset2(g.offset2 ?? null);
+      setVideoUploaded(!!g.uploaded);
+    } else {
+      setVideoFile(null);
+      setVideoFileName('');
+      setVideoUrl(null);
+      setVideoTimeOffset(null);
+      setVideoTimeOffset2(null);
+      setVideoUploaded(false);
+    }
+    setAccionSeleccionada(null);
+    setPreviewVideoUrl(null);
+    setPreviewNombres([]);
+    setCorteError('');
+  };
+
   const applyMatchData = (match, keepCurrent = false) => {
     resetMatchData();
     const logAcciones = {};
@@ -869,7 +907,13 @@ export default function App() {
 
   const handleOpenMatch = async (match) => {
     setActiveTab('alineacion');
-    applyMatchData(match, false);
+    if (!currentMatch || currentMatch.id !== match.id) {
+      guardarVideoActual();
+      applyMatchData(match, false);
+      restaurarVideoPartido(match.id);
+    } else {
+      applyMatchData(match, false);
+    }
   };
 
   const saveMatchData = async (id) => {
@@ -946,6 +990,7 @@ export default function App() {
         console.error('Error guardando datos del partido:', err);
       }
     }
+    guardarVideoActual();
     setCurrentMatch(null);
     resetMatchData();
   };
