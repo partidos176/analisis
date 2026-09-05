@@ -6518,6 +6518,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 
                   {/* === MAPA DE CAMPO === */}
                   <div ref={alineacionRef} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%', overflow: 'visible' }}>
+                  <div style={{ textAlign: 'center', color: '#ffffff', fontWeight: 900, fontSize: '1.4rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    JORNADA {currentMatch?.matchday || '?'} — {currentMatch?.homeTeam || ''} vs {currentMatch?.awayTeam || ''}
+                  </div>
                   {(() => {
                     const titulares = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'titular');
                     const suplentes = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'suplente');
