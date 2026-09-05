@@ -5962,7 +5962,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <tr>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
                               {cols.map(f => (
-                                <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>{f}</th>
+                                <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>{f}</th>
                               ))}
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>
                             </tr>
@@ -5972,7 +5972,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               <tr key={a}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: a.includes('RIVAL') ? '#ef4444' : '#ffffff', fontWeight: 700 }}>{a}</td>
                                 {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: a.includes('RIVAL') ? '#ef4444' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : (a.includes('RIVAL') ? '#ef4444' : '#ffffff'), fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
                                 ))}
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : matriz[a][f]), 0)}</td>
                               </tr>
