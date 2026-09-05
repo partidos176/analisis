@@ -6735,11 +6735,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           ) : (
                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
                           )}
-                          {isNoConvocado && (
-                            <div style={{ position: 'absolute', top: 2, left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
-                              <span style={{ background: 'rgba(0,0,0,0.8)', color: '#ffffff', fontWeight: 900, fontSize: size * 0.18, letterSpacing: '0.04em', borderRadius: 6, padding: '0 6px' }}>NO</span>
-                            </div>
-                          )}
                            <div style={{ position: 'absolute', bottom: -1, left: '50%', transform: 'translateX(-50%)', background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'no convocado' ? '#e2e8f0' : '#334155', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a',                             fontWeight: 900, fontSize: Math.max(10, size * 0.22), padding: '0 4px', borderRadius: 4, whiteSpace: 'nowrap', lineHeight: 1.1, maxWidth: size + 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
                            {!!p.name && <XBtn idx={p.idx} />}
                          </div>
@@ -6929,7 +6924,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   title={`${p.name} — arrastra libremente por el campo o al banquillo · click: quitar (vuelve a la plantilla) · doble click: no convocado`}
                                 >
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
-                                  {isNoConvocado && <div style={{ position: 'absolute', top: 2, left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}><span style={{ background: 'rgba(0,0,0,0.8)', color: '#ffffff', fontWeight: 900, fontSize: 11, borderRadius: 6, padding: '0 6px' }}>NO</span></div>}
                                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: p.status === 'titular' ? 'rgba(56,189,248,0.95)' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'no convocado' ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 13, textAlign: 'center', padding: '1px 0', letterSpacing: '0.02em', lineHeight: 1.1 }}>{p.name}</div>
                                    {!!p.name && <XBtn idx={p.idx} />}
                                  </div>
@@ -7015,7 +7009,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   }}
                                 >
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
-                                  {isNo && <div style={{ position: 'absolute', top: 2, left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}><span style={{ background: 'rgba(0,0,0,0.8)', color: '#ffffff', fontWeight: 900, fontSize: 10, borderRadius: 6, padding: '0 6px' }}>NO</span></div>}
                                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : isNo ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor' || (!isTit && !isSup && !isNo)) ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
                                  </div>
