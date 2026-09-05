@@ -431,3 +431,7 @@ video::-webkit-media-controls-current-time-display {
 .no-spinner[type=number] {
   -moz-appearance: textfield;
 }
+
+.exportando .no-export {
+  display: none !important;
+}

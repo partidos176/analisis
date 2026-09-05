@@ -6445,6 +6445,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     <button
                       onClick={async () => {
                         if (!alineacionRef.current) return;
+                        alineacionRef.current.classList.add('exportando');
                         try {
                           const canvas = await html2canvas(alineacionRef.current, { backgroundColor: '#0b0f19', scale: 2 });
                           const link = document.createElement('a');
@@ -6453,6 +6454,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           link.click();
                         } catch (err) {
                           console.error('Error exportando imagen:', err);
+                        } finally {
+                          alineacionRef.current.classList.remove('exportando');
                         }
                       }}
                       title="Exportar alineación en JPG"
@@ -6644,6 +6647,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const XBtn = ({ idx }) => (
                       <button
                         type="button"
+                        className="no-export"
                         onClick={(e) => { e.stopPropagation(); e.preventDefault(); removePlayer(idx); }}
                         onMouseDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
@@ -6856,7 +6860,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             </svg>
 
                             {titulares.length === 0 && (
-                              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                              <div className="no-export" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
                                 <span style={{ background: 'rgba(0,0,0,0.35)', color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', padding: '0.35rem 0.7rem', borderRadius: 999, backdropFilter: 'blur(2px)' }}>Haz click para agregar titulares (click en hueco del campo)</span>
                               </div>
                             )}
@@ -7015,10 +7019,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? 'rgba(0,0,0,0.75)' : 'rgba(15,23,42,0.88)', color: isTit || isSup ? '#0f172a' : '#ffffff', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
                                  </div>
-                                 {menuAbierto && (
-                                   <>
-                                     <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setMenuJugadorIdx(null)} />
-                                     <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 6, zIndex: 50, display: 'flex', flexDirection: 'column', gap: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 6, boxShadow: '0 6px 18px rgba(0,0,0,0.5)', minWidth: 140 }}>
+                                  {menuAbierto && (
+                                    <>
+                                      <div className="no-export" style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setMenuJugadorIdx(null)} />
+                                      <div className="no-export" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 6, zIndex: 50, display: 'flex', flexDirection: 'column', gap: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 6, boxShadow: '0 6px 18px rgba(0,0,0,0.5)', minWidth: 140 }}>
                                        {opcionesEstado.map(o => (
                                          <button key={o.id} onClick={() => aplicarEstado(idx, o.id)} style={{ background: o.color, color: o.color === '#000000' ? '#ffffff' : '#0f172a', border: 'none', borderRadius: 6, padding: '0.35rem 0.6rem', fontWeight: 900, fontSize: '0.7rem', cursor: 'pointer', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{o.label}</button>
                                        ))}
