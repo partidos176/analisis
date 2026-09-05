@@ -384,6 +384,7 @@ export default function App() {
   const [filtroAccion, setFiltroAccion] = useState('');
   const [corteError, setCorteError] = useState('');
   const [cortandoTodos, setCortandoTodos] = useState(false);
+  const [corteProgress, setCorteProgress] = useState(0);
   const BUILD_SERVER_URL = import.meta.env.VITE_CORTES_SERVER_URL || '';
   const [customServerUrl, setCustomServerUrl] = useState(() => {
     try { return localStorage.getItem('ft_custom_server_url') || ''; } catch { return ''; }
@@ -512,15 +513,25 @@ export default function App() {
     setServidorCortesDisponible(false);
   };
 
-  const uploadVideoToServer = async () => {
-    if (videoUploaded) return;
-    if (!videoFile || !SERVER_URL) throw new Error('No hay vídeo o servidor no disponible');
+  const subirVideoAlServidor = (onProgress) => new Promise((resolve, reject) => {
+    if (!videoFile || !SERVER_URL) { reject(new Error('No hay vídeo o servidor no disponible')); return; }
     const formData = new FormData();
     formData.append('video', videoFile);
-    const resp = await fetch(SERVER_URL + '/api/upload', { method: 'POST', body: formData });
-    if (!resp.ok) { const errData = await resp.json().catch(() => ({})); throw new Error(errData.error || 'Error al subir vídeo'); }
-    setVideoUploaded(true);
-  };
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', SERVER_URL + '/api/upload');
+    if (onProgress) {
+      xhr.upload.onprogress = (ev) => { if (ev.lengthComputable && ev.total > 0) onProgress(ev.loaded / ev.total); };
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) { setVideoUploaded(true); resolve(); return; }
+      let msg = 'Error al subir vídeo';
+      try { const d = typeof xhr.response === 'string' ? JSON.parse(xhr.response) : xhr.response; if (d && d.error) msg = d.error; } catch (_) {}
+      reject(new Error(msg));
+    };
+    xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
+    xhr.responseType = 'json';
+    xhr.send(formData);
+  });
 
   useEffect(() => {
     checkServerStatus();
@@ -905,6 +916,7 @@ export default function App() {
     }
     setCorteError('');
     setCortandoTodos(true);
+    setCorteProgress(0);
     try {
       const base = videoFileName.replace(/\.[^.]+$/, '') || 'partido';
       const cortes = acciones.map(e => {
@@ -923,11 +935,7 @@ export default function App() {
       });
       const tryServerBatch = async () => {
         if (!videoUploaded) {
-          const formData = new FormData();
-          formData.append('video', videoFile);
-          const uploadResp = await fetch(SERVER_URL + '/api/upload', { method: 'POST', body: formData });
-          if (!uploadResp.ok) { const errData = await uploadResp.json().catch(() => ({})); throw new Error(errData.error || 'Error al subir vídeo'); }
-          setVideoUploaded(true);
+          await subirVideoAlServidor((f) => setCorteProgress(Math.round(f * 100)));
         }
         const resp = await fetch(SERVER_URL + '/api/cortar', {
           method: 'POST',
@@ -5293,23 +5301,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 const doCut = async () => {
                                   const tryServer = async () => {
                                     if (!videoUploaded) {
-                                      await new Promise((resolve, reject) => {
-                                        const formData = new FormData();
-                                        formData.append('video', videoFile);
-                                        const xhr = new XMLHttpRequest();
-                                        xhr.open('POST', SERVER_URL + '/api/upload');
-                                        xhr.upload.onprogress = (ev) => {
-                                          if (ev.lengthComputable) {
-                                            setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round((ev.loaded / ev.total) * 40) }));
-                                          }
-                                        };
-                                        xhr.onload = () => {
-                                          if (xhr.status >= 200 && xhr.status < 300) { setVideoUploaded(true); resolve(); } else { reject(new Error('Error al subir vídeo')); }
-                                        };
-                                        xhr.onerror = () => reject(new Error('No se pudo conectar al servidor'));
-                                        xhr.responseType = 'json';
-                                        xhr.send(formData);
-                                      });
+                                      await subirVideoAlServidor((f) => setProgresoAccion(prev => ({ ...prev, [actionKey]: Math.round(f * 40) })));
                                     }
                                     setProgresoAccion(prev => ({ ...prev, [actionKey]: 50 }));
                                     const resp = await fetch(SERVER_URL + '/api/cortar', {
@@ -5507,13 +5499,18 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         overflow: 'hidden'
                       }}>
                         <div style={{
-                          width: '40%',
+                          width: corteProgress > 0 ? `${corteProgress}%` : '40%',
                           height: '100%',
                           background: '#22c55e',
                           borderRadius: '4px',
-                          animation: 'barraProgreso 1.2s ease-in-out infinite'
+                          animation: corteProgress > 0 ? 'none' : 'barraProgreso 1.2s ease-in-out infinite'
                         }} />
                       </div>
+                    )}
+                    {cortandoTodos && corteProgress > 0 && (
+                      <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
+                        Subiendo vídeo {corteProgress}%
+                      </span>
                     )}
                   </div>
                 </div>
