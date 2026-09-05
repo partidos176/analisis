@@ -157,6 +157,14 @@ export default function App() {
 
   useEffect(() => {
     const pickVideo = () => {
+      const fs = document.fullscreenElement;
+      if (fs) {
+        if (fs.tagName === 'VIDEO') return fs;
+        try {
+          const dentro = fs.querySelector && fs.querySelector('video');
+          if (dentro) return dentro;
+        } catch (_) {}
+      }
       const a = document.activeElement;
       if (a && a.tagName === 'VIDEO') return a;
       if (videoRef.current && videoRef.current.isConnected) return videoRef.current;
