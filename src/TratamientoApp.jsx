@@ -391,7 +391,7 @@ function TratamientoApp({ videoInicial }) {
 
   const anadirTriangulo = () => {
     const id = Date.now();
-    setFiguras(prev => [...prev, { id, tipo: 'triangulo', x: 0.5, y: 0.5, ancho: 0.06, alto: 0.35, color: '#f97316', opacidad: 0.7, crecimiento: 0 }]);
+    setFiguras(prev => [...prev, { id, tipo: 'triangulo', x: 0.5, y: 0.5, ancho: 0.06, alto: 0.35, color: '#f97316', opacidad: 0.7, crecimiento: 0.15 }]);
     setFiguraSeleccionada(id);
     if (triAnimRef.current) cancelAnimationFrame(triAnimRef.current);
     triAnimIdRef.current = id;
@@ -404,7 +404,7 @@ function TratamientoApp({ videoInicial }) {
       }
       triAnimStartRef.current = t;
       const p = Math.min(1, triAnimElapsedRef.current / 4000);
-      const e = 1 - Math.pow(1 - p, 2.5);
+      const e = 0.15 + 0.85 * (1 - Math.pow(1 - p, 2.5));
       setFiguras(prev => prev.map(f => f.id === id ? { ...f, crecimiento: e } : f));
       if (p < 1) triAnimRef.current = requestAnimationFrame(paso);
       else triAnimRef.current = null;
