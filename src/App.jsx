@@ -2007,7 +2007,7 @@ export default function App() {
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
                         {items.map((item, i) => (
                           <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center', minWidth: '140px' }}>
-                            <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
+                            <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#ffffff', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 900, color: item.color, fontFamily: 'var(--font-mono)' }}>{item.value}</div>
                           </div>
                         ))}
@@ -2266,7 +2266,7 @@ export default function App() {
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
                             {[{ label: 'VICTORIAS LOCAL', value: lVic, color: '#22c55e' }, { label: 'EMPATES LOCAL', value: lEmp, color: '#fbbf24' }, { label: 'DERROTAS LOCAL', value: lDer, color: '#ef4444' }, { label: 'GOLES A FAVOR LOCAL', value: lGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA LOCAL', value: lGc, color: '#f87171' }].map((item, i) => (
                               <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center', minWidth: '140px' }}>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#ffffff', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
                                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color: item.color, fontFamily: 'var(--font-mono)' }}>{item.value}</div>
                               </div>
                             ))}
@@ -2276,7 +2276,7 @@ export default function App() {
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
                             {[{ label: 'VICTORIAS VISITANTE', value: vVic, color: '#22c55e' }, { label: 'EMPATES VISITANTE', value: vEmp, color: '#fbbf24' }, { label: 'DERROTAS VISITANTE', value: vDer, color: '#ef4444' }, { label: 'GOLES A FAVOR VISITANTE', value: vGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA VISITANTE', value: vGc, color: '#f87171' }].map((item, i) => (
                               <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center', minWidth: '140px' }}>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#ffffff', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
                                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color: item.color, fontFamily: 'var(--font-mono)' }}>{item.value}</div>
                               </div>
                             ))}
