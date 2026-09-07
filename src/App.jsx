@@ -2079,12 +2079,12 @@ export default function App() {
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#fbbf24', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: isHome ? '#22c55e' : '#ef4444', fontWeight: 800, fontSize: '0.9rem', background: isHome ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)' }}>{isHome ? 'Local' : 'Visitante'}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: isHome ? '#22c55e' : '#ef4444', fontWeight: 800, fontSize: '0.9rem' }}>{isHome ? 'Local' : 'Visitante'}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{(m.homeTeam || '-')} vs {(m.awayTeam || '-')}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)', color: '#fbbf24' }}>
                                 {homeHt} - {awayHt}
                               </td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: estadoHt === 'Victoria' ? '#22c55e' : estadoHt === 'Derrota' ? '#ef4444' : '#fbbf24', background: estadoHt === 'Victoria' ? 'rgba(34,197,94,0.15)' : estadoHt === 'Derrota' ? 'rgba(239,68,68,0.15)' : 'rgba(251,191,36,0.15)' }}>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: estadoHt === 'Victoria' ? '#22c55e' : estadoHt === 'Derrota' ? '#ef4444' : '#fbbf24' }}>
                                 {estadoHt}
                               </td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: marcaPrimero === 'CD TENERIFE' ? '#22c55e' : marcaPrimero === 'RIVAL' ? '#ef4444' : '#94a3b8' }}>
@@ -2098,7 +2098,7 @@ export default function App() {
                                 const rgFinal = isHome ? awayGl.length : homeGl.length;
                                 const estadoFinal = tgFinal > rgFinal ? 'Victoria' : tgFinal < rgFinal ? 'Derrota' : 'Empate';
                                 return (
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: estadoFinal === 'Victoria' ? '#22c55e' : estadoFinal === 'Derrota' ? '#ef4444' : '#fbbf24', background: estadoFinal === 'Victoria' ? 'rgba(34,197,94,0.15)' : estadoFinal === 'Derrota' ? 'rgba(239,68,68,0.15)' : 'rgba(251,191,36,0.15)' }}>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: estadoFinal === 'Victoria' ? '#22c55e' : estadoFinal === 'Derrota' ? '#ef4444' : '#fbbf24' }}>
                                     {estadoFinal}
                                   </td>
                                 );
