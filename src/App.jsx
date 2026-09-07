@@ -2069,7 +2069,7 @@ export default function App() {
                             const awayHt = awayGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const firstHomeMin = homeGl.length > 0 ? Math.min(...homeGl.filter(g => g && g.minuto != null).map(g => g.minuto)) : Infinity;
                             const firstAwayMin = awayGl.length > 0 ? Math.min(...awayGl.filter(g => g && g.minuto != null).map(g => g.minuto)) : Infinity;
-                            const marcaPrimero = firstHomeMin < firstAwayMin ? 'Local' : firstAwayMin < firstHomeMin ? 'Visitante' : homeGl.length === 0 && awayGl.length === 0 ? '-' : 'Simultáneo';
+                            const marcaPrimero = firstHomeMin < firstAwayMin ? (isHome ? 'CD TENERIFE' : 'RIVAL') : firstAwayMin < firstHomeMin ? (isHome ? 'RIVAL' : 'CD TENERIFE') : homeGl.length === 0 && awayGl.length === 0 ? '-' : 'Simultáneo';
                             const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
@@ -2079,7 +2079,7 @@ export default function App() {
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)', color: '#fbbf24' }}>
                                 {homeHt} - {awayHt}
                               </td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: marcaPrimero === 'Local' ? '#22c55e' : marcaPrimero === 'Visitante' ? '#ef4444' : '#94a3b8' }}>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: marcaPrimero === 'CD TENERIFE' ? '#22c55e' : marcaPrimero === 'RIVAL' ? '#ef4444' : '#94a3b8' }}>
                                 {marcaPrimero}
                               </td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', color: homeGl.length > awayGl.length ? '#22c55e' : homeGl.length < awayGl.length ? '#ef4444' : '#f59e0b' }}>
