@@ -2050,9 +2050,9 @@ export default function App() {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'rgba(251,191,36,0.1)' }}>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#fbbf24' }}>Jornada</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Rol</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Encuentro</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#fbbf24' }}>Jornada</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Rol</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Encuentro</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#fbbf24' }}>Resultado Descanso</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#fbbf24' }}>Estado Descanso</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#a78bfa' }}>Marca Primero</th>
@@ -2078,9 +2078,9 @@ export default function App() {
                             const estadoHt = tgHt > rgHt ? 'Victoria' : tgHt < rgHt ? 'Derrota' : 'Empate';
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: isHome ? '#22c55e' : '#ef4444', fontWeight: 800, fontSize: '0.9rem', background: isHome ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)' }}>{isHome ? 'Local' : 'Visitante'}</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{(m.homeTeam || '-')} vs {(m.awayTeam || '-')}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#fbbf24', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: isHome ? '#22c55e' : '#ef4444', fontWeight: 800, fontSize: '0.9rem', background: isHome ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)' }}>{isHome ? 'Local' : 'Visitante'}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{(m.homeTeam || '-')} vs {(m.awayTeam || '-')}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)', color: '#fbbf24' }}>
                                 {homeHt} - {awayHt}
                               </td>
