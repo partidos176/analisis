@@ -2223,9 +2223,7 @@ export default function App() {
                                 {isHome ? `${homeGl.length} - ${awayGl.length}` : `${awayGl.length} - ${homeGl.length}`}
                               </td>
                               {(() => {
-                                const tgFinal = isHome ? homeGl.length : awayGl.length;
-                                const rgFinal = isHome ? awayGl.length : homeGl.length;
-                                const estadoFinal = tgFinal > rgFinal ? 'Victoria' : tgFinal < rgFinal ? 'Derrota' : 'Empate';
+                            const estadoFinal = homeGl.length > awayGl.length ? 'Victoria' : homeGl.length < awayGl.length ? 'Derrota' : 'Empate';
                                 return (
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: estadoFinal === 'Victoria' ? '#22c55e' : estadoFinal === 'Derrota' ? '#ef4444' : '#fbbf24' }}>
                                     {estadoFinal}
