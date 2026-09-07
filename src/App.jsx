@@ -1776,26 +1776,10 @@ export default function App() {
                         tiempoFin1: fin1EndTime,
                         tiempoInicio2: inicio2Time,
                         tiempoFin2: fin2EndTime,
-                        partes: (() => {
-                          const filas = [
-                            ...timelineRows.map(r => ({ parte: '1ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, false)) })),
-                            ...timelineRows2.map(r => ({ parte: '2ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, true)) }))
-                          ];
-                          const tiene = (n) => filas.some(r => r.accion === n);
-                          const marcadores = [];
-                          if (fin1Time != null && !tiene('INICIO 1ª PARTE')) marcadores.push({ parte: '1ª PARTE', accion: 'INICIO 1ª PARTE', finalizacion: '', tiempo: fin1Time, tiempoMatch: fmt(toMatchTime(fin1Time, false)) });
-                          if (fin1EndTime != null && !tiene('FIN 1ª PARTE')) marcadores.push({ parte: '1ª PARTE', accion: 'FIN 1ª PARTE', finalizacion: '', tiempo: fin1EndTime, tiempoMatch: fmt(toMatchTime(fin1EndTime, false)) });
-                          if (inicio2Time != null && !tiene('INICIO 2ª PARTE')) marcadores.push({ parte: '2ª PARTE', accion: 'INICIO 2ª PARTE', finalizacion: '', tiempo: inicio2Time, tiempoMatch: fmt(toMatchTime(inicio2Time, true)) });
-                          if (fin2EndTime != null && !tiene('FIN 2ª PARTE')) marcadores.push({ parte: '2ª PARTE', accion: 'FIN 2ª PARTE', finalizacion: '', tiempo: fin2EndTime, tiempoMatch: fmt(toMatchTime(fin2EndTime, true)) });
-                          const todas = [...filas, ...marcadores];
-                          todas.sort((a, b) => {
-                            if (a.tiempo == null && b.tiempo == null) return 0;
-                            if (a.tiempo == null) return 1;
-                            if (b.tiempo == null) return -1;
-                            return a.tiempo - b.tiempo;
-                          });
-                          return todas;
-                        })()
+                        partes: [
+                          ...timelineRows.map(r => ({ parte: '1ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, false)) })),
+                          ...timelineRows2.map(r => ({ parte: '2ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, true)) }))
+                        ]
                       };
                       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                       const url = URL.createObjectURL(blob);
@@ -1833,7 +1817,13 @@ export default function App() {
                         <tr key={realIdx}>
                           <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)' }}>
                             <select value={row.action} onChange={(e) => {
-                              setTimelineRows(prev => prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r));
+                              setTimelineRows(prev => {
+                                const updated = prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r);
+                                if (e.target.value !== '' && !updated.some(r => r.action === '')) {
+                                  updated.push({ action: '', finalization: '-', time: null });
+                                }
+                                return updated;
+                              });
                             }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                               <option value="">Seleccionar acción...</option>
                               {['ON PROPIO','OFF PROPIO','ON RIVAL','OFF RIVAL','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON NEUTRO','OFF NEUTRO','PÉRDIDAS','INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE'].map(a => (
@@ -1902,7 +1892,13 @@ export default function App() {
                           <tr key={realIdx}>
                             <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)' }}>
                               <select value={row.action} onChange={(e) => {
-                                setTimelineRows2(prev => prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r));
+                                setTimelineRows2(prev => {
+                                  const updated = prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r);
+                                  if (e.target.value !== '' && !updated.some(r => r.action === '')) {
+                                    updated.push({ action: '', finalization: '-', time: null });
+                                  }
+                                  return updated;
+                                });
                               }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                                 <option value="">Seleccionar acción...</option>
                                 {['ON PROPIO','OFF PROPIO','ON RIVAL','OFF RIVAL','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON NEUTRO','OFF NEUTRO','PÉRDIDAS','INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE'].map(a => (
