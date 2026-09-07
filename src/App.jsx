@@ -2068,8 +2068,8 @@ export default function App() {
                             const homeHt = homeGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const awayHt = awayGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
-                            const firstHomeMin = homeGl.length > 0 ? Math.min(...homeGl.filter(g => g && g.minuto != null).map(g => g.minuto)) : Infinity;
-                            const firstAwayMin = awayGl.length > 0 ? Math.min(...awayGl.filter(g => g && g.minuto != null).map(g => g.minuto)) : Infinity;
+                            const firstHomeMin = homeGl.length > 0 ? Math.min(...homeGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
+                            const firstAwayMin = awayGl.length > 0 ? Math.min(...awayGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
                             const marcaPrimero = firstHomeMin < firstAwayMin ? (isHome ? 'CD TENERIFE' : 'RIVAL') : firstAwayMin < firstHomeMin ? (isHome ? 'RIVAL' : 'CD TENERIFE') : homeGl.length === 0 && awayGl.length === 0 ? '-' : 'Simultáneo';
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
