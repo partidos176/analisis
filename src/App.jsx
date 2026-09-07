@@ -128,7 +128,7 @@ const totalesTabsDef = [
   { id: 'tiempojugado', label: 'TOTAL JUGADO' },
   { id: 'minutosjugados', label: 'MINUTOS JORNADA' },
   { id: 'jugadores', label: 'DATOS JUGADOR' },
-  { id: 'posesion', label: 'POSESIÓN' }
+  { id: 'posesion', label: 'TOTAL POSESIÓN' }
 ];
 
 export default function App() {
