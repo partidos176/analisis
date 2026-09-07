@@ -29,16 +29,16 @@ import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 
 const jugadoresData = {
-  CARDENES: { foto: cardenesImg },
+  CARDENES: { foto: cardenesImg, pos1: 'INTERIOR IZQUIERDO' },
   ANCOR: { foto: ancorImg, pos1: 'MEDIO CENTRO' },
-  CARDONA: { foto: cardonaImg },
+  CARDONA: { foto: cardonaImg, pos1: 'INTERIOR DERECHO' },
   CADETE: {},
-  DANI: { foto: daniImg },
+  DANI: { foto: daniImg, pos1: 'CENTRAL DERECHO' },
   DAVID: { foto: davidImg, pos1: 'MEDIO CENTRO' },
-  DIEGO: { foto: diegoImg },
+  DIEGO: { foto: diegoImg, pos1: 'INTERIOR DERECHO' },
   EMILIANO: { foto: emilianoImg, pos1: 'PORTERO' },
   HECTOR: { foto: hectorImg, pos1: 'PORTERO' },
-  JONAS: { foto: jonasImg },
+  JONAS: { foto: jonasImg, pos1: 'DELANTERO' },
   JORGE: { foto: jorgeImg },
   JUANDA: { foto: juandaImg },
   KEVIN: { foto: kevinImg, pos1: 'CENTRAL' },
@@ -47,8 +47,8 @@ const jugadoresData = {
   OSCAR: { foto: oscarImg, pos1: 'LATERAL DERECHO' },
   RAVELO: { foto: raveloImg, pos1: 'LATERAL IZQUIERDO' },
   SANTANA: { foto: santanaImg, pos1: 'LATERAL IZQUIERDO' },
-  SANTOS: { foto: santosImg },
-  NUHA: { foto: nuhaImg }
+  SANTOS: { foto: santosImg, pos1: 'INTERIOR DERECHO' },
+  NUHA: { foto: nuhaImg, pos1: 'CENTRAL DERECHO' }
 };
 
 const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'PEDRO': 'CADETE', 'JUAN ': 'JUANDA' };
@@ -225,13 +225,6 @@ export default function App() {
         e.preventDefault();
         const v = pickVideo();
         if (v) v.currentTime = Math.max(0, v.currentTime - 5);
-      }
-      if (e.code === 'End') {
-        e.preventDefault();
-        e.stopPropagation();
-        const v = pickVideo();
-        if (v) v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
-        return;
       }
       if (e.code === 'ArrowRight' && !esEditable()) {
         e.preventDefault();
@@ -1983,37 +1976,6 @@ export default function App() {
                       </tbody>
                     </table>
                   </div>
-                  {(() => {
-                    const localMatches = matches.filter(m => m.matchday && (m.homeTeam || '').toUpperCase().includes('TENERIFE'));
-                    let victorias = 0, empates = 0, derrotas = 0, gf = 0, gc = 0;
-                    localMatches.forEach(m => {
-                      const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                      const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                      gf += hg.length;
-                      gc += ag.length;
-                      if (hg.length > ag.length) victorias++;
-                      else if (hg.length === ag.length) empates++;
-                      else derrotas++;
-                    });
-                    if (localMatches.length === 0) return null;
-                    const items = [
-                      { label: 'VICTORIAS LOCAL', value: victorias, color: '#22c55e' },
-                      { label: 'EMPATES LOCAL', value: empates, color: '#fbbf24' },
-                      { label: 'DERROTAS LOCAL', value: derrotas, color: '#ef4444' },
-                      { label: 'GOLES A FAVOR LOCAL', value: gf, color: '#38bdf8' },
-                      { label: 'GOLES EN CONTRA LOCAL', value: gc, color: '#f97316' },
-                    ];
-                    return (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
-                        {items.map((item, i) => (
-                          <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center', flex: '1 1 0', minWidth: 0 }}>
-                            <div style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: '#ffffff', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: item.color, fontFamily: 'var(--font-mono)' }}>{item.value}</div>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
                 </div>
               </>
             ) : (
@@ -2867,7 +2829,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const noConvocadoCount = {};
                     const lesionadoCount = {};
                     const divHonorCount = {};
-                    names.forEach(n => { titularCount[n] = 0; suplenteCount[n] = 0; noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
+                    const tenerifeCCount = {};
+                    names.forEach(n => { titularCount[n] = 0; suplenteCount[n] = 0; noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; tenerifeCCount[n] = 0; });
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
                       const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
@@ -2877,6 +2840,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         if (p && p.name && p.status === 'no convocado') noConvocadoCount[p.name] += 1;
                         if (p && p.name && p.status === 'lesion') lesionadoCount[p.name] += 1;
                         if (p && p.name && p.status === 'division honor') divHonorCount[p.name] += 1;
+                        if (p && p.name && p.status === 'tenerife c') tenerifeCCount[p.name] += 1;
                       });
                     });
                     (Array.isArray(players) ? players : []).forEach(p => {
@@ -2885,6 +2849,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       if (p && p.name && p.status === 'no convocado') noConvocadoCount[p.name] += 1;
                       if (p && p.name && p.status === 'lesion') lesionadoCount[p.name] += 1;
                       if (p && p.name && p.status === 'division honor') divHonorCount[p.name] += 1;
+                      if (p && p.name && p.status === 'tenerife c') tenerifeCCount[p.name] += 1;
                     });
                     const golCountPerPlayer = {};
                     const golPiePerPlayer = {};
@@ -3139,6 +3104,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         DIV. HONOR: {divHonorCount[jugadorSeleccionado] || 0}
                       </span>
                     )}
+                    {jugadorSeleccionado && (
+                      <span style={{ color: '#eab308', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
+                        TENERIFE C: {tenerifeCCount[jugadorSeleccionado] || 0}
+                      </span>
+                    )}
                     {jugadorSeleccionado === 'HECTOR' || jugadorSeleccionado === 'EMILIANO' || jugadorSeleccionado === 'L. RAMIREZ' ? (
                       <span style={{ color: '#ff4d4d', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
                         GOLES ENCAJADOS: {rivalGoalsWhilePlaying[jugadorSeleccionado] || 0}
@@ -3299,16 +3269,19 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const noConvocadoCount = {};
                     const lesionadoCount = {};
                     const divHonorCount = {};
-                    names.forEach(n => { noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; });
+                    const tenerifeCCount = {};
+                    names.forEach(n => { noConvocadoCount[n] = 0; lesionadoCount[n] = 0; divHonorCount[n] = 0; tenerifeCCount[n] = 0; });
                     matches.forEach(m => {
                       const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
                       const noConvocados = new Set(pl.filter(p => p && p.status === 'no convocado').map(p => p.name).filter(Boolean));
                       const lesionados = new Set(pl.filter(p => p && p.status === 'lesion').map(p => p.name).filter(Boolean));
                       const divHonor = new Set(pl.filter(p => p && p.status === 'division honor').map(p => p.name).filter(Boolean));
+                      const tenerifeC = new Set(pl.filter(p => p && p.status === 'tenerife c').map(p => p.name).filter(Boolean));
                       names.forEach(n => {
                         if (noConvocados.has(n)) noConvocadoCount[n] += 1;
                         if (lesionados.has(n)) lesionadoCount[n] += 1;
                         if (divHonor.has(n)) divHonorCount[n] += 1;
+                        if (tenerifeC.has(n)) tenerifeCCount[n] += 1;
                       });
                     });
                     return (
@@ -3325,6 +3298,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>NO CONVOCADO</th>
                                 <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>LESIONADO</th>
                                 <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>DIV. HONOR</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f97316', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TENERIFE C</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -3338,6 +3312,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{noConvocadoCount[n]}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{lesionadoCount[n]}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{divHonorCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tenerifeCCount[n]}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -3428,7 +3403,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             const pl = Array.isArray(selMatch.players) ? selMatch.players : (selMatch.players ? Object.values(selMatch.players) : []);
                             const mDur = selMatch.timerSeconds || 0;
                             const mMin = calcMatchMinutes(pl, selMatch.sustituciones, mDur);
-                            const rolOrder = { titular: 0, suplente: 1, lesion: 2, 'division honor': 3, 'no convocado': 4 };
+                            const rolOrder = { titular: 0, suplente: 1, lesion: 2, 'division honor': 3, 'tenerife c': 4, 'no convocado': 5 };
                             const jornadaFilas = Object.entries(mMin).sort((a, b) => {
                               const sa = pl.find(p => p && p.name === a[0]);
                               const sb = pl.find(p => p && p.name === b[0]);
@@ -3449,7 +3424,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   {jornadaFilas.map(([n, m]) => {
                                     const status = pl.find(p => p && p.name === n);
                                     const rol = status ? status.status : 'no convocado';
-                                    const rolColor = rol === 'titular' ? '#39ff14' : rol === 'suplente' ? '#eab308' : rol === 'lesion' ? '#38bdf8' : rol === 'division honor' ? '#f472b6' : '#ef4444';
+                                    const rolColor = rol === 'titular' ? '#39ff14' : rol === 'suplente' ? '#eab308' : rol === 'lesion' ? '#38bdf8' : rol === 'division honor' ? '#f472b6' : rol === 'tenerife c' ? '#06b6d4' : '#ef4444';
                                     return (
                                       <tr key={n}>
                                         <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
@@ -6841,6 +6816,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const noConvocados = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'no convocado');
                     const lesionados = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'lesion');
                     const divisionHonor = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'division honor');
+                    const tenerifeC = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'tenerife c');
                     const handleDragStart = (e, idx) => {
                       e.dataTransfer.setData('text/plain', String(idx));
                       e.dataTransfer.effectAllowed = 'move';
@@ -7039,7 +7015,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             width: size,
                             height: size,
                             borderRadius: '50%',
-                            border: `3px solid ${p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'no convocado' ? '#000000' : '#334155'}`,
+                            border: `3px solid ${p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'no convocado' ? '#000000' : p.status === 'tenerife c' ? '#06b6d4' : '#334155'}`,
                             overflow: 'hidden',
                             position: 'relative',
                             cursor: p.status === 'no convocado' ? 'pointer' : 'grab',
@@ -7056,7 +7032,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           )}
                            {!!p.name && <XBtn idx={p.idx} />}
                          </div>
-                         <div style={{ marginTop: 2, background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'no convocado' ? '#e2e8f0' : '#334155', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: Math.max(10, size * 0.22), padding: '0 4px', borderRadius: 4, lineHeight: 1.2, textAlign: 'center', overflowWrap: 'break-word', maxWidth: '100%' }}>{p.name}</div>
+                         <div style={{ marginTop: 2, background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : p.status === 'no convocado' ? '#e2e8f0' : '#334155', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: Math.max(10, size * 0.22), padding: '0 4px', borderRadius: 4, lineHeight: 1.2, textAlign: 'center', overflowWrap: 'break-word', maxWidth: '100%' }}>{p.name}</div>
                         </div>
                       );
                     };
@@ -7066,7 +7042,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       if (dragMovedRefGlobal.current) return;
                       const titularesCount = titulares.length;
                       if (titularesCount >= 11) return;
-                      const idxDisponible = players.findIndex(p => p.name && (p.status === '-' || p.status === 'division honor' || p.status === 'lesion' || !p.status));
+                      const idxDisponible = players.findIndex(p => p.name && (p.status === '-' || p.status === 'division honor' || p.status === 'tenerife c' || p.status === 'lesion' || !p.status));
                       if (idxDisponible === -1) return;
                       const rect = campoRef.current?.getBoundingClientRect();
                       let pos = null;
@@ -7088,6 +7064,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       { id: 'lesion', label: 'LESION', color: '#ef4444' },
                       { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000' },
                       { id: 'division honor', label: 'DIV. HONOR', color: '#8b5cf6' },
+                      { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4' },
                     ];
                     const aplicarEstado = (idx, status) => {
                       setPlayers(prev => {
@@ -7252,7 +7229,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                    {!!p.name && <XBtn idx={p.idx} />}
                                   </div>
-                                  <div style={{ marginTop: 2, maxWidth: 124, background: p.status === 'titular' ? 'rgba(56,189,248,0.95)' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'no convocado' ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 12, textAlign: 'center', padding: '1px 4px', letterSpacing: '0.02em', lineHeight: 1.2, borderRadius: 4, overflowWrap: 'break-word' }}>{p.name}</div>
+                                  <div style={{ marginTop: 2, maxWidth: 124, background: p.status === 'titular' ? 'rgba(56,189,248,0.95)' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : p.status === 'no convocado' ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 12, textAlign: 'center', padding: '1px 4px', letterSpacing: '0.02em', lineHeight: 1.2, borderRadius: 4, overflowWrap: 'break-word' }}>{p.name}</div>
                                   </div>
                               );
                             })}
@@ -7267,6 +7244,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000', list: noConvocados, max: '', empty: 'Arrastra aquí' },
                               { id: 'lesion', label: 'LESIÓN', color: '#ef4444', list: lesionados, max: '', empty: 'Arrastra aquí' },
                               { id: 'division honor', label: 'DIVISIÓN HONOR', color: '#8b5cf6', list: divisionHonor, max: '', empty: 'Arrastra aquí' },
+                              { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4', list: tenerifeC, max: '', empty: 'Arrastra aquí' },
                             ].map(z => (
                               <div
                                 key={z.id}
@@ -7336,7 +7314,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   }}
                                 >
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
-                                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : isNo ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor' || (!isTit && !isSup && !isNo)) ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
+                                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : isNo ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor' || (!isTit && !isSup && !isNo)) ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
                                  </div>
                                   {menuAbierto && (
