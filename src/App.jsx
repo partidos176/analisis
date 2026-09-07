@@ -2263,7 +2263,7 @@ export default function App() {
                     return (
                       <>
                         {localMatches.length > 0 && (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', marginTop: '1.5rem', maxWidth: '300px', marginLeft: 'auto', marginRight: 'auto' }}>
+                          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
                             {[{ label: 'VICTORIAS LOCAL', value: lVic, color: '#22c55e' }, { label: 'EMPATES LOCAL', value: lEmp, color: '#fbbf24' }, { label: 'DERROTAS LOCAL', value: lDer, color: '#ef4444' }, { label: 'GOLES A FAVOR LOCAL', value: lGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA LOCAL', value: lGc, color: '#f87171' }].map((item, i) => (
                               <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center', flex: '1 1 0' }}>
                                 <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#ffffff', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
