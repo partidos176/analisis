@@ -1739,8 +1739,8 @@ export default function App() {
                         setTimelineRows(prev => [...prev, { action: '', finalization: '-', time: null }]);
                       }
                     }} style={{ background: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.3rem 0.8rem', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                      GENERAR
-                    </button>
+                    GENERAR LINEA
+                  </button>
                     <button onClick={() => {
                       const toMatchTime = (rawTime, isParte2) => {
                         if (fin1Time == null) return null;
