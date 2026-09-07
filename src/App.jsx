@@ -2054,6 +2054,7 @@ export default function App() {
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Rol</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Equipo(s)</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#fbbf24' }}>Resultado Descanso</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#fbbf24' }}>Estado</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#a78bfa' }}>Marca Primero</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Resultado Final</th>
                         </tr>
@@ -2071,6 +2072,9 @@ export default function App() {
                             const firstHomeMin = homeGl.length > 0 ? Math.min(...homeGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
                             const firstAwayMin = awayGl.length > 0 ? Math.min(...awayGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
                             const marcaPrimero = firstHomeMin < firstAwayMin ? (isHome ? 'CD TENERIFE' : 'RIVAL') : firstAwayMin < firstHomeMin ? (isHome ? 'RIVAL' : 'CD TENERIFE') : homeGl.length === 0 && awayGl.length === 0 ? '-' : 'Simultáneo';
+                            const tgHt = isHome ? homeHt : awayHt;
+                            const rgHt = isHome ? awayHt : homeHt;
+                            const estadoHt = tgHt > rgHt ? 'Victoria' : tgHt < rgHt ? 'Derrota' : 'Empate';
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
@@ -2078,6 +2082,9 @@ export default function App() {
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{(m.homeTeam || '-')} vs {(m.awayTeam || '-')}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)', color: '#fbbf24' }}>
                                 {homeHt} - {awayHt}
+                              </td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: estadoHt === 'Victoria' ? '#22c55e' : estadoHt === 'Derrota' ? '#ef4444' : '#fbbf24', background: estadoHt === 'Victoria' ? 'rgba(34,197,94,0.15)' : estadoHt === 'Derrota' ? 'rgba(239,68,68,0.15)' : 'rgba(251,191,36,0.15)' }}>
+                                {estadoHt}
                               </td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: marcaPrimero === 'CD TENERIFE' ? '#22c55e' : marcaPrimero === 'RIVAL' ? '#ef4444' : '#94a3b8' }}>
                                 {marcaPrimero}
