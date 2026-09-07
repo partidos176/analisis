@@ -2282,6 +2282,14 @@ export default function App() {
                             ))}
                           </div>
                         )}
+                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
+                          {[{ label: 'TOTAL VICTORIAS', value: lVic + vVic, color: '#22c55e' }, { label: 'TOTAL EMPATES', value: lEmp + vEmp, color: '#fbbf24' }, { label: 'TOTAL DERROTAS', value: lDer + vDer, color: '#ef4444' }, { label: 'TOTAL GOLES A FAVOR', value: lGf + vGf, color: '#38bdf8' }, { label: 'TOTAL GOLES EN CONTRA', value: lGc + vGc, color: '#f87171' }].map((item, i) => (
+                            <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center', flex: '1 1 0' }}>
+                              <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#ffffff', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
+                              <div style={{ fontSize: '1.5rem', fontWeight: 900, color: item.color, fontFamily: 'var(--font-mono)' }}>{item.value}</div>
+                            </div>
+                          ))}
+                        </div>
                       </>
                     );
                   })()}
