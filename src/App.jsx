@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { auth, db, onAuthStateChanged, signOut, ref, set, push, onValue, update, remove, get } from './firebase';
 import Login from './components/Login';
-import TratamientoApp from './TratamientoApp';
 import html2canvas from 'html2canvas';
 import { loadFFmpeg, cutVideoSingle, cutVideoMultiple, isBrowserCutSupported } from './ffmpegCut';
 import { compositeVideoWithOverlay } from './compositeVideo';
@@ -439,7 +438,6 @@ export default function App() {
   const [ajusteAcciones, setAjusteAcciones] = useState({});
   const [ajusteAccionesFin, setAjusteAccionesFin] = useState({});
   const [previewAccion, setPreviewAccion] = useState(null);
-  const [videoParaTratamiento, setVideoParaTratamiento] = useState(null);
   const [generandoAccion, setGenerandoAccion] = useState(null);
   const [progresoAccion, setProgresoAccion] = useState({});
   const [trailPointsPorCorte, setTrailPointsPorCorte] = useState({});
@@ -1541,7 +1539,6 @@ export default function App() {
   if (vista === 'menu') {
     const opciones = [
       { id: 'analisis', titulo: 'ON LIVE', descripcion: '', color: '#0284c7' },
-      { id: 'tratamiento', titulo: 'EDICIÓN', descripcion: '', color: '#8b5cf6' },
       { id: 'totales', titulo: 'TOTALES', descripcion: '', color: '#f59e0b' },
       { id: 'offlive', titulo: 'OFF LIVE', descripcion: '', color: '#22c55e' }
     ];
@@ -1589,7 +1586,7 @@ export default function App() {
                 <span style={{
                   fontWeight: 900,
                   fontSize: '2.6rem',
-                  color: op.id === 'tratamiento' ? '#ffffff' : '#ffffff',
+                  color: '#ffffff',
                   background: 'transparent',
                   padding: '0.8rem 1.8rem',
                   borderRadius: '12px',
@@ -1605,22 +1602,6 @@ export default function App() {
           </div>
         </main>
       </div>
-    );
-  }
-
-  // Tratamiento de dibujos (app copiado literal)
-  if (vista === 'tratamiento') {
-    return (
-      <>
-        <button
-          onClick={() => setVista('menu')}
-          title="Volver al menú"
-          style={{ position: 'fixed', top: '10px', right: '10px', zIndex: 1000, background: '#0284c7', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.4)' }}
-        >
-          &#8592; MENÚ
-        </button>
-        <TratamientoApp videoInicial={videoParaTratamiento} />
-      </>
     );
   }
 
@@ -5515,11 +5496,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     setTimeout(() => URL.revokeObjectURL(url), 3000);
                                   }} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Descargar</button>
                                   <button onClick={() => { if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url); setPreviewAccion(null); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Borrar</button>
-                                  <button onClick={() => {
-                                    if (!previewAccion || !previewAccion.blob) return;
-                                    setVideoParaTratamiento(previewAccion.blob);
-                                    setVista('tratamiento');
-                                  }} style={{ background: '#8b5cf6', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Editar</button>
                                 </div>
                               </div>
                             )}
