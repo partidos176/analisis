@@ -1850,7 +1850,7 @@ export default function App() {
                               ))}
                             </select>
                           </td>
-                          <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                          <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
                             <span style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
                               {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
                             </span>
@@ -1930,7 +1930,7 @@ export default function App() {
                                 ))}
                               </select>
                             </td>
-                            <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                            <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
                               <span style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
                                 {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
                               </span>
