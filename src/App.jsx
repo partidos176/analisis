@@ -2240,33 +2240,49 @@ export default function App() {
                   </div>
                   {(() => {
                     const localMatches = matches.filter(m => m.matchday && (m.homeTeam || '').toUpperCase().includes('TENERIFE'));
-                    let victorias = 0, empates = 0, derrotas = 0, gf = 0, gc = 0;
+                    const awayMatches = matches.filter(m => m.matchday && !(m.homeTeam || '').toUpperCase().includes('TENERIFE') && ((m.awayTeam || '').toUpperCase().includes('TENERIFE')));
+                    let lVic = 0, lEmp = 0, lDer = 0, lGf = 0, lGc = 0;
                     localMatches.forEach(m => {
                       const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                       const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                      gf += hg.length;
-                      gc += ag.length;
-                      if (hg.length > ag.length) victorias++;
-                      else if (hg.length === ag.length) empates++;
-                      else derrotas++;
+                      lGf += hg.length; lGc += ag.length;
+                      if (hg.length > ag.length) lVic++;
+                      else if (hg.length === ag.length) lEmp++;
+                      else lDer++;
                     });
-                    if (localMatches.length === 0) return null;
-                    const items = [
-                      { label: 'VICTORIAS LOCAL', value: victorias, color: '#22c55e' },
-                      { label: 'EMPATES LOCAL', value: empates, color: '#fbbf24' },
-                      { label: 'DERROTAS LOCAL', value: derrotas, color: '#ef4444' },
-                      { label: 'GOLES A FAVOR LOCAL', value: gf, color: '#38bdf8' },
-                      { label: 'GOLES EN CONTRA LOCAL', value: gc, color: '#f87171' },
-                    ];
+                    let vVic = 0, vEmp = 0, vDer = 0, vGf = 0, vGc = 0;
+                    awayMatches.forEach(m => {
+                      const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                      const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                      vGf += hg.length; vGc += ag.length;
+                      if (hg.length > ag.length) vVic++;
+                      else if (hg.length === ag.length) vEmp++;
+                      else vDer++;
+                    });
+                    if (localMatches.length === 0 && awayMatches.length === 0) return null;
                     return (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
-                        {items.map((item, i) => (
-                          <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center', minWidth: '140px' }}>
-                            <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: item.color, fontFamily: 'var(--font-mono)' }}>{item.value}</div>
+                      <>
+                        {localMatches.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
+                            {[{ label: 'VICTORIAS LOCAL', value: lVic, color: '#22c55e' }, { label: 'EMPATES LOCAL', value: lEmp, color: '#fbbf24' }, { label: 'DERROTAS LOCAL', value: lDer, color: '#ef4444' }, { label: 'GOLES A FAVOR LOCAL', value: lGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA LOCAL', value: lGc, color: '#f87171' }].map((item, i) => (
+                              <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center', minWidth: '140px' }}>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: item.color, fontFamily: 'var(--font-mono)' }}>{item.value}</div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
+                        )}
+                        {awayMatches.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
+                            {[{ label: 'VICTORIAS VISITANTE', value: vVic, color: '#22c55e' }, { label: 'EMPATES VISITANTE', value: vEmp, color: '#fbbf24' }, { label: 'DERROTAS VISITANTE', value: vDer, color: '#ef4444' }, { label: 'GOLES A FAVOR VISITANTE', value: vGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA VISITANTE', value: vGc, color: '#f87171' }].map((item, i) => (
+                              <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center', minWidth: '140px' }}>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: item.color, fontFamily: 'var(--font-mono)' }}>{item.value}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
                     );
                   })()}
                 </div>
