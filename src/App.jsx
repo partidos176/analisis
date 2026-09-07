@@ -6454,198 +6454,74 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
               )}
               {activeTab === 'posesion' && (() => {
                 const parseTime = (str) => { const p = String(str).split(':').map(Number); return (p[0]||0)*60+(p[1]||0); };
-
-                const calcMatchPossession = (log) => {
-                  if (!log || log.length === 0) return null;
-                  const arr = normalizeArray(log);
-                  const periods = [];
-                  let periodStart = null;
-                  [...arr].reverse().forEach(e => {
-                    if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { periodStart = e; }
-                    else if (e && e.time && isFinMarker(e.name) && periodStart) { periods.push({ start: periodStart, end: e }); periodStart = null; }
+                const log = actionLog || [];
+                const pds = [];
+                let ps = null;
+                [...log].reverse().forEach(e => {
+                  if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { ps = e; }
+                  else if (e && e.time && isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
+                });
+                if (ps) { pds.push({ start: ps, end: null }); }
+                const teamInfo = (currentMatch?.homeTeam || '') + ' vs ' + (currentMatch?.awayTeam || '');
+                const homeGl = Array.isArray(golesList) ? golesList : [];
+                const awayGl = Array.isArray(golesRivalList) ? golesRivalList : [];
+                const score = ' (' + homeGl.length + '-' + awayGl.length + ')';
+                const rws = pds.map(p => {
+                  const startTime = parseTime(p.start.time);
+                  const endTime = p.end ? parseTime(p.end.time) : timerSeconds;
+                  const periodoTotal = Math.max(1, endTime - startTime);
+                  const entries = log.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= startTime && e.secs <= endTime).sort((a,b) => a.secs - b.secs);
+                  let ownSecs = 0, rivalSecs = 0, onPropioStart = null, onRivalStart = null;
+                  entries.forEach(e => {
+                    if (e.name === 'ON PROPIO') { onPropioStart = e.secs; }
+                    else if (e.name === 'OFF PROPIO' && onPropioStart !== null) { ownSecs += e.secs - onPropioStart; onPropioStart = null; }
+                    else if (e.name === 'ON RIVAL') { onRivalStart = e.secs; }
+                    else if (e.name === 'OFF RIVAL' && onRivalStart !== null) { rivalSecs += e.secs - onRivalStart; onRivalStart = null; }
                   });
-                  if (periodStart) { periods.push({ start: periodStart, end: null }); }
-                  if (periods.length === 0) return null;
-                  let totalOwn = 0, totalRival = 0, totalDur = 0;
-                  const periodResults = periods.map(p => {
-                    const startTime = parseTime(p.start.time);
-                    const endTime = p.end ? parseTime(p.end.time) : null;
-                    const totalSeconds = endTime !== null ? Math.max(1, endTime - startTime) : null;
-                    const entries = arr.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= startTime && (endTime === null || e.secs <= endTime)).sort((a,b) => a.secs - b.secs);
-                    let ownSecs = 0, rivalSecs = 0;
-                    let onPropioStart = null, onRivalStart = null;
-                    entries.forEach(e => {
-                      if (e.name === 'ON PROPIO') { onPropioStart = e.secs; }
-                      else if (e.name === 'OFF PROPIO' && onPropioStart !== null) { ownSecs += e.secs - onPropioStart; onPropioStart = null; }
-                      else if (e.name === 'ON RIVAL') { onRivalStart = e.secs; }
-                      else if (e.name === 'OFF RIVAL' && onRivalStart !== null) { rivalSecs += e.secs - onRivalStart; onRivalStart = null; }
-                    });
-                    if (onPropioStart !== null && endTime !== null) ownSecs += endTime - onPropioStart;
-                    if (onRivalStart !== null && endTime !== null) rivalSecs += endTime - onRivalStart;
-                    if (totalSeconds !== null) { totalOwn += ownSecs; totalRival += rivalSecs; totalDur += totalSeconds; }
-                    return { ownSecs, rivalSecs, totalSeconds, startName: p.start.name };
-                  });
-                  return { periodResults, totalOwn, totalRival, totalDur };
-                };
-
-                const matchOptions = matches
-                  .filter(m => m.matchday)
-                  .map(m => {
-                    const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                    const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                    const score = ` (${homeGl.length}-${awayGl.length})`;
-                    return { id: m.id, matchday: m.matchday, label: 'JORNADA ' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
-                  })
-                  .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
-
-                const selectedIds = posesionMatchIds;
-
-                const buildRowsForMatch = (m) => {
-                  const log = m.id === currentMatch?.id ? actionLog : normalizeArray(m.actionLog || []);
-                  const pds = [];
-                  let ps = null;
-                  [...log].reverse().forEach(e => {
-                    if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { ps = e; }
-                    else if (e && e.time && isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
-                  });
-                  if (ps) { pds.push({ start: ps, end: null }); }
-                  const md = m.matchday || 0;
-                  const teamInfo = (m.homeTeam || '') + ' vs ' + (m.awayTeam || '');
-                  const homeGl2 = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                  const awayGl2 = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                  const score = ' (' + homeGl2.length + '-' + awayGl2.length + ')';
-                  const rws = pds.map(p => {
-                    const startTime = parseTime(p.start.time);
-                    const endTime = p.end ? parseTime(p.end.time) : timerSeconds;
-                    const periodoTotal = Math.max(1, endTime - startTime);
-                    const entries = log.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= startTime && e.secs <= endTime).sort((a,b) => a.secs - b.secs);
-                    let ownSecs = 0, rivalSecs = 0, onPropioStart = null, onRivalStart = null;
-                    entries.forEach(e => {
-                      if (e.name === 'ON PROPIO') { onPropioStart = e.secs; }
-                      else if (e.name === 'OFF PROPIO' && onPropioStart !== null) { ownSecs += e.secs - onPropioStart; onPropioStart = null; }
-                      else if (e.name === 'ON RIVAL') { onRivalStart = e.secs; }
-                      else if (e.name === 'OFF RIVAL' && onRivalStart !== null) { rivalSecs += e.secs - onRivalStart; onRivalStart = null; }
-                    });
-                    if (onPropioStart !== null) ownSecs += endTime - onPropioStart;
-                    if (onRivalStart !== null) rivalSecs += endTime - onRivalStart;
-                    const ownPct = Math.round((ownSecs / periodoTotal) * 100);
-                    const rivalPct = Math.round((rivalSecs / periodoTotal) * 100);
-                    const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
-                    return { label: 'JORNADA ' + md + ' — ' + p.start.name + ' — ' + teamInfo + score, ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
-                  });
-                  let tOwn = 0, tRiv = 0, tDur = 0;
-                  rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
-                  const subtotal = { label: 'JORNADA ' + md + ' — TOTAL — ' + teamInfo + score, ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0), ownSecs: tOwn, rivalSecs: tRiv, periodoTotal: tDur };
-                  return { rows: rws, subtotal, matchday: md };
-                };
-                const allMatchData = selectedIds.map(id => { const m = matches.find(x => x.id === id); return m ? buildRowsForMatch(m) : null; }).filter(Boolean);
-                let grandOwn = 0, grandRiv = 0, grandDur = 0;
-                allMatchData.forEach(d => { grandOwn += d.subtotal.ownSecs; grandRiv += d.subtotal.rivalSecs; grandDur += d.subtotal.periodoTotal; });
-                const grandTotal = { label: 'TOTAL GENERAL', ownPct: String(grandDur > 0 ? Math.round((grandOwn / grandDur) * 100) : 0), rivalPct: String(grandDur > 0 ? Math.round((grandRiv / grandDur) * 100) : 0), neutroPct: String(grandDur > 0 ? Math.round(Math.max(0, grandDur - grandOwn - grandRiv) / grandDur * 100) : 0) };
-                const toggleMatch = (id) => { setPosesionMatchIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]); };
-                const toggleAll = () => { if (posesionMatchIds.length === matchOptions.length) { setPosesionMatchIds([]); } else { setPosesionMatchIds(matchOptions.map(o => o.id)); } };
-                const dropdownLabel = selectedIds.length === 0 ? 'Seleccionar jornada' : selectedIds.length === matchOptions.length ? 'Todas' : selectedIds.length === 1 ? 'jornada' : selectedIds.length + ' jornadas';
+                  if (onPropioStart !== null) ownSecs += endTime - onPropioStart;
+                  if (onRivalStart !== null) rivalSecs += endTime - onRivalStart;
+                  const ownPct = Math.round((ownSecs / periodoTotal) * 100);
+                  const rivalPct = Math.round((rivalSecs / periodoTotal) * 100);
+                  const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
+                  return { label: p.start.name, ownPct, rivalPct, neutroPct, ownSecs, rivalSecs, periodoTotal };
+                });
+                let tOwn = 0, tRiv = 0, tDur = 0;
+                rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                  <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ffffff' }}>
+                    JORNADA {currentMatch?.matchday || '?'} — {teamInfo}{score}
+                  </div>
+                  <div style={{ width: '100%', maxWidth: '500px', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', position: 'relative' }}>
-                            {matchOptions.length > 0 ? (
-                              <div style={{ position: 'relative' }}>
-                                <div
-                                  onClick={() => setPosesionDropdownOpen(!posesionDropdownOpen)}
-                                  style={{ background: 'transparent', color: '#ffffff', padding: '0.25rem 0.4rem', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', borderRadius: 'var(--radius-sm)', userSelect: 'none' }}
-                                >
-                                  {dropdownLabel} ▾
-                                </div>
-                                {posesionDropdownOpen && (
-                                  <div style={{ position: 'absolute', top: '100%', left: 0, zIndex: 100, minWidth: '320px', background: '#2dd4bf', borderRadius: 'var(--radius-sm)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', overflow: 'hidden' }}>
-                                    <div
-                                      onClick={(e) => { e.stopPropagation(); toggleAll(); }}
-                                      style={{ padding: '0.4rem 0.6rem', cursor: 'pointer', color: '#000000', fontWeight: 800, fontSize: '0.85rem', background: 'rgba(0,0,0,0.1)', borderBottom: '1px solid rgba(0,0,0,0.15)' }}
-                                    >
-                                      {posesionMatchIds.length === matchOptions.length ? 'Todas' : 'Seleccionar todas'}
-                                    </div>
-                                    {matchOptions.map(o => {
-                                      const checked = selectedIds.includes(o.id);
-                                      return (
-                                      <div
-                                        key={o.id}
-                                        onClick={(e) => { e.stopPropagation(); toggleMatch(o.id); }}
-                                        style={{ padding: '0.4rem 0.6rem', cursor: 'pointer', color: checked ? '#ffffff' : '#000000', fontWeight: checked ? 800 : 600, fontSize: '0.85rem', background: checked ? 'rgba(255,255,255,0.2)' : 'transparent' }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.background = checked ? 'rgba(255,255,255,0.2)' : 'transparent'; }}
-                                      >
-                                        {checked ? '\u2611' : '\u2610'} {o.label}
-                                      </div>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </div>
-                            ) : 'Período'}
-                          </th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>Período</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#22c55e' }}>Propio</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Ver <button onClick={() => setHiddenPoseRows(new Set())} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1rem', marginLeft: '0.3rem', verticalAlign: 'middle' }} title="Mostrar todas">&#8634;</button></th>
                         </tr>
                       </thead>
                       <tbody>
-                        {allMatchData.flatMap((d, mi) => [
-                          ...d.rows.filter(r => !hiddenPoseRows.has(r.label)).map((r, ri) => (
-                            <tr key={mi + '-' + ri} style={{ background: ri % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center' }}>
-                                <button onClick={() => setHiddenPoseRows(prev => { const s = new Set(prev); s.has(r.label) ? s.delete(r.label) : s.add(r.label); return s; })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1.1rem' }} title="Ocultar/Mostrar">&#128065;</button>
-                              </td>
-                            </tr>
-                          )), ...(!hiddenPoseRows.has(d.subtotal.label) ? [
-                          <tr key={'sub-' + mi} style={{ background: 'rgba(56,189,248,0.12)' }}>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{d.subtotal.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.neutroPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center' }}>
-                              <button onClick={() => setHiddenPoseRows(prev => { const s = new Set(prev); s.has(d.subtotal.label) ? s.delete(d.subtotal.label) : s.add(d.subtotal.label); return s; })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1.1rem' }} title="Ocultar/Mostrar">&#128065;</button>
-                            </td>
+                        {rws.map((r, ri) => (
+                          <tr key={ri} style={{ background: ri % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
                           </tr>
-                          ] : [])
-                        ])}
+                        ))}
+                        {rws.length > 0 && (
+                          <tr style={{ background: 'rgba(251,191,36,0.15)' }}>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 900, fontSize: '1rem' }}>TOTAL</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0}%</td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
-                  {(() => {
-                    const chartData = matches
-                      .filter(m => m.matchday)
-                      .map(m => {
-                        const d = buildRowsForMatch(m);
-                        return d.rows.length > 0 ? { name: 'JORNADA ' + m.matchday, Propio: parseInt(d.subtotal.ownPct), Rival: parseInt(d.subtotal.rivalPct), Neutro: parseInt(d.subtotal.neutroPct) } : null;
-                      })
-                      .filter(Boolean)
-                      .sort((a, b) => (parseInt(a.name.slice(1)) || 0) - (parseInt(b.name.slice(1)) || 0));
-                    return chartData.length > 0 ? (
-                    <div style={{ width: '100%', maxWidth: '700px', height: 300 }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
-                          <XAxis dataKey="name" tick={{ fill: '#ffffff', fontSize: 12 }} />
-                          <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} domain={[0, 100]} />
-                          <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff' }} />
-                          <Legend wrapperStyle={{ color: '#ffffff', cursor: 'pointer' }} onClick={(e) => { setHiddenLines(prev => ({ ...prev, [e.dataKey]: !prev[e.dataKey] })); }} />
-                          <Line type="monotone" dataKey="Propio" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Propio} onClick={() => setHiddenLines(prev => ({ ...prev, Propio: !prev.Propio }))} style={{ cursor: 'pointer' }} />
-                          <Line type="monotone" dataKey="Rival" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Rival} onClick={() => setHiddenLines(prev => ({ ...prev, Rival: !prev.Rival }))} style={{ cursor: 'pointer' }} />
-                          <Line type="monotone" dataKey="Neutro" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Neutro} onClick={() => setHiddenLines(prev => ({ ...prev, Neutro: !prev.Neutro }))} style={{ cursor: 'pointer' }} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                    ) : null;
-                  })()}
                 </div>
                 );
               })()}
