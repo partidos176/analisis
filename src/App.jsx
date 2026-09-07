@@ -123,6 +123,7 @@ const matchTabs = [
 ];
 
 const totalesTabsDef = [
+  { id: 'totalresultados', label: 'TOTAL RESULTADOS' },
   { id: 'resumengoles', label: 'TOTAL GOLES' },
   { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
   { id: 'tiempojugado', label: 'TOTAL JUGADO' },
@@ -255,7 +256,7 @@ export default function App() {
   const [editingId, setEditingId] = useState(null);
   const [currentMatch, setCurrentMatch] = useState(null);
   const [activeTab, setActiveTab] = useState('acciones');
-  const [totalesTab, setTotalesTab] = useState('resumengoles');
+  const [totalesTab, setTotalesTab] = useState('totalresultados');
   const [tiroDerechaCount, setTiroDerechaCount] = useState(0);
   const [tiroAreaCount, setTiroAreaCount] = useState(0);
   const [rivalTiroDerechaCount, setRivalTiroDerechaCount] = useState(0);
@@ -2043,6 +2044,41 @@ export default function App() {
         </header>
         <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center' }}>
           <div style={{ width: '100%', maxWidth: '800px' }}>
+              {totalesTab === 'totalresultados' && (
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+                  <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ background: 'rgba(251,191,36,0.1)' }}>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#fbbf24' }}>Jornada</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Local</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Resultado</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Visitante</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {matches
+                          .filter(m => m.matchday)
+                          .sort((a, b) => (a.matchday || 0) - (b.matchday || 0))
+                          .map((m, i) => {
+                            const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                            const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                            return (
+                            <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{m.homeTeam || '-'}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', color: homeGl.length > awayGl.length ? '#22c55e' : homeGl.length < awayGl.length ? '#ef4444' : '#f59e0b' }}>
+                                {homeGl.length} - {awayGl.length}
+                              </td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{m.awayTeam || '-'}</td>
+                            </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
               {totalesTab === 'resumengoles' && (
                 <div style={{
                   background: 'var(--bg-card)',
