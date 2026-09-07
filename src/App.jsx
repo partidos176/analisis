@@ -145,6 +145,19 @@ export default function App() {
   const [showAllRows1, setShowAllRows1] = useState(false);
   const [showAllRows2, setShowAllRows2] = useState(false);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
+  const timelineVideoRef = useRef(null);
+
+  useEffect(() => {
+    if (!timelineVideo) return;
+    const iv = setInterval(() => {
+      const v = timelineVideoRef.current;
+      if (v) {
+        const t = Math.floor(v.currentTime || 0);
+        setTimelineTime(prev => (prev === t ? prev : t));
+      }
+    }, 500);
+    return () => clearInterval(iv);
+  }, [timelineVideo]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -1641,9 +1654,12 @@ export default function App() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
                 <div style={{ position: 'relative', width: '70%' }}>
                   <video
+                    ref={timelineVideoRef}
                     src={timelineVideoUrl}
                     controls
                     onTimeUpdate={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
+                    onSeeked={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
+                    onPlay={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
                     style={{ width: '100%', height: 'auto', borderRadius: '8px', display: 'block' }}
                   />
                   <button
