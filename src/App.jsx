@@ -2057,6 +2057,7 @@ export default function App() {
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#fbbf24' }}>Estado Descanso</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#a78bfa' }}>Marca Primero</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Resultado Final</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Estado Final</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2092,6 +2093,16 @@ export default function App() {
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', color: homeGl.length > awayGl.length ? '#22c55e' : homeGl.length < awayGl.length ? '#ef4444' : '#f59e0b' }}>
                                 {homeGl.length} - {awayGl.length}
                               </td>
+                              {(() => {
+                                const tgFinal = isHome ? homeGl.length : awayGl.length;
+                                const rgFinal = isHome ? awayGl.length : homeGl.length;
+                                const estadoFinal = tgFinal > rgFinal ? 'Victoria' : tgFinal < rgFinal ? 'Derrota' : 'Empate';
+                                return (
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: estadoFinal === 'Victoria' ? '#22c55e' : estadoFinal === 'Derrota' ? '#ef4444' : '#fbbf24', background: estadoFinal === 'Victoria' ? 'rgba(34,197,94,0.15)' : estadoFinal === 'Derrota' ? 'rgba(239,68,68,0.15)' : 'rgba(251,191,36,0.15)' }}>
+                                    {estadoFinal}
+                                  </td>
+                                );
+                              })()}
                             </tr>
                             );
                           })}
