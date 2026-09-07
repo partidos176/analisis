@@ -2118,9 +2118,18 @@ export default function App() {
                             const homeHt = homeGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const awayHt = awayGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
-                            const firstHomeMin = homeGl.length > 0 ? Math.min(...homeGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
-                            const firstAwayMin = awayGl.length > 0 ? Math.min(...awayGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
-                            const marcaPrimero = firstHomeMin < firstAwayMin ? (isHome ? 'CD TENERIFE' : 'RIVAL') : firstAwayMin < firstHomeMin ? (isHome ? 'RIVAL' : 'CD TENERIFE') : homeGl.length === 0 && awayGl.length === 0 ? '-' : 'Simultáneo';
+                            const marcaPrimero = (() => {
+                              const al = Array.isArray(m.actionLog) ? m.actionLog : (m.actionLog ? Object.values(m.actionLog) : []);
+                              const toSecs = (t) => { const p = String(t || '0:0').split(':').map(Number); return (p[0] || 0) * 60 + (p[1] || 0); };
+                              const golesPropio = al.filter(e => e && (e.name === 'GOL' || e.name === 'PENAL + GOL')).sort((a, b) => toSecs(a.time) - toSecs(b.time));
+                              const golesRival = al.filter(e => e && (e.name === 'GOL RIVAL' || e.name === 'PENAL + GOL RIVAL')).sort((a, b) => toSecs(a.time) - toSecs(b.time));
+                              if (golesPropio.length === 0 && golesRival.length === 0) return '-';
+                              if (golesPropio.length === 0) return 'RIVAL';
+                              if (golesRival.length === 0) return 'CD TENERIFE';
+                              const firstPropio = toSecs(golesPropio[0].time);
+                              const firstRival = toSecs(golesRival[0].time);
+                              return firstPropio < firstRival ? 'CD TENERIFE' : firstRival < firstPropio ? 'RIVAL' : 'Simultáneo';
+                            })();
                             const tgHt = isHome ? homeHt : awayHt;
                             const rgHt = isHome ? awayHt : homeHt;
                             const estadoHt = tgHt > rgHt ? 'Victoria' : tgHt < rgHt ? 'Derrota' : 'Empate';
@@ -2147,9 +2156,18 @@ export default function App() {
                             const homeHt = homeGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const awayHt = awayGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
-                            const firstHomeMin = homeGl.length > 0 ? Math.min(...homeGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
-                            const firstAwayMin = awayGl.length > 0 ? Math.min(...awayGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
-                            const marcaPrimero = firstHomeMin < firstAwayMin ? (isHome ? 'CD TENERIFE' : 'RIVAL') : firstAwayMin < firstHomeMin ? (isHome ? 'RIVAL' : 'CD TENERIFE') : homeGl.length === 0 && awayGl.length === 0 ? '-' : 'Simultáneo';
+                            const marcaPrimero = (() => {
+                              const al = Array.isArray(m.actionLog) ? m.actionLog : (m.actionLog ? Object.values(m.actionLog) : []);
+                              const toSecs = (t) => { const p = String(t || '0:0').split(':').map(Number); return (p[0] || 0) * 60 + (p[1] || 0); };
+                              const golesPropio = al.filter(e => e && (e.name === 'GOL' || e.name === 'PENAL + GOL')).sort((a, b) => toSecs(a.time) - toSecs(b.time));
+                              const golesRival = al.filter(e => e && (e.name === 'GOL RIVAL' || e.name === 'PENAL + GOL RIVAL')).sort((a, b) => toSecs(a.time) - toSecs(b.time));
+                              if (golesPropio.length === 0 && golesRival.length === 0) return '-';
+                              if (golesPropio.length === 0) return 'RIVAL';
+                              if (golesRival.length === 0) return 'CD TENERIFE';
+                              const firstPropio = toSecs(golesPropio[0].time);
+                              const firstRival = toSecs(golesRival[0].time);
+                              return firstPropio < firstRival ? 'CD TENERIFE' : firstRival < firstPropio ? 'RIVAL' : 'Simultáneo';
+                            })();
                             const tgHt = isHome ? homeHt : awayHt;
                             const rgHt = isHome ? awayHt : homeHt;
                             const estadoHt = tgHt > rgHt ? 'Victoria' : tgHt < rgHt ? 'Derrota' : 'Empate';
