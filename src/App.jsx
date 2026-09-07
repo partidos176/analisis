@@ -1876,7 +1876,7 @@ export default function App() {
                             <span onClick={() => { if (row.time != null && timelineVideoRef.current) { timelineVideoRef.current.currentTime = row.time; } }} style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', cursor: row.time != null ? 'pointer' : 'default', textDecoration: row.time != null ? 'underline' : 'none' }}>
                               {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
                             </span>
-                            <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
+                            <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
                               {row.time != null && fin1Time != null ? (() => {
                                 const elapsed = Math.max(0, row.time - fin1Time);
                                 return String(Math.floor(elapsed / 60)).padStart(2, '0') + ':' + String(elapsed % 60).padStart(2, '0');
@@ -1956,7 +1956,7 @@ export default function App() {
                               <span onClick={() => { if (row.time != null && timelineVideoRef.current) { timelineVideoRef.current.currentTime = row.time; } }} style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', cursor: row.time != null ? 'pointer' : 'default', textDecoration: row.time != null ? 'underline' : 'none' }}>
                                 {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
                               </span>
-                              <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
+                              <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
                                 {row.time != null && fin1Time != null && inicio2Time != null && fin1EndTime != null ? (() => {
                                   const descanso = inicio2Time - fin1EndTime;
                                   const elapsed = Math.max(0, row.time - descanso - fin1Time);
