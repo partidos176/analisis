@@ -2067,7 +2067,7 @@ export default function App() {
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: isHome ? '#22c55e' : '#ef4444', fontWeight: 800, fontSize: '0.9rem' }}>{isHome ? 'Local' : 'Visitante'}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: isHome ? '#22c55e' : '#ef4444', fontWeight: 800, fontSize: '0.9rem', background: isHome ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)' }}>{isHome ? 'Local' : 'Visitante'}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{(m.homeTeam || '-')} vs {(m.awayTeam || '-')}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', color: homeGl.length > awayGl.length ? '#22c55e' : homeGl.length < awayGl.length ? '#ef4444' : '#f59e0b' }}>
                                 {homeGl.length} - {awayGl.length}
