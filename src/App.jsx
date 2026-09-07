@@ -3392,7 +3392,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       .filter(m => m.matchday)
                       .map(m => {
                         const d = buildRowsForMatch(m);
-                        return d.rows.length > 0 ? { name: 'J ' + m.matchday, Propio: parseInt(d.subtotal.ownPct), Rival: parseInt(d.subtotal.rivalPct), Neutro: parseInt(d.subtotal.neutroPct) } : null;
+                        return d.rows.length > 0 ? { name: 'J ' + m.matchday, Propio: Math.round(d.subtotal.ownSecs / 60), Rival: Math.round(d.subtotal.rivalSecs / 60), Neutro: Math.round((d.subtotal.periodoTotal - d.subtotal.ownSecs - d.subtotal.rivalSecs) / 60) } : null;
                       })
                       .filter(Boolean)
                       .sort((a, b) => (parseInt(a.name.slice(1)) || 0) - (parseInt(b.name.slice(1)) || 0));
@@ -3402,8 +3402,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
                           <XAxis dataKey="name" tick={{ fill: '#ffffff', fontSize: 12 }} />
-                          <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} domain={[0, 100]} />
-                          <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff' }} />
+                          <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} unit=" min" />
+                          <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => value + ' min'} />
                           <Legend wrapperStyle={{ color: '#ffffff', cursor: 'pointer' }} onClick={(e) => { setHiddenLines(prev => ({ ...prev, [e.dataKey]: !prev[e.dataKey] })); }} />
                           <Line type="monotone" dataKey="Propio" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Propio} onClick={() => setHiddenLines(prev => ({ ...prev, Propio: !prev.Propio }))} style={{ cursor: 'pointer' }} />
                           <Line type="monotone" dataKey="Rival" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Rival} onClick={() => setHiddenLines(prev => ({ ...prev, Rival: !prev.Rival }))} style={{ cursor: 'pointer' }} />
