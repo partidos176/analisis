@@ -2153,6 +2153,9 @@ export default function App() {
                             const tgHt = isHome ? homeHt : awayHt;
                             const rgHt = isHome ? awayHt : homeHt;
                             const estadoHt = tgHt > rgHt ? 'Victoria' : tgHt < rgHt ? 'Derrota' : 'Empate';
+                            const tgFinal = isHome ? homeGl.length : awayGl.length;
+                            const rgFinal = isHome ? awayGl.length : homeGl.length;
+                            const estadoFinal = tgFinal > rgFinal ? 'Victoria' : tgFinal < rgFinal ? 'Derrota' : 'Empate';
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#fbbf24', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
@@ -2167,7 +2170,7 @@ export default function App() {
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: marcaPrimero === 'CD TENERIFE' ? '#22c55e' : marcaPrimero === 'RIVAL' ? '#ef4444' : '#94a3b8' }}>
                                 {marcaPrimero}
                               </td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', color: homeGl.length > awayGl.length ? '#22c55e' : homeGl.length < awayGl.length ? '#ef4444' : '#f59e0b' }}>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', color: estadoFinal === 'Victoria' ? '#22c55e' : estadoFinal === 'Derrota' ? '#ef4444' : '#f59e0b' }}>
                                 {homeGl.length} - {awayGl.length}
                               </td>
                               {(() => {
