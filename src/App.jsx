@@ -206,8 +206,10 @@ export default function App() {
       }
       if (e.code === 'End') {
         e.preventDefault();
+        e.stopPropagation();
         const v = pickVideo();
         if (v) v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
+        return;
       }
       if (e.code === 'ArrowRight' && !esEditable()) {
         e.preventDefault();
