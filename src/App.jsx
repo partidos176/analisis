@@ -2067,10 +2067,10 @@ export default function App() {
                             const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
                             const homeHt = homeGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const awayHt = awayGl.filter(g => g && g.periodo === '1ª PARTE').length;
+                            const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
                             const firstHomeMin = homeGl.length > 0 ? Math.min(...homeGl.filter(g => g && g.minuto != null).map(g => g.minuto)) : Infinity;
                             const firstAwayMin = awayGl.length > 0 ? Math.min(...awayGl.filter(g => g && g.minuto != null).map(g => g.minuto)) : Infinity;
                             const marcaPrimero = firstHomeMin < firstAwayMin ? (isHome ? 'CD TENERIFE' : 'RIVAL') : firstAwayMin < firstHomeMin ? (isHome ? 'RIVAL' : 'CD TENERIFE') : homeGl.length === 0 && awayGl.length === 0 ? '-' : 'Simultáneo';
-                            const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
