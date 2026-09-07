@@ -1818,8 +1818,10 @@ export default function App() {
                           <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)' }}>
                             <select value={row.action} onChange={(e) => {
                               setTimelineRows(prev => {
-                                const updated = prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r);
-                                if (e.target.value !== '' && !updated.some(r => r.action === '')) {
+                                let updated = prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r);
+                                if (e.target.value === 'FIN 1ª PARTE' || e.target.value === 'FIN 2ª PARTE') {
+                                  updated = updated.filter((r, i) => i <= realIdx || r.action !== '');
+                                } else if (e.target.value !== '' && !updated.some(r => r.action === '')) {
                                   updated.push({ action: '', finalization: '-', time: null });
                                 }
                                 return updated;
@@ -1835,8 +1837,8 @@ export default function App() {
                             <select value={row.finalization} onChange={(e) => {
                               const val = e.target.value;
                               setTimelineRows(prev => {
-                                const updated = prev.map((r, i) => i === realIdx ? { ...r, finalization: val } : r);
-                                if (val !== '' && updated[realIdx].action !== '') {
+                                let updated = prev.map((r, i) => i === realIdx ? { ...r, finalization: val } : r);
+                                if (val !== '' && updated[realIdx].action !== '' && !isFinMarker(updated[realIdx].action)) {
                                   updated.push({ action: '', finalization: '-', time: null });
                                 }
                                 return updated;
@@ -1893,8 +1895,10 @@ export default function App() {
                             <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)' }}>
                               <select value={row.action} onChange={(e) => {
                                 setTimelineRows2(prev => {
-                                  const updated = prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r);
-                                  if (e.target.value !== '' && !updated.some(r => r.action === '')) {
+                                  let updated = prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r);
+                                  if (e.target.value === 'FIN 2ª PARTE') {
+                                    updated = updated.filter((r, i) => i <= realIdx || r.action !== '');
+                                  } else if (e.target.value !== '' && !updated.some(r => r.action === '')) {
                                     updated.push({ action: '', finalization: '-', time: null });
                                   }
                                   return updated;
@@ -1910,11 +1914,12 @@ export default function App() {
                               <select value={row.finalization} onChange={(e) => {
                                 const val = e.target.value;
                                 setTimelineRows2(prev => {
-                                  const updated = prev.map((r, i) => i === realIdx ? { ...r, finalization: val } : r);
-                                  if (val !== '' && updated[realIdx].action !== '') {
+                                  let updated = prev.map((r, i) => i === realIdx ? { ...r, finalization: val } : r);
+                                  if (val !== '' && updated[realIdx].action !== '' && !isFinMarker(updated[realIdx].action)) {
                                     updated.push({ action: '', finalization: '-', time: null });
                                   }
                                   return updated;
+                                });
                                 });
                               }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                                 <option value="-">-</option>
