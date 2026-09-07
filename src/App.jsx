@@ -2043,10 +2043,10 @@ export default function App() {
           </div>
         </header>
         <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center' }}>
-          <div style={{ width: '100%', maxWidth: '800px' }}>
+          <div style={{ width: '100%', maxWidth: '1200px' }}>
               {totalesTab === 'totalresultados' && (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                  <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto' }}>
+                  <div style={{ width: '100%', maxWidth: '1100px', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'rgba(251,191,36,0.1)' }}>
