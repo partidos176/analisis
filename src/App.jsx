@@ -257,6 +257,12 @@ export default function App() {
   const [currentMatch, setCurrentMatch] = useState(null);
   const [activeTab, setActiveTab] = useState('acciones');
   const [totalesTab, setTotalesTab] = useState('totalresultados');
+  const [filtroJornada, setFiltroJornada] = useState('');
+  const [filtroRol, setFiltroRol] = useState('');
+  const [filtroEncuentro, setFiltroEncuentro] = useState('');
+  const [filtroEstadoHt, setFiltroEstadoHt] = useState('');
+  const [filtroMarcaPrimero, setFiltroMarcaPrimero] = useState('');
+  const [filtroEstadoFinal, setFiltroEstadoFinal] = useState('');
   const [tiroDerechaCount, setTiroDerechaCount] = useState(0);
   const [tiroAreaCount, setTiroAreaCount] = useState(0);
   const [rivalTiroDerechaCount, setRivalTiroDerechaCount] = useState(0);
@@ -2059,10 +2065,81 @@ export default function App() {
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Resultado Final</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Estado Final</th>
                         </tr>
+                        <tr>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
+                            <select value={filtroJornada} onChange={e => setFiltroJornada(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
+                              <option value="">Todas</option>
+                              {[...new Set(matches.filter(m => m.matchday).map(m => m.matchday))].sort((a, b) => a - b).map(j => <option key={j} value={j}>{j}</option>)}
+                            </select>
+                          </th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
+                            <select value={filtroRol} onChange={e => setFiltroRol(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
+                              <option value="">Todos</option>
+                              <option value="Local">Local</option>
+                              <option value="Visitante">Visitante</option>
+                            </select>
+                          </th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
+                            <input type="text" value={filtroEncuentro} onChange={e => setFiltroEncuentro(e.target.value)} placeholder="Buscar..." style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center' }} />
+                          </th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}></th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
+                            <select value={filtroEstadoHt} onChange={e => setFiltroEstadoHt(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
+                              <option value="">Todos</option>
+                              <option value="Victoria">Victoria</option>
+                              <option value="Empate">Empate</option>
+                              <option value="Derrota">Derrota</option>
+                            </select>
+                          </th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
+                            <select value={filtroMarcaPrimero} onChange={e => setFiltroMarcaPrimero(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
+                              <option value="">Todos</option>
+                              <option value="CD TENERIFE">CD TENERIFE</option>
+                              <option value="RIVAL">RIVAL</option>
+                            </select>
+                          </th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}></th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
+                            <select value={filtroEstadoFinal} onChange={e => setFiltroEstadoFinal(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
+                              <option value="">Todos</option>
+                              <option value="Victoria">Victoria</option>
+                              <option value="Empate">Empate</option>
+                              <option value="Derrota">Derrota</option>
+                            </select>
+                          </th>
+                        </tr>
                       </thead>
                       <tbody>
                         {matches
                           .filter(m => m.matchday)
+                          .map(m => {
+                            const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
+                            const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                            const homeHt = homeGl.filter(g => g && g.periodo === '1ª PARTE').length;
+                            const awayHt = awayGl.filter(g => g && g.periodo === '1ª PARTE').length;
+                            const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
+                            const firstHomeMin = homeGl.length > 0 ? Math.min(...homeGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
+                            const firstAwayMin = awayGl.length > 0 ? Math.min(...awayGl.map((g, idx) => g && g.minuto != null ? g.minuto : idx)) : Infinity;
+                            const marcaPrimero = firstHomeMin < firstAwayMin ? (isHome ? 'CD TENERIFE' : 'RIVAL') : firstAwayMin < firstHomeMin ? (isHome ? 'RIVAL' : 'CD TENERIFE') : homeGl.length === 0 && awayGl.length === 0 ? '-' : 'Simultáneo';
+                            const tgHt = isHome ? homeHt : awayHt;
+                            const rgHt = isHome ? awayHt : homeHt;
+                            const estadoHt = tgHt > rgHt ? 'Victoria' : tgHt < rgHt ? 'Derrota' : 'Empate';
+                            const tgFinal = isHome ? homeGl.length : awayGl.length;
+                            const rgFinal = isHome ? awayGl.length : homeGl.length;
+                            const estadoFinal = tgFinal > rgFinal ? 'Victoria' : tgFinal < rgFinal ? 'Derrota' : 'Empate';
+                            const rol = isHome ? 'Local' : 'Visitante';
+                            const encuentro = `${m.homeTeam || '-'} vs ${m.awayTeam || '-'}`;
+                            const resDescanso = `${homeHt} - ${awayHt}`;
+                            const resFinal = `${homeGl.length} - ${awayGl.length}`;
+                            if (filtroJornada && String(m.matchday) !== filtroJornada) return null;
+                            if (filtroRol && rol !== filtroRol) return null;
+                            if (filtroEncuentro && !encuentro.toLowerCase().includes(filtroEncuentro.toLowerCase())) return null;
+                            if (filtroEstadoHt && estadoHt !== filtroEstadoHt) return null;
+                            if (filtroMarcaPrimero && marcaPrimero !== filtroMarcaPrimero) return null;
+                            if (filtroEstadoFinal && estadoFinal !== filtroEstadoFinal) return null;
+                            return m;
+                          })
+                          .filter(Boolean)
                           .sort((a, b) => (a.matchday || 0) - (b.matchday || 0))
                           .map((m, i) => {
                             const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
