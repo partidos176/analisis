@@ -149,6 +149,26 @@ export default function App() {
 
   useEffect(() => {
     if (!timelineVideo) return;
+    const v = timelineVideoRef.current;
+    if (!v) return;
+    const handler = (e) => {
+      if (e.code === 'End' || e.code === 'Home' || e.code === 'ArrowRight' || e.code === 'ArrowLeft' || e.code === 'Space') {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        if (e.code === 'End') v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
+        else if (e.code === 'Home') v.currentTime = Math.max(0, v.currentTime - 5);
+        else if (e.code === 'ArrowRight') v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
+        else if (e.code === 'ArrowLeft') v.currentTime = Math.max(0, v.currentTime - 5);
+        else if (e.code === 'Space') { if (v.paused) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } else v.pause(); }
+      }
+    };
+    v.addEventListener('keydown', handler, { capture: true });
+    return () => v.removeEventListener('keydown', handler, { capture: true });
+  }, [timelineVideo]);
+
+  useEffect(() => {
+    if (!timelineVideo) return;
     const iv = setInterval(() => {
       const v = timelineVideoRef.current;
       if (v) {
@@ -1662,15 +1682,7 @@ export default function App() {
                     onTimeUpdate={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
                     onSeeked={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
                     onPlay={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
-                    onKeyDown={(e) => {
-                      if (e.code === 'End') { e.preventDefault(); e.stopPropagation(); e.target.currentTime = Math.min(e.target.duration || 0, e.target.currentTime + 5); }
-                      if (e.code === 'Home') { e.preventDefault(); e.stopPropagation(); e.target.currentTime = Math.max(0, e.target.currentTime - 5); }
-                      if (e.code === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); e.target.currentTime = Math.min(e.target.duration || 0, e.target.currentTime + 5); }
-                      if (e.code === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); e.target.currentTime = Math.max(0, e.target.currentTime - 5); }
-                      if (e.code === 'Space') { e.preventDefault(); e.stopPropagation(); if (e.target.paused) { const p = e.target.play(); if (p && p.catch) p.catch(() => {}); } else e.target.pause(); }
-                    }}
-                    tabIndex={0}
-                    style={{ width: '100%', height: 'auto', borderRadius: '8px', display: 'block', outline: 'none' }}
+                    style={{ width: '100%', height: 'auto', borderRadius: '8px', display: 'block' }}
                   />
                   <button
                     onClick={() => { setTimelineVideo(null); setTimelineTime(0); }}
