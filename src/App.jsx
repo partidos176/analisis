@@ -1873,7 +1873,7 @@ export default function App() {
                             </select>
                           </td>
                           <td style={{ padding: '0.1rem 0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                            <span onClick={() => { if (row.time != null && timelineVideoRef.current) { timelineVideoRef.current.currentTime = row.time; } }} style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', cursor: row.time != null ? 'pointer' : 'default', textDecoration: row.time != null ? 'underline' : 'none' }}>
+                            <span onClick={() => { if (row.time != null && timelineVideoRef.current) { timelineVideoRef.current.currentTime = row.time; } }} style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', cursor: row.time != null ? 'pointer' : 'default', textDecoration: row.time != null ? 'underline' : 'none' }}>
                               {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
                             </span>
                             <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
@@ -1953,7 +1953,7 @@ export default function App() {
                               </select>
                             </td>
                             <td style={{ padding: '0.1rem 0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                              <span onClick={() => { if (row.time != null && timelineVideoRef.current) { timelineVideoRef.current.currentTime = row.time; } }} style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', cursor: row.time != null ? 'pointer' : 'default', textDecoration: row.time != null ? 'underline' : 'none' }}>
+                              <span onClick={() => { if (row.time != null && timelineVideoRef.current) { timelineVideoRef.current.currentTime = row.time; } }} style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', cursor: row.time != null ? 'pointer' : 'default', textDecoration: row.time != null ? 'underline' : 'none' }}>
                                 {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
                               </span>
                               <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
