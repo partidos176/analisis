@@ -3392,7 +3392,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       .filter(m => m.matchday)
                       .map(m => {
                         const d = buildRowsForMatch(m);
-                        return d.rows.length > 0 ? { name: 'JORNADA ' + m.matchday, Propio: parseInt(d.subtotal.ownPct), Rival: parseInt(d.subtotal.rivalPct), Neutro: parseInt(d.subtotal.neutroPct) } : null;
+                        return d.rows.length > 0 ? { name: 'J ' + m.matchday, Propio: parseInt(d.subtotal.ownPct), Rival: parseInt(d.subtotal.rivalPct), Neutro: parseInt(d.subtotal.neutroPct) } : null;
                       })
                       .filter(Boolean)
                       .sort((a, b) => (parseInt(a.name.slice(1)) || 0) - (parseInt(b.name.slice(1)) || 0));
