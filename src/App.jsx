@@ -1851,6 +1851,9 @@ export default function App() {
                             </select>
                           </td>
                           <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                            <span style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
+                              {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
+                            </span>
                             <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
                               {row.time != null && fin1Time != null ? (() => {
                                 const elapsed = Math.max(0, row.time - fin1Time);
@@ -1928,6 +1931,9 @@ export default function App() {
                               </select>
                             </td>
                             <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                              <span style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
+                                {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
+                              </span>
                               <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
                                 {row.time != null && fin1Time != null && inicio2Time != null && fin1EndTime != null ? (() => {
                                   const descanso = inicio2Time - fin1EndTime;
