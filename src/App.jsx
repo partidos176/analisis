@@ -2001,7 +2001,7 @@ export default function App() {
                       { label: 'EMPATES LOCAL', value: empates, color: '#fbbf24' },
                       { label: 'DERROTAS LOCAL', value: derrotas, color: '#ef4444' },
                       { label: 'GOLES A FAVOR LOCAL', value: gf, color: '#38bdf8' },
-                      { label: 'GOLES EN CONTRA LOCAL', value: gc, color: '#f87171' },
+                      { label: 'GOLES EN CONTRA LOCAL', value: gc, color: '#f97316' },
                     ];
                     return (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
@@ -2161,12 +2161,8 @@ export default function App() {
                               const firstRival = toSecs(golesRival[0].time);
                               return firstPropio < firstRival ? 'CD TENERIFE' : firstRival < firstPropio ? 'RIVAL' : 'Simultáneo';
                             })();
-                            const tgHt = isHome ? homeHt : awayHt;
-                            const rgHt = isHome ? awayHt : homeHt;
-                            const estadoHt = tgHt > rgHt ? 'Victoria' : tgHt < rgHt ? 'Derrota' : 'Empate';
-                            const tgFinal = isHome ? homeGl.length : awayGl.length;
-                            const rgFinal = isHome ? awayGl.length : homeGl.length;
-                            const estadoFinal = tgFinal > rgFinal ? 'Victoria' : tgFinal < rgFinal ? 'Derrota' : 'Empate';
+                            const estadoHt = homeHt > awayHt ? 'Victoria' : homeHt < awayHt ? 'Derrota' : 'Empate';
+                            const estadoFinal = homeGl.length > awayGl.length ? 'Victoria' : homeGl.length < awayGl.length ? 'Derrota' : 'Empate';
                             const rol = isHome ? 'Local' : 'Visitante';
                             const encuentro = `${m.homeTeam || '-'} vs ${m.awayTeam || '-'}`;
                             const resDescanso = `${homeHt} - ${awayHt}`;
@@ -2199,12 +2195,8 @@ export default function App() {
                               const firstRival = toSecs(golesRival[0].time);
                               return firstPropio < firstRival ? 'CD TENERIFE' : firstRival < firstPropio ? 'RIVAL' : 'Simultáneo';
                             })();
-                            const tgHt = isHome ? homeHt : awayHt;
-                            const rgHt = isHome ? awayHt : homeHt;
-                            const estadoHt = tgHt > rgHt ? 'Victoria' : tgHt < rgHt ? 'Derrota' : 'Empate';
-                            const tgFinal = isHome ? homeGl.length : awayGl.length;
-                            const rgFinal = isHome ? awayGl.length : homeGl.length;
-                            const estadoFinal = tgFinal > rgFinal ? 'Victoria' : tgFinal < rgFinal ? 'Derrota' : 'Empate';
+                            const estadoHt = homeHt > awayHt ? 'Victoria' : homeHt < awayHt ? 'Derrota' : 'Empate';
+                            const estadoFinal = homeGl.length > awayGl.length ? 'Victoria' : homeGl.length < awayGl.length ? 'Derrota' : 'Empate';
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
@@ -2260,17 +2252,17 @@ export default function App() {
                     if (localMatches.length === 0 && awayMatches.length === 0) return null;
                     const allCells = [];
                     if (localMatches.length > 0) {
-                      [{ label: 'VICTORIAS LOCAL', value: lVic, color: '#22c55e' }, { label: 'EMPATES LOCAL', value: lEmp, color: '#fbbf24' }, { label: 'DERROTAS LOCAL', value: lDer, color: '#ef4444' }, { label: 'GOLES A FAVOR LOCAL', value: lGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA LOCAL', value: lGc, color: '#f87171' }].forEach(item => allCells.push(item));
+                      [{ label: 'VICTORIAS LOCAL', value: lVic, color: '#22c55e' }, { label: 'EMPATES LOCAL', value: lEmp, color: '#fbbf24' }, { label: 'DERROTAS LOCAL', value: lDer, color: '#ef4444' }, { label: 'GOLES A FAVOR LOCAL', value: lGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA LOCAL', value: lGc, color: '#f97316' }].forEach(item => allCells.push(item));
                     }
                     if (awayMatches.length > 0) {
-                      [{ label: 'VICTORIAS VISITANTE', value: vVic, color: '#22c55e' }, { label: 'EMPATES VISITANTE', value: vEmp, color: '#fbbf24' }, { label: 'DERROTAS VISITANTE', value: vDer, color: '#ef4444' }, { label: 'GOLES A FAVOR VISITANTE', value: vGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA VISITANTE', value: vGc, color: '#f87171' }].forEach(item => allCells.push(item));
+                      [{ label: 'VICTORIAS VISITANTE', value: vVic, color: '#22c55e' }, { label: 'EMPATES VISITANTE', value: vEmp, color: '#fbbf24' }, { label: 'DERROTAS VISITANTE', value: vDer, color: '#ef4444' }, { label: 'GOLES A FAVOR VISITANTE', value: vGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA VISITANTE', value: vGc, color: '#f97316' }].forEach(item => allCells.push(item));
                     }
-                    [{ label: 'TOTAL VICTORIAS', value: lVic + vVic, color: '#22c55e' }, { label: 'TOTAL EMPATES', value: lEmp + vEmp, color: '#fbbf24' }, { label: 'TOTAL DERROTAS', value: lDer + vDer, color: '#ef4444' }, { label: 'TOTAL GOLES A FAVOR', value: lGf + vGf, color: '#38bdf8' }, { label: 'TOTAL GOLES EN CONTRA', value: lGc + vGc, color: '#f87171' }].forEach(item => allCells.push(item));
+                    [{ label: 'TOTAL VICTORIAS', value: lVic + vVic, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL EMPATES', value: lEmp + vEmp, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL DERROTAS', value: lDer + vDer, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL GOLES A FAVOR', value: lGf + vGf, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL GOLES EN CONTRA', value: lGc + vGc, color: '#ff6ec7', labelColor: '#ff6ec7' }].forEach(item => allCells.push(item));
                     return (
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', marginTop: '1.5rem' }}>
                         {allCells.map((item, i) => (
                           <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem 1.5rem', textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: '#ffffff', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 800, textTransform: 'uppercase', color: item.labelColor || '#ffffff', letterSpacing: '0.05em', marginBottom: '0.3rem' }}>{item.label}</div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 900, color: item.color, fontFamily: 'var(--font-mono)' }}>{item.value}</div>
                           </div>
                         ))}
@@ -6229,18 +6221,18 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: [...actionLog].find(e => e.type === 'accion') ? [...actionLog].find(e => e.type === 'accion').name : '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: [...actionLog].find(e => e.type === 'accion') ? [...actionLog].find(e => e.type === 'accion').name : '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
-                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golesList.length}</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolesRivalList(prev => [...prev, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
+                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
-                        <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golesRivalList.length}</span>
+                        <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
                       </button>
                       <button
                         onClick={() => { if (logAction('PENAL + GOL RIVAL', 'finalizacion')) { setPenalCount(prev => prev + 1); setPenalGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setActiveTab('acciones'); } }}
