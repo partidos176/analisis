@@ -1815,7 +1815,7 @@ export default function App() {
                         const realIdx = showAllRows1 ? idx : timelineRows.length - 2 + idx;
                         return (
                         <tr key={realIdx}>
-                          <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)' }}>
+                          <td style={{ padding: '0.1rem 0.2rem', border: '1px solid var(--border-subtle)' }}>
                             <select value={row.action} onChange={(e) => {
                               setTimelineRows(prev => {
                                 let updated = prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r);
@@ -1826,14 +1826,14 @@ export default function App() {
                                 }
                                 return updated;
                               });
-                            }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
+                            }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.1rem 0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                               <option value="">Seleccionar acción...</option>
                               {['ON PROPIO','OFF PROPIO','ON RIVAL','OFF RIVAL','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON NEUTRO','OFF NEUTRO','PÉRDIDAS','INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE'].map(a => (
                                 <option key={a} value={a}>{a}</option>
                               ))}
                             </select>
                           </td>
-                          <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)' }}>
+                           <td style={{ padding: '0.1rem 0.2rem', border: '1px solid var(--border-subtle)' }}>
                             <select value={row.finalization} onChange={(e) => {
                               const val = e.target.value;
                               setTimelineRows(prev => {
@@ -1843,14 +1843,14 @@ export default function App() {
                                 }
                                 return updated;
                               });
-                            }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
+                            }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.1rem 0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                               <option value="-">-</option>
                               {['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'].map(f => (
                                 <option key={f} value={f}>{f}</option>
                               ))}
                             </select>
                           </td>
-                          <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                          <td style={{ padding: '0.1rem 0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
                             <span style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
                               {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
                             </span>
@@ -1895,7 +1895,7 @@ export default function App() {
                         const realIdx = showAllRows2 ? idx : timelineRows2.length - 2 + idx;
                         return (
                           <tr key={realIdx}>
-                            <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)' }}>
+                            <td style={{ padding: '0.1rem 0.2rem', border: '1px solid var(--border-subtle)' }}>
                               <select value={row.action} onChange={(e) => {
                                 setTimelineRows2(prev => {
                                   let updated = prev.map((r, i) => i === realIdx ? { ...r, action: e.target.value, time: e.target.value !== '' && r.time == null ? timelineTime : r.time } : r);
@@ -1906,14 +1906,14 @@ export default function App() {
                                   }
                                   return updated;
                                 });
-                              }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
+                              }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.1rem 0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                                 <option value="">Seleccionar acción...</option>
                                 {['ON PROPIO','OFF PROPIO','ON RIVAL','OFF RIVAL','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON NEUTRO','OFF NEUTRO','PÉRDIDAS','INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE'].map(a => (
                                   <option key={a} value={a}>{a}</option>
                                 ))}
                               </select>
                             </td>
-                            <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)' }}>
+                            <td style={{ padding: '0.1rem 0.2rem', border: '1px solid var(--border-subtle)' }}>
                               <select value={row.finalization} onChange={(e) => {
                                 const val = e.target.value;
                                 setTimelineRows2(prev => {
@@ -1923,14 +1923,14 @@ export default function App() {
                                   }
                                   return updated;
                                 });
-                              }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
+                              }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.1rem 0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                                 <option value="-">-</option>
                                 {['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'].map(f => (
                                   <option key={f} value={f}>{f}</option>
                                 ))}
                               </select>
                             </td>
-                            <td style={{ padding: '0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                            <td style={{ padding: '0.1rem 0.2rem', border: '1px solid var(--border-subtle)', background: '#1e293b', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
                               <span style={{ color: '#60a5fa', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
                                 {row.time != null ? String(Math.floor(row.time / 60)).padStart(2, '0') + ':' + String(row.time % 60).padStart(2, '0') : '--:--'}
                               </span>
