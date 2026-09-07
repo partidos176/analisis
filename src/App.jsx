@@ -2211,7 +2211,7 @@ export default function App() {
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, fontSize: '0.9rem' }}>{isHome ? 'Local' : 'Visitante'}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{(m.homeTeam || '-')} vs {(m.awayTeam || '-')}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)', color: estadoHt === 'Victoria' ? '#22c55e' : estadoHt === 'Derrota' ? '#ef4444' : '#fbbf24' }}>
-                                {homeHt} - {awayHt}
+                                {isHome ? `${homeHt} - ${awayHt}` : `${awayHt} - ${homeHt}`}
                               </td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: estadoHt === 'Victoria' ? '#22c55e' : estadoHt === 'Derrota' ? '#ef4444' : '#fbbf24' }}>
                                 {estadoHt}
@@ -2220,7 +2220,7 @@ export default function App() {
                                 {marcaPrimero}
                               </td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', color: estadoFinal === 'Victoria' ? '#22c55e' : estadoFinal === 'Derrota' ? '#ef4444' : '#f59e0b' }}>
-                                {homeGl.length} - {awayGl.length}
+                                {isHome ? `${homeGl.length} - ${awayGl.length}` : `${awayGl.length} - ${homeGl.length}`}
                               </td>
                               {(() => {
                                 const tgFinal = isHome ? homeGl.length : awayGl.length;
