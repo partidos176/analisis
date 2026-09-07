@@ -2054,6 +2054,7 @@ export default function App() {
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Rol</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff' }}>Equipo(s)</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#fbbf24' }}>Resultado Descanso</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#a78bfa' }}>Marca Primero</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Resultado Final</th>
                         </tr>
                       </thead>
@@ -2066,6 +2067,9 @@ export default function App() {
                             const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
                             const homeHt = homeGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const awayHt = awayGl.filter(g => g && g.periodo === '1ª PARTE').length;
+                            const firstHomeMin = homeGl.length > 0 ? Math.min(...homeGl.filter(g => g && g.minuto != null).map(g => g.minuto)) : Infinity;
+                            const firstAwayMin = awayGl.length > 0 ? Math.min(...awayGl.filter(g => g && g.minuto != null).map(g => g.minuto)) : Infinity;
+                            const marcaPrimero = firstHomeMin < firstAwayMin ? 'Local' : firstAwayMin < firstHomeMin ? 'Visitante' : homeGl.length === 0 && awayGl.length === 0 ? '-' : 'Simultáneo';
                             const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
@@ -2074,6 +2078,9 @@ export default function App() {
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{(m.homeTeam || '-')} vs {(m.awayTeam || '-')}</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)', color: '#fbbf24' }}>
                                 {homeHt} - {awayHt}
+                              </td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: marcaPrimero === 'Local' ? '#22c55e' : marcaPrimero === 'Visitante' ? '#ef4444' : '#94a3b8' }}>
+                                {marcaPrimero}
                               </td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', color: homeGl.length > awayGl.length ? '#22c55e' : homeGl.length < awayGl.length ? '#ef4444' : '#f59e0b' }}>
                                 {homeGl.length} - {awayGl.length}
