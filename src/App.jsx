@@ -204,7 +204,7 @@ export default function App() {
         const v = pickVideo();
         if (v) v.currentTime = Math.max(0, v.currentTime - 5);
       }
-      if (e.code === 'End' && !esEditable()) {
+      if (e.code === 'End') {
         e.preventDefault();
         const v = pickVideo();
         if (v) v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
