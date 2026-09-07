@@ -1662,7 +1662,15 @@ export default function App() {
                     onTimeUpdate={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
                     onSeeked={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
                     onPlay={(e) => setTimelineTime(Math.floor(e.target.currentTime))}
-                    style={{ width: '100%', height: 'auto', borderRadius: '8px', display: 'block' }}
+                    onKeyDown={(e) => {
+                      if (e.code === 'End') { e.preventDefault(); e.stopPropagation(); e.target.currentTime = Math.min(e.target.duration || 0, e.target.currentTime + 5); }
+                      if (e.code === 'Home') { e.preventDefault(); e.stopPropagation(); e.target.currentTime = Math.max(0, e.target.currentTime - 5); }
+                      if (e.code === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); e.target.currentTime = Math.min(e.target.duration || 0, e.target.currentTime + 5); }
+                      if (e.code === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); e.target.currentTime = Math.max(0, e.target.currentTime - 5); }
+                      if (e.code === 'Space') { e.preventDefault(); e.stopPropagation(); if (e.target.paused) { const p = e.target.play(); if (p && p.catch) p.catch(() => {}); } else e.target.pause(); }
+                    }}
+                    tabIndex={0}
+                    style={{ width: '100%', height: 'auto', borderRadius: '8px', display: 'block', outline: 'none' }}
                   />
                   <button
                     onClick={() => { setTimelineVideo(null); setTimelineTime(0); }}
