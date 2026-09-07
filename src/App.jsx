@@ -1776,10 +1776,26 @@ export default function App() {
                         tiempoFin1: fin1EndTime,
                         tiempoInicio2: inicio2Time,
                         tiempoFin2: fin2EndTime,
-                        partes: [
-                          ...timelineRows.map(r => ({ parte: '1ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, false)) })),
-                          ...timelineRows2.map(r => ({ parte: '2ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, true)) }))
-                        ]
+                        partes: (() => {
+                          const filas = [
+                            ...timelineRows.map(r => ({ parte: '1ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, false)) })),
+                            ...timelineRows2.map(r => ({ parte: '2ª PARTE', accion: r.action, finalizacion: r.finalization, tiempo: r.time, tiempoMatch: fmt(toMatchTime(r.time, true)) }))
+                          ];
+                          const tiene = (n) => filas.some(r => r.accion === n);
+                          const marcadores = [];
+                          if (fin1Time != null && !tiene('INICIO 1ª PARTE')) marcadores.push({ parte: '1ª PARTE', accion: 'INICIO 1ª PARTE', finalizacion: '', tiempo: fin1Time, tiempoMatch: fmt(toMatchTime(fin1Time, false)) });
+                          if (fin1EndTime != null && !tiene('FIN 1ª PARTE')) marcadores.push({ parte: '1ª PARTE', accion: 'FIN 1ª PARTE', finalizacion: '', tiempo: fin1EndTime, tiempoMatch: fmt(toMatchTime(fin1EndTime, false)) });
+                          if (inicio2Time != null && !tiene('INICIO 2ª PARTE')) marcadores.push({ parte: '2ª PARTE', accion: 'INICIO 2ª PARTE', finalizacion: '', tiempo: inicio2Time, tiempoMatch: fmt(toMatchTime(inicio2Time, true)) });
+                          if (fin2EndTime != null && !tiene('FIN 2ª PARTE')) marcadores.push({ parte: '2ª PARTE', accion: 'FIN 2ª PARTE', finalizacion: '', tiempo: fin2EndTime, tiempoMatch: fmt(toMatchTime(fin2EndTime, true)) });
+                          const todas = [...filas, ...marcadores];
+                          todas.sort((a, b) => {
+                            if (a.tiempo == null && b.tiempo == null) return 0;
+                            if (a.tiempo == null) return 1;
+                            if (b.tiempo == null) return -1;
+                            return a.tiempo - b.tiempo;
+                          });
+                          return todas;
+                        })()
                       };
                       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                       const url = URL.createObjectURL(blob);
