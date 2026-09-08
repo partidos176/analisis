@@ -7280,7 +7280,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 
                         {/* Plantilla completa */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', order: -1 }}>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', justifyItems: 'center' }}>
                              {players.filter(p => p.name && p.status === '-').map(p => {
                               const idx = players.indexOf(p);
                               const foto = jugadoresData[p.name]?.foto;
