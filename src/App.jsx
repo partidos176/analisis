@@ -48,7 +48,11 @@ const jugadoresData = {
   RAVELO: { foto: raveloImg, pos1: 'LATERAL IZQUIERDO' },
   SANTANA: { foto: santanaImg, pos1: 'LATERAL IZQUIERDO' },
   SANTOS: { foto: santosImg, pos1: 'INTERIOR DERECHO' },
-  NUHA: { foto: nuhaImg, pos1: 'CENTRAL DERECHO' }
+  NUHA: { foto: nuhaImg, pos1: 'CENTRAL DERECHO' },
+  SAUL: { pos1: 'DELANTERO' },
+  LOREN: { pos1: 'MEDIO CENTRO' },
+  ORIOL: { pos1: 'MEDIO CENTRO' },
+  BONILLA: { pos1: 'INTERIOR IZQUIERDO' }
 };
 
 const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'PEDRO': 'CADETE', 'JUAN ': 'JUANDA' };
@@ -94,7 +98,7 @@ const defaultPlayersList = () => {
   return Array(23).fill(null).map((_, i) => ({ name: roster[i] || '', status: '-' }));
 };
 
-const playerOptions = ['CARDENES', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'JONAS', 'JORGE', 'JUANDA', 'KEVIN', 'L. RAMIREZ', 'LUCAS', 'NUHA', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE'];
+const playerOptions = ['CARDENES', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'JONAS', 'JORGE', 'JUANDA', 'KEVIN', 'L. RAMIREZ', 'LUCAS', 'NUHA', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE', 'SAUL', 'LOREN', 'ORIOL', 'BONILLA'];
 
 const FORMACION_11 = [
   { x: 50, y: 10 },
