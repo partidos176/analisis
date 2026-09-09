@@ -7024,12 +7024,33 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             if (!p.name || p.status === 'no convocado') return;
                             e.stopPropagation();
                             dragMovedRefGlobal.current = false;
+                            const rect = campoRef.current?.getBoundingClientRect();
+                            if (rect) {
+                              const nx = Math.max(6, Math.min(94, ((e.clientX - rect.left) / rect.width) * 100));
+                              const ny = Math.max(6, Math.min(94, ((e.clientY - rect.top) / rect.height) * 100));
+                              setPlayers(prev => {
+                                const copy = [...prev];
+                                copy[p.idx] = { ...copy[p.idx], mapX: nx, mapY: ny };
+                                return copy;
+                              });
+                            }
                             setDraggingMapIdx(p.idx);
                           }}
                           onTouchStart={(e) => {
                             if (!p.name || p.status === 'no convocado') return;
                             e.stopPropagation();
                             dragMovedRefGlobal.current = false;
+                            const rect = campoRef.current?.getBoundingClientRect();
+                            const touch = e.touches[0];
+                            if (rect && touch) {
+                              const nx = Math.max(6, Math.min(94, ((touch.clientX - rect.left) / rect.width) * 100));
+                              const ny = Math.max(6, Math.min(94, ((touch.clientY - rect.top) / rect.height) * 100));
+                              setPlayers(prev => {
+                                const copy = [...prev];
+                                copy[p.idx] = { ...copy[p.idx], mapX: nx, mapY: ny };
+                                return copy;
+                              });
+                            }
                             setDraggingMapIdx(p.idx);
                           }}
                           title={`${p.name} — ${p.status} (arrastra al campo/banquillo · click: titular↔suplente, doble click: no convocado)`}
@@ -7326,14 +7347,27 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     if (!p.name || isNo) return;
                                     e.stopPropagation();
                                     dragMovedRefGlobal.current = false;
-                                    if (p.status !== 'titular') {
+                                    const rect = campoRef.current?.getBoundingClientRect();
+                                    if (rect) {
+                                      const nx = Math.max(6, Math.min(94, ((e.clientX - rect.left) / rect.width) * 100));
+                                      const ny = Math.max(6, Math.min(94, ((e.clientY - rect.top) / rect.height) * 100));
                                       setPlayers(prev => {
                                         const copy = [...prev];
                                         const titCount = copy.filter(q => q.status === 'titular').length;
-                                        if (titCount >= 11) return prev;
-                                        copy[idx] = { ...copy[idx], status: 'titular' };
+                                        if (titCount >= 11 && copy[idx].status !== 'titular') return prev;
+                                        copy[idx] = { ...copy[idx], status: copy[idx].status !== 'titular' ? 'titular' : copy[idx].status, mapX: nx, mapY: ny };
                                         return copy;
                                       });
+                                    } else {
+                                      if (p.status !== 'titular') {
+                                        setPlayers(prev => {
+                                          const copy = [...prev];
+                                          const titCount = copy.filter(q => q.status === 'titular').length;
+                                          if (titCount >= 11) return prev;
+                                          copy[idx] = { ...copy[idx], status: 'titular' };
+                                          return copy;
+                                        });
+                                      }
                                     }
                                     setDraggingMapIdx(idx);
                                   }}
@@ -7341,14 +7375,28 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     if (!p.name || isNo) return;
                                     e.stopPropagation();
                                     dragMovedRefGlobal.current = false;
-                                    if (p.status !== 'titular') {
+                                    const rect = campoRef.current?.getBoundingClientRect();
+                                    const touch = e.touches[0];
+                                    if (rect && touch) {
+                                      const nx = Math.max(6, Math.min(94, ((touch.clientX - rect.left) / rect.width) * 100));
+                                      const ny = Math.max(6, Math.min(94, ((touch.clientY - rect.top) / rect.height) * 100));
                                       setPlayers(prev => {
                                         const copy = [...prev];
                                         const titCount = copy.filter(q => q.status === 'titular').length;
-                                        if (titCount >= 11) return prev;
-                                        copy[idx] = { ...copy[idx], status: 'titular' };
+                                        if (titCount >= 11 && copy[idx].status !== 'titular') return prev;
+                                        copy[idx] = { ...copy[idx], status: copy[idx].status !== 'titular' ? 'titular' : copy[idx].status, mapX: nx, mapY: ny };
                                         return copy;
                                       });
+                                    } else {
+                                      if (p.status !== 'titular') {
+                                        setPlayers(prev => {
+                                          const copy = [...prev];
+                                          const titCount = copy.filter(q => q.status === 'titular').length;
+                                          if (titCount >= 11) return prev;
+                                          copy[idx] = { ...copy[idx], status: 'titular' };
+                                          return copy;
+                                        });
+                                      }
                                     }
                                     setDraggingMapIdx(idx);
                                   }}
