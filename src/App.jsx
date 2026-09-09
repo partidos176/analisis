@@ -3604,7 +3604,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       .filter(Boolean)
                       .sort((a, b) => (parseInt(a.name.slice(1)) || 0) - (parseInt(b.name.slice(1)) || 0));
                     return chartData.length > 0 ? (
-                    <div style={{ width: '100%', maxWidth: '700px', height: 300, marginTop: '2rem' }}>
+                    <div style={{ width: '100%', maxWidth: '700px', height: 300, marginTop: selectedIds.length === 0 ? '4rem' : '2rem' }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
