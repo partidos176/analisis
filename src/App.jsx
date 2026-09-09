@@ -52,7 +52,7 @@ const jugadoresData = {
   SAUL: { pos1: 'DELANTERO' },
   LOREN: { pos1: 'MEDIO CENTRO' },
   ORIOL: { pos1: 'MEDIO CENTRO' },
-  BONILLA: { pos1: 'INTERIOR IZQUIERDO' }
+  BONILLA: { pos1: 'INTERIOR IZQUIERDO' },
 };
 
 const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'PEDRO': 'CADETE', 'JUAN ': 'JUANDA' };
@@ -6836,11 +6836,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         const y = ((e.clientY - rect.top) / rect.height) * 100;
                         const nx = Math.max(6, Math.min(94, x));
                         const ny = Math.max(6, Math.min(94, y));
-                        const emptyIdx = players.findIndex(q => !q.name);
-                        if (emptyIdx === -1) return;
-                        if (titulares.length >= 11) return;
                         setPlayers(prev => {
-                          const copy = [...prev];
+                          let copy = [...prev];
+                          let emptyIdx = copy.findIndex(q => !q.name);
+                          if (emptyIdx === -1) {
+                            copy = [...copy, { name: '', status: '-' }];
+                            emptyIdx = copy.length - 1;
+                          }
                           copy[emptyIdx] = { ...copy[emptyIdx], name: n, status: 'titular', mapX: nx, mapY: ny };
                           return copy;
                         });
@@ -6881,10 +6883,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           // si campo lleno, manda a suplente
                           targetStatus = 'suplente';
                         }
-                        const emptyIdx = players.findIndex(q => !q.name);
-                        if (emptyIdx === -1) return;
                         setPlayers(prev => {
-                          const copy = [...prev];
+                          let copy = [...prev];
+                          let emptyIdx = copy.findIndex(q => !q.name);
+                          if (emptyIdx === -1) {
+                            copy = [...copy, { name: '', status: '-' }];
+                            emptyIdx = copy.length - 1;
+                          }
                           copy[emptyIdx] = { ...copy[emptyIdx], name: n, status: targetStatus };
                           if (targetStatus === 'titular') {
                             const rect = campoRef.current?.getBoundingClientRect();
@@ -6983,6 +6988,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           draggable={!!p.name && p.status !== 'no convocado'}
                           onDragStart={(e) => handleDragStart(e, p.idx)}
                           onClick={() => {
+                            if (dragMovedRefGlobal.current) return;
                             if (!p.name) return;
                             const realIdx = p.idx;
                             if (realIdx == null) return;
@@ -7013,6 +7019,18 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               else copy[realIdx] = { ...cur, status: 'no convocado' };
                               return copy;
                             });
+                          }}
+                          onMouseDown={(e) => {
+                            if (!p.name || p.status === 'no convocado') return;
+                            e.stopPropagation();
+                            dragMovedRefGlobal.current = false;
+                            setDraggingMapIdx(p.idx);
+                          }}
+                          onTouchStart={(e) => {
+                            if (!p.name || p.status === 'no convocado') return;
+                            e.stopPropagation();
+                            dragMovedRefGlobal.current = false;
+                            setDraggingMapIdx(p.idx);
                           }}
                           title={`${p.name} — ${p.status} (arrastra al campo/banquillo · click: titular↔suplente, doble click: no convocado)`}
                           style={{
@@ -7267,7 +7285,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   transition: 'border-color 0.15s'
                                 }}
                               >
-                                <span style={{ fontWeight: 900, fontSize: '0.62rem', color: z.color === '#000000' ? '#94a3b8' : z.color, letterSpacing: '0.07em', textTransform: 'uppercase', textAlign: 'center' }}>{z.label} {z.max ? `· ${z.list.length}/${z.max}` : `· ${z.list.length}`}</span>
+                                <span style={{ fontWeight: 900, fontSize: '0.62rem', color: z.color === '#000000' ? '#94a3b8' : z.color, letterSpacing: '0.07em', textTransform: 'uppercase', textAlign: 'center' }}>{z.label} · {z.list.length}</span>
                                 <div style={{ width: '100%', height: 1, background: 'var(--border-subtle)', opacity: 0.6 }} />
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem', justifyItems: 'center', width: '100%', minHeight: 40, alignContent: 'flex-start' }}>
                                   {z.list.length === 0 ? (
@@ -7291,7 +7309,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               return (
                                 <div key={p.name + '_' + idx} style={{ position: 'relative' }}>
                                   <div
-                                  onClick={() => setMenuJugadorIdx(prev => prev === idx ? null : idx)}
+                                  onClick={() => { if (dragMovedRefGlobal.current) return; setMenuJugadorIdx(prev => prev === idx ? null : idx); }}
                                   onDoubleClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
@@ -7304,6 +7322,36 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   }}
                                   draggable={!!p.name && !isNo}
                                   onDragStart={(e) => handleDragStart(e, idx)}
+                                  onMouseDown={(e) => {
+                                    if (!p.name || isNo) return;
+                                    e.stopPropagation();
+                                    dragMovedRefGlobal.current = false;
+                                    if (p.status !== 'titular') {
+                                      setPlayers(prev => {
+                                        const copy = [...prev];
+                                        const titCount = copy.filter(q => q.status === 'titular').length;
+                                        if (titCount >= 11) return prev;
+                                        copy[idx] = { ...copy[idx], status: 'titular' };
+                                        return copy;
+                                      });
+                                    }
+                                    setDraggingMapIdx(idx);
+                                  }}
+                                  onTouchStart={(e) => {
+                                    if (!p.name || isNo) return;
+                                    e.stopPropagation();
+                                    dragMovedRefGlobal.current = false;
+                                    if (p.status !== 'titular') {
+                                      setPlayers(prev => {
+                                        const copy = [...prev];
+                                        const titCount = copy.filter(q => q.status === 'titular').length;
+                                        if (titCount >= 11) return prev;
+                                        copy[idx] = { ...copy[idx], status: 'titular' };
+                                        return copy;
+                                      });
+                                    }
+                                    setDraggingMapIdx(idx);
+                                  }}
                                   title={`${p.name} — click para elegir estado (titular, suplente, lesión, no convocado, Div. Honor)`}
                                    style={{
                                     width: 90,
@@ -7343,11 +7391,14 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   draggable
                                   onDragStart={(e) => { e.dataTransfer.setData('text/plain', 'free:' + n); e.dataTransfer.effectAllowed = 'move'; }}
                                   onClick={() => {
-                                    const emptyIdx = players.findIndex(q => !q.name);
-                                    if (emptyIdx === -1) return;
                                     const titCount = players.filter(q => q.status === 'titular').length;
                                     setPlayers(prev => {
-                                      const copy = [...prev];
+                                      let copy = [...prev];
+                                      let emptyIdx = copy.findIndex(q => !q.name);
+                                      if (emptyIdx === -1) {
+                                        copy = [...copy, { name: '', status: '-' }];
+                                        emptyIdx = copy.length - 1;
+                                      }
                                       copy[emptyIdx] = { ...copy[emptyIdx], name: n, status: titCount < 11 ? 'titular' : 'suplente', mapX: titCount < 11 ? (FORMACION_11[titCount]?.x) : undefined, mapY: titCount < 11 ? (FORMACION_11[titCount]?.y) : undefined };
                                       return copy;
                                     });
