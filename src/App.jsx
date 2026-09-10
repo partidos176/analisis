@@ -23,6 +23,7 @@ import raveloImg from './jugadores/ravelo.jpg';
 import santanaImg from './jugadores/santana.jpg';
 import santosImg from './jugadores/santos.jpg';
 import nuhaImg from './jugadores/nuha.jpg';
+import saulImg from './jugadores/saul.jpg';
 import campoRefImg from './jugadores/campo_ref.jpg';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
@@ -49,7 +50,7 @@ const jugadoresData = {
   SANTANA: { foto: santanaImg, pos1: 'LATERAL IZQUIERDO' },
   SANTOS: { foto: santosImg, pos1: 'INTERIOR DERECHO' },
   NUHA: { foto: nuhaImg, pos1: 'CENTRAL DERECHO' },
-  SAUL: { pos1: 'DELANTERO' },
+  SAUL: { foto: saulImg, pos1: 'DELANTERO' },
   LOREN: { pos1: 'MEDIO CENTRO' },
   ORIOL: { pos1: 'MEDIO CENTRO' },
   BONILLA: { pos1: 'INTERIOR IZQUIERDO' },
