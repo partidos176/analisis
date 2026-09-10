@@ -24,7 +24,7 @@ import raveloImg from './jugadores/ravelo.jpg';
 import santanaImg from './jugadores/santana.jpg';
 import santosImg from './jugadores/santos.jpg';
 import nuhaImg from './jugadores/nuha.jpg';
-import campoRefImg from './jugadores/campo_ref.jpg';
+
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
@@ -421,31 +421,6 @@ export default function App() {
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const fichaJugadorRef = useRef(null);
   const alineacionRef = useRef(null);
-  const [campoImgWidth, setCampoImgWidth] = useState(75);
-  const campoImgWidthRef = useRef(75);
-  const campoImgResizeRef = useRef(null);
-  useEffect(() => { campoImgWidthRef.current = campoImgWidth; }, [campoImgWidth]);
-  useEffect(() => {
-    const el = campoImgResizeRef.current;
-    if (!el) return;
-    const onDown = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const rect = el.parentElement.getBoundingClientRect();
-      const parentW = rect.width;
-      const startX = e.clientX;
-      const startPct = campoImgWidthRef.current;
-      const onMove = (ev) => {
-        const deltaPct = ((ev.clientX - startX) / parentW) * 100;
-        setCampoImgWidth(Math.min(100, Math.max(10, Math.round(startPct + deltaPct))));
-      };
-      const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
-    };
-    el.addEventListener('pointerdown', onDown);
-    return () => el.removeEventListener('pointerdown', onDown);
-  }, []);
   const [videoFile, setVideoFile] = useState(null);
   const [videoFileName, setVideoFileName] = useState('');
   const [videoUploaded, setVideoUploaded] = useState(false);
@@ -7176,31 +7151,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
 
 
-                        <div className="mapa-tactico-layout" style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', alignItems: 'center' }}>
-                          {/* Imagen de campo - arrastrar punto verde para redimensionar */}
-                          <div style={{ width: `${campoImgWidth}%`, position: 'relative', display: 'flex', justifyContent: 'center' }}>
-                            <img src={campoRefImg} alt="campo" style={{ width: '100%', borderRadius: 8, pointerEvents: 'none', userSelect: 'none', display: 'block' }} />
-                            <div
-                              style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, background: '#22c55e', borderRadius: '50%', cursor: 'nwse-resize', border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)', zIndex: 100, touchAction: 'none' }}
-                              title="Arrastra para redimensionar"
-                              onPointerDown={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const container = e.currentTarget.parentElement;
-                                const parentRect = container.parentElement.getBoundingClientRect();
-                                const parentW = parentRect.width;
-                                const startX = e.clientX;
-                                const startPct = campoImgWidthRef.current;
-                                const onMove = (ev) => {
-                                  const deltaPct = ((ev.clientX - startX) / parentW) * 100;
-                                  setCampoImgWidth(Math.min(100, Math.max(10, Math.round(startPct + deltaPct))));
-                                };
-                                const onUp = () => { document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp); };
-                                document.addEventListener('pointermove', onMove);
-                                document.addEventListener('pointerup', onUp);
-                              }}
-                            />
-                          </div>
+                        <div className="mapa-tactico-layout" style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                           {/* Campo - realista 105×68 horizontal, ocupa todo el ancho */}
                           <div
                             ref={campoRef}
