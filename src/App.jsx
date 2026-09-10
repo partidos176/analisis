@@ -7173,37 +7173,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               touchAction: 'none'
                             }}
                           >
-                            {/* Líneas del campo */}
-                            <svg viewBox="0 0 68 105" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-                              {/* Borde exterior */}
-                              <rect x="0.7" y="0.7" width="66.6" height="103.6" fill="none" stroke="white" strokeWidth="0.3" />
-                              {/* Línea media */}
-                              <line x1="0.7" y1="52.5" x2="67.3" y2="52.5" stroke="white" strokeWidth="0.7" />
-                              {/* Círculo central r=9.15 */}
-                              <circle cx="34" cy="52.5" r="9.15" fill="none" stroke="white" strokeWidth="0.7" />
-                              <circle cx="34" cy="52.5" r="0.7" fill="white" />
-                              {/* Área penal superior (propia) - 16.5 profundidad, 40.3 ancho */}
-                              <rect x="13.85" y="0.7" width="40.3" height="16.5" fill="none" stroke="white" strokeWidth="0.7" />
-                              {/* Área de meta superior - 5.5 profundidad, 18.32 ancho */}
-                              <rect x="24.84" y="0.7" width="18.32" height="5.5" fill="none" stroke="white" strokeWidth="0.7" />
-                              {/* Punto penal superior 11m */}
-                              <circle cx="34" cy="11" r="0.7" fill="white" />
-                              {/* Semicírculo penal superior - arco hacia el centro */}
-                              <path d="M 26.69 17.2 A 9.15 9.15 0 0 0 41.31 17.2" fill="none" stroke="white" strokeWidth="0.7" />
-                              {/* Portería superior */}
-                              <rect x="30.1" y="-0.5" width="7.8" height="1.2" fill="none" stroke="white" strokeWidth="0.7" />
-                              {/* Área penal inferior (rival) */}
-                              <rect x="13.85" y="87.8" width="40.3" height="16.5" fill="none" stroke="white" strokeWidth="0.7" />
-                              <rect x="24.84" y="98.8" width="18.32" height="5.5" fill="none" stroke="white" strokeWidth="0.7" />
-                              <circle cx="34" cy="94" r="0.7" fill="white" />
-                              <path d="M 26.69 87.8 A 9.15 9.15 0 0 1 41.31 87.8" fill="none" stroke="white" strokeWidth="0.7" />
-                              <rect x="30.1" y="104.3" width="7.8" height="1.2" fill="none" stroke="white" strokeWidth="0.7" />
-                              {/* Esquinas r=1 */}
-                              <path d="M 1.7 0.7 A 1 1 0 0 1 0.7 1.7" fill="none" stroke="white" strokeWidth="0.7" />
-                              <path d="M 66.3 0.7 A 1 1 0 0 0 67.3 1.7" fill="none" stroke="white" strokeWidth="0.7" />
-                              <path d="M 67.3 103.3 A 1 1 0 0 0 66.3 104.3" fill="none" stroke="white" strokeWidth="0.7" />
-                              <path d="M 0.7 103.3 A 1 1 0 0 1 1.7 104.3" fill="none" stroke="white" strokeWidth="0.7" />
-                            </svg>
+
 
                             {titulares.length === 0 && (
                               <div className="no-export" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
