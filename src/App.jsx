@@ -7150,7 +7150,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem', position: 'relative' }}>
                         {/* Imagen fija arriba-izquierda (no desplaza nada) */}
-                        <img src={campoRefImg} alt="campo" style={{ position: 'absolute', top: '1rem', left: '1rem', width: '450px', borderRadius: 8, pointerEvents: 'none' }} />
+                        <img src={campoRefImg} alt="campo" style={{ position: 'absolute', top: '1rem', left: '1rem', width: '600px', borderRadius: 8, pointerEvents: 'none' }} />
 
 
                         <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
