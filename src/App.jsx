@@ -7142,7 +7142,30 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
 
 
-                        <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch', flexWrap: 'wrap', flexDirection: 'column' }}>
+                        <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch', flexWrap: 'wrap' }}>
+                          {/* Columna izquierda: TENERIFE C */}
+                          <div style={{ flex: '0 0 120px', display: 'flex', flexDirection: 'column', gap: '0.6rem', justifyContent: 'flex-start' }}>
+                            {(() => {
+                              const z = { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4', list: tenerifeC, max: '', empty: 'Arrastra aquí' };
+                              return (
+                                <div
+                                  onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                                  onDrop={(e) => handleZoneDrop(e, z.id)}
+                                  style={{ background: 'var(--bg-secondary)', border: `2px dashed ${z.color}66`, borderRadius: 12, padding: '0.5rem 0.4rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', alignItems: 'center', minHeight: 92, transition: 'border-color 0.15s' }}
+                                >
+                                  <span style={{ fontWeight: 900, fontSize: '0.62rem', color: z.color, letterSpacing: '0.07em', textTransform: 'uppercase', textAlign: 'center' }}>{z.label} · {z.list.length}</span>
+                                  <div style={{ width: '100%', height: 1, background: 'var(--border-subtle)', opacity: 0.6 }} />
+                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem', justifyItems: 'center', width: '100%', minHeight: 40, alignContent: 'flex-start' }}>
+                                    {z.list.length === 0 ? (
+                                      <span style={{ color: '#64748b', fontWeight: 700, fontSize: '0.6rem', textAlign: 'center', padding: '0.5rem 0', width: '100%', border: '1px dashed var(--border-subtle)', borderRadius: 8 }}>{z.empty}</span>
+                                    ) : z.list.map(p => circulo(p, 76))}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                          {/* Centro-derecha */}
+                          <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                           {/* Campo - realista 105×68 horizontal, ocupa todo el ancho */}
                           <div
                             ref={campoRef}
@@ -7320,13 +7343,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               </div>
                             ))}
                             </div>
-                            {/* Lateral - 4 zonas apiladas */}
+                            {/* Lateral - 3 zonas apiladas */}
                             <div className="mapa-lateral" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
                               { id: 'suplente', label: 'SUPLENTES', color: '#f59e0b', list: suplentes, max: '12', empty: 'Arrastra aquí' },
                               { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000', list: noConvocados, max: '', empty: 'Arrastra aquí' },
                               { id: 'lesion', label: 'LESIÓN', color: '#ef4444', list: lesionados, max: '', empty: 'Arrastra aquí' },
-                              { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4', list: tenerifeC, max: '', empty: 'Arrastra aquí' },
                             ].map(z => (
                               <div
                                 key={z.id}
@@ -7501,6 +7523,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           </div>
                         </div>
                         </div>
+                      </div>
                       </div>
                       </div>
                     );
