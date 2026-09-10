@@ -7291,7 +7291,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             {/* Cajetín bajo el campo: suplentes */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
-                              { id: 'suplente', label: 'SUPLENTES', color: '#f59e0b', list: suplentes, max: '12', empty: 'Arrastra aquí' },
+                              { id: 'suplente', label: 'SUPLENTES', color: '#f59e0b', list: suplentes, max: '12', empty: '' },
                             ].map(z => (
                               <div
                                 key={z.id}
@@ -7313,9 +7313,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 <span style={{ fontWeight: 900, fontSize: '0.62rem', color: z.color === '#000000' ? '#94a3b8' : z.color, letterSpacing: '0.07em', textTransform: 'uppercase', textAlign: 'center' }}>{z.label} · {z.list.length}</span>
                                 <div style={{ width: '100%', height: 1, background: 'var(--border-subtle)', opacity: 0.6 }} />
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.45rem', justifyItems: 'center', width: '100%', minHeight: 40, alignContent: 'flex-start' }}>
-                                  {z.list.length === 0 ? (
-                                    <span style={{ color: '#64748b', fontWeight: 700, fontSize: '0.6rem', textAlign: 'center', padding: '0.5rem 0', width: '100%', border: '1px dashed var(--border-subtle)', borderRadius: 8 }}>{z.empty}</span>
-                                  ) : z.list.map(p => circulo(p, 76))}
+                                  {z.list.map(p => circulo(p, 76))}
                                 </div>
                               </div>
                             ))}
@@ -7323,10 +7321,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             {/* Lateral - 4 zonas apiladas */}
                             <div className="mapa-lateral" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
-                              { id: 'division honor', label: 'DIVISIÓN HONOR', color: '#8b5cf6', list: divisionHonor, max: '', empty: 'Arrastra aquí' },
-                              { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4', list: tenerifeC, max: '', empty: 'Arrastra aquí' },
-                              { id: 'lesion', label: 'LESIÓN', color: '#ef4444', list: lesionados, max: '', empty: 'Arrastra aquí' },
-                              { id: 'no convocado', label: 'NO CONVOCADOS', color: '#000000', list: noConvocados, max: '', empty: 'Arrastra aquí' },
+                              { id: 'division honor', label: 'DIVISIÓN HONOR', color: '#8b5cf6', list: divisionHonor, max: '', empty: '' },
+                              { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4', list: tenerifeC, max: '', empty: '' },
+                              { id: 'lesion', label: 'LESIÓN', color: '#ef4444', list: lesionados, max: '', empty: '' },
+                              { id: 'no convocado', label: 'NO CONVOCADOS', color: '#000000', list: noConvocados, max: '', empty: '' },
                             ].map(z => (
                               <div
                                 key={z.id}
@@ -7348,9 +7346,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 <span style={{ fontWeight: 900, fontSize: '0.62rem', color: z.color === '#000000' ? '#94a3b8' : z.color, letterSpacing: '0.07em', textTransform: 'uppercase', textAlign: 'center' }}>{z.label} · {z.list.length}</span>
                                 <div style={{ width: '100%', height: 1, background: 'var(--border-subtle)', opacity: 0.6 }} />
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.45rem', justifyItems: 'center', width: '100%', minHeight: 40, alignContent: 'flex-start' }}>
-                                  {z.list.length === 0 ? (
-                                    <span style={{ color: '#64748b', fontWeight: 700, fontSize: '0.6rem', textAlign: 'center', padding: '0.5rem 0', width: '100%', border: '1px dashed var(--border-subtle)', borderRadius: 8 }}>{z.empty}</span>
-                                  ) : z.list.map(p => circulo(p, 76))}
+                                  {z.list.map(p => circulo(p, 76))}
                                 </div>
                               </div>
                             ))}
