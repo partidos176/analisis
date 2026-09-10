@@ -3042,6 +3042,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </span>
                     )}
                     </div>
+                    <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', width: '100%' }}>
+                    <div style={{ flex: '1 1 auto', minWidth: 0 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '1rem' }}>
                     {jugadorSeleccionado && (
                       <span style={{ fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
@@ -3164,9 +3166,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       )}
                     </div>
                     </div>
+                    </div>
                   </div>
                       {jugadorSeleccionado && minutosPorJornada.length > 0 && (
-                      <div style={{ marginTop: '1rem', width: '100%', overflowX: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <div style={{ marginTop: '1rem', flex: '0 0 auto', maxWidth: '100%', overflowX: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                           <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
                             MINUTOS JORNADA
                           </span>
@@ -3194,6 +3197,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           </table>
                         </div>
                       )}
+                    </div>
                       </div>
                     );
                   })()}
