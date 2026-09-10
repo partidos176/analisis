@@ -14,7 +14,6 @@ import diegoImg from './jugadores/diego.jpg';
 import emilianoImg from './jugadores/emiliano.jpg';
 import hectorImg from './jugadores/hector.jpg';
 import jonasImg from './jugadores/jonas.jpg';
-import jorgeImg from './jugadores/jorge.png';
 import juandaImg from './jugadores/juanda.jpg';
 import kevinImg from './jugadores/kevin.jpg';
 import lucasImg from './jugadores/lucas.jpg';
@@ -40,7 +39,6 @@ const jugadoresData = {
   EMILIANO: { foto: emilianoImg, pos1: 'PORTERO' },
   HECTOR: { foto: hectorImg, pos1: 'PORTERO' },
   JONAS: { foto: jonasImg, pos1: 'DELANTERO' },
-  JORGE: { foto: jorgeImg },
   JUANDA: { foto: juandaImg },
   KEVIN: { foto: kevinImg, pos1: 'CENTRAL' },
   LUCAS: { foto: lucasImg, pos1: 'CENTRAL' },
@@ -54,6 +52,7 @@ const jugadoresData = {
   LOREN: { pos1: 'MEDIO CENTRO' },
   ORIOL: { pos1: 'MEDIO CENTRO' },
   BONILLA: { pos1: 'INTERIOR IZQUIERDO' },
+  SAMUEL: {},
 };
 
 const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'PEDRO': 'CADETE', 'JUAN ': 'JUANDA' };
@@ -99,7 +98,7 @@ const defaultPlayersList = () => {
   return Array(23).fill(null).map((_, i) => ({ name: roster[i] || '', status: '-' }));
 };
 
-const playerOptions = ['CARDENES', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'JONAS', 'JORGE', 'JUANDA', 'KEVIN', 'L. RAMIREZ', 'LUCAS', 'NUHA', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE', 'SAUL', 'LOREN', 'ORIOL', 'BONILLA'];
+const playerOptions = ['CARDENES', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'JONAS', 'JUANDA', 'KEVIN', 'L. RAMIREZ', 'LUCAS', 'NUHA', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE', 'SAUL', 'LOREN', 'ORIOL', 'BONILLA', 'SAMUEL'];
 
 const FORMACION_11 = [
   { x: 50, y: 10 },
