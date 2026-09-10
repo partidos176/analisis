@@ -7163,21 +7163,17 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               maxWidth: '75%',
                               alignSelf: 'stretch',
                               height: '680px',
-                              background: '#1a7a33',
+                              background: 'transparent',
                               borderRadius: 12,
                               border: '2px solid #ffffff',
                               position: 'relative',
                               overflow: 'hidden',
                               cursor: titulares.length < 11 ? 'crosshair' : 'default',
-                              boxShadow: 'inset 0 0 30px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.3)',
                               userSelect: 'none',
                               touchAction: 'none'
                             }}
                           >
-                            {/* Césped rayado */}
-                            <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(90deg, rgba(0,0,0,0.07) 0 18px, transparent 18px 36px)', pointerEvents: 'none' }} />
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 0%, transparent 45%, transparent 55%, rgba(0,0,0,0.08) 100%)', pointerEvents: 'none' }} />
-                            {/* SVG líneas reglamentarias - vertical 68×105 realista */}
+                            {/* Líneas del campo */}
                             <svg viewBox="0 0 68 105" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
                               {/* Borde exterior */}
                               <rect x="0.7" y="0.7" width="66.6" height="103.6" fill="none" stroke="white" strokeWidth="0.7" />
