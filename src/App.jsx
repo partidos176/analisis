@@ -6750,12 +6750,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         if (!alineacionRef.current) return;
                         alineacionRef.current.classList.add('exportando');
                         const el = alineacionRef.current;
-                        const prevOverflow = el.style.overflow;
-                        const prevWidth = el.style.width;
-                        el.style.overflow = 'visible';
-                        el.style.width = '1200px';
                         try {
-                          const canvas = await html2canvas(el, { backgroundColor: '#0b0f19', scale: 2, useCORS: true, windowWidth: 1400, windowHeight: el.scrollHeight + 200, width: 1200 });
+                          const canvas = await html2canvas(el, { backgroundColor: '#0b0f19', scale: 2, useCORS: true });
                           const link = document.createElement('a');
                           link.download = `alineacion_J${currentMatch?.matchday || '?'}_${currentMatch?.homeTeam || ''}_vs_${currentMatch?.awayTeam || ''}.jpg`;
                           link.href = canvas.toDataURL('image/jpeg', 0.95);
@@ -6763,8 +6759,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         } catch (err) {
                           console.error('Error exportando imagen:', err);
                         } finally {
-                          el.style.overflow = prevOverflow;
-                          el.style.width = prevWidth;
                           alineacionRef.current.classList.remove('exportando');
                         }
                       }}
