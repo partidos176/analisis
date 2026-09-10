@@ -7163,6 +7163,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             style={{
                               flex: '0 1 55%',
                               maxWidth: '55%',
+                              marginBottom: '2.5rem',
                               alignSelf: 'stretch',
                               backgroundImage: `url(${campoRefImg})`,
                               backgroundSize: 'cover',
