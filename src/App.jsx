@@ -7288,14 +7288,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 
                           {/* Columna derecha: zonas + plantilla (a la derecha del campo) */}
                           <div className="mapa-derecha" style={{ flex: '1 1 20%', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-                            {/* Todos los cajetines en 3 columnas */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', width: '100%' }}>
+                            {/* Cajetín bajo el campo: división honor */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
-                              { id: 'suplente', label: 'SUPLENTES', color: '#f59e0b', list: suplentes, max: '12', empty: 'Arrastra aquí' },
-                              { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000', list: noConvocados, max: '', empty: 'Arrastra aquí' },
-                              { id: 'lesion', label: 'LESIÓN', color: '#ef4444', list: lesionados, max: '', empty: 'Arrastra aquí' },
                               { id: 'division honor', label: 'DIVISIÓN HONOR', color: '#8b5cf6', list: divisionHonor, max: '', empty: 'Arrastra aquí' },
-                              { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4', list: tenerifeC, max: '', empty: 'Arrastra aquí' },
                             ].map(z => (
                               <div
                                 key={z.id}
@@ -7324,6 +7320,41 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               </div>
                             ))}
                             </div>
+                            {/* Lateral - 4 zonas apiladas */}
+                            <div className="mapa-lateral" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
+                            {[
+                              { id: 'suplente', label: 'SUPLENTES', color: '#f59e0b', list: suplentes, max: '12', empty: 'Arrastra aquí' },
+                              { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000', list: noConvocados, max: '', empty: 'Arrastra aquí' },
+                              { id: 'lesion', label: 'LESIÓN', color: '#ef4444', list: lesionados, max: '', empty: 'Arrastra aquí' },
+                              { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4', list: tenerifeC, max: '', empty: 'Arrastra aquí' },
+                            ].map(z => (
+                              <div
+                                key={z.id}
+                                onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                                onDrop={(e) => handleZoneDrop(e, z.id)}
+                                style={{
+                                  background: 'var(--bg-secondary)',
+                                  border: `2px dashed ${z.color}66`,
+                                  borderRadius: 12,
+                                  padding: '0.5rem 0.4rem',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '0.4rem',
+                                  alignItems: 'center',
+                                  minHeight: 92,
+                                  transition: 'border-color 0.15s'
+                                }}
+                              >
+                                <span style={{ fontWeight: 900, fontSize: '0.62rem', color: z.color === '#000000' ? '#94a3b8' : z.color, letterSpacing: '0.07em', textTransform: 'uppercase', textAlign: 'center' }}>{z.label} · {z.list.length}</span>
+                                <div style={{ width: '100%', height: 1, background: 'var(--border-subtle)', opacity: 0.6 }} />
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem', justifyItems: 'center', width: '100%', minHeight: 40, alignContent: 'flex-start' }}>
+                                  {z.list.length === 0 ? (
+                                    <span style={{ color: '#64748b', fontWeight: 700, fontSize: '0.6rem', textAlign: 'center', padding: '0.5rem 0', width: '100%', border: '1px dashed var(--border-subtle)', borderRadius: 8 }}>{z.empty}</span>
+                                  ) : z.list.map(p => circulo(p, 76))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
 
                         {/* Plantilla completa */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', order: -1 }}>
