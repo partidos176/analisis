@@ -431,7 +431,8 @@ export default function App() {
     const onDown = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const parentW = el.parentElement.parentElement.offsetWidth;
+      const rect = el.parentElement.getBoundingClientRect();
+      const parentW = rect.width;
       const startX = e.clientX;
       const startPct = campoImgWidthRef.current;
       const onMove = (ev) => {
@@ -442,8 +443,8 @@ export default function App() {
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     };
-    el.addEventListener('mousedown', onDown);
-    return () => el.removeEventListener('mousedown', onDown);
+    el.addEventListener('pointerdown', onDown);
+    return () => el.removeEventListener('pointerdown', onDown);
   }, []);
   const [videoFile, setVideoFile] = useState(null);
   const [videoFileName, setVideoFileName] = useState('');
@@ -7176,13 +7177,28 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 
 
                         <div className="mapa-tactico-layout" style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', alignItems: 'center' }}>
-                          {/* Imagen de campo - arrastrar esquina inferior derecha para redimensionar */}
+                          {/* Imagen de campo - arrastrar punto verde para redimensionar */}
                           <div style={{ width: `${campoImgWidth}%`, position: 'relative', display: 'flex', justifyContent: 'center' }}>
                             <img src={campoRefImg} alt="campo" style={{ width: '100%', borderRadius: 8, pointerEvents: 'none', userSelect: 'none', display: 'block' }} />
                             <div
-                              ref={campoImgResizeRef}
-                              style={{ position: 'absolute', bottom: 4, right: 4, width: 20, height: 20, background: '#22c55e', borderRadius: '50%', cursor: 'nwse-resize', border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)', zIndex: 10 }}
+                              style={{ position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, background: '#22c55e', borderRadius: '50%', cursor: 'nwse-resize', border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)', zIndex: 100, touchAction: 'none' }}
                               title="Arrastra para redimensionar"
+                              onPointerDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const container = e.currentTarget.parentElement;
+                                const parentRect = container.parentElement.getBoundingClientRect();
+                                const parentW = parentRect.width;
+                                const startX = e.clientX;
+                                const startPct = campoImgWidthRef.current;
+                                const onMove = (ev) => {
+                                  const deltaPct = ((ev.clientX - startX) / parentW) * 100;
+                                  setCampoImgWidth(Math.min(100, Math.max(10, Math.round(startPct + deltaPct))));
+                                };
+                                const onUp = () => { document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp); };
+                                document.addEventListener('pointermove', onMove);
+                                document.addEventListener('pointerup', onUp);
+                              }}
                             />
                           </div>
                           {/* Campo - realista 105×68 horizontal, ocupa todo el ancho */}
