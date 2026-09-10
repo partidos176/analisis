@@ -24,6 +24,7 @@ import raveloImg from './jugadores/ravelo.jpg';
 import santanaImg from './jugadores/santana.jpg';
 import santosImg from './jugadores/santos.jpg';
 import nuhaImg from './jugadores/nuha.jpg';
+import campoRefImg from './jugadores/campo_ref.jpg';
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
@@ -420,6 +421,7 @@ export default function App() {
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const fichaJugadorRef = useRef(null);
   const alineacionRef = useRef(null);
+  const [campoImgWidth, setCampoImgWidth] = useState(75);
   const [videoFile, setVideoFile] = useState(null);
   const [videoFileName, setVideoFileName] = useState('');
   const [videoUploaded, setVideoUploaded] = useState(false);
@@ -7149,7 +7151,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
 
 
-                        <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch', flexWrap: 'wrap', flexDirection: 'column' }}>
+                        <div className="mapa-tactico-layout" style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', alignItems: 'center' }}>
+                          {/* Imagen de campo con slider */}
+                          <div style={{ width: `${campoImgWidth}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                            <img src={campoRefImg} alt="campo" style={{ width: '100%', borderRadius: 8, pointerEvents: 'none' }} />
+                            <input type="range" min="20" max="100" value={campoImgWidth} onChange={(e) => setCampoImgWidth(Number(e.target.value))} style={{ width: '60%', accentColor: '#22c55e' }} />
+                            <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>{campoImgWidth}%</span>
+                          </div>
                           {/* Campo - realista 105×68 horizontal, ocupa todo el ancho */}
                           <div
                             ref={campoRef}
