@@ -2986,7 +2986,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </button>
                     )}
                       {jugadorSeleccionado && minutosPorJornada.length > 0 && (
-                      <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
+                      <div style={{ position: 'absolute', top: '100%', right: '-2rem', zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
                           <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center', width: '100%' }}>
                             MINUTOS POR JORNADA
                           </span>
