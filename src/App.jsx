@@ -7113,7 +7113,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       { id: 'titular', label: 'TITULAR', color: '#38bdf8' },
                       { id: 'suplente', label: 'SUPLENTE', color: '#f59e0b' },
                       { id: 'lesion', label: 'LESION', color: '#ef4444' },
-                      { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000' },
+                      { id: 'no convocado', label: 'NO CONVOCADOS', color: '#000000' },
                       { id: 'division honor', label: 'DIV. HONOR', color: '#8b5cf6' },
                       { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4' },
                     ];
@@ -7324,9 +7324,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <div className="mapa-lateral" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
                               { id: 'division honor', label: 'DIVISIÓN HONOR', color: '#8b5cf6', list: divisionHonor, max: '', empty: 'Arrastra aquí' },
-                              { id: 'no convocado', label: 'NO CONVOCADO', color: '#000000', list: noConvocados, max: '', empty: 'Arrastra aquí' },
-                              { id: 'lesion', label: 'LESIÓN', color: '#ef4444', list: lesionados, max: '', empty: 'Arrastra aquí' },
                               { id: 'tenerife c', label: 'TENERIFE C', color: '#06b6d4', list: tenerifeC, max: '', empty: 'Arrastra aquí' },
+                              { id: 'lesion', label: 'LESIÓN', color: '#ef4444', list: lesionados, max: '', empty: 'Arrastra aquí' },
+                              { id: 'no convocado', label: 'NO CONVOCADOS', color: '#000000', list: noConvocados, max: '', empty: 'Arrastra aquí' },
                             ].map(z => (
                               <div
                                 key={z.id}
