@@ -7161,7 +7161,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
                             onDrop={handleFieldDrop}
                             style={{
-                              flex: '1 1 auto',
+                              flex: '0 1 62%',
+                              maxWidth: '62%',
                               alignSelf: 'stretch',
                               minHeight: '680px',
                               backgroundImage: `url(${campoRefImg})`,
