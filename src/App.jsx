@@ -7152,11 +7152,28 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
 
 
                         <div className="mapa-tactico-layout" style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', alignItems: 'center' }}>
-                          {/* Imagen de campo con slider */}
-                          <div style={{ width: `${campoImgWidth}%`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
-                            <img src={campoRefImg} alt="campo" style={{ width: '100%', borderRadius: 8, pointerEvents: 'none' }} />
-                            <input type="range" min="20" max="100" value={campoImgWidth} onChange={(e) => setCampoImgWidth(Number(e.target.value))} style={{ width: '60%', accentColor: '#22c55e' }} />
-                            <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>{campoImgWidth}%</span>
+                          {/* Imagen de campo - arrastrar esquina inferior derecha para redimensionar */}
+                          <div style={{ width: `${campoImgWidth}%`, position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                            <img src={campoRefImg} alt="campo" style={{ width: '100%', borderRadius: 8, pointerEvents: 'none', userSelect: 'none', display: 'block' }} />
+                            <div
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                const img = e.target.parentElement;
+                                const startX = e.clientX;
+                                const startW = img.offsetWidth;
+                                const onMove = (ev) => {
+                                  const delta = ev.clientX - startX;
+                                  const newW = Math.max(150, startW + delta);
+                                  const pct = (newW / img.parentElement.offsetWidth) * 100;
+                                  setCampoImgWidth(Math.min(100, Math.max(10, Math.round(pct))));
+                                };
+                                const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+                                document.addEventListener('mousemove', onMove);
+                                document.addEventListener('mouseup', onUp);
+                              }}
+                              style={{ position: 'absolute', bottom: 4, right: 4, width: 16, height: 16, background: '#22c55e', borderRadius: '50%', cursor: 'nwse-resize', border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }}
+                              title="Arrastra para redimensionar"
+                            />
                           </div>
                           {/* Campo - realista 105×68 horizontal, ocupa todo el ancho */}
                           <div
