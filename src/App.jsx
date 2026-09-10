@@ -422,7 +422,29 @@ export default function App() {
   const fichaJugadorRef = useRef(null);
   const alineacionRef = useRef(null);
   const [campoImgWidth, setCampoImgWidth] = useState(75);
+  const campoImgWidthRef = useRef(75);
   const campoImgResizeRef = useRef(null);
+  useEffect(() => { campoImgWidthRef.current = campoImgWidth; }, [campoImgWidth]);
+  useEffect(() => {
+    const el = campoImgResizeRef.current;
+    if (!el) return;
+    const onDown = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const parentW = el.parentElement.parentElement.offsetWidth;
+      const startX = e.clientX;
+      const startPct = campoImgWidthRef.current;
+      const onMove = (ev) => {
+        const deltaPct = ((ev.clientX - startX) / parentW) * 100;
+        setCampoImgWidth(Math.min(100, Math.max(10, Math.round(startPct + deltaPct))));
+      };
+      const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    };
+    el.addEventListener('mousedown', onDown);
+    return () => el.removeEventListener('mousedown', onDown);
+  }, []);
   const [videoFile, setVideoFile] = useState(null);
   const [videoFileName, setVideoFileName] = useState('');
   const [videoUploaded, setVideoUploaded] = useState(false);
@@ -446,26 +468,6 @@ export default function App() {
   const [servidorCortesDisponible, setServidorCortesDisponible] = useState(null);
   const [conectandoServidor, setConectandoServidor] = useState(false);
 
-  useEffect(() => {
-    const el = campoImgResizeRef.current;
-    if (!el) return;
-    const onDown = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const parentW = el.parentElement.parentElement.offsetWidth;
-      const startX = e.clientX;
-      const startPct = campoImgWidth;
-      const onMove = (ev) => {
-        const deltaPct = ((ev.clientX - startX) / parentW) * 100;
-        setCampoImgWidth(Math.min(100, Math.max(10, Math.round(startPct + deltaPct))));
-      };
-      const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
-    };
-    el.addEventListener('mousedown', onDown);
-    return () => el.removeEventListener('mousedown', onDown);
-  }, [campoImgWidth]);
 
   const conectarServidor = async () => {
     setConectandoServidor(true);
