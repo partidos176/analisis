@@ -7158,14 +7158,16 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <div
                               onMouseDown={(e) => {
                                 e.preventDefault();
-                                const img = e.target.parentElement;
+                                e.stopPropagation();
+                                const container = e.target.parentElement;
+                                const parentW = container.parentElement.offsetWidth;
+                                const startPct = campoImgWidth;
                                 const startX = e.clientX;
-                                const startW = img.offsetWidth;
                                 const onMove = (ev) => {
-                                  const delta = ev.clientX - startX;
-                                  const newW = Math.max(150, startW + delta);
-                                  const pct = (newW / img.parentElement.offsetWidth) * 100;
-                                  setCampoImgWidth(Math.min(100, Math.max(10, Math.round(pct))));
+                                  const deltaPx = ev.clientX - startX;
+                                  const deltaPct = (deltaPx / parentW) * 100;
+                                  const newPct = Math.min(100, Math.max(10, Math.round(startPct + deltaPct)));
+                                  setCampoImgWidth(newPct);
                                 };
                                 const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
                                 document.addEventListener('mousemove', onMove);
