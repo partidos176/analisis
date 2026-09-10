@@ -7159,8 +7159,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             onDrop={handleFieldDrop}
                             style={{
                               flex: '0 0 auto',
-                              width: '90%',
-                              maxWidth: '90%',
+                              width: '75%',
+                              maxWidth: '75%',
                               alignSelf: 'stretch',
                               height: '680px',
                               background: '#1a7a33',
