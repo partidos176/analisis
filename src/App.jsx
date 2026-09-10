@@ -24,6 +24,7 @@ import raveloImg from './jugadores/ravelo.jpg';
 import santanaImg from './jugadores/santana.jpg';
 import santosImg from './jugadores/santos.jpg';
 import nuhaImg from './jugadores/nuha.jpg';
+import campoRefImg from './jugadores/campo_ref.jpg';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
@@ -7151,8 +7152,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem' }}>
 
 
-                        <div className="mapa-tactico-layout" style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-                          {/* Campo - realista 105×68 horizontal, ocupa todo el ancho */}
+                        <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
+                          {/* Campo con foto de fondo a la izquierda, cajetines a la derecha */}
                           <div
                             ref={campoRef}
                             className="mapa-campo"
@@ -7160,12 +7161,12 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
                             onDrop={handleFieldDrop}
                             style={{
-                              flex: '0 0 auto',
-                              width: '75%',
-                              maxWidth: '75%',
+                              flex: '1 1 auto',
                               alignSelf: 'stretch',
-                              height: '680px',
-                              background: 'transparent',
+                              minHeight: '680px',
+                              backgroundImage: `url(${campoRefImg})`,
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
                               borderRadius: 12,
                               border: 'none',
                               position: 'relative',
@@ -7262,7 +7263,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           </div>
 
                           {/* Columna derecha: zonas + plantilla (a la derecha del campo) */}
-                          <div className="mapa-derecha" style={{ flex: '1 1 20%', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem', marginLeft: '-8rem' }}>
+                          <div className="mapa-derecha" style={{ flex: '0 0 300px', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
                             {/* Cajetín bajo el campo: suplentes */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
