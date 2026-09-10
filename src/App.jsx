@@ -7176,7 +7176,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             {/* Líneas del campo */}
                             <svg viewBox="0 0 68 105" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
                               {/* Borde exterior */}
-                              <rect x="0.7" y="0.7" width="66.6" height="103.6" fill="none" stroke="white" strokeWidth="0.7" />
+                              <rect x="0.7" y="0.7" width="66.6" height="103.6" fill="none" stroke="white" strokeWidth="0.3" />
                               {/* Línea media */}
                               <line x1="0.7" y1="52.5" x2="67.3" y2="52.5" stroke="white" strokeWidth="0.7" />
                               {/* Círculo central r=9.15 */}
