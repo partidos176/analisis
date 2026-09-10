@@ -7165,7 +7165,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               height: '680px',
                               background: 'transparent',
                               borderRadius: 12,
-                              border: '2px solid #ffffff',
+                              border: 'none',
                               position: 'relative',
                               overflow: 'hidden',
                               cursor: titulares.length < 11 ? 'crosshair' : 'default',
