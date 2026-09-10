@@ -24,7 +24,6 @@ import raveloImg from './jugadores/ravelo.jpg';
 import santanaImg from './jugadores/santana.jpg';
 import santosImg from './jugadores/santos.jpg';
 import nuhaImg from './jugadores/nuha.jpg';
-import campoRefImg from './jugadores/campo_ref.jpg';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
@@ -7165,9 +7164,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               maxWidth: '55%',
                               marginBottom: '2.5rem',
                               alignSelf: 'stretch',
-                              backgroundImage: `url(${campoRefImg})`,
-                              backgroundSize: 'cover',
-                              backgroundPosition: 'center',
+                              background: 'transparent',
                               borderRadius: 12,
                               border: 'none',
                               position: 'relative',
