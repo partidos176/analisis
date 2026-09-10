@@ -2986,6 +2986,37 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </button>
                     )}
                     </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                      {jugadorSeleccionado && minutosPorJornada.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                          <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
+                            MINUTOS JORNADA
+                          </span>
+                          <table style={{ borderCollapse: 'collapse', fontFamily: 'var(--font-mono, monospace)', fontSize: '1.15rem' }}>
+                            <thead>
+                              <tr>
+                                <th style={{ padding: '0.5rem 1rem', color: '#ffffff', fontWeight: 800, textAlign: 'left', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>JORNADA</th>
+                                <th style={{ padding: '0.5rem 1rem', color: '#39ff14', fontWeight: 800, textAlign: 'center', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>TITULAR</th>
+                                <th style={{ padding: '0.5rem 1rem', color: '#eab308', fontWeight: 800, textAlign: 'center', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>SUPLENTE</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {minutosPorJornada.map((j, i) => (
+                                <tr key={i}>
+                                  <td style={{ padding: '0.5rem 1rem', color: '#ffffff', fontWeight: 700, borderBottom: '1px solid #1e293b' }}>{j.name}</td>
+                                  <td style={{ padding: '0.5rem 1rem', color: j.titular > 0 ? '#39ff14' : '#475569', fontWeight: j.titular > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
+                                    {j.titular > 0 ? formatTime(j.titular) : '-'}
+                                  </td>
+                                  <td style={{ padding: '0.5rem 1rem', color: j.suplente > 0 ? '#eab308' : '#475569', fontWeight: j.suplente > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
+                                    {j.suplente > 0 ? formatTime(j.suplente) : '-'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                  </div>
                   <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start', overflow: 'visible' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
@@ -3168,35 +3199,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     </div>
                     </div>
                   </div>
-                      {jugadorSeleccionado && minutosPorJornada.length > 0 && (
-                      <div style={{ marginTop: '1rem', flex: '0 0 auto', maxWidth: '100%', overflowX: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                          <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'block', textAlign: 'center' }}>
-                            MINUTOS JORNADA
-                          </span>
-                          <table style={{ borderCollapse: 'collapse', fontFamily: 'var(--font-mono, monospace)', fontSize: '1.15rem' }}>
-                            <thead>
-                              <tr>
-                                <th style={{ padding: '0.5rem 1rem', color: '#ffffff', fontWeight: 800, textAlign: 'left', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>JORNADA</th>
-                                <th style={{ padding: '0.5rem 1rem', color: '#39ff14', fontWeight: 800, textAlign: 'center', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>TITULAR</th>
-                                <th style={{ padding: '0.5rem 1rem', color: '#eab308', fontWeight: 800, textAlign: 'center', borderBottom: '1px solid #334155', fontSize: '1.2rem' }}>SUPLENTE</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {minutosPorJornada.map((j, i) => (
-                                <tr key={i}>
-                                  <td style={{ padding: '0.5rem 1rem', color: '#ffffff', fontWeight: 700, borderBottom: '1px solid #1e293b' }}>{j.name}</td>
-                                  <td style={{ padding: '0.5rem 1rem', color: j.titular > 0 ? '#39ff14' : '#475569', fontWeight: j.titular > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
-                                    {j.titular > 0 ? formatTime(j.titular) : '-'}
-                                  </td>
-                                  <td style={{ padding: '0.5rem 1rem', color: j.suplente > 0 ? '#eab308' : '#475569', fontWeight: j.suplente > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
-                                    {j.suplente > 0 ? formatTime(j.suplente) : '-'}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
                     </div>
                       </div>
                     );
