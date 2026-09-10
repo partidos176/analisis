@@ -25,6 +25,7 @@ import santosImg from './jugadores/santos.jpg';
 import nuhaImg from './jugadores/nuha.jpg';
 import saulImg from './jugadores/saul.jpg';
 import lorenImg from './jugadores/loren.jpg';
+import oriolImg from './jugadores/oriol.jpg';
 import campoRefImg from './jugadores/campo_ref.jpg';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
@@ -53,7 +54,7 @@ const jugadoresData = {
   NUHA: { foto: nuhaImg, pos1: 'CENTRAL DERECHO' },
   SAUL: { foto: saulImg, pos1: 'DELANTERO' },
   LOREN: { foto: lorenImg, pos1: 'MEDIO CENTRO' },
-  ORIOL: { pos1: 'MEDIO CENTRO' },
+  ORIOL: { foto: oriolImg, pos1: 'MEDIO CENTRO' },
   BONILLA: { pos1: 'INTERIOR IZQUIERDO' },
   SAMUEL: {},
 };
