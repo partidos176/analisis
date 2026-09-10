@@ -7260,7 +7260,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           </div>
 
                           {/* Columna derecha: zonas + plantilla (a la derecha del campo) */}
-                          <div className="mapa-derecha" style={{ flex: '1 1 20%', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem', marginLeft: '-2rem' }}>
+                          <div className="mapa-derecha" style={{ flex: '1 1 20%', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem', marginLeft: '-4rem' }}>
                             {/* Cajetín bajo el campo: suplentes */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
