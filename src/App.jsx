@@ -2955,7 +2955,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     });
                     return (
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginBottom: '0.5rem', position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginBottom: '0.5rem' }}>
                     {jugadorSeleccionado && (
                       <button
                         onClick={async () => {
@@ -2985,8 +2985,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         ↓
                       </button>
                     )}
+                    </div>
+                  <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start', overflow: 'visible', position: 'relative' }}>
                       {jugadorSeleccionado && minutosPorJornada.length > 0 && (
-                      <div style={{ position: 'absolute', top: '100%', right: '-2rem', zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '0.7rem' }}>
+                      <div style={{ position: 'absolute', top: 0, right: 0, zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '0.7rem' }}>
                           <span style={{ color: '#a78bfa', fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem', display: 'block', textAlign: 'center', width: '100%' }}>
                             MINUTOS POR JORNADA
                           </span>
@@ -3014,8 +3016,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           </table>
                         </div>
                       )}
-                    </div>
-                  <div ref={fichaJugadorRef} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '1rem', alignItems: 'flex-start', overflow: 'visible' }}>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                     <select
