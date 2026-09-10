@@ -422,6 +422,7 @@ export default function App() {
   const fichaJugadorRef = useRef(null);
   const alineacionRef = useRef(null);
   const [campoImgWidth, setCampoImgWidth] = useState(75);
+  const campoImgResizeRef = useRef(null);
   const [videoFile, setVideoFile] = useState(null);
   const [videoFileName, setVideoFileName] = useState('');
   const [videoUploaded, setVideoUploaded] = useState(false);
@@ -444,6 +445,27 @@ export default function App() {
 
   const [servidorCortesDisponible, setServidorCortesDisponible] = useState(null);
   const [conectandoServidor, setConectandoServidor] = useState(false);
+
+  useEffect(() => {
+    const el = campoImgResizeRef.current;
+    if (!el) return;
+    const onDown = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const parentW = el.parentElement.parentElement.offsetWidth;
+      const startX = e.clientX;
+      const startPct = campoImgWidth;
+      const onMove = (ev) => {
+        const deltaPct = ((ev.clientX - startX) / parentW) * 100;
+        setCampoImgWidth(Math.min(100, Math.max(10, Math.round(startPct + deltaPct))));
+      };
+      const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    };
+    el.addEventListener('mousedown', onDown);
+    return () => el.removeEventListener('mousedown', onDown);
+  }, [campoImgWidth]);
 
   const conectarServidor = async () => {
     setConectandoServidor(true);
@@ -7156,24 +7178,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <div style={{ width: `${campoImgWidth}%`, position: 'relative', display: 'flex', justifyContent: 'center' }}>
                             <img src={campoRefImg} alt="campo" style={{ width: '100%', borderRadius: 8, pointerEvents: 'none', userSelect: 'none', display: 'block' }} />
                             <div
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const container = e.target.parentElement;
-                                const parentW = container.parentElement.offsetWidth;
-                                const startPct = campoImgWidth;
-                                const startX = e.clientX;
-                                const onMove = (ev) => {
-                                  const deltaPx = ev.clientX - startX;
-                                  const deltaPct = (deltaPx / parentW) * 100;
-                                  const newPct = Math.min(100, Math.max(10, Math.round(startPct + deltaPct)));
-                                  setCampoImgWidth(newPct);
-                                };
-                                const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
-                                document.addEventListener('mousemove', onMove);
-                                document.addEventListener('mouseup', onUp);
-                              }}
-                              style={{ position: 'absolute', bottom: 4, right: 4, width: 16, height: 16, background: '#22c55e', borderRadius: '50%', cursor: 'nwse-resize', border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)' }}
+                              ref={campoImgResizeRef}
+                              style={{ position: 'absolute', bottom: 4, right: 4, width: 20, height: 20, background: '#22c55e', borderRadius: '50%', cursor: 'nwse-resize', border: '2px solid #fff', boxShadow: '0 1px 4px rgba(0,0,0,0.4)', zIndex: 10 }}
                               title="Arrastra para redimensionar"
                             />
                           </div>
