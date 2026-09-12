@@ -6806,35 +6806,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     >
                       {alineacionGuardado ? 'GUARDADO ✓' : 'GUARDAR'}
                     </button>
-                    <button
-                      onClick={async () => {
-                        if (!window.confirm('¿Eliminar la ficha de CADETE de TODOS los partidos guardados?')) return;
-                        let n = 0;
-                        for (const m of matches) {
-                          if (Array.isArray(m.players) && m.players.some(p => p && p.name === 'CADETE')) {
-                            await update(ref(db, `matches/${m.id}`), { players: m.players.filter(p => !p || p.name !== 'CADETE') });
-                            n++;
-                          }
-                        }
-                        alert(`CADETE eliminado de ${n} partido(s)`);
-                        setPlayers(prev => prev.filter(p => !p || p.name !== 'CADETE'));
-                      }}
-                      title="Eliminar CADETE de todos los partidos (temporal)"
-                      style={{
-                        background: '#ef4444',
-                        color: '#ffffff',
-                        fontWeight: 800,
-                        fontSize: '0.85rem',
-                        padding: '0.5rem 1.4rem',
-                        borderRadius: 'var(--radius-full)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                      }}
-                    >
-                      LIMPIAR CADETE
-                    </button>
                   </div>
                   {alineacionError && (
                     <div style={{
