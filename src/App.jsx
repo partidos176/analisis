@@ -38,7 +38,6 @@ const jugadoresData = {
   CARDENES: { foto: cardenesImg, pos1: 'INTERIOR IZQUIERDO' },
   ANCOR: { foto: ancorImg, pos1: 'MEDIO CENTRO' },
   CARDONA: { foto: cardonaImg, pos1: 'INTERIOR DERECHO' },
-  CADETE: {},
   DANI: { foto: daniImg, pos1: 'CENTRAL DERECHO' },
   DAVID: { foto: davidImg, pos1: 'MEDIO CENTRO' },
   DIEGO: { foto: diegoImg, pos1: 'INTERIOR DERECHO' },
@@ -62,7 +61,7 @@ const jugadoresData = {
   SAMUEL: { foto: samuelImg },
 };
 
-const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'PEDRO': 'CADETE', 'JUAN ': 'JUANDA' };
+const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'JUAN ': 'JUANDA' };
 const normalizePlayerName = (raw) => {
   if (!raw) return '';
   const n = String(raw).trim().toUpperCase();
@@ -105,7 +104,7 @@ const defaultPlayersList = () => {
   return Array(23).fill(null).map((_, i) => ({ name: roster[i] || '', status: '-' }));
 };
 
-const playerOptions = ['CARDENES', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'JONAS', 'JUANDA', 'KEVIN', 'L. RAMIREZ', 'L. SANCHEZ', 'LUCAS', 'NUHA', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE', 'SAUL', 'LOREN', 'ORIOL', 'BONILLA', 'SAMUEL'];
+const playerOptions = ['CARDENES', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'JONAS', 'JUANDA', 'KEVIN', 'L. RAMIREZ', 'L. SANCHEZ', 'LUCAS', 'NUHA', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'SAUL', 'LOREN', 'ORIOL', 'BONILLA', 'SAMUEL'];
 
 const FORMACION_11 = [
   { x: 50, y: 10 },
@@ -6806,6 +6805,34 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       }}
                     >
                       {alineacionGuardado ? 'GUARDADO ✓' : 'GUARDAR'}
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!window.confirm('¿Eliminar la ficha de CADETE de TODOS los partidos guardados?')) return;
+                        let n = 0;
+                        for (const m of matches) {
+                          if (Array.isArray(m.players) && m.players.some(p => p && p.name === 'CADETE')) {
+                            await update(ref(db, `matches/${m.id}`), { players: m.players.filter(p => !p || p.name !== 'CADETE') });
+                            n++;
+                          }
+                        }
+                        alert(`CADETE eliminado de ${n} partido(s)`);
+                      }}
+                      title="Eliminar CADETE de todos los partidos (temporal)"
+                      style={{
+                        background: '#ef4444',
+                        color: '#ffffff',
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        padding: '0.5rem 1.4rem',
+                        borderRadius: 'var(--radius-full)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      LIMPIAR CADETE
                     </button>
                   </div>
                   {alineacionError && (
