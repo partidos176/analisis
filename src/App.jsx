@@ -27,6 +27,7 @@ import saulImg from './jugadores/saul.jpg';
 import lorenImg from './jugadores/loren.jpg';
 import oriolImg from './jugadores/oriol.jpg';
 import samuelImg from './jugadores/samuel.jpg';
+import lucasSanchezImg from './jugadores/lucas_sanchez.jpg';
 import campoRefImg from './jugadores/campo_ref.jpg';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
@@ -48,6 +49,7 @@ const jugadoresData = {
   KEVIN: { foto: kevinImg, pos1: 'CENTRAL' },
   LUCAS: { foto: lucasImg, pos1: 'CENTRAL' },
   'L. RAMIREZ': { foto: lramirezImg, pos1: 'PORTERO' },
+  'L. SANCHEZ': { foto: lucasSanchezImg },
   OSCAR: { foto: oscarImg, pos1: 'LATERAL DERECHO' },
   RAVELO: { foto: raveloImg, pos1: 'LATERAL IZQUIERDO' },
   SANTANA: { foto: santanaImg, pos1: 'LATERAL IZQUIERDO' },
@@ -103,7 +105,7 @@ const defaultPlayersList = () => {
   return Array(23).fill(null).map((_, i) => ({ name: roster[i] || '', status: '-' }));
 };
 
-const playerOptions = ['CARDENES', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'JONAS', 'JUANDA', 'KEVIN', 'L. RAMIREZ', 'LUCAS', 'NUHA', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE', 'SAUL', 'LOREN', 'ORIOL', 'BONILLA', 'SAMUEL'];
+const playerOptions = ['CARDENES', 'ANCOR', 'CARDONA', 'DANI', 'DAVID', 'DIEGO', 'EMILIANO', 'HECTOR', 'JONAS', 'JUANDA', 'KEVIN', 'L. RAMIREZ', 'L. SANCHEZ', 'LUCAS', 'NUHA', 'OSCAR', 'RAVELO', 'SANTANA', 'SANTOS', 'CADETE', 'SAUL', 'LOREN', 'ORIOL', 'BONILLA', 'SAMUEL'];
 
 const FORMACION_11 = [
   { x: 50, y: 10 },
