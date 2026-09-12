@@ -323,6 +323,7 @@ export default function App() {
   const [draggingMapIdx, setDraggingMapIdx] = useState(null);
   const campoRef = useRef(null);
   const dragMovedRefGlobal = useRef(false);
+  const nativeDragRef = useRef(false);
   const undoSnapshotRef = useRef(null);
   const prevPlayersRef = useRef(players);
   const isUndoingRef = useRef(false);
@@ -370,6 +371,7 @@ export default function App() {
   useEffect(() => {
     if (draggingMapIdx == null) return;
     const handleMove = (e) => {
+      if (nativeDragRef.current) return;
       const rect = campoRef.current?.getBoundingClientRect();
       if (!rect) return;
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -6837,11 +6839,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const divisionHonor = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'division honor');
                     const tenerifeC = players.map((p, idx) => ({ ...p, idx })).filter(p => p.name && p.status === 'tenerife c');
                     const handleDragStart = (e, idx) => {
+                      nativeDragRef.current = true;
                       e.dataTransfer.setData('text/plain', String(idx));
                       e.dataTransfer.effectAllowed = 'move';
                     };
                     const handleFieldDrop = (e) => {
                       e.preventDefault();
+                      nativeDragRef.current = false;
                       const raw = e.dataTransfer.getData('text/plain');
                       if (raw.startsWith('free:')) {
                         const n = raw.slice(5);
@@ -6890,6 +6894,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     const handleZoneDrop = (e, targetStatus) => {
                       e.preventDefault();
                       e.stopPropagation();
+                      nativeDragRef.current = false;
                       const raw = e.dataTransfer.getData('text/plain');
                       if (!raw) return;
                       if (raw.startsWith('free:')) {
@@ -7002,6 +7007,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         <div
                           draggable={!!p.name && p.status !== 'no convocado'}
                           onDragStart={(e) => handleDragStart(e, p.idx)}
+                          onDragEnd={() => { nativeDragRef.current = false; setDraggingMapIdx(null); }}
                           onClick={() => {
                             if (dragMovedRefGlobal.current) return;
                             if (!p.name) return;
@@ -7215,7 +7221,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   }}
                                   draggable={!isNoConvocado}
                                   onDragStart={(e) => handleDragStart(e, p.idx)}
-                                  onDragEnd={() => setDraggingMapIdx(null)}
+                                  onDragEnd={() => { nativeDragRef.current = false; setDraggingMapIdx(null); }}
                                   onMouseDown={(e) => {
                                     e.stopPropagation();
                                     dragMovedRefGlobal.current = false;
@@ -7352,6 +7358,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   }}
                                   draggable={!!p.name && !isNo}
                                   onDragStart={(e) => handleDragStart(e, idx)}
+                                  onDragEnd={() => { nativeDragRef.current = false; setDraggingMapIdx(null); }}
                                   onMouseDown={(e) => {
                                     if (!p.name || isNo) return;
                                     e.stopPropagation();
@@ -7446,7 +7453,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 <div
                                   key={'free_' + n}
                                   draggable
-                                  onDragStart={(e) => { e.dataTransfer.setData('text/plain', 'free:' + n); e.dataTransfer.effectAllowed = 'move'; }}
+                                  onDragStart={(e) => { nativeDragRef.current = true; e.dataTransfer.setData('text/plain', 'free:' + n); e.dataTransfer.effectAllowed = 'move'; }}
+                                  onDragEnd={() => { nativeDragRef.current = false; }}
                                   onClick={() => {
                                     const titCount = players.filter(q => q.status === 'titular').length;
                                     setPlayers(prev => {
