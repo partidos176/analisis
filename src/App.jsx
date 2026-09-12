@@ -4957,12 +4957,17 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                 </div>
               </div>
                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
-                       <button
-                        onClick={() => {
-                          if (logAction('OFF PROPIO')) {
-                            setOffNeutroCount(offNeutroCount + 1);
-                          }
-                        }}
+                        <button
+                         onClick={() => {
+                           if (offNeutroCount >= onNeutroCount) {
+                             setIgualarAviso(true);
+                             setTimeout(() => setIgualarAviso(false), 2500);
+                             return;
+                           }
+                           if (logAction('OFF PROPIO')) {
+                             setOffNeutroCount(offNeutroCount + 1);
+                           }
+                         }}
                         style={{
                           display: 'flex',
                           flexDirection: 'column',
@@ -5000,6 +5005,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </button>
                       <button
                         onClick={() => {
+                          if (offRivalCount >= onRivalCount) {
+                            setIgualarAviso(true);
+                            setTimeout(() => setIgualarAviso(false), 2500);
+                            return;
+                          }
                           if (logAction('OFF RIVAL')) {
                             setFromRival(true);
                             setOffRivalCount(offRivalCount + 1);
