@@ -6817,6 +6817,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           }
                         }
                         alert(`CADETE eliminado de ${n} partido(s)`);
+                        setPlayers(prev => prev.filter(p => !p || p.name !== 'CADETE'));
                       }}
                       title="Eliminar CADETE de todos los partidos (temporal)"
                       style={{
