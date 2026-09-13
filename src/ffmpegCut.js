@@ -90,20 +90,16 @@ export async function cutVideoSingle(file, timeSecs, durationSecs, outputName, o
   const dur = Number.isFinite(durationSecs) ? durationSecs : 5;
   const logs = [];
   ffmpeg.on('log', ({ message }) => logs.push(message));
-  const seekArgs = ['-i', inputName, '-ss', String(startSecs), '-t', String(dur)];
+  const seekArgs = ['-ss', String(startSecs), '-i', inputName, '-t', String(dur)];
   const commonEnd = ['-movflags', '+faststart', '-y', outputNameClean];
   try {
-    await ffmpeg.exec([...seekArgs, '-c:v', 'copy', '-c:a', 'copy', ...commonEnd]);
+    await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-c:a', 'aac', ...commonEnd]);
   } catch (e1) {
     try {
-      await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-c:a', 'aac', ...commonEnd]);
-    } catch (e2) {
-      try {
-        await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', ...commonEnd, '-an']);
-      } catch (e3) {
-        const tail = logs.slice(-8).join(' || ');
-        throw new Error('ffmpeg falló (time=' + timeSecs + ', start=' + startSecs + 's, dur=' + dur + 's). ffmpeg: ' + (tail || e3.message || e3));
-      }
+      await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', ...commonEnd, '-an']);
+    } catch (e3) {
+      const tail = logs.slice(-8).join(' || ');
+      throw new Error('ffmpeg falló (time=' + timeSecs + ', start=' + startSecs + 's, dur=' + dur + 's). ffmpeg: ' + (tail || e3.message || e3));
     }
   }
   const data = await ffmpeg.readFile(outputNameClean);
@@ -119,16 +115,12 @@ async function _runSingleCut(ffmpeg, inputName, corte, index) {
   const startSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
   const duracion = corte.duracion ? Math.max(1, parseInt(corte.duracion, 10)) : 5;
   const outName = `corte_${index}.mp4`;
-  const seekArgs = ['-i', inputName, '-ss', String(startSecs), '-t', String(duracion)];
+  const seekArgs = ['-ss', String(startSecs), '-i', inputName, '-t', String(duracion)];
   const commonEnd = ['-movflags', '+faststart', '-y', outName];
   try {
-    await ffmpeg.exec([...seekArgs, '-c:v', 'copy', '-c:a', 'copy', ...commonEnd]);
+    await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-c:a', 'aac', ...commonEnd]);
   } catch (e1) {
-    try {
-      await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', '-c:a', 'aac', ...commonEnd]);
-    } catch (e2) {
-      await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', ...commonEnd, '-an']);
-    }
+    await ffmpeg.exec([...seekArgs, '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', ...commonEnd, '-an']);
   }
   const data = await ffmpeg.readFile(outName);
   await ffmpeg.deleteFile(outName);
