@@ -6386,6 +6386,15 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     return null;
                   })()}
                   {/* TODOS LOS GOLES */}
+                  <button
+                    onClick={() => {
+                      setGolesList(prev => [{ name: '', tipo: 'P. META', name2: '', accion: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }, ...prev]);
+                      setGolCount(prev => prev + 1);
+                    }}
+                    style={{ background: '#16a34a', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.4rem 1rem', borderRadius: 'var(--radius-full)', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', border: 'none', alignSelf: 'center' }}
+                  >
+                    + AÑADIR GOL
+                  </button>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {golesList.length === 0 && (
                       <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin goles</span>
@@ -6503,6 +6512,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               });
                             }
                             setGolesList(prev => prev.filter((_, idx) => idx !== i));
+                            setGolCount(prev => Math.max(0, prev - 1));
                           }}
                           style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
                         >X</button>
