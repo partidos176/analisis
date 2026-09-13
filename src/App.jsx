@@ -2739,7 +2739,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     {crucePropiasFinalizaciones.map(f => (
                                       <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
                                     ))}
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', background: '#f97316' }}>{''}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem' }}>{''}</td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -2777,7 +2777,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     {cruceRivalFinalizaciones.map(f => (
                                       <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
                                     ))}
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', background: '#f97316' }}>{''}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem' }}>{''}</td>
                                   </tr>
                                 </tbody>
                               </table>
