@@ -2273,9 +2273,9 @@ export default function App() {
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
                       const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                      gl.forEach(g => { if (g && g.name) addGoal(g.name, g.tipo); });
+                      gl.forEach(g => { if (g) addGoal(g.name || 'SIN GOLEADOR', g.tipo); });
                     });
-                    golesList.forEach(g => { if (g && g.name) addGoal(g.name, g.tipo); });
+                    golesList.forEach(g => { if (g) addGoal(g.name || 'SIN GOLEADOR', g.tipo); });
                     const filas = Object.entries(stats).sort((a, b) => b[1].total - a[1].total);
                     const asistStats = {};
                     const addAsist = (name2) => {
@@ -2303,7 +2303,7 @@ export default function App() {
                     ];
                     const contarGoles = (gl) => {
                       gl.forEach(g => {
-                        if (!g || !g.name) return;
+                        if (!g) return;
                         totalGoles += 1;
                         const min = g.minuto || 0;
                         const p = periodos.find(p => min >= p.desde && min <= p.hasta) || periodos[periodos.length - 1];
@@ -2364,7 +2364,7 @@ export default function App() {
                     const contarJornada = (gl, md) => {
                       const jornada = Number(md);
                       if (!gl || !jornada) return;
-                      const n = gl.filter(g => g && g.name).length;
+                      const n = gl.filter(g => g).length;
                       golesPorJornada[jornada] = (golesPorJornada[jornada] || 0) + n;
                     };
                     matches.forEach(m => {
