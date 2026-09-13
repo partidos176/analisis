@@ -411,6 +411,9 @@ export default function App() {
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
+  const [editingTimer, setEditingTimer] = useState(false);
+  const [timerEditMin, setTimerEditMin] = useState('');
+  const [timerEditSec, setTimerEditSec] = useState('');
   const [posesionMatchIds, setPosesionMatchIds] = useState([]);
   const [posesionDropdownOpen, setPosesionDropdownOpen] = useState(false);
   const [hiddenLines, setHiddenLines] = useState({});
@@ -3749,9 +3752,70 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
               )}
               {activeTab === 'acciones' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.8rem', color: '#38bdf8', background: 'var(--bg-secondary)', padding: '0.5rem 1.2rem', borderRadius: 'var(--radius-full)', textAlign: 'center' }}>
-                    {formatTime(timerSeconds)}
-                  </span>
+                  {editingTimer ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', background: 'var(--bg-secondary)', padding: '0.5rem 1.2rem', borderRadius: 'var(--radius-full)' }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="120"
+                        value={timerEditMin}
+                        onChange={(e) => setTimerEditMin(e.target.value)}
+                        placeholder="0"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const m = Math.max(0, parseInt(timerEditMin) || 0);
+                            const s = Math.max(0, Math.min(59, parseInt(timerEditSec) || 0));
+                            setTimerSeconds(m * 60 + s);
+                            setEditingTimer(false);
+                          } else if (e.key === 'Escape') {
+                            setEditingTimer(false);
+                          }
+                        }}
+                        style={{ width: '40px', background: 'var(--bg-primary)', border: '1px solid #38bdf8', borderRadius: '6px', color: '#38bdf8', fontWeight: 900, fontFamily: 'var(--font-mono)', fontSize: '1.4rem', textAlign: 'center', padding: '0.2rem' }}
+                        className="no-spinner"
+                      />
+                      <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.4rem', fontFamily: 'var(--font-mono)' }}>:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={timerEditSec}
+                        onChange={(e) => setTimerEditSec(e.target.value)}
+                        placeholder="0"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const m = Math.max(0, parseInt(timerEditMin) || 0);
+                            const s = Math.max(0, Math.min(59, parseInt(timerEditSec) || 0));
+                            setTimerSeconds(m * 60 + s);
+                            setEditingTimer(false);
+                          } else if (e.key === 'Escape') {
+                            setEditingTimer(false);
+                          }
+                        }}
+                        onBlur={() => {
+                          const m = Math.max(0, parseInt(timerEditMin) || 0);
+                          const s = Math.max(0, Math.min(59, parseInt(timerEditSec) || 0));
+                          setTimerSeconds(m * 60 + s);
+                          setEditingTimer(false);
+                        }}
+                        style={{ width: '40px', background: 'var(--bg-primary)', border: '1px solid #38bdf8', borderRadius: '6px', color: '#38bdf8', fontWeight: 900, fontFamily: 'var(--font-mono)', fontSize: '1.4rem', textAlign: 'center', padding: '0.2rem' }}
+                        className="no-spinner"
+                      />
+                    </div>
+                  ) : (
+                    <span
+                      onClick={() => {
+                        setTimerEditMin(String(Math.floor(timerSeconds / 60)));
+                        setTimerEditSec(String(timerSeconds % 60));
+                        setEditingTimer(true);
+                      }}
+                      style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.8rem', color: '#38bdf8', background: 'var(--bg-secondary)', padding: '0.5rem 1.2rem', borderRadius: 'var(--radius-full)', textAlign: 'center', cursor: 'pointer' }}
+                      title="Clic para editar el tiempo manualmente"
+                    >
+                      {formatTime(timerSeconds)}
+                    </span>
+                  )}
                   <button
                     onClick={() => setTimerRunning(prev => !prev)}
                     style={{
