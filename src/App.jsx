@@ -2311,9 +2311,11 @@ export default function App() {
                       });
                     };
                     const accionStats = {};
+                    let pMetaCount = 0;
                     const contarAccion = (gl) => {
                       gl.forEach(g => {
                         if (!g) return;
+                        if (g.tipo === 'P. META') { pMetaCount += 1; return; }
                         const acc = g.accion || 'SIN ACCIÓN';
                         accionStats[acc] = (accionStats[acc] || 0) + 1;
                       });
@@ -2540,9 +2542,15 @@ export default function App() {
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v}</td>
                                   </tr>
                                 ))}
+                                {pMetaCount > 0 && (
+                                  <tr>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#f97316', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{pMetaCount}</td>
+                                  </tr>
+                                )}
                                 <tr>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccion.reduce((s, [, v]) => s + v, 0)}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccion.reduce((s, [, v]) => s + v, 0) + pMetaCount}</td>
                                 </tr>
                               </tbody>
                             </table>
