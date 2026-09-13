@@ -2544,7 +2544,7 @@ export default function App() {
                                 ))}
                                 {pMetaCount > 0 && (
                                   <tr>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#f97316', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META</td>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{pMetaCount}</td>
                                   </tr>
                                 )}
