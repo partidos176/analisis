@@ -2310,12 +2310,23 @@ export default function App() {
                         p.goles = (p.goles || 0) + 1;
                       });
                     };
+                    const accionStats = {};
+                    const contarAccion = (gl) => {
+                      gl.forEach(g => {
+                        if (!g) return;
+                        const acc = g.accion || 'SIN ACCIÓN';
+                        accionStats[acc] = (accionStats[acc] || 0) + 1;
+                      });
+                    };
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
                       const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                       contarGoles(gl);
+                      contarAccion(gl);
                     });
                     contarGoles(golesList);
+                    contarAccion(golesList);
+                    const filasAccion = Object.entries(accionStats).sort((a, b) => b[1] - a[1]);
                     const chartData = periodos.map(p => ({
                       name: p.name,
                       value: p.goles || 0,
@@ -2451,7 +2462,7 @@ export default function App() {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0', alignItems: 'center' }}>
                         <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1, margin: 0, padding: 0 }}>GOLES A FAVOR</span>
-                        <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'flex-start', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
                           <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                             <thead>
@@ -2513,6 +2524,30 @@ export default function App() {
                             </PieChart>
                           </div>
                         )}
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
+                          {filasAccion.length > 0 && (
+                            <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                              <thead>
+                                <tr>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>PROCEDENCIA</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase' }}>GOLES</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filasAccion.map(([n, v]) => (
+                                  <tr key={n}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v}</td>
+                                  </tr>
+                                ))}
+                                <tr>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccion.reduce((s, [, v]) => s + v, 0)}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1rem 2rem', marginTop: '-13rem' }}>
                           <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES EN CONTRA</span>
