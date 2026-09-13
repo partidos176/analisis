@@ -44,7 +44,7 @@ const jugadoresData = {
   EMILIANO: { foto: emilianoImg, pos1: 'PORTERO' },
   HECTOR: { foto: hectorImg, pos1: 'PORTERO' },
   JONAS: { foto: jonasImg, pos1: 'DELANTERO' },
-  JUANDA: { foto: juandaImg },
+  JUANDA: { foto: juandaImg, pos1: 'EXTREMO IZQUIERDO' },
   KEVIN: { foto: kevinImg, pos1: 'CENTRAL' },
   LUCAS: { foto: lucasImg, pos1: 'CENTRAL' },
   'L. RAMIREZ': { foto: lramirezImg, pos1: 'PORTERO' },
@@ -58,7 +58,7 @@ const jugadoresData = {
   LOREN: { foto: lorenImg, pos1: 'MEDIO CENTRO' },
   ORIOL: { foto: oriolImg, pos1: 'MEDIO CENTRO' },
   BONILLA: { pos1: 'INTERIOR IZQUIERDO' },
-  SAMUEL: { foto: samuelImg },
+  SAMUEL: { foto: samuelImg, pos1: 'EXTREMO IZQUIERDO' },
 };
 
 const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'JUAN ': 'JUANDA' };
@@ -7621,6 +7621,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : isNo ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor' || (!isTit && !isSup && !isNo)) ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
                                  </div>
+                                  {jugadoresData[p.name]?.pos1 && (
+                                    <div style={{ textAlign: 'center', fontSize: '0.5rem', color: '#ffffff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em', marginTop: 2, textShadow: '0 1px 3px rgba(0,0,0,0.7)', lineHeight: 1 }}>{jugadoresData[p.name].pos1}</div>
+                                  )}
                                   {menuAbierto && (
                                     <>
                                       <div className="no-export" style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setMenuJugadorIdx(null)} />
