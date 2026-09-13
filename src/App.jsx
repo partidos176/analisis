@@ -6055,6 +6055,16 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   });
                                 };
                                 doCut().then(blob => {
+                                  console.log('[Corte] blob recibido:', blob.size, 'bytes, tipo:', blob.type);
+                                  const testUrl = URL.createObjectURL(blob);
+                                  const testVid = document.createElement('video');
+                                  testVid.preload = 'auto';
+                                  testVid.src = testUrl;
+                                  testVid.onloadedmetadata = () => {
+                                    console.log('[Corte] duración:', testVid.duration, 's, ancho:', testVid.videoWidth, 'alto:', testVid.videoHeight);
+                                    URL.revokeObjectURL(testUrl);
+                                  };
+                                  testVid.onerror = () => { console.error('[Corte] Error al cargar vídeo para diagnóstico'); URL.revokeObjectURL(testUrl); };
                                   if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url);
                                   const url = URL.createObjectURL(blob);
                                   setPreviewAccion({ url: url, name: videoName, key: actionKey, blob: blob });

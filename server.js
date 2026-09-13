@@ -192,8 +192,11 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
       const outName = (corte.name || 'corte').replace(/[\\/:*?"<>|]/g, '_');
       const outPath = path.join(outDir, `${outName}.mp4`);
       const args = ['-ss', String(startSecs), '-i', inputPath, '-t', String(duracion), '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-c:a', 'aac', '-movflags', '+faststart', '-y', outPath];
+      console.log(`[Corte] ffmpeg: ${ffmpegPath} ${args.join(' ')}`);
       try {
-        await execFileAsync(ffmpegPath, args, { timeout: 300000 });
+        const result = await execFileAsync(ffmpegPath, args, { timeout: 300000 });
+        const outSize = fs.statSync(outPath).size;
+        console.log(`[Corte] OK: ${outName}.mp4 → ${outSize} bytes`);
         results.push({ ok: true, name: outName, path: outPath });
       } catch (err) {
         console.error('ffmpeg error:', err.message);
