@@ -90,7 +90,7 @@ export async function cutVideoSingle(file, timeSecs, durationSecs, outputName, o
   const dur = Number.isFinite(durationSecs) ? durationSecs : 5;
   const logs = [];
   ffmpeg.on('log', ({ message }) => logs.push(message));
-  const seekArgs = ['-ss', String(startSecs), '-t', String(dur), '-i', inputName];
+  const seekArgs = ['-i', inputName, '-ss', String(startSecs), '-t', String(dur)];
   const commonEnd = ['-movflags', '+faststart', '-y', outputNameClean];
   try {
     await ffmpeg.exec([...seekArgs, '-c:v', 'copy', '-c:a', 'copy', ...commonEnd]);
@@ -119,7 +119,7 @@ async function _runSingleCut(ffmpeg, inputName, corte, index) {
   const startSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
   const duracion = corte.duracion ? Math.max(1, parseInt(corte.duracion, 10)) : 5;
   const outName = `corte_${index}.mp4`;
-  const seekArgs = ['-ss', String(startSecs), '-t', String(duracion), '-i', inputName];
+  const seekArgs = ['-i', inputName, '-ss', String(startSecs), '-t', String(duracion)];
   const commonEnd = ['-movflags', '+faststart', '-y', outName];
   try {
     await ffmpeg.exec([...seekArgs, '-c:v', 'copy', '-c:a', 'copy', ...commonEnd]);
