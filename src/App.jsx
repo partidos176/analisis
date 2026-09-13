@@ -953,9 +953,9 @@ export default function App() {
       let rawPlayers = match.players ? normalizeArray(match.players) : defaultPlayersList();
       // normaliza nombres legacy (JUAN->JUANDA), trim, upper
       rawPlayers = rawPlayers.map(p => p && p.name ? { ...p, name: normalizePlayerName(p.name) } : p);
-      // rellena a 23 y dedup
-      while (rawPlayers.length < 23) rawPlayers.push({ name: '', status: '-' });
-      rawPlayers = dedupePlayers(rawPlayers).slice(0, 23);
+      // rellena a 24 y dedup
+      while (rawPlayers.length < 24) rawPlayers.push({ name: '', status: '-' });
+      rawPlayers = dedupePlayers(rawPlayers).slice(0, 24);
       setPlayers(rawPlayers);
     }
     setTimerSeconds(match.timerSeconds ?? 0);
