@@ -6499,7 +6499,35 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <option value="SIN ASISTENCIA">SIN ASISTENCIA</option>
                           </select>
                         </div>
-                        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', minWidth: '48px', textAlign: 'center' }}>{g.minuto}'</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: '36px' }}>
+                          <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>MIN.</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={g.minuto != null ? g.minuto : ''}
+                            onChange={(e) => {
+                              setGolesList(prev => {
+                                const updated = [...prev];
+                                updated[i] = { ...updated[i], minuto: Number(e.target.value) };
+                                return updated;
+                              });
+                            }}
+                            placeholder="-"
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 900,
+                              fontSize: '0.9rem',
+                              padding: '0.4rem 0.3rem',
+                              textAlign: 'center',
+                              width: '40px',
+                              MozAppearance: 'textfield'
+                            }}
+                            className="no-spinner"
+                          />
+                        </div>
                         <button
                           onClick={() => {
                             if (g.team === 'away') {
