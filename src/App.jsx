@@ -2704,6 +2704,18 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     });
                     const cruceRivalAcciones = cruceAcciones.filter(a => a.startsWith('RIVAL '));
                     const crucePropiasAcciones = cruceAcciones.filter(a => !a.startsWith('RIVAL '));
+                    const crucePropiasTotal = {};
+                    const cruceRivalTotal = {};
+                    crucePropiasAcciones.forEach(a => {
+                      Object.keys(cruce[a] || {}).forEach(f => {
+                        crucePropiasTotal[f] = (crucePropiasTotal[f] || 0) + cruce[a][f];
+                      });
+                    });
+                    cruceRivalAcciones.forEach(a => {
+                      Object.keys(cruce[a] || {}).forEach(f => {
+                        cruceRivalTotal[f] = (cruceRivalTotal[f] || 0) + cruce[a][f];
+                      });
+                    });
                     const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && crucePropiasAcciones.some(a => (cruce[a][f] || 0) > 0));
                     const cruceRivalFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL' && f !== 'PENAL + GOL' && cruceRivalAcciones.some(a => (cruce[a][f] || 0) > 0));
                     return (
@@ -2737,7 +2749,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   <tr>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {crucePropiasFinalizaciones.map(f => (
-                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasTotal[f] || 0}</td>
                                     ))}
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem' }}>{''}</td>
                                   </tr>
@@ -2775,7 +2787,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                   <tr>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {cruceRivalFinalizaciones.map(f => (
-                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceTotal[f] || 0}</td>
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalTotal[f] || 0}</td>
                                     ))}
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem' }}>{''}</td>
                                   </tr>
