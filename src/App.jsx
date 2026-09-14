@@ -2416,6 +2416,7 @@ export default function App() {
                     ];
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1, margin: 0, padding: 0 }}>GOLES A FAVOR</span>
                         <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                           <div style={{ flex: 1, minWidth: '320px', overflowX: 'auto' }}>
                             <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>GOLES</span>
@@ -2463,8 +2464,7 @@ export default function App() {
                           </div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0', alignItems: 'center' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1, margin: 0, padding: 0 }}>GOLES A FAVOR</span>
-                        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', justifyContent: 'center', flexWrap: 'wrap' }}>
+                         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
                           <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                             <thead>
