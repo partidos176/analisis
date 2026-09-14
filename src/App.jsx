@@ -431,6 +431,7 @@ export default function App() {
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const fichaJugadorRef = useRef(null);
   const alineacionRef = useRef(null);
+  const totalJugadoRef = useRef(null);
   const [videoFile, setVideoFile] = useState(null);
   const [videoFileName, setVideoFileName] = useState('');
   const [videoUploaded, setVideoUploaded] = useState(false);
@@ -3367,7 +3368,37 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     });
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <div style={{ overflowX: 'auto' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <button
+                            onClick={async () => {
+                              if (!totalJugadoRef.current) return;
+                              try {
+                                const canvas = await html2canvas(totalJugadoRef.current, { backgroundColor: '#0b0f19', scale: 2, useCORS: true });
+                                const link = document.createElement('a');
+                                link.download = `total_jugado_J${currentMatch?.matchday || '?'}_${currentMatch?.homeTeam || ''}_vs_${currentMatch?.awayTeam || ''}.jpg`;
+                                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                                link.click();
+                              } catch (err) {
+                                console.error('Error exportando imagen total jugado:', err);
+                              }
+                            }}
+                            title="Descargar tabla como imagen JPG"
+                            style={{
+                              background: '#22c55e',
+                              color: '#000',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '0.3rem 0.6rem',
+                              cursor: 'pointer',
+                              fontWeight: 700,
+                              fontSize: '1.1rem',
+                              textTransform: 'uppercase'
+                            }}
+                          >
+                            ↓
+                          </button>
+                        </div>
+                        <div ref={totalJugadoRef} style={{ overflowX: 'auto' }}>
                           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                             <thead>
                               <tr>
