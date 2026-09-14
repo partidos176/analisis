@@ -6956,9 +6956,11 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <tr>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>
-                              {cols.map(f => (
-                                <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{f === 'FINAL+BLOCA' ? <><div>FINAL</div><div>+</div><div>BLOCA</div></> : f}</th>
-                              ))}
+                              {cols.map(f => {
+                                const renderVertical = (left, right) => <><div>{left}</div><div>+</div><div>{right}</div></>;
+                                const vertical = f.includes('+') ? f.replace(/\s*\+\s*/, '+').split('+') : null;
+                                return <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{vertical ? renderVertical(vertical[0].trim(), vertical[1].trim()) : f}</th>;
+                              })}
                             </tr>
                           </thead>
                           <tbody>
