@@ -3527,9 +3527,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <table style={{ width: 'auto', margin: '0 auto', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                                 <thead>
                                   <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>JUGADOR</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '9rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>ROL</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '7rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>MINUTOS</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.0rem' }}>JUGADOR</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '9rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.0rem' }}>ROL</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '7rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.0rem' }}>MINUTOS</th>
                                   </tr>
                                 </thead>
                                 <tbody>
