@@ -242,6 +242,31 @@ app.post('/api/cortar', upload.single('video'), async (req, res) => {
   }
 });
 
+app.post('/api/trim-webm', upload.single('video'), async (req, res) => {
+  let dir = null;
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No se recibió el vídeo' });
+    dir = req._uploadDir || tmpDir();
+    const inputPath = path.join(dir, 'input.webm');
+    fs.copyFileSync(req.file.path, inputPath);
+    const trimSecs = parseFloat(req.body.trimStart) || 0.2;
+    const outPath = path.join(dir, 'output.webm');
+    const args = ['-ss', String(trimSecs), '-i', inputPath, '-c', 'copy', '-avoid_negative_ts', 'make_zero', '-y', outPath];
+    console.log(`[Trim] ffmpeg: ${ffmpegPath} ${args.join(' ')}`);
+    await execFileAsync(ffmpegPath, args, { timeout: 120000 });
+    const outSize = fs.statSync(outPath).size;
+    console.log(`[Trim] OK: ${outSize} bytes`);
+    res.setHeader('Content-Type', 'video/webm');
+    res.setHeader('Content-Disposition', 'inline; filename="montaje.webm"');
+    fs.createReadStream(outPath).pipe(res);
+    res.on('finish', () => { setTimeout(() => rmrf(dir), 2000); });
+  } catch (err) {
+    console.error('[Trim] Error:', err.message);
+    res.status(500).json({ error: 'Error al recortar: ' + err.message });
+    if (dir) rmrf(dir);
+  }
+});
+
 const tmpBase = path.join(__dirname, '.tmp-cortes');
 try { fs.rmSync(tmpBase, { recursive: true, force: true }); } catch {}
 fs.mkdirSync(tmpBase, { recursive: true });
