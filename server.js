@@ -251,7 +251,7 @@ app.post('/api/trim-webm', upload.single('video'), async (req, res) => {
     fs.copyFileSync(req.file.path, inputPath);
     const trimSecs = parseFloat(req.body.trimStart) || 0.2;
     const outPath = path.join(dir, 'output.webm');
-    const args = ['-ss', String(trimSecs), '-i', inputPath, '-c', 'copy', '-avoid_negative_ts', 'make_zero', '-y', outPath];
+    const args = ['-i', inputPath, '-ss', String(trimSecs), '-c:v', 'libvpx-vp9', '-crf', '18', '-b:v', '0', '-an', '-y', outPath];
     console.log(`[Trim] ffmpeg: ${ffmpegPath} ${args.join(' ')}`);
     await execFileAsync(ffmpegPath, args, { timeout: 120000 });
     const outSize = fs.statSync(outPath).size;
