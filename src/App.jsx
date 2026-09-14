@@ -5896,8 +5896,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             const finSs = String(Math.max(0, finSecs) % 60).padStart(2, '0');
                             const actionIdx = actionLog.findIndex(a => a === e);
                             let finalizacion = null;
+                            const allFinalizaciones = [];
                             for (let fi = actionIdx - 1; fi >= 0; fi--) {
-                              if (actionLog[fi].type === 'finalizacion') { finalizacion = actionLog[fi]; break; }
+                              if (actionLog[fi].type === 'finalizacion') { if (!finalizacion) finalizacion = actionLog[fi]; allFinalizaciones.push(actionLog[fi]); }
                               if (actionLog[fi].type === 'accion') break;
                             }
                             return (
@@ -5916,7 +5917,41 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', cursor: 'pointer', gap: '0.5rem' }}>
                               <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', minWidth: '20px' }}>{idx + 1}</span>
                               <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#ffffff', fontWeight: 600, fontSize: '0.8rem', flex: 1 }}>{filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : e.name}</span>
-                              {finalizacion && filtroAccion !== '__varios__' && <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>({finalizacion.name})</span>}
+                              {finalizacion && filtroAccion !== '__varios__' && (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', flexWrap: 'wrap' }}>
+                                  {allFinalizaciones.reverse().map((fi, fiIdx) => (
+                                    <span key={fiIdx} style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>({fi.name})</span>
+                                  ))}
+                                  <select
+                                    value=""
+                                    onChange={(ev) => {
+                                      const newFin = ev.target.value;
+                                      if (!newFin) return;
+                                      const insertIdx = actionIdx;
+                                      const newEntry = { name: newFin, time: e.time, type: 'finalizacion' };
+                                      const newLog = [...actionLog.slice(0, insertIdx), newEntry, ...actionLog.slice(insertIdx)];
+                                      setActionLog(newLog);
+                                      recomputeCountersFromLog(newLog);
+                                    }}
+                                    onClick={(ev) => ev.stopPropagation()}
+                                    style={{ background: '#22c55e', color: '#000', border: 'none', borderRadius: '4px', width: '20px', height: '18px', cursor: 'pointer', fontWeight: 900, fontSize: '0.7rem', padding: 0, lineHeight: '18px', textAlign: 'center' }}
+                                  >
+                                    <option value="">+</option>
+                                    <option value="OCASION">OCASION</option>
+                                    <option value="FUERA">FUERA</option>
+                                    <option value="DESPEJE DEFENSA">DESPEJE DEFENSA</option>
+                                    <option value="DESPEJE PORTERO">DESPEJE PORTERO</option>
+                                    <option value="BLOCAJE">BLOCAJE</option>
+                                    <option value="SAQUE DE ESQUINA">SAQUE DE ESQUINA</option>
+                                    <option value="PENAL + GOL">PENAL + GOL</option>
+                                    <option value="PENAL + FUERA">PENAL + FUERA</option>
+                                    <option value="PENAL + GOL RIVAL">PENAL + GOL RIVAL</option>
+                                    <option value="GOL">GOL</option>
+                                    <option value="GOL RIVAL">GOL RIVAL</option>
+                                    <option value="INFRACCION">INFRACCION</option>
+                                  </select>
+                                </span>
+                              )}
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                                 {filtroAccion !== '__varios__' && <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase' }}>inicio</span>}
                                 <button onClick={(ev) => {
