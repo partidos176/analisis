@@ -2419,10 +2419,10 @@ export default function App() {
                         <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                           <div style={{ flex: 1, minWidth: '320px', overflowX: 'auto' }}>
                             <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>GOLES</span>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                            <table style={{ width: 'auto', margin: '0 auto', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                               <thead>
                                 <tr>
-<th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
+<th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
                                   <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
                                   <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PIE</th>
                                   <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>CABEZA</th>
@@ -3506,7 +3506,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     const rolColor = rol === 'titular' ? '#39ff14' : rol === 'suplente' ? '#eab308' : rol === 'lesion' ? '#38bdf8' : rol === 'division honor' ? '#f472b6' : rol === 'tenerife c' ? '#06b6d4' : '#ef4444';
                                     return (
                                       <tr key={n}>
-                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
                                         <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: rolColor, fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem' }}>{rol}</td>
                                         <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{m > 0 ? formatTime(m) : '-'}</td>
                                       </tr>
