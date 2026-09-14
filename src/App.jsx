@@ -2433,10 +2433,10 @@ export default function App() {
                                 {filas.map(([n, s]) => (
                                   <tr key={n}>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.pie}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.cabeza}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.penal}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total || '-'}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.pie || '-'}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.cabeza || '-'}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.penal || '-'}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -2477,12 +2477,12 @@ export default function App() {
                               {tramos.map((t) => (
                                 <tr key={t.name}>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value || '-'}</td>
                                 </tr>
                               ))}
                               <tr>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#39ff14', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramos.reduce((s, t) => s + t.value, 0)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramos.reduce((s, t) => s + t.value, 0) || '-'}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -2539,7 +2539,7 @@ export default function App() {
                                 {filasAccion.map(([n, v]) => (
                                   <tr key={n}>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v || '-'}</td>
                                   </tr>
                                 ))}
                                 {pMetaCount > 0 && (
@@ -2550,7 +2550,7 @@ export default function App() {
                                 )}
                                 <tr>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#39ff14', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccion.reduce((s, [, v]) => s + v, 0) + pMetaCount}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccion.reduce((s, [, v]) => s + v, 0) + pMetaCount || '-'}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -2572,12 +2572,12 @@ export default function App() {
                               {tramosRival.map((t) => (
                                 <tr key={t.name}>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value || '-'}</td>
                                 </tr>
                               ))}
                               <tr>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramosRival.reduce((s, t) => s + t.value, 0)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramosRival.reduce((s, t) => s + t.value, 0) || '-'}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -2743,13 +2743,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                       {crucePropiasFinalizaciones.map(f => (
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                       ))}
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
                                     </tr>
                                   ))}
                                   <tr>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {crucePropiasFinalizaciones.map(f => (
-                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasTotal[f] || 0}</td>
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasTotal[f] || '-'}</td>
                                     ))}
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem' }}>{''}</td>
                                   </tr>
@@ -2781,13 +2781,13 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                       {cruceRivalFinalizaciones.map(f => (
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                       ))}
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || 0}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
                                     </tr>
                                   ))}
                                   <tr>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {cruceRivalFinalizaciones.map(f => (
-                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalTotal[f] || 0}</td>
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalTotal[f] || '-'}</td>
                                     ))}
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.5rem' }}>{''}</td>
                                   </tr>
@@ -6971,7 +6971,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             {filas.filter(a => !a.includes('RIVAL')).map(a => (
                               <tr key={a}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>
                                 {cols.map(f => (
                                   <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
                                 ))}
@@ -6980,7 +6980,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             {filas.some(a => !a.includes('RIVAL')) && (
                               <tr>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL PROPIO</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>
                                 {cols.map(f => (
                                   <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
                                 ))}
@@ -6989,7 +6989,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             {filas.filter(a => a.includes('RIVAL')).map(a => (
                               <tr key={a}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ef4444', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>
                                 {cols.map(f => (
                                   <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
                                 ))}
@@ -6998,7 +6998,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             {filas.some(a => a.includes('RIVAL')) && (
                               <tr>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL RIVAL</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>
                                 {cols.map(f => (
                                   <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
                                 ))}
