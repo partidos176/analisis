@@ -2295,11 +2295,11 @@ export default function App() {
                     let totalGoles = 0;
                     const periodos = [
                       { name: 'MIN. 0-15', desde: 0, hasta: 15 },
-                      { name: 'MIN 16-30', desde: 16, hasta: 30 },
-                      { name: 'MIN 31-45', desde: 31, hasta: 45 },
-                      { name: 'MIN 46-60', desde: 46, hasta: 60 },
-                      { name: 'MIN 61-75', desde: 61, hasta: 75 },
-                      { name: 'MIN 76-90', desde: 76, hasta: 90 }
+                      { name: 'MIN. 16-30', desde: 16, hasta: 30 },
+                      { name: 'MIN. 31-45', desde: 31, hasta: 45 },
+                      { name: 'MIN. 46-60', desde: 46, hasta: 60 },
+                      { name: 'MIN. 61-75', desde: 61, hasta: 75 },
+                      { name: 'MIN. 76-90', desde: 76, hasta: 90 }
                     ];
                     const contarGoles = (gl) => {
                       gl.forEach(g => {
