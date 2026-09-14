@@ -6925,8 +6925,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       'ON RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF RIVAL', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'
                     ];
                     const finalizaciones = [
+                      'GOL',
                       'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA',
-                      'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'GOL', 'GOL RIVAL',
+                      'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'GOL RIVAL',
                       'PENAL + FUERA', 'PENAL + GOL', 'PENAL + GOL RIVAL', 'INFRACCION'
                     ];
                     const matriz = {};
