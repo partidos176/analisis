@@ -6957,7 +6957,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>
                               {cols.map(f => (
-                                <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
+                                <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{f === 'FINAL+BLOCA' ? <><div>FINAL</div><div>+</div><div>BLOCA</div></> : f}</th>
                               ))}
                             </tr>
                           </thead>
