@@ -6970,22 +6970,42 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             </tr>
                           </thead>
                           <tbody>
-                            {filas.map(a => (
+                            {filas.filter(a => !a.includes('RIVAL')).map(a => (
                               <tr key={a}>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', color: a.includes('RIVAL') ? '#ef4444' : '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : matriz[a][f]), 0)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0)}</td>
                                 {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : (a.includes('RIVAL') ? '#ef4444' : '#ffffff'), fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
                                 ))}
                               </tr>
                             ))}
-                            <tr>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0)}</td>
-                              {cols.map(f => (
-                                <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
-                              ))}
-                            </tr>
+                            {filas.some(a => !a.includes('RIVAL')) && (
+                              <tr>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0)}</td>
+                                {cols.map(f => (
+                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                ))}
+                              </tr>
+                            )}
+                            {filas.filter(a => a.includes('RIVAL')).map(a => (
+                              <tr key={a}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', color: '#ef4444', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0)}</td>
+                                {cols.map(f => (
+                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                ))}
+                              </tr>
+                            ))}
+                            {filas.some(a => a.includes('RIVAL')) && (
+                              <tr>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0)}</td>
+                                {cols.map(f => (
+                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.25rem 0.3rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                ))}
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>
