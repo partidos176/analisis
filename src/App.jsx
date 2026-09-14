@@ -2513,7 +2513,9 @@ export default function App() {
                                       fontWeight={700}
                                       stroke="none"
                                     >
-                                      {props.name}  {props.value} ({pctTxt}%)
+                                      {props.name}{' '}
+                                      <tspan fill="#39ff14" fontSize={17} fontWeight={900}>{props.value}</tspan>
+                                      {' '}({pctTxt}%)
                                     </text>
                                   );
                                 }}
