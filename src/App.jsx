@@ -2315,7 +2315,7 @@ export default function App() {
                     const contarAccion = (gl) => {
                       gl.forEach(g => {
                         if (!g) return;
-                        if (g.tipo === 'P. META') { pMetaCount += 1; return; }
+                        if (g.tipo === 'P. META RIVAL' || g.tipo === 'P. META') { pMetaCount += 1; return; }
                         const acc = g.accion || 'SIN ACCIÓN';
                         accionStats[acc] = (accionStats[acc] || 0) + 1;
                       });
@@ -2544,7 +2544,7 @@ export default function App() {
                                 ))}
                                 {pMetaCount > 0 && (
                                   <tr>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META RIVAL</td>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{pMetaCount}</td>
                                   </tr>
                                 )}
@@ -6558,7 +6558,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   {/* TODOS LOS GOLES */}
                   <button
                     onClick={() => {
-                      setGolesList(prev => [{ name: '', tipo: 'P. META', name2: '', accion: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }, ...prev]);
+                      setGolesList(prev => [{ name: '', tipo: 'P. META RIVAL', name2: '', accion: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }, ...prev]);
                       setGolCount(prev => prev + 1);
                     }}
                     style={{ background: '#16a34a', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.4rem 1rem', borderRadius: 'var(--radius-full)', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', border: 'none', alignSelf: 'center' }}
@@ -6633,7 +6633,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <option value="PIE">PIE</option>
                             <option value="CABEZA">CABEZA</option>
                             <option value="PENAL">PENAL</option>
-                            <option value="P. META">P. META</option>
+                            <option value="P. META RIVAL">P. META RIVAL</option>
                           </select>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
