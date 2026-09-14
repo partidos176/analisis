@@ -6960,7 +6960,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 const renderVertical = (parts) => <>{parts.map((p, i) => <div key={i}>{p}</div>)}</>;
                                 let vertical = null;
                                 if (f.includes('+')) {
-                                  vertical = f.replace(/\s*\+\s*/, '+').split('+');
+                                  const parts = f.split('+');
+                                  vertical = [parts[0].trim(), '+', parts.slice(1).join('+').trim()];
                                 } else if (f.includes(' ')) {
                                   vertical = f.split(' ');
                                 }
