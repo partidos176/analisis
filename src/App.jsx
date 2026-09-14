@@ -4798,7 +4798,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL CORNER IZQUIERDA</span>
+                    <span>R. CORNER IZQUIERDA</span>
                     <span style={{
                       background: '#000000',
                       color: '#ec4899',
@@ -4835,7 +4835,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL CORNER DERECHA</span>
+                    <span>R. CORNER DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#ec4899',
