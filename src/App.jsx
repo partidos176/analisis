@@ -5844,8 +5844,38 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         <span style={{ color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : '#ffffff'), fontWeight: 700, fontSize: entry.type === 'finalizacion' ? '0.7rem' : '0.85rem', textTransform: 'uppercase' }}>
                           {entry.name}
                         </span>
-                        {entry.type !== 'finalizacion' && (
-                          <span style={{ fontFamily: 'var(--font-mono)', color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : '#38bdf8'), fontWeight: 900, fontSize: entry.type === 'finalizacion' ? '0.75rem' : '0.9rem' }}>
+                        {entry.type === 'finalizacion' ? (
+                          <select
+                            value=""
+                            onChange={(ev) => {
+                              const newFin = ev.target.value;
+                              if (!newFin) return;
+                              const reversedLog = [...actionLog].reverse();
+                              const realIdx = actionLog.length - 1 - idx;
+                              const newEntry = { name: newFin, time: entry.time, type: 'finalizacion' };
+                              const newLog = [...actionLog.slice(0, realIdx), newEntry, ...actionLog.slice(realIdx)];
+                              setActionLog(newLog);
+                              recomputeCountersFromLog(newLog);
+                            }}
+                            onClick={(ev) => ev.stopPropagation()}
+                            style={{ background: '#22c55e', color: '#000', border: 'none', borderRadius: '4px', width: '20px', height: '18px', cursor: 'pointer', fontWeight: 900, fontSize: '0.7rem', padding: 0, lineHeight: '18px', textAlign: 'center' }}
+                          >
+                            <option value="">+</option>
+                            <option value="OCASION">OCASION</option>
+                            <option value="FUERA">FUERA</option>
+                            <option value="DESPEJE DEFENSA">DESPEJE DEFENSA</option>
+                            <option value="DESPEJE PORTERO">DESPEJE PORTERO</option>
+                            <option value="BLOCAJE">BLOCAJE</option>
+                            <option value="SAQUE DE ESQUINA">SAQUE DE ESQUINA</option>
+                            <option value="PENAL + GOL">PENAL + GOL</option>
+                            <option value="PENAL + FUERA">PENAL + FUERA</option>
+                            <option value="PENAL + GOL RIVAL">PENAL + GOL RIVAL</option>
+                            <option value="GOL">GOL</option>
+                            <option value="GOL RIVAL">GOL RIVAL</option>
+                            <option value="INFRACCION">INFRACCION</option>
+                          </select>
+                        ) : (
+                          <span style={{ fontFamily: 'var(--font-mono)', color: entry.name.includes('RIVAL') ? '#ef4444' : '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>
                             {entry.time}
                           </span>
                         )}
