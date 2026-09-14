@@ -3508,9 +3508,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                     const rolColor = rol === 'titular' ? '#39ff14' : rol === 'suplente' ? '#eab308' : rol === 'lesion' ? '#38bdf8' : rol === 'division honor' ? '#f472b6' : rol === 'tenerife c' ? '#06b6d4' : '#ef4444';
                                     return (
                                       <tr key={n}>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', color: '#ffffff', fontWeight: 700 }}>{n}</td>
-                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: rolColor, fontWeight: 800, textTransform: 'uppercase', fontSize: '0.7rem' }}>{rol}</td>
-                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{m > 0 ? formatTime(m) : '-'}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', width: '12rem', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{n}</td>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', textAlign: 'center', color: rolColor, fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>{rol}</td>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.9rem' }}>{m > 0 ? formatTime(m) : '-'}</td>
                                       </tr>
                                     );
                                   })}
