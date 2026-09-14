@@ -2273,9 +2273,9 @@ export default function App() {
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
                       const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                      gl.forEach(g => { if (g) addGoal(g.name || 'SIN GOLEADOR', g.tipo); });
+                      gl.forEach(g => { if (g) addGoal(g.name || 'P. META RIVAL', g.tipo); });
                     });
-                    golesList.forEach(g => { if (g) addGoal(g.name || 'SIN GOLEADOR', g.tipo); });
+                    golesList.forEach(g => { if (g) addGoal(g.name || 'P. META RIVAL', g.tipo); });
                     const filas = Object.entries(stats).sort((a, b) => b[1].total - a[1].total);
                     const asistStats = {};
                     const addAsist = (name2) => {
