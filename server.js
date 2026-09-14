@@ -247,17 +247,21 @@ app.post('/api/trim-webm', upload.single('video'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No se recibió el vídeo' });
     dir = req._uploadDir || tmpDir();
-    const inputPath = path.join(dir, 'input.webm');
-    fs.copyFileSync(req.file.path, inputPath);
+    const ext = (req.body.ext === 'mp4' || /mp4/i.test(req.file.originalname || '')) ? 'mp4' : 'webm';
+    const inputPath = path.join(dir, 'input.' + ext);
+    if (path.resolve(req.file.path) !== path.resolve(inputPath)) fs.copyFileSync(req.file.path, inputPath);
     const trimSecs = parseFloat(req.body.trimStart) || 0.2;
-    const outPath = path.join(dir, 'output.webm');
-    const args = ['-i', inputPath, '-ss', String(trimSecs), '-c:v', 'libvpx-vp9', '-crf', '18', '-b:v', '0', '-an', '-y', outPath];
+    const outPath = path.join(dir, 'output.' + ext);
+    // -g 30 = keyframe cada 1s (30fps): seeking fluido sin saltos/deformación
+    const args = ext === 'mp4'
+      ? ['-i', inputPath, '-ss', String(trimSecs), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-g', '30', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', '-y', outPath]
+      : ['-i', inputPath, '-ss', String(trimSecs), '-c:v', 'libvpx-vp9', '-crf', '28', '-b:v', '0', '-g', '30', '-deadline', 'good', '-cpu-used', '4', '-an', '-y', outPath];
     console.log(`[Trim] ffmpeg: ${ffmpegPath} ${args.join(' ')}`);
-    await execFileAsync(ffmpegPath, args, { timeout: 120000 });
+    await execFileAsync(ffmpegPath, args, { timeout: 300000 });
     const outSize = fs.statSync(outPath).size;
     console.log(`[Trim] OK: ${outSize} bytes`);
-    res.setHeader('Content-Type', 'video/webm');
-    res.setHeader('Content-Disposition', 'inline; filename="montaje.webm"');
+    res.setHeader('Content-Type', ext === 'mp4' ? 'video/mp4' : 'video/webm');
+    res.setHeader('Content-Disposition', `inline; filename="montaje.${ext}"`);
     fs.createReadStream(outPath).pipe(res);
     res.on('finish', () => { setTimeout(() => rmrf(dir), 2000); });
   } catch (err) {
