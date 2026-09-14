@@ -250,7 +250,16 @@ app.post('/api/trim-webm', upload.single('video'), async (req, res) => {
     const ext = (req.body.ext === 'mp4' || /mp4/i.test(req.file.originalname || '')) ? 'mp4' : 'webm';
     const inputPath = path.join(dir, 'input.' + ext);
     if (path.resolve(req.file.path) !== path.resolve(inputPath)) fs.copyFileSync(req.file.path, inputPath);
-    const trimSecs = parseFloat(req.body.trimStart) || 0.2;
+    // Trim inteligente: recorta solo el negro real detectado al inicio
+    // (canvas vacío/encoder). Con cap de 0.6s para no comerse fundidos reales.
+    let trimSecs = 0;
+    try {
+      const probe = await execFileAsync(ffmpegPath, ['-t', '2', '-i', inputPath, '-vf', 'blackdetect=d=0.05:pix_th=0.10', '-f', 'null', '-'], { timeout: 60000 });
+      const log = String((probe && probe.stderr) || '') + String((probe && probe.stdout) || '');
+      const m = /black_start:([0-9.]+)\s+black_end:([0-9.]+)/.exec(log);
+      if (m && parseFloat(m[1]) < 0.05) trimSecs = Math.min(parseFloat(m[2]) || 0, 0.6);
+    } catch (_) { trimSecs = 0; }
+    console.log(`[Trim] negro inicial detectado: ${trimSecs}s`);
     const outPath = path.join(dir, 'output.' + ext);
     // -g 30 = keyframe cada 1s (30fps): seeking fluido sin saltos/deformación
     const args = ext === 'mp4'
