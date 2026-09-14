@@ -6950,7 +6950,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       );
                     }
                     return (
-                      <div style={{ width: '100%' }}>
+                      <div style={{ width: '100%', marginLeft: '-1rem' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                           <thead>
                             <tr>
