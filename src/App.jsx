@@ -4502,7 +4502,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL TIRO DERECHA</span>
+                    <span>R. TIRO DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#eab308',
@@ -4687,7 +4687,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL FALTA FRONTAL</span>
+                    <span>R. FALTA FRONTAL</span>
                     <span style={{
                       background: '#000000',
                       color: '#3b82f6',
