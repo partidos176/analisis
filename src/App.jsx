@@ -4465,7 +4465,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL TIRO AREA</span>
+                    <span>R. TIRO AREA</span>
                     <span style={{
                       background: '#000000',
                       color: '#eab308',
@@ -4502,7 +4502,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL TIRO DERECHA</span>
+                    <span>R. TIRO DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#eab308',
@@ -4539,7 +4539,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL TIRO IZQUIERDA</span>
+                    <span>R. TIRO IZQUIERDA</span>
                     <span style={{
                       background: '#000000',
                       color: '#eab308',
@@ -4576,7 +4576,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL TIRO FRONTAL</span>
+                    <span>R. TIRO FRONTAL</span>
                     <span style={{
                       background: '#000000',
                       color: '#eab308',
@@ -4613,7 +4613,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL FALTA DERECHA</span>
+                    <span>R. FALTA DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#3b82f6',
@@ -4650,7 +4650,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL FALTA IZQUIERDA</span>
+                    <span>R. FALTA IZQUIERDA</span>
                     <span style={{
                       background: '#000000',
                       color: '#3b82f6',
@@ -4687,7 +4687,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL FALTA FRONTAL</span>
+                    <span>R. FALTA FRONTAL</span>
                     <span style={{
                       background: '#000000',
                       color: '#3b82f6',
@@ -4724,7 +4724,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL CENTRO DERECHA</span>
+                    <span>R. CENTRO DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#22c55e',
@@ -4761,7 +4761,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL CENTRO IZQUIERDA</span>
+                    <span>R. CENTRO IZQUIERDA</span>
                     <span style={{
                       background: '#000000',
                       color: '#22c55e',
@@ -4798,7 +4798,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL CORNER IZQUIERDA</span>
+                    <span>R. CORNER IZQUIERDA</span>
                     <span style={{
                       background: '#000000',
                       color: '#ec4899',
@@ -4835,7 +4835,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>RIVAL CORNER DERECHA</span>
+                    <span>R. CORNER DERECHA</span>
                     <span style={{
                       background: '#000000',
                       color: '#ec4899',
@@ -4918,7 +4918,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       gap: '0.5rem'
                     }}
                   >
-                    <span>INICIO RIVAL</span>
+                    <span>INICIO R.</span>
                     <span style={{
                       background: '#ffffff',
                       color: '#7c3aed',
@@ -5013,7 +5013,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         }}
                       >
                         <span>ON</span>
-                        <span>RIVAL</span>
+                        <span>R.</span>
                         <span style={{
                           background: '#ffffff',
                           color: '#6b7280',
@@ -5174,7 +5174,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         }}
                       >
                         <span>OFF</span>
-                        <span>RIVAL</span>
+                        <span>R.</span>
                         <span style={{
                           background: '#ffffff',
                           color: '#6b7280',
