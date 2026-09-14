@@ -6862,10 +6862,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
               )}
               {activeTab === 'datos' && (
                 <div style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '2rem',
+                  padding: '0',
                   minHeight: '400px',
                   display: 'flex',
                   flexDirection: 'column',
