@@ -2444,7 +2444,7 @@ export default function App() {
                           </div>
                           <div style={{ minWidth: '320px', marginLeft: 'auto', overflowX: 'auto' }}>
                             <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem', marginLeft: '-14rem' }}>ASISTENCIAS</span>
-                            <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                               <thead>
                                 <tr>
                                   <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JUGADOR</th>
@@ -2466,7 +2466,7 @@ export default function App() {
                         <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1, margin: 0, padding: 0 }}>GOLES A FAVOR</span>
                         <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
-                          <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                          <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                             <thead>
                               <tr>
                                 <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
@@ -2528,7 +2528,7 @@ export default function App() {
                         )}
                         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
                           {filasAccion.length > 0 && (
-                            <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                               <thead>
                                 <tr>
                                   <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>PROCEDENCIA</th>
@@ -2561,7 +2561,7 @@ export default function App() {
                           <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES EN CONTRA</span>
                           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', justifyContent: 'center' }}>
                           <div style={{ display: 'flex', justifyContent: 'center' }}>
-                          <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                          <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                             <thead>
                               <tr>
                                 <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
@@ -3491,7 +3491,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               return ra - rb || b[1] - a[1];
                             });
                             return (
-                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                 <thead>
                                   <tr>
                                     <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>JUGADOR</th>
