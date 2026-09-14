@@ -5485,6 +5485,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                         ))}
                       </select>
                       {entry.type === 'finalizacion' && (
+                        <>
                         <select
                           value=""
                           onChange={(ev) => {
@@ -5521,6 +5522,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           }}
                           style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', width: '22px', height: '20px', cursor: 'pointer', fontWeight: 900, fontSize: '0.75rem', padding: 0, lineHeight: '20px', textAlign: 'center', marginLeft: '0.2rem' }}
                         >&#10005;</button>
+                        </>
                       )}
                       {entry.type !== 'finalizacion' && (
                         <span style={{ fontFamily: 'var(--font-mono)', color: entry.name.includes('RIVAL') ? '#ef4444' : '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>
