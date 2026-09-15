@@ -2780,7 +2780,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                 <tbody>
                                   {cruceRivalAcciones.map(a => (
                                     <tr key={a}>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ef4444', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
                                       {cruceRivalFinalizaciones.map(f => (
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                       ))}
