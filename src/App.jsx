@@ -2732,9 +2732,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.95rem' }}>
                                 <thead>
                                   <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
                                     {crucePropiasFinalizaciones.map(f => (
-                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
+                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
                                     ))}
                                      <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
                                   </tr>
@@ -2770,9 +2770,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.95rem' }}>
                                 <thead>
                                   <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
                                     {cruceRivalFinalizaciones.map(f => (
-                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
+                                      <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
                                     ))}
                                      <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
                                   </tr>
@@ -2808,8 +2808,8 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                                 <thead>
                                   <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
                                   </tr>
                                 </thead>
                                 <tbody>
