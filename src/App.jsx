@@ -2604,7 +2604,7 @@ export default function App() {
                             </div>
                             {chartDataRival.length > 0 && (
                               <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
-                                <PieChart width={520} height={460} margin={{ top: 10, right: 80, bottom: 60, left: 80 }}>
+                                <PieChart width={520} height={460} margin={{ top: 30, right: 80, bottom: 60, left: 80 }}>
                                   <Pie
                                     data={chartDataRival}
                                     cx="50%"
