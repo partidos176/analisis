@@ -2579,7 +2579,7 @@ export default function App() {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem 2rem' }}>
                           <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES EN CONTRA</span>
-                          <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', justifyContent: 'center', marginTop: '2.5rem' }}>
+                          <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', justifyContent: 'center', marginTop: '1.5rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                 <thead>
