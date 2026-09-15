@@ -6597,7 +6597,7 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: [...actionLog].find(e => e.type === 'accion') ? [...actionLog].find(e => e.type === 'accion').name : '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setLastGoalType('GOL'); setActiveTab('tipogol'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setLastGoalType('GOL'); setActiveTab('tipogol'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
