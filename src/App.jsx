@@ -327,6 +327,7 @@ export default function App() {
   const [origenGolErrorPropioCount, setOrigenGolErrorPropioCount] = useState(0);
   const [origenGolErrorRivalCount, setOrigenGolErrorRivalCount] = useState(0);
   const [origenGolPropiaMetaCount, setOrigenGolPropiaMetaCount] = useState(0);
+  const [origenGolTransicionCount, setOrigenGolTransicionCount] = useState(0);
   const [golesList, setGolesList] = useState([]);
   const [golesRivalList, setGolesRivalList] = useState([]);
   const [fromRival, setFromRival] = useState(false);
@@ -6632,6 +6633,10 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     <button onClick={() => { if (logAction('PROPIA META', 'origengol')) { setOrigenGolPropiaMetaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       <span>PROPIA META</span>
                       <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolPropiaMetaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('TRANSICION', 'origengol')) { setOrigenGolTransicionCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>TRANSICION</span>
+                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolTransicionCount}</span>
                     </button>
                   </div>
                 </div>
