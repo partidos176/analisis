@@ -5565,7 +5565,7 @@ export default function App() {
                             else setGolesRivalList((prev) => [...prev, { periodo: per, minuto: (p[0] || 0) }]);
                           }
                         }}
-                        style={{ background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : '#ffffff'), fontWeight: 700, fontSize: (entry.type === 'finalizacion' || entry.type === 'origengol') ? '0.7rem' : '0.85rem', textTransform: 'uppercase', cursor: 'pointer', padding: '0.1rem 0.3rem', maxWidth: '100%' }}
+                        style={{ background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : (entry.type === 'origengol' ? '#eab308' : '#ffffff')), fontWeight: 700, fontSize: (entry.type === 'finalizacion' || entry.type === 'origengol') ? '0.7rem' : '0.85rem', textTransform: 'uppercase', cursor: 'pointer', padding: '0.1rem 0.3rem', maxWidth: '100%' }}
                       >
                         {(entry.type === 'finalizacion'
                           ? ['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION']
