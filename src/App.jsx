@@ -2388,9 +2388,9 @@ export default function App() {
                     if (currentMatch) contarJornada(golesList, currentMatch.matchday);
                     const rangoGoles = (a, b) => Object.entries(golesPorJornada).filter(([md]) => md >= a && md <= b).reduce((s, [, v]) => s + v, 0);
                     const tramos = [
-                      { name: 'J1-J12', value: rangoGoles(1, 12) },
-                      { name: 'J13-J24', value: rangoGoles(13, 24) },
-                      { name: 'J25-J36', value: rangoGoles(25, 36) }
+                      { name: 'J.1 - J.12', value: rangoGoles(1, 12) },
+                      { name: 'J.13 - J.24', value: rangoGoles(13, 24) },
+                      { name: 'J.25 - J.36', value: rangoGoles(25, 36) }
                     ];
                     const golesRivalTotal = matches.reduce((s, m) => {
                       if (currentMatch && m.id === currentMatch.id) return s;
@@ -2411,9 +2411,9 @@ export default function App() {
                     if (currentMatch) contarJornadaRival(currentMatch.matchday, currentGl.length);
                     const rangoGolesRival = (a, b) => Object.entries(golesRivalPorJornada).filter(([md]) => md >= a && md <= b).reduce((s, [, v]) => s + v, 0);
                     const tramosRival = [
-                      { name: 'J1-J12', value: rangoGolesRival(1, 12) },
-                      { name: 'J13-J24', value: rangoGolesRival(13, 24) },
-                      { name: 'J25-J36', value: rangoGolesRival(25, 36) }
+                      { name: 'J.1 - J.12', value: rangoGolesRival(1, 12) },
+                      { name: 'J.13 - J.24', value: rangoGolesRival(13, 24) },
+                      { name: 'J.25 - J.36', value: rangoGolesRival(25, 36) }
                     ];
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
