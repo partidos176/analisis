@@ -2579,121 +2579,121 @@ export default function App() {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem 2rem' }}>
                           <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES EN CONTRA</span>
-                          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', justifyContent: 'center' }}>
-                          <div style={{ display: 'flex', justifyContent: 'center' }}>
-                          <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                            <thead>
-                              <tr>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {tramosRival.map((t) => (
-                                <tr key={t.name}>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
-                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value || '-'}</td>
-                                </tr>
-                              ))}
-                              <tr>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ef4444', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramosRival.reduce((s, t) => s + t.value, 0) || '-'}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                          </div>
-                          {chartDataRival.length > 0 && (
-                            <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center', marginLeft: '6rem' }}>
-<PieChart width={520} height={460} margin={{ top: 40, right: 80, bottom: 60, left: 80 }}>
-                                <Pie
-                                  data={chartDataRival}
-                                  cx="50%"
-                                  cy="30%"
-                                  outerRadius={90}
-                                  dataKey="value"
-                                  isAnimationActive={false}
-                                  labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
-                                  label={(props) => {
-                                    if ((props.value || 0) === 0) return null;
-                                    const pct = (props.percent || 0) * 100;
-const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
-                                    return (
-                                      <text
-                                        x={props.x}
-                                        y={props.y}
-                                        dy={4}
-                                        textAnchor={props.textAnchor}
-                                        fill="#ffffff"
-                                        fontSize={14}
-                                        fontWeight={700}
-                                        stroke="none"
-                                      >
-                                        {props.name}{' '}
-                                        <tspan fill="#39ff14" fontSize={17} fontWeight={900}>{props.value}</tspan>
-                                        {' '}({pctTxt}%)
-                                      </text>
-                                    );
-                                  }}
-                                >
-                                  {chartDataRival.map((_, i) => (
-                                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                              <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {tramosRival.map((t) => (
+                                    <tr key={t.name}>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{t.name}</td>
+                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{t.value || '-'}</td>
+                                    </tr>
                                   ))}
-                                </Pie>
-                                <Tooltip />
-                              </PieChart>
+                                  <tr>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ef4444', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramosRival.reduce((s, t) => s + t.value, 0) || '-'}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
                             </div>
-                          )}
-                          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
-                            <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                              <thead>
-                                <tr>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>PROCEDENCIA</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase' }}>GOLES</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(() => {
-                                  const accionStatsRival = {};
-                                  let pMetaRivalCount = 0;
-                                  const contarAccionRival = (gl) => {
-                                    gl.forEach(g => {
-                                      if (!g) return;
-                                      if (g.tipo === 'P. META RIVAL' || g.tipo === 'P. META') { pMetaRivalCount += 1; return; }
-                                      const acc = g.accion || 'SIN ACCIÓN';
-                                      accionStatsRival[acc] = (accionStatsRival[acc] || 0) + 1;
+                            {chartDataRival.length > 0 && (
+                              <div style={{ width: 'fit-content', display: 'flex', justifyContent: 'center' }}>
+                                <PieChart width={520} height={460} margin={{ top: 40, right: 80, bottom: 60, left: 80 }}>
+                                  <Pie
+                                    data={chartDataRival}
+                                    cx="50%"
+                                    cy="30%"
+                                    outerRadius={90}
+                                    dataKey="value"
+                                    isAnimationActive={false}
+                                    labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
+                                    label={(props) => {
+                                      if ((props.value || 0) === 0) return null;
+                                      const pct = (props.percent || 0) * 100;
+                                      const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
+                                      return (
+                                        <text
+                                          x={props.x}
+                                          y={props.y}
+                                          dy={4}
+                                          textAnchor={props.textAnchor}
+                                          fill="#ffffff"
+                                          fontSize={14}
+                                          fontWeight={700}
+                                          stroke="none"
+                                        >
+                                          {props.name}{' '}
+                                          <tspan fill="#39ff14" fontSize={17} fontWeight={900}>{props.value}</tspan>
+                                          {' '}({pctTxt}%)
+                                        </text>
+                                      );
+                                    }}
+                                  >
+                                    {chartDataRival.map((_, i) => (
+                                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                    ))}
+                                  </Pie>
+                                  <Tooltip />
+                                </PieChart>
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                              <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>PROCEDENCIA</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase' }}>GOLES</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {(() => {
+                                    const accionStatsRival = {};
+                                    let pMetaRivalCount = 0;
+                                    const contarAccionRival = (gl) => {
+                                      gl.forEach(g => {
+                                        if (!g) return;
+                                        if (g.tipo === 'P. META RIVAL' || g.tipo === 'P. META') { pMetaRivalCount += 1; return; }
+                                        const acc = g.accion || 'SIN ACCIÓN';
+                                        accionStatsRival[acc] = (accionStatsRival[acc] || 0) + 1;
+                                      });
+                                    };
+                                    matches.forEach(m => {
+                                      if (currentMatch && m.id === currentMatch.id) return;
+                                      const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                                      contarAccionRival(gl);
                                     });
-                                  };
-                                  matches.forEach(m => {
-                                    if (currentMatch && m.id === currentMatch.id) return;
-                                    const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                                    contarAccionRival(gl);
-                                  });
-                                  contarAccionRival(currentGl);
-                                  const filasAccionRival = Object.entries(accionStatsRival).sort((a, b) => b[1] - a[1]);
-                                  return (
-                                    <>
-                                      {filasAccionRival.map(([n, v]) => (
-                                        <tr key={n}>
-                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
-                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v || '-'}</td>
-                                        </tr>
-                                      ))}
-                                      {pMetaRivalCount > 0 && (
+                                    contarAccionRival(currentGl);
+                                    const filasAccionRival = Object.entries(accionStatsRival).sort((a, b) => b[1] - a[1]);
+                                    return (
+                                      <>
+                                        {filasAccionRival.map(([n, v]) => (
+                                          <tr key={n}>
+                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
+                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v || '-'}</td>
+                                          </tr>
+                                        ))}
+                                        {pMetaRivalCount > 0 && (
+                                          <tr>
+                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META PROPIA</td>
+                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{pMetaRivalCount}</td>
+                                          </tr>
+                                        )}
                                         <tr>
-                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META PROPIA</td>
-                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{pMetaRivalCount}</td>
+                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ef4444', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccionRival.reduce((s, [, v]) => s + v, 0) + pMetaRivalCount || '-'}</td>
                                         </tr>
-                                      )}
-                                      <tr>
-                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ef4444', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccionRival.reduce((s, [, v]) => s + v, 0) + pMetaRivalCount || '-'}</td>
-                                      </tr>
-                                    </>
-                                  );
-                                })()}
-                              </tbody>
-                            </table>
-                          </div>
+                                      </>
+                                    );
+                                  })()}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         </div>
                         </div>
