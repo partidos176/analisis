@@ -2643,6 +2643,57 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                               </PieChart>
                             </div>
                           )}
+                          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4.5rem' }}>
+                            <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                              <thead>
+                                <tr>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>PROCEDENCIA</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase' }}>GOLES</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(() => {
+                                  const accionStatsRival = {};
+                                  let pMetaRivalCount = 0;
+                                  const contarAccionRival = (gl) => {
+                                    gl.forEach(g => {
+                                      if (!g) return;
+                                      if (g.tipo === 'P. META RIVAL' || g.tipo === 'P. META') { pMetaRivalCount += 1; return; }
+                                      const acc = g.accion || 'SIN ACCIÓN';
+                                      accionStatsRival[acc] = (accionStatsRival[acc] || 0) + 1;
+                                    });
+                                  };
+                                  matches.forEach(m => {
+                                    if (currentMatch && m.id === currentMatch.id) return;
+                                    const gl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
+                                    contarAccionRival(gl);
+                                  });
+                                  contarAccionRival(currentGl);
+                                  const filasAccionRival = Object.entries(accionStatsRival).sort((a, b) => b[1] - a[1]);
+                                  return (
+                                    <>
+                                      {filasAccionRival.map(([n, v]) => (
+                                        <tr key={n}>
+                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
+                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v || '-'}</td>
+                                        </tr>
+                                      ))}
+                                      {pMetaRivalCount > 0 && (
+                                        <tr>
+                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META PROPIA</td>
+                                          <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{pMetaRivalCount}</td>
+                                        </tr>
+                                      )}
+                                      <tr>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ef4444', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                        <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccionRival.reduce((s, [, v]) => s + v, 0) + pMetaRivalCount || '-'}</td>
+                                      </tr>
+                                    </>
+                                  );
+                                })()}
+                              </tbody>
+                            </table>
+                          </div>
                           </div>
                         </div>
                         </div>
