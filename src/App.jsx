@@ -312,6 +312,21 @@ export default function App() {
   const [saqueEsquinaFueraCount, setSaqueEsquinaFueraCount] = useState(0);
   const [infraccionCount, setInfraccionCount] = useState(0);
   const [ocasionCount, setOcasionCount] = useState(0);
+  const [origenGolTiroAreaCount, setOrigenGolTiroAreaCount] = useState(0);
+  const [origenGolTiroDerechaCount, setOrigenGolTiroDerechaCount] = useState(0);
+  const [origenGolTiroIzquierdaCount, setOrigenGolTiroIzquierdaCount] = useState(0);
+  const [origenGolTiroFrontalCount, setOrigenGolTiroFrontalCount] = useState(0);
+  const [origenGolCentroDerechaCount, setOrigenGolCentroDerechaCount] = useState(0);
+  const [origenGolCentroIzquierdaCount, setOrigenGolCentroIzquierdaCount] = useState(0);
+  const [origenGolFaltaFrontalCount, setOrigenGolFaltaFrontalCount] = useState(0);
+  const [origenGolFaltaDerechaCount, setOrigenGolFaltaDerechaCount] = useState(0);
+  const [origenGolFaltaIzquierdaCount, setOrigenGolFaltaIzquierdaCount] = useState(0);
+  const [origenGolCornerDerechaCount, setOrigenGolCornerDerechaCount] = useState(0);
+  const [origenGolCornerIzquierdaCount, setOrigenGolCornerIzquierdaCount] = useState(0);
+  const [origenGolPenalCount, setOrigenGolPenalCount] = useState(0);
+  const [origenGolErrorPropioCount, setOrigenGolErrorPropioCount] = useState(0);
+  const [origenGolErrorRivalCount, setOrigenGolErrorRivalCount] = useState(0);
+  const [origenGolPropiaMetaCount, setOrigenGolPropiaMetaCount] = useState(0);
   const [golesList, setGolesList] = useState([]);
   const [golesRivalList, setGolesRivalList] = useState([]);
   const [fromRival, setFromRival] = useState(false);
@@ -6570,32 +6585,69 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  {(() => {
-                    const conceptos = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'FALTA FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'CORNER DERECHA', 'CORNER IZQUIERDA', 'PENAL', 'ERROR PROPIO', 'ERROR RIVAL', 'PROPIA META'];
-                    const contadores = {};
-                    conceptos.forEach(c => contadores[c] = 0);
-                    matches.forEach(m => {
-                      (m.events || []).forEach(e => {
-                        if (e.type === 'finalizacion' && e.name === 'GOL') {
-                          const accion = (e.accion || '').replace('GOL ', '').replace('PENAL + ', '');
-                          if (contadores[accion] !== undefined) contadores[accion]++;
-                        }
-                      });
-                    });
-                    return (
-                      <>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ORIGEN GOL</span>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                          {conceptos.map(accion => (
-                            <div key={accion} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1rem', background: 'rgba(30,41,59,0.5)', border: '1px solid var(--border-subtle)', borderRadius: '8px' }}>
-                              <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{accion}</span>
-                              <span style={{ color: '#39ff14', fontWeight: 900, fontFamily: 'var(--font-mono)', fontSize: '1rem', minWidth: '30px', textAlign: 'right' }}>{contadores[accion]}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    );
-                  })()}
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ORIGEN GOL</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <button onClick={() => { if (logAction('TIRO AREA', 'origengol')) { setOrigenGolTiroAreaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>TIRO AREA</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolTiroAreaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('TIRO DERECHA', 'origengol')) { setOrigenGolTiroDerechaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>TIRO DERECHA</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolTiroDerechaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('TIRO IZQUIERDA', 'origengol')) { setOrigenGolTiroIzquierdaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>TIRO IZQUIERDA</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolTiroIzquierdaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('TIRO FRONTAL', 'origengol')) { setOrigenGolTiroFrontalCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>TIRO FRONTAL</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolTiroFrontalCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('CENTRO DERECHA', 'origengol')) { setOrigenGolCentroDerechaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>CENTRO DERECHA</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolCentroDerechaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('CENTRO IZQUIERDA', 'origengol')) { setOrigenGolCentroIzquierdaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>CENTRO IZQUIERDA</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolCentroIzquierdaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('FALTA FRONTAL', 'origengol')) { setOrigenGolFaltaFrontalCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>FALTA FRONTAL</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolFaltaFrontalCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('FALTA DERECHA', 'origengol')) { setOrigenGolFaltaDerechaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>FALTA DERECHA</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolFaltaDerechaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('FALTA IZQUIERDA', 'origengol')) { setOrigenGolFaltaIzquierdaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>FALTA IZQUIERDA</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolFaltaIzquierdaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('CORNER DERECHA', 'origengol')) { setOrigenGolCornerDerechaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>CORNER DERECHA</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolCornerDerechaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('CORNER IZQUIERDA', 'origengol')) { setOrigenGolCornerIzquierdaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>CORNER IZQUIERDA</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolCornerIzquierdaCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('PENAL', 'origengol')) { setOrigenGolPenalCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>PENAL</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolPenalCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('ERROR PROPIO', 'origengol')) { setOrigenGolErrorPropioCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>ERROR PROPIO</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolErrorPropioCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('ERROR RIVAL', 'origengol')) { setOrigenGolErrorRivalCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>ERROR RIVAL</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolErrorRivalCount}</span>
+                    </button>
+                    <button onClick={() => { if (logAction('PROPIA META', 'origengol')) { setOrigenGolPropiaMetaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <span>PROPIA META</span>
+                      <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolPropiaMetaCount}</span>
+                    </button>
+                  </div>
                 </div>
               )}
               {activeTab === 'goles' && (
