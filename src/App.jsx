@@ -124,7 +124,7 @@ const matchTabs = [
   { id: 'alineacion', label: 'ALINEACION' },
   { id: 'acciones', label: 'ACCIONES' },
   { id: 'finalizaciones', label: 'FINALIZACIONES' },
-  { id: 'tipogol', label: 'TIPO GOL' },
+  { id: 'tipogol', label: 'ORIGEN GOL' },
   { id: 'goles', label: 'GOLES' },
   { id: 'sustituciones', label: 'SUSTITUCIONES' },
   { id: 'datos', label: 'DATOS' },
@@ -6570,7 +6570,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>TIPO GOL</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ORIGEN GOL</span>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'FALTA FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA'].map(accion => (
                       <div key={accion} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1rem', background: 'rgba(30,41,59,0.5)', border: '1px solid var(--border-subtle)', borderRadius: '8px' }}>
