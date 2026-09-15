@@ -2628,7 +2628,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                                         fontWeight={700}
                                         stroke="none"
                                       >
-                                        {props.name}  {props.value} ({pctTxt}%)
+                                        {props.name}{' '}
+                                        <tspan fill="#39ff14" fontSize={17} fontWeight={900}>{props.value}</tspan>
+                                        {' '}({pctTxt}%)
                                       </text>
                                     );
                                   }}
