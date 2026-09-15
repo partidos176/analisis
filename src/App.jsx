@@ -6586,7 +6586,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   gap: '1.5rem'
                 }}>
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ORIGEN GOL</span>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
                     <button onClick={() => { if (logAction('TIRO AREA', 'origengol')) { setOrigenGolTiroAreaCount(prev => prev + 1); setActiveTab('acciones'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       <span>TIRO AREA</span>
                       <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenGolTiroAreaCount}</span>
