@@ -124,7 +124,6 @@ const matchTabs = [
   { id: 'alineacion', label: 'ALINEACION' },
   { id: 'acciones', label: 'ACCIONES' },
   { id: 'finalizaciones', label: 'FINALIZACIONES' },
-  { id: 'tipogol', label: 'ORIGEN GOL' },
   { id: 'goles', label: 'GOLES' },
   { id: 'sustituciones', label: 'SUSTITUCIONES' },
   { id: 'datos', label: 'DATOS' },
@@ -6597,14 +6596,14 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setLastGoalType('GOL'); setActiveTab('tipogol'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setLastGoalType('GOL'); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setLastGoalType('GOL RIVAL'); setActiveTab('tipogol'); } }}
+                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setLastGoalType('GOL RIVAL'); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
@@ -6628,97 +6627,6 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {activeTab === 'tipogol' && (() => {
-                const conceptos = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'FALTA FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'CORNER DERECHA', 'CORNER IZQUIERDA', 'PENAL', 'ERROR PROPIO', 'ERROR RIVAL', 'PROPIA META', 'TRANSICION'];
-                const allGoles = [...golesList, ...golesRivalList];
-                const origenCounts = {};
-                conceptos.forEach(c => origenCounts[c] = 0);
-                allGoles.forEach(g => {
-                  if (g && g.accion && origenCounts[g.accion] !== undefined) {
-                    origenCounts[g.accion]++;
-                  }
-                });
-                return (
-                <div style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '2rem',
-                  minHeight: '400px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem'
-                }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ORIGEN GOL</span>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
-                    <button onClick={() => { if (logAction('TIRO AREA', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TIRO AREA' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TIRO AREA' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>TIRO AREA</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['TIRO AREA']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('TIRO DERECHA', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TIRO DERECHA' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TIRO DERECHA' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>TIRO DERECHA</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['TIRO DERECHA']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('TIRO IZQUIERDA', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TIRO IZQUIERDA' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TIRO IZQUIERDA' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>TIRO IZQUIERDA</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['TIRO IZQUIERDA']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('TIRO FRONTAL', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TIRO FRONTAL' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TIRO FRONTAL' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>TIRO FRONTAL</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['TIRO FRONTAL']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('CENTRO DERECHA', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'CENTRO DERECHA' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'CENTRO DERECHA' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>CENTRO DERECHA</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['CENTRO DERECHA']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('CENTRO IZQUIERDA', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'CENTRO IZQUIERDA' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'CENTRO IZQUIERDA' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>CENTRO IZQUIERDA</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['CENTRO IZQUIERDA']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('FALTA FRONTAL', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'FALTA FRONTAL' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'FALTA FRONTAL' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>FALTA FRONTAL</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['FALTA FRONTAL']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('FALTA DERECHA', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'FALTA DERECHA' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'FALTA DERECHA' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>FALTA DERECHA</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['FALTA DERECHA']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('FALTA IZQUIERDA', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'FALTA IZQUIERDA' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'FALTA IZQUIERDA' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>FALTA IZQUIERDA</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['FALTA IZQUIERDA']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('CORNER DERECHA', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'CORNER DERECHA' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'CORNER DERECHA' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>CORNER DERECHA</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['CORNER DERECHA']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('CORNER IZQUIERDA', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'CORNER IZQUIERDA' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'CORNER IZQUIERDA' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>CORNER IZQUIERDA</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['CORNER IZQUIERDA']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('PENAL', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'PENAL' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'PENAL' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>PENAL</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['PENAL']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('ERROR PROPIO', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'ERROR PROPIO' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'ERROR PROPIO' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>ERROR PROPIO</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['ERROR PROPIO']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('ERROR RIVAL', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'ERROR RIVAL' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'ERROR RIVAL' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>ERROR RIVAL</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['ERROR RIVAL']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('PROPIA META', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'PROPIA META' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'PROPIA META' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>PROPIA META</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['PROPIA META']}</span>
-                    </button>
-                    <button onClick={() => { if (logAction('TRANSICION', 'origengol')) { if (lastGoalType === 'GOL RIVAL') { setGolesRivalList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TRANSICION' }; } return newList; }); } else { setGolesList(prev => { const newList = [...prev]; if (newList.length > 0) { newList[newList.length - 1] = { ...newList[newList.length - 1], accion: 'TRANSICION' }; } return newList; }); } setActiveTab(lastGoalType === 'GOL RIVAL' ? 'acciones' : 'goles'); } }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ec4899', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', width: '100%', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      <span>TRANSICION</span>
-                      <span style={{ background: '#ffffff', color: '#ec4899', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{origenCounts['TRANSICION']}</span>
-                    </button>
-                  </div>
-                </div>
-                );
-              })()}
               {activeTab === 'goles' && (
                 <div style={{
                   background: 'var(--bg-card)',
