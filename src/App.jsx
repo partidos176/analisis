@@ -6570,14 +6570,32 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ORIGEN GOL</span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    {['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'FALTA FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'CORNER DERECHA', 'CORNER IZQUIERDA', 'PENAL', 'ERROR PROPIO', 'ERROR RIVAL', 'PROPIA META'].map(accion => (
-                      <div key={accion} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1rem', background: 'rgba(30,41,59,0.5)', border: '1px solid var(--border-subtle)', borderRadius: '8px' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{accion}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {(() => {
+                    const conceptos = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'FALTA FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'CORNER DERECHA', 'CORNER IZQUIERDA', 'PENAL', 'ERROR PROPIO', 'ERROR RIVAL', 'PROPIA META'];
+                    const contadores = {};
+                    conceptos.forEach(c => contadores[c] = 0);
+                    matches.forEach(m => {
+                      (m.events || []).forEach(e => {
+                        if (e.type === 'finalizacion' && e.name === 'GOL') {
+                          const accion = (e.accion || '').replace('GOL ', '').replace('PENAL + ', '');
+                          if (contadores[accion] !== undefined) contadores[accion]++;
+                        }
+                      });
+                    });
+                    return (
+                      <>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ORIGEN GOL</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {conceptos.map(accion => (
+                            <div key={accion} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1rem', background: 'rgba(30,41,59,0.5)', border: '1px solid var(--border-subtle)', borderRadius: '8px' }}>
+                              <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{accion}</span>
+                              <span style={{ color: '#39ff14', fontWeight: 900, fontFamily: 'var(--font-mono)', fontSize: '1rem', minWidth: '30px', textAlign: 'right' }}>{contadores[accion]}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               )}
               {activeTab === 'goles' && (
