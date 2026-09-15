@@ -3402,15 +3402,15 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                             <thead>
                               <tr>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>JUGADOR</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>MINUTOS</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>% JUGADO</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TITULAR</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>SUPLENTE</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>LESIONADO</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f472b6', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>DIV. HONOR</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f97316', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TENERIFE C</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>NO CONVOCADO</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>JUGADOR</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>MINUTOS</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>% JUGADO</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TITULAR</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>SUPLENTE</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>LESIONADO</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>DIV. HONOR</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>TENERIFE C</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.1rem' }}>NO CONVOCADO</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -3527,9 +3527,9 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                             <table style={{ width: 'auto', margin: '0 auto', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                                 <thead>
                                   <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.6rem 0.7rem', width: '12rem', textAlign: 'left', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.25rem' }}>JUGADOR</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.6rem 0.7rem', width: '9rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.25rem' }}>ROL</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.6rem 0.7rem', width: '7rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.25rem' }}>MINUTOS</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.6rem 0.7rem', width: '12rem', textAlign: 'left', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.25rem' }}>JUGADOR</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.6rem 0.7rem', width: '9rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.25rem' }}>ROL</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.6rem 0.7rem', width: '7rem', textAlign: 'center', color: '#d97706', fontWeight: 800, textTransform: 'uppercase', fontSize: '1.25rem' }}>MINUTOS</th>
                                   </tr>
                                 </thead>
                                 <tbody>
