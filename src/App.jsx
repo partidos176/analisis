@@ -6752,7 +6752,7 @@ export default function App() {
                   {/* TODOS LOS GOLES */}
                   <button
                     onClick={() => {
-                      setGolesList(prev => [{ name: '', tipo: 'P. META RIVAL', name2: '', accion: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }, ...prev]);
+                      setGolesList(prev => [{ name: '', tipo: '', name2: '', accion: '', team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }, ...prev]);
                       setGolCount(prev => prev + 1);
                     }}
                     style={{ background: '#16a34a', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.4rem 1rem', borderRadius: 'var(--radius-full)', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', border: 'none', alignSelf: 'center' }}
@@ -6827,7 +6827,6 @@ export default function App() {
                             <option value="PIE">PIE</option>
                             <option value="CABEZA">CABEZA</option>
                             <option value="PENAL">PENAL</option>
-                            <option value="P. META RIVAL">P. META RIVAL</option>
                           </select>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
