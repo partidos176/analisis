@@ -5502,14 +5502,15 @@ export default function App() {
                                 newEntries.push({ name: row.finalizacion, time: t, type: 'finalizacion' });
                                 const min = parseMinuto(t);
                                 const per = row.parte || periodo;
+                                const origen = row.origen || row.procedencia || mappedAccion;
                                 if (row.finalizacion === 'GOL') {
-                                  newGoles.push({ name: '', tipo: '', name2: '', accion: mappedAccion, team: 'home', periodo: per, minuto: min });
+                                  newGoles.push({ name: '', tipo: '', name2: '', accion: origen, team: 'home', periodo: per, minuto: min });
                                 } else if (row.finalizacion === 'GOL RIVAL') {
-                                  newGolesRival.push({ periodo: per, minuto: min });
+                                  newGolesRival.push({ accion: origen, periodo: per, minuto: min });
                                 } else if (row.finalizacion === 'PENAL + GOL') {
                                   newGoles.push({ name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo: per, minuto: min });
                                 } else if (row.finalizacion === 'PENAL + GOL RIVAL') {
-                                  newGolesRival.push({ periodo: per, minuto: min });
+                                  newGolesRival.push({ accion: 'PENAL', periodo: per, minuto: min });
                                 }
                               }
                             });
