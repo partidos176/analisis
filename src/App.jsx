@@ -6585,7 +6585,7 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                     return (
                       <>
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>ORIGEN GOL</span>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                           {conceptos.map(accion => (
                             <div key={accion} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 1rem', background: 'rgba(30,41,59,0.5)', border: '1px solid var(--border-subtle)', borderRadius: '8px' }}>
                               <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{accion}</span>
