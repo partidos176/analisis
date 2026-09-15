@@ -6863,6 +6863,50 @@ export default function App() {
                             <option value="SIN ASISTENCIA">SIN ASISTENCIA</option>
                           </select>
                         </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                          <span style={{ color: '#eab308', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ORIGEN</span>
+                          <select
+                            value={g.accion || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setGolesList(prev => {
+                                const updated = [...prev];
+                                updated[i] = { ...updated[i], accion: val };
+                                return updated;
+                              });
+                            }}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#eab308',
+                              fontWeight: 700,
+                              fontSize: '0.8rem',
+                              padding: '0.4rem 0.6rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              flex: 1
+                            }}
+                          >
+                            <option value="">-</option>
+                            <option value="TIRO AREA">TIRO AREA</option>
+                            <option value="TIRO DERECHA">TIRO DERECHA</option>
+                            <option value="TIRO IZQUIERDA">TIRO IZQUIERDA</option>
+                            <option value="TIRO FRONTAL">TIRO FRONTAL</option>
+                            <option value="CENTRO DERECHA">CENTRO DERECHA</option>
+                            <option value="CENTRO IZQUIERDA">CENTRO IZQUIERDA</option>
+                            <option value="FALTA FRONTAL">FALTA FRONTAL</option>
+                            <option value="FALTA DERECHA">FALTA DERECHA</option>
+                            <option value="FALTA IZQUIERDA">FALTA IZQUIERDA</option>
+                            <option value="CORNER DERECHA">CORNER DERECHA</option>
+                            <option value="CORNER IZQUIERDA">CORNER IZQUIERDA</option>
+                            <option value="PENAL">PENAL</option>
+                            <option value="ERROR PROPIO">ERROR PROPIO</option>
+                            <option value="ERROR RIVAL">ERROR RIVAL</option>
+                            <option value="PROPIA META">PROPIA META</option>
+                            <option value="TRANSICION">TRANSICION</option>
+                          </select>
+                        </div>
                         <div style={{ display: 'flex', flexDirection: 'column', minWidth: '36px' }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>MIN.</span>
                           <input
