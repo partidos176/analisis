@@ -124,6 +124,7 @@ const matchTabs = [
   { id: 'alineacion', label: 'ALINEACION' },
   { id: 'acciones', label: 'ACCIONES' },
   { id: 'finalizaciones', label: 'FINALIZACIONES' },
+  { id: 'tipogol', label: 'TIPO GOL' },
   { id: 'goles', label: 'GOLES' },
   { id: 'sustituciones', label: 'SUSTITUCIONES' },
   { id: 'datos', label: 'DATOS' },
@@ -135,7 +136,6 @@ const matchTabs = [
 const totalesTabsDef = [
   { id: 'totalresultados', label: 'TOTAL RESULTADOS' },
   { id: 'resumengoles', label: 'TOTAL GOLES' },
-  { id: 'tipogol', label: 'TIPO GOL' },
   { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
   { id: 'tiempojugado', label: 'TOTAL JUGADO' },
   { id: 'minutosjugados', label: 'MINUTOS JORNADA' },
@@ -2627,62 +2627,6 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                           )}
                           </div>
                         </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-              {totalesTab === 'tipogol' && (
-                <div style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '2rem',
-                  minHeight: '400px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem'
-                }}>
-                  {(() => {
-                    const tiposGol = { 'GOL TIRO AREA': 0, 'GOL TIRO DERECHA': 0, 'GOL TIRO IZQUIERDA': 0, 'GOL TIRO FRONTAL': 0, 'GOL CENTRO DERECHA': 0, 'GOL CENTRO IZQUIERDA': 0, 'GOL CORNER DERECHA': 0, 'GOL CORNER IZQUIERDA': 0, 'GOL FALTA': 0, 'GOL PENAL': 0, 'GOL AUTOGOL': 0 };
-                    const tiposGolRival = { 'GOL RIVAL TIRO AREA': 0, 'GOL RIVAL TIRO DERECHA': 0, 'GOL RIVAL TIRO IZQUIERDA': 0, 'GOL RIVAL TIRO FRONTAL': 0, 'GOL RIVAL CENTRO DERECHA': 0, 'GOL RIVAL CENTRO IZQUIERDA': 0, 'GOL RIVAL CORNER DERECHA': 0, 'GOL RIVAL CORNER IZQUIERDA': 0, 'GOL RIVAL FALTA': 0, 'GOL RIVAL PENAL': 0 };
-                    const contarGol = (tipo) => { if (tipo && tipo.startsWith('GOL')) { const key = tipo.replace('PENAL + ', ''); if (tiposGol[key] !== undefined) tiposGol[key]++; } };
-                    const contarGolRival = (tipo) => { if (tipo && tipo.startsWith('GOL RIVAL')) { const key = tipo.replace('PENAL + ', ''); if (tiposGolRival[key] !== undefined) tiposGolRival[key]++; } };
-                    matches.forEach(m => {
-                      (m.events || []).forEach(e => { if (e.type === 'finalizacion' && e.name === 'GOL') contarGol(e.accion); if (e.type === 'finalizacion' && e.name === 'GOL RIVAL') contarGolRival(e.accion); });
-                    });
-                    const golesFavor = Object.entries(tiposGol).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-                    const golesRival = Object.entries(tiposGolRival).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-                    return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                        <div>
-                          <span style={{ color: '#39ff14', fontWeight: 800, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GOLES A FAVOR POR TIPO</span>
-                          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {golesFavor.length > 0 ? golesFavor.map(([tipo, total]) => (
-                              <div key={tipo} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', minWidth: '250px' }}>{tipo}</span>
-                                <div style={{ flex: 1, height: '24px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
-                                  <div style={{ width: `${(total / Math.max(...golesFavor.map(([, v]) => v))) * 100}%`, height: '100%', background: '#39ff14', borderRadius: '4px' }} />
-                                </div>
-                                <span style={{ color: '#39ff14', fontWeight: 900, fontFamily: 'var(--font-mono)', fontSize: '0.9rem', minWidth: '30px', textAlign: 'right' }}>{total}</span>
-                              </div>
-                            )) : <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin goles a favor registrados</span>}
-                          </div>
-                        </div>
-                        <div>
-                          <span style={{ color: '#ef4444', fontWeight: 800, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GOLES RIVAL POR TIPO</span>
-                          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            {golesRival.length > 0 ? golesRival.map(([tipo, total]) => (
-                              <div key={tipo} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', minWidth: '250px' }}>{tipo}</span>
-                                <div style={{ flex: 1, height: '24px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
-                                  <div style={{ width: `${(total / Math.max(...golesRival.map(([, v]) => v))) * 100}%`, height: '100%', background: '#ef4444', borderRadius: '4px' }} />
-                                </div>
-                                <span style={{ color: '#ef4444', fontWeight: 900, fontFamily: 'var(--font-mono)', fontSize: '0.9rem', minWidth: '30px', textAlign: 'right' }}>{total}</span>
-                              </div>
-                            )) : <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin goles rivales registrados</span>}
-                          </div>
                         </div>
                       </div>
                     );
@@ -6613,6 +6557,70 @@ const pctTxt = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
                       </button>
                     </div>
                   </div>
+                </div>
+              )}
+              {activeTab === 'tipogol' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  {(() => {
+                    const tiposGol = { 'TIRO AREA': 0, 'TIRO DERECHA': 0, 'TIRO IZQUIERDA': 0, 'TIRO FRONTAL': 0, 'CENTRO DERECHA': 0, 'CENTRO IZQUIERDA': 0, 'CORNER DERECHA': 0, 'CORNER IZQUIERDA': 0, 'FALTA': 0, 'PENAL': 0, 'AUTOGOL': 0 };
+                    const tiposGolRival = { 'TIRO AREA': 0, 'TIRO DERECHA': 0, 'TIRO IZQUIERDA': 0, 'TIRO FRONTAL': 0, 'CENTRO DERECHA': 0, 'CENTRO IZQUIERDA': 0, 'CORNER DERECHA': 0, 'CORNER IZQUIERDA': 0, 'FALTA': 0, 'PENAL': 0 };
+                    matches.forEach(m => {
+                      (m.events || []).forEach(e => {
+                        if (e.type === 'finalizacion') {
+                          const accion = e.accion || '';
+                          const stripped = accion.replace('GOL ', '').replace('PENAL + ', '');
+                          if (e.name === 'GOL' && tiposGol[stripped] !== undefined) tiposGol[stripped]++;
+                          if (e.name === 'GOL RIVAL' && tiposGolRival[stripped] !== undefined) tiposGolRival[stripped]++;
+                        }
+                      });
+                    });
+                    const golesFavor = Object.entries(tiposGol).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+                    const golesRival = Object.entries(tiposGolRival).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+                    const maxFavor = golesFavor.length > 0 ? Math.max(...golesFavor.map(([, v]) => v)) : 1;
+                    const maxRival = golesRival.length > 0 ? Math.max(...golesRival.map(([, v]) => v)) : 1;
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>TIPO GOL</span>
+                        <div>
+                          <span style={{ color: '#39ff14', fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GOLES A FAVOR POR TIPO</span>
+                          <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {golesFavor.length > 0 ? golesFavor.map(([tipo, total]) => (
+                              <div key={tipo} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', minWidth: '180px' }}>{tipo}</span>
+                                <div style={{ flex: 1, height: '20px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
+                                  <div style={{ width: `${(total / maxFavor) * 100}%`, height: '100%', background: '#39ff14', borderRadius: '4px', transition: 'width 0.3s ease' }} />
+                                </div>
+                                <span style={{ color: '#39ff14', fontWeight: 900, fontFamily: 'var(--font-mono)', fontSize: '0.85rem', minWidth: '30px', textAlign: 'right' }}>{total}</span>
+                              </div>
+                            )) : <span style={{ color: '#64748b', fontSize: '0.85rem', fontStyle: 'italic' }}>Sin goles a favor registrados</span>}
+                          </div>
+                        </div>
+                        <div>
+                          <span style={{ color: '#ef4444', fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>GOLES RIVAL POR TIPO</span>
+                          <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {golesRival.length > 0 ? golesRival.map(([tipo, total]) => (
+                              <div key={tipo} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', minWidth: '180px' }}>{tipo}</span>
+                                <div style={{ flex: 1, height: '20px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden' }}>
+                                  <div style={{ width: `${(total / maxRival) * 100}%`, height: '100%', background: '#ef4444', borderRadius: '4px', transition: 'width 0.3s ease' }} />
+                                </div>
+                                <span style={{ color: '#ef4444', fontWeight: 900, fontFamily: 'var(--font-mono)', fontSize: '0.85rem', minWidth: '30px', textAlign: 'right' }}>{total}</span>
+                              </div>
+                            )) : <span style={{ color: '#64748b', fontSize: '0.85rem', fontStyle: 'italic' }}>Sin goles rivales registrados</span>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
               {activeTab === 'goles' && (
