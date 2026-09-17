@@ -5592,12 +5592,12 @@ export default function App() {
                         style={{ background: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: entry.name.includes('RIVAL') ? '#ef4444' : (entry.type === 'finalizacion' ? '#22c55e' : (entry.type === 'origengol' ? '#eab308' : '#ffffff')), fontWeight: 700, fontSize: (entry.type === 'finalizacion' || entry.type === 'origengol') ? '0.7rem' : '0.85rem', textTransform: 'uppercase', cursor: 'pointer', padding: '0.1rem 0.3rem', maxWidth: '100%' }}
                       >
                         {(entry.type === 'origengol'
-                          ? ['TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','FALTA FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','CORNER DERECHA','CORNER IZQUIERDA','PENAL','ERROR PROPIO','ERROR RIVAL','PROPIA META','TRANSICION']
+                          ? ['','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','FALTA FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','CORNER DERECHA','CORNER IZQUIERDA','PENAL','ERROR PROPIO','ERROR RIVAL','PROPIA META','TRANSICION']
                           : entry.type === 'finalizacion'
                           ? ['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION']
                           : ['INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE','FIN','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS']
                         ).map((op) => (
-                          <option key={op} value={op} style={{ background: '#1e293b', color: '#ffffff' }}>{op}</option>
+                          <option key={op || '__vacio__'} value={op} style={{ background: '#1e293b', color: op ? '#ffffff' : '#64748b' }}>{op || '— ORIGEN —'}</option>
                         ))}
                       </select>
                       {entry.type === 'finalizacion' && (
