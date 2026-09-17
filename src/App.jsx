@@ -5548,6 +5548,11 @@ export default function App() {
                           {(() => {
                             const p = String(entry.time || '').split(':').map(Number);
                             const min = p[0] || 0;
+                            const isRival = entry.name.includes('RIVAL');
+                            if (isRival) {
+                              const rl = golesRivalList.find(g => g && g.minuto === min && g.accion);
+                              if (rl) return rl.accion;
+                            }
                             const gl = golesList.find(g => g && g.minuto === min && g.accion);
                             return gl ? gl.accion : '—';
                           })()}
@@ -6594,7 +6599,7 @@ export default function App() {
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { const ultimaAccion = (() => { for (const e of actionLog) { if (e && e.type === 'accion') return e.name; } return ''; })(); setGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { periodo, minuto: Math.floor(timerSeconds / 60) }]); setGolesList(prev => [...prev, { name: 'RIVAL', tipo: '', name2: '', accion: ultimaAccion, team: 'away', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL RIVAL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL RIVAL'); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { const ultimaAccion = (() => { for (const e of actionLog) { if (e && e.type === 'accion') return e.name; } return ''; })(); setGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { accion: ultimaAccion, periodo, minuto: Math.floor(timerSeconds / 60) }]); setGolesList(prev => [...prev, { name: 'RIVAL', tipo: '', name2: '', accion: ultimaAccion, team: 'away', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL RIVAL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL RIVAL'); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
