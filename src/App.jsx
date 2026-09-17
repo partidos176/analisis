@@ -317,7 +317,7 @@ export default function App() {
   const [fromRival, setFromRival] = useState(false);
   const [lastGoalType, setLastGoalType] = useState(null);
   const [periodo, setPeriodo] = useState('1ª PARTE');
-  const actionLogRef = useRef([]);
+  const lastAccionRef = useRef('');
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [selectedJornadaTiempo, setSelectedJornadaTiempo] = useState('');
   const [playerStatus, setPlayerStatus] = useState('titular');
@@ -410,7 +410,6 @@ export default function App() {
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerInterval, setTimerInterval] = useState(null);
   const [actionLog, setActionLog] = useState([]);
-  useEffect(() => { actionLogRef.current = actionLog; }, [actionLog]);
   const [sustituciones, setSustituciones] = useState([]);
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
   const [contadorWarning, setContadorWarning] = useState(false);
@@ -1287,6 +1286,9 @@ export default function App() {
       setContadorWarning(true);
       setTimeout(() => setContadorWarning(false), 2500);
       return false;
+    }
+    if (type === 'accion') {
+      lastAccionRef.current = name;
     }
     setActionLog(prev => [{ name, time: formatTime(timerSeconds), type }, ...prev]);
     return true;
@@ -6594,14 +6596,14 @@ export default function App() {
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { const ultimaAccion = (() => { for (const e of actionLogRef.current) { if (e && e.type === 'accion') return e.name; } return ''; })(); setGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: ultimaAccion, team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL'); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: lastAccionRef.current, team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL'); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { const ultimaAccion = (() => { for (const e of actionLogRef.current) { if (e && e.type === 'accion') return e.name; } return ''; })(); setGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { accion: ultimaAccion, periodo, minuto: Math.floor(timerSeconds / 60) }]); setGolesList(prev => [...prev, { name: 'RIVAL', tipo: '', name2: '', accion: ultimaAccion, team: 'away', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL RIVAL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL RIVAL'); setActiveTab('goles'); } }}
+                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { accion: lastAccionRef.current, periodo, minuto: Math.floor(timerSeconds / 60) }]); setGolesList(prev => [...prev, { name: 'RIVAL', tipo: '', name2: '', accion: lastAccionRef.current, team: 'away', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL RIVAL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL RIVAL'); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
@@ -6807,13 +6809,24 @@ export default function App() {
                             <option value="TIRO DERECHA">TIRO DERECHA</option>
                             <option value="TIRO IZQUIERDA">TIRO IZQUIERDA</option>
                             <option value="TIRO FRONTAL">TIRO FRONTAL</option>
+                            <option value="RIVAL TIRO AREA">RIVAL TIRO AREA</option>
+                            <option value="RIVAL TIRO DERECHA">RIVAL TIRO DERECHA</option>
+                            <option value="RIVAL TIRO IZQUIERDA">RIVAL TIRO IZQUIERDA</option>
+                            <option value="RIVAL TIRO FRONTAL">RIVAL TIRO FRONTAL</option>
                             <option value="CENTRO DERECHA">CENTRO DERECHA</option>
                             <option value="CENTRO IZQUIERDA">CENTRO IZQUIERDA</option>
+                            <option value="RIVAL CENTRO DERECHA">RIVAL CENTRO DERECHA</option>
+                            <option value="RIVAL CENTRO IZQUIERDA">RIVAL CENTRO IZQUIERDA</option>
                             <option value="FALTA FRONTAL">FALTA FRONTAL</option>
                             <option value="FALTA DERECHA">FALTA DERECHA</option>
                             <option value="FALTA IZQUIERDA">FALTA IZQUIERDA</option>
+                            <option value="RIVAL FALTA FRONTAL">RIVAL FALTA FRONTAL</option>
+                            <option value="RIVAL FALTA DERECHA">RIVAL FALTA DERECHA</option>
+                            <option value="RIVAL FALTA IZQUIERDA">RIVAL FALTA IZQUIERDA</option>
                             <option value="CORNER DERECHA">CORNER DERECHA</option>
                             <option value="CORNER IZQUIERDA">CORNER IZQUIERDA</option>
+                            <option value="RIVAL CORNER DERECHA">RIVAL CORNER DERECHA</option>
+                            <option value="RIVAL CORNER IZQUIERDA">RIVAL CORNER IZQUIERDA</option>
                             <option value="PENAL">PENAL</option>
                             <option value="ERROR PROPIO">ERROR PROPIO</option>
                             <option value="ERROR RIVAL">ERROR RIVAL</option>
@@ -8111,7 +8124,7 @@ export default function App() {
                         {(() => {
                           const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
                           const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
-                          const golesTenerife = (m.golesList || []).length;
+                          const golesTenerife = (m.golesList || []).filter(g => g && g.team !== 'away').length;
                           const golesRival = (m.golesRivalList || []).length;
                           const homeScore = homeIsTenerife ? golesTenerife : golesRival;
                           const awayScore = awayIsTenerife ? golesTenerife : golesRival;
