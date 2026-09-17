@@ -5279,6 +5279,61 @@ export default function App() {
                       </div>
                        </div>
                        </div>
+                {/* Orígenes de gol */}
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                  minWidth: '280px',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#eab308', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
+                    ORIGEN DE GOLES
+                  </span>
+                  {(() => {
+                    const origenes = {};
+                    const contarOrigenes = (gl) => {
+                      const arr = Array.isArray(gl) ? gl : (gl ? Object.values(gl) : []);
+                      arr.forEach(g => {
+                        if (!g) return;
+                        const orig = g.accion || '';
+                        if (orig) origenes[orig] = (origenes[orig] || 0) + 1;
+                      });
+                    };
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      contarOrigenes(m.golesList);
+                    });
+                    contarOrigenes(golesList);
+                    const filas = Object.entries(origenes).sort((a, b) => b[1] - a[1]);
+                    if (filas.length === 0) return (
+                      <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center', padding: '0.5rem' }}>
+                        Sin goles con origen asignado
+                      </span>
+                    );
+                    return (
+                      <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.85rem' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#eab308', fontWeight: 800, textAlign: 'left' }}>ORIGEN</th>
+                            <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#eab308', fontWeight: 800, textAlign: 'center' }}>GOLES</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filas.map(([orig, count]) => (
+                            <tr key={orig}>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#ffffff', fontWeight: 700 }}>{orig}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, textAlign: 'center' }}>{count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    );
+                  })()}
+                </div>
                 {/* Listado de acciones */}
                 <div style={{
                   display: 'flex',
