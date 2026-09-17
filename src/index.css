@@ -50,6 +50,11 @@ button, input {
   color: inherit;
 }
 
+* {
+  -webkit-text-decoration: none;
+  text-decoration: none;
+}
+
 button {
   cursor: pointer;
   border: none;
