@@ -1074,7 +1074,7 @@ export default function App() {
       penalGolCount,
       penalGolRivalCount,
       saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
-  useEffect(() => { setGolCount(golesList.length); }, [golesList]);
+  useEffect(() => { setGolCount(golesList.filter(g => g && g.team !== 'away').length); }, [golesList]);
   useEffect(() => { setGolRivalCount(golesRivalList.length); }, [golesRivalList]);
 
   const generarTodosLosCortes = async () => {
