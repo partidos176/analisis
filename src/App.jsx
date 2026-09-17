@@ -3863,14 +3863,14 @@ export default function App() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.homeTeam}</span>
                 {currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE')
-                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.length}</span>
+                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.filter(g => g.team !== 'away').length}</span>
                   : <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
               <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ffffff' }}>vs</span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.awayTeam}</span>
                 {currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE')
-                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.length}</span>
+                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.filter(g => g.team !== 'away').length}</span>
                   : <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
               </>
