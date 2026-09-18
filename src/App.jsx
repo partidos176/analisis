@@ -4009,6 +4009,27 @@ export default function App() {
                       >
                         INSERTAR
                       </button>
+                      <button
+                        onClick={() => {
+                          const m = matches.find(x => x.id === cadetesMatchId) || currentMatch;
+                          if (!m) { alert('Selecciona una jornada para ir a su alineación'); return; }
+                          setVista('analisis');
+                          handleOpenMatch(m);
+                        }}
+                        style={{
+                          background: '#0284c7',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.9rem',
+                          padding: '0.6rem 1rem',
+                          borderRadius: '8px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        ALINEACIÓN
+                      </button>
                     </div>
                     </div>
                   </div>
