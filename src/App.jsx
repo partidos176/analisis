@@ -3967,6 +3967,8 @@ export default function App() {
                               return { ...prev, [cadetesMatchId]: [...cur, name].sort() };
                             });
                             addCadeteToAlineacion(cadetesMatchId, name);
+                          } else {
+                            alert('Falta seleccionar jornada');
                           }
                           setCadetesNewName('');
                         }}
