@@ -331,6 +331,7 @@ export default function App() {
   });
   const [cadetesNewName, setCadetesNewName] = useState('');
   const [cadetesMatchId, setCadetesMatchId] = useState('');
+  const [cadetesMinutosName, setCadetesMinutosName] = useState('');
   const [cadetesDropdownOpen, setCadetesDropdownOpen] = useState(false);
   const [cadetesJornadaWarning, setCadetesJornadaWarning] = useState(false);
   const [cadetesByMatch, setCadetesByMatch] = useState(() => {
@@ -3891,10 +3892,10 @@ export default function App() {
                       FALTA SELECCIONAR JORNADA
                     </div>
                   )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '560px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '720px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', order: 2 }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start' }}>
-                      <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
+                      <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
                       <select
                         value={cadetesMatchId}
                         onChange={(e) => setCadetesMatchId(e.target.value)}
@@ -3948,7 +3949,7 @@ export default function App() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', order: 1 }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', width: '100%', maxWidth: '320px' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%' }}>
                       <div style={{ position: 'relative', flex: 1 }}>
                         <input
                           value={cadetesNewName}
@@ -4071,7 +4072,86 @@ export default function App() {
                       >
                         ALINEACIÓN
                       </button>
+                      <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', alignSelf: 'center', marginLeft: '3rem' }}>MINUTOS JUGADOS:</span>
+                      <select
+                        value={cadetesMinutosName}
+                        onChange={(e) => setCadetesMinutosName(e.target.value)}
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          fontSize: '0.9rem',
+                          padding: '0.6rem 0.8rem',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                          alignSelf: 'center',
+                          maxWidth: '100%'
+                        }}
+                      >
+                        <option value="">-- Jugador --</option>
+                        {cadetesPlayers.map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
                     </div>
+                    {cadetesMinutosName && (() => {
+                      const norm = normalizePlayerName(cadetesMinutosName);
+                      const calcMin = (pl, subs, durationSec) => {
+                        const list = Array.isArray(pl) ? pl : (pl ? Object.values(pl) : []);
+                        const entry = list.find(p => p && normalizePlayerName(p.name) === norm);
+                        if (!entry || (entry.status !== 'titular' && entry.status !== 'suplente')) return null;
+                        const empiezaTitular = entry.status === 'titular';
+                        let entrySec = empiezaTitular ? 0 : null;
+                        let secs = 0;
+                        const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
+                        subsSorted.forEach(s => {
+                          const subSec = (s.minuto || 0) * 60;
+                          if (normalizePlayerName(s.sale) === norm && entrySec !== null) {
+                            secs += Math.max(0, subSec - entrySec);
+                            entrySec = null;
+                          } else if (normalizePlayerName(s.entra) === norm) {
+                            if (entrySec !== null) secs += Math.max(0, subSec - entrySec);
+                            entrySec = subSec;
+                          }
+                        });
+                        if (entrySec !== null) secs += Math.max(0, (durationSec || 0) - entrySec);
+                        return { status: entry.status, secs };
+                      };
+                      const rows = [];
+                      matches.forEach(m => {
+                        if (currentMatch && m.id === currentMatch.id) return;
+                        const r = calcMin(m.players, m.sustituciones, m.timerSeconds || 0);
+                        if (r) rows.push({ md: Number(m.matchday) || 0, label: 'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || ''), ...r });
+                      });
+                      if (currentMatch) {
+                        const r = calcMin(players, sustituciones, timerSeconds);
+                        if (r) rows.push({ md: Number(currentMatch.matchday) || 0, label: 'J' + currentMatch.matchday + ' — ' + (currentMatch.homeTeam || '') + ' vs ' + (currentMatch.awayTeam || ''), ...r });
+                      }
+                      rows.sort((a, b) => a.md - b.md);
+                      if (rows.length === 0) return <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Sin convocatorias como titular o suplente</span>;
+                      return (
+                        <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: '100%' }}>
+                          <thead>
+                            <tr>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADA</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>TITULAR/SUPLENTE</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>MINUTOS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((r, i) => (
+                              <tr key={i}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{r.label}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: r.status === 'titular' ? '#38bdf8' : '#f59e0b', fontWeight: 900, textTransform: 'uppercase' }}>{r.status}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{Math.floor(r.secs / 60)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      );
+                    })()}
                     </div>
                   </div>
                 </div>
