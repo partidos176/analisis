@@ -7884,8 +7884,7 @@ export default function App() {
                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
                           )}
                            {!!p.name && <XBtn idx={p.idx} />}
-                         </div>
-                         <div style={{ marginTop: 2, background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : p.status === 'no convocado' ? '#e2e8f0' : '#334155', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: Math.max(10, size * 0.22), padding: '0 4px', borderRadius: 4, lineHeight: 1.2, textAlign: 'center', overflowWrap: 'break-word', maxWidth: '100%' }}>{p.name}</div>
+                          </div>
                         </div>
                       );
                     };
@@ -8221,11 +8220,8 @@ export default function App() {
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : isNo ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor' || (!isTit && !isSup && !isNo)) ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
-                                 </div>
-                                  {jugadoresData[p.name]?.pos1 && (
-                                    <div style={{ textAlign: 'center', fontSize: '0.5rem', color: '#ffffff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em', marginTop: 2, textShadow: '0 1px 3px rgba(0,0,0,0.7)', lineHeight: 1 }}>{jugadoresData[p.name].pos1}</div>
-                                  )}
-                                  {menuAbierto && (
+                                  </div>
+                                   {menuAbierto && (
                                     <>
                                       <div className="no-export" style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setMenuJugadorIdx(null)} />
                                       <div className="no-export" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 6, zIndex: 50, display: 'flex', flexDirection: 'column', gap: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 6, boxShadow: '0 6px 18px rgba(0,0,0,0.5)', minWidth: 140 }}>
