@@ -3830,8 +3830,8 @@ export default function App() {
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     CADETES
                   </span>
-                  <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%' }}>
-                    <div style={{ flex: 1, minWidth: '280px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%', alignItems: 'flex-start' }}>
+                    <div style={{ flex: '0 1 auto', minWidth: '220px', maxWidth: '100%', width: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                       <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>JORNADAS</span>
                       <select
                         value={cadetesMatchId}
@@ -3845,7 +3845,8 @@ export default function App() {
                           fontSize: '0.9rem',
                           padding: '0.6rem 0.8rem',
                           cursor: 'pointer',
-                          width: '100%'
+                          width: 'auto',
+                          maxWidth: '100%'
                         }}
                       >
                         <option value="">-- Seleccionar jornada --</option>
