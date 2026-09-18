@@ -3938,7 +3938,7 @@ export default function App() {
                   )}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '1000px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%', maxWidth: '840px', order: 1 }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%', maxWidth: '840px', order: 1, flexWrap: 'wrap' }}>
                       <div style={{ position: 'relative', flex: '0 1 240px', maxWidth: '240px', minWidth: '120px' }}>
                         <input
                           value={cadetesNewName}
@@ -4065,15 +4065,110 @@ export default function App() {
                           borderRadius: '8px',
                           border: 'none',
                           cursor: 'pointer',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          order: -1,
+                          flex: '1 1 100%',
+                          maxWidth: '240px'
                         }}
                       >
                         ALINEACIÓN
                       </button>
-                      <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>JUGADORES CADETES QUE HAN SUBIDO:</span>
-                        <span style={{ background: '#ffffff', color: '#0284c7', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{cadetesPlayers.length}</span>
+                      <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>MINUTOS JUGADOS:</span>
+                        <select
+                          value={cadetesMinutosName}
+                          onChange={(e) => setCadetesMinutosName(e.target.value)}
+                          style={{
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '0.9rem',
+                            padding: '0.6rem 0.8rem',
+                            textTransform: 'uppercase',
+                            cursor: 'pointer',
+                            maxWidth: '100%'
+                          }}
+                        >
+                          <option value="">-- Jugador --</option>
+                        {cadetesPlayers.map((n) => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                       </select>
+                       </div>
+                      {cadetesMinutosName && (() => {
+                      const norm = normalizePlayerName(cadetesMinutosName);
+                      const calcMin = (pl, subs, durationSec) => {
+                        const list = Array.isArray(pl) ? pl : (pl ? Object.values(pl) : []);
+                        const entry = list.find(p => p && normalizePlayerName(p.name) === norm);
+                        if (!entry || (entry.status !== 'titular' && entry.status !== 'suplente')) return null;
+                        const empiezaTitular = entry.status === 'titular';
+                        let entrySec = empiezaTitular ? 0 : null;
+                        let secs = 0;
+                        const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
+                        subsSorted.forEach(s => {
+                          const subSec = (s.minuto || 0) * 60;
+                          if (normalizePlayerName(s.sale) === norm && entrySec !== null) {
+                            secs += Math.max(0, subSec - entrySec);
+                            entrySec = null;
+                          } else if (normalizePlayerName(s.entra) === norm) {
+                            if (entrySec !== null) secs += Math.max(0, subSec - entrySec);
+                            entrySec = subSec;
+                          }
+                        });
+                        if (entrySec !== null) secs += Math.max(0, (durationSec || 0) - entrySec);
+                        return { status: entry.status, secs };
+                      };
+                      const rows = [];
+                      matches.forEach(m => {
+                        if (currentMatch && m.id === currentMatch.id) return;
+                        const r = calcMin(m.players, m.sustituciones, m.timerSeconds || 0);
+                        if (r) rows.push({ md: Number(m.matchday) || 0, label: 'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || ''), ...r });
+                      });
+                      if (currentMatch) {
+                        const r = calcMin(players, sustituciones, timerSeconds);
+                        if (r) rows.push({ md: Number(currentMatch.matchday) || 0, label: 'J' + currentMatch.matchday + ' — ' + (currentMatch.homeTeam || '') + ' vs ' + (currentMatch.awayTeam || ''), ...r });
+                      }
+                      rows.sort((a, b) => a.md - b.md);
+                      if (rows.length === 0) return <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Sin convocatorias como titular o suplente</span>;
+                      return (
+                        <>
+                        <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: 'auto' }}>
+                          <thead>
+                            <tr>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', maxWidth: '14rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>JORNADA</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '9rem' }}>ROL</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '7rem' }}>MINUTOS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((r, i) => (
+                              <tr key={i}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap', maxWidth: '14rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.label}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: r.status === 'titular' ? '#38bdf8' : '#f59e0b', fontWeight: 900, textTransform: 'uppercase' }}>{r.status}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{Math.floor(r.secs / 60)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        </>
+                      );
+                      })()}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '2.5rem' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Cadetes han subido:</span>
+                          <span style={{ background: '#ffffff', color: '#0284c7', fontWeight: 900, fontSize: '0.9rem', padding: '0.15rem 0.5rem', borderRadius: '8px', minWidth: '24px', textAlign: 'center' }}>{cadetesPlayers.length}</span>
+                        </div>
                       </div>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '0.3rem' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Minutos totales jugados:</span>
+                          <span style={{ background: '#ffffff', color: '#0284c7', fontWeight: 900, fontSize: '0.9rem', padding: '0.15rem 0.5rem', borderRadius: '8px', minWidth: '24px', textAlign: 'center' }}>{(() => { const allMs = (matches || []).filter(m => !(currentMatch && m.id === currentMatch.id)); if (currentMatch) allMs.push({ players, sustituciones, timerSeconds, id: currentMatch.id }); let total = 0; cadetesPlayers.forEach(name => { const norm = normalizePlayerName(name); allMs.forEach(m => { const pl = m.players; const subs = m.sustituciones; const dur = m.timerSeconds || 0; const list = Array.isArray(pl) ? pl : (pl ? Object.values(pl) : []); const entry = list.find(p => p && normalizePlayerName(p.name) === norm); if (!entry || (entry.status !== 'titular' && entry.status !== 'suplente')) return; const empieza = entry.status === 'titular'; let entrySec = empieza ? 0 : null; let secs = 0; const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0)); subsSorted.forEach(s => { const subSec = (s.minuto || 0) * 60; if (normalizePlayerName(s.sale) === norm && entrySec !== null) { secs += Math.max(0, subSec - entrySec); entrySec = null; } else if (normalizePlayerName(s.entra) === norm) { if (entrySec !== null) secs += Math.max(0, subSec - entrySec); entrySec = subSec; } }); if (entrySec !== null) secs += Math.max(0, dur - entrySec); total += secs; }); }); return Math.floor(total / 60); })()}</span>
+                        </div>
+                      </div>
+                    </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start', order: 2 }}>
                       <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
@@ -4127,89 +4222,7 @@ export default function App() {
                           </div>
                         );
                       })()}
-                    </div>
-                    <div style={{ marginLeft: 'auto', width: 'fit-content', maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', order: 2 }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                      <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>MINUTOS JUGADOS:</span>
-                      <select
-                        value={cadetesMinutosName}
-                        onChange={(e) => setCadetesMinutosName(e.target.value)}
-                        style={{
-                          background: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                          borderRadius: '8px',
-                          color: '#ffffff',
-                          fontWeight: 700,
-                          fontSize: '0.9rem',
-                          padding: '0.6rem 0.8rem',
-                          textTransform: 'uppercase',
-                          cursor: 'pointer',
-                          maxWidth: '100%'
-                        }}
-                      >
-                        <option value="">-- Jugador --</option>
-                        {cadetesPlayers.map((n) => (
-                          <option key={n} value={n}>{n}</option>
-                        ))}
-                      </select>
-                      </div>
-                      {cadetesMinutosName && (() => {
-                      const norm = normalizePlayerName(cadetesMinutosName);
-                      const calcMin = (pl, subs, durationSec) => {
-                        const list = Array.isArray(pl) ? pl : (pl ? Object.values(pl) : []);
-                        const entry = list.find(p => p && normalizePlayerName(p.name) === norm);
-                        if (!entry || (entry.status !== 'titular' && entry.status !== 'suplente')) return null;
-                        const empiezaTitular = entry.status === 'titular';
-                        let entrySec = empiezaTitular ? 0 : null;
-                        let secs = 0;
-                        const subsSorted = (Array.isArray(subs) ? subs : (subs ? Object.values(subs) : [])).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0));
-                        subsSorted.forEach(s => {
-                          const subSec = (s.minuto || 0) * 60;
-                          if (normalizePlayerName(s.sale) === norm && entrySec !== null) {
-                            secs += Math.max(0, subSec - entrySec);
-                            entrySec = null;
-                          } else if (normalizePlayerName(s.entra) === norm) {
-                            if (entrySec !== null) secs += Math.max(0, subSec - entrySec);
-                            entrySec = subSec;
-                          }
-                        });
-                        if (entrySec !== null) secs += Math.max(0, (durationSec || 0) - entrySec);
-                        return { status: entry.status, secs };
-                      };
-                      const rows = [];
-                      matches.forEach(m => {
-                        if (currentMatch && m.id === currentMatch.id) return;
-                        const r = calcMin(m.players, m.sustituciones, m.timerSeconds || 0);
-                        if (r) rows.push({ md: Number(m.matchday) || 0, label: 'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || ''), ...r });
-                      });
-                      if (currentMatch) {
-                        const r = calcMin(players, sustituciones, timerSeconds);
-                        if (r) rows.push({ md: Number(currentMatch.matchday) || 0, label: 'J' + currentMatch.matchday + ' — ' + (currentMatch.homeTeam || '') + ' vs ' + (currentMatch.awayTeam || ''), ...r });
-                      }
-                      rows.sort((a, b) => a.md - b.md);
-                      if (rows.length === 0) return <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Sin convocatorias como titular o suplente</span>;
-                      return (
-                        <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: 'auto' }}>
-                          <thead>
-                            <tr>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', maxWidth: '14rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>JORNADA</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '9rem' }}>ROL</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '7rem' }}>MINUTOS</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {rows.map((r, i) => (
-                              <tr key={i}>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap', maxWidth: '14rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.label}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: r.status === 'titular' ? '#38bdf8' : '#f59e0b', fontWeight: 900, textTransform: 'uppercase' }}>{r.status}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{Math.floor(r.secs / 60)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      );
-                    })()}
-                      </div>
+                     </div>
                     </div>
                   </div>
                 </div>
