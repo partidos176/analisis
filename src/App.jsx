@@ -331,6 +331,13 @@ export default function App() {
   });
   const [cadetesNewName, setCadetesNewName] = useState('');
   const [cadetesMatchId, setCadetesMatchId] = useState('');
+  const [cadetesByMatch, setCadetesByMatch] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cadetesByMatch');
+      const parsed = saved ? JSON.parse(saved) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch { return {}; }
+  });
   const [alineacionError, setAlineacionError] = useState(false);
   const [menuJugadorIdx, setMenuJugadorIdx] = useState(null);
   const [draggingMapIdx, setDraggingMapIdx] = useState(null);
@@ -370,6 +377,9 @@ export default function App() {
   useEffect(() => {
     try { localStorage.setItem('cadetesPlayers', JSON.stringify(cadetesPlayers)); } catch {}
   }, [cadetesPlayers]);
+  useEffect(() => {
+    try { localStorage.setItem('cadetesByMatch', JSON.stringify(cadetesByMatch)); } catch {}
+  }, [cadetesByMatch]);
   useEffect(() => {
     const onKey = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && activeTab === 'alineacion' && currentMatch && undoSnapshotRef.current) {
@@ -3854,6 +3864,35 @@ export default function App() {
                           <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
                         ))}
                       </select>
+                      {(() => {
+                        if (!cadetesMatchId) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Selecciona una jornada para ver sus jugadores</span>;
+                        const names = cadetesByMatch[cadetesMatchId] || [];
+                        if (names.length === 0) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin jugadores en esta jornada</span>;
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
+                            {names.map((name) => (
+                              <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
+                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
+                                <button
+                                  onClick={() => setCadetesByMatch(prev => ({ ...prev, [cadetesMatchId]: (prev[cadetesMatchId] || []).filter(n => n !== name) }))}
+                                  style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#ef4444',
+                                    fontSize: '1.2rem',
+                                    cursor: 'pointer',
+                                    padding: '0',
+                                    lineHeight: 1
+                                  }}
+                                  title="Quitar de la jornada"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                     <div style={{ flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -3884,10 +3923,18 @@ export default function App() {
                       <button
                         onClick={() => {
                           const name = cadetesNewName.trim().toUpperCase();
-                          if (name && !cadetesPlayers.includes(name)) {
+                          if (!name) return;
+                          if (!cadetesPlayers.includes(name)) {
                             setCadetesPlayers(prev => [...prev, name].sort());
-                            setCadetesNewName('');
                           }
+                          if (cadetesMatchId) {
+                            setCadetesByMatch(prev => {
+                              const cur = prev[cadetesMatchId] || [];
+                              if (cur.includes(name)) return prev;
+                              return { ...prev, [cadetesMatchId]: [...cur, name].sort() };
+                            });
+                          }
+                          setCadetesNewName('');
                         }}
                         disabled={!cadetesNewName.trim()}
                         style={{
@@ -3915,7 +3962,17 @@ export default function App() {
                           <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
                             <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
                             <button
-                              onClick={() => setCadetesPlayers(prev => prev.filter((_, idx) => idx !== i))}
+                              onClick={() => {
+                                setCadetesPlayers(prev => prev.filter((_, idx) => idx !== i));
+                                setCadetesByMatch(prev => {
+                                  const next = {};
+                                  Object.entries(prev).forEach(([mid, arr]) => {
+                                    const f = (arr || []).filter(n => n !== name);
+                                    if (f.length) next[mid] = f;
+                                  });
+                                  return next;
+                                });
+                              }}
                               style={{
                                 background: 'transparent',
                                 border: 'none',
