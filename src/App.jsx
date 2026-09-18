@@ -8003,6 +8003,7 @@ export default function App() {
                           )}
                            {!!p.name && <XBtn idx={p.idx} />}
                           </div>
+                          <div style={{ marginTop: 2, background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : p.status === 'no convocado' ? '#e2e8f0' : '#334155', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: Math.max(9, size * 0.18), padding: '0 4px', borderRadius: 4, lineHeight: 1.2, textAlign: 'center', overflowWrap: 'break-word', maxWidth: '100%' }}>{p.name}</div>
                         </div>
                       );
                     };
