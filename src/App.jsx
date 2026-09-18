@@ -3952,44 +3952,6 @@ export default function App() {
                         INSERTAR
                       </button>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                      {cadetesPlayers.length === 0 ? (
-                        <span style={{ color: '#64748b', fontSize: '0.9rem', textAlign: 'center' }}>
-                          No hay jugadores guardados aún
-                        </span>
-                      ) : (
-                        cadetesPlayers.map((name, i) => (
-                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
-                            <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
-                            <button
-                              onClick={() => {
-                                setCadetesPlayers(prev => prev.filter((_, idx) => idx !== i));
-                                setCadetesByMatch(prev => {
-                                  const next = {};
-                                  Object.entries(prev).forEach(([mid, arr]) => {
-                                    const f = (arr || []).filter(n => n !== name);
-                                    if (f.length) next[mid] = f;
-                                  });
-                                  return next;
-                                });
-                              }}
-                              style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#ef4444',
-                                fontSize: '1.2rem',
-                                cursor: 'pointer',
-                                padding: '0',
-                                lineHeight: 1
-                              }}
-                              title="Eliminar"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
                     </div>
                   </div>
                 </div>
