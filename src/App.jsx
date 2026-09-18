@@ -3862,7 +3862,9 @@ export default function App() {
                         value={cadetesNewName}
                         onChange={(e) => setCadetesNewName(e.target.value)}
                         style={{
-                          flex: 1,
+                          flex: '0 1 25%',
+                          maxWidth: '25%',
+                          minWidth: '120px',
                           background: 'var(--bg-secondary)',
                           border: '1px solid var(--border-subtle)',
                           borderRadius: '8px',
