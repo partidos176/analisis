@@ -3892,7 +3892,7 @@ export default function App() {
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%', alignItems: 'flex-start' }}>
-                    <div style={{ flex: '0 1 auto', minWidth: '220px', maxWidth: '100%', width: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
+                    <div style={{ flex: '0 1 auto', minWidth: '220px', maxWidth: '100%', width: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', order: 2 }}>
                       <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
                       <select
                         value={cadetesMatchId}
@@ -3945,7 +3945,7 @@ export default function App() {
                         );
                       })()}
                     </div>
-                    <div style={{ flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1rem', order: 1 }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
                       <div style={{ position: 'relative', flex: '0 1 25%', maxWidth: '25%', minWidth: '120px' }}>
                         <input
