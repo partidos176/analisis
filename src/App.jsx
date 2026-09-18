@@ -4070,6 +4070,10 @@ export default function App() {
                       >
                         ALINEACIÓN
                       </button>
+                      <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>JUGADORES CADETES QUE HAN SUBIDO:</span>
+                        <span style={{ background: '#ffffff', color: '#0284c7', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{cadetesPlayers.length}</span>
+                      </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start', order: 2 }}>
                       <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
@@ -4124,7 +4128,7 @@ export default function App() {
                         );
                       })()}
                     </div>
-                    <div style={{ marginLeft: 'auto', width: 'fit-content', maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', order: 3 }}>
+                    <div style={{ marginLeft: 'auto', width: 'fit-content', maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', order: 2 }}>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>MINUTOS JUGADOS:</span>
                       <select
