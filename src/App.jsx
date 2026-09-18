@@ -331,6 +331,7 @@ export default function App() {
   });
   const [cadetesNewName, setCadetesNewName] = useState('');
   const [cadetesMatchId, setCadetesMatchId] = useState('');
+  const [cadetesDropdownOpen, setCadetesDropdownOpen] = useState(false);
   const [cadetesJornadaWarning, setCadetesJornadaWarning] = useState(false);
   const [cadetesByMatch, setCadetesByMatch] = useState(() => {
     try {
@@ -3948,31 +3949,68 @@ export default function App() {
                       })()}
                     </div>
                     <div style={{ flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input
-                        list="cadetesNames"
-                        value={cadetesNewName}
-                        onChange={(e) => setCadetesNewName(e.target.value)}
-                        style={{
-                          flex: '0 1 25%',
-                          maxWidth: '25%',
-                          minWidth: '120px',
-                          background: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                          borderRadius: '8px',
-                          color: '#ffffff',
-                          fontWeight: 700,
-                          fontSize: '1rem',
-                          padding: '0.6rem 0.8rem',
-                          textTransform: 'uppercase'
-                        }}
-                        placeholder="Escribir o seleccionar nombre"
-                      />
-                      <datalist id="cadetesNames">
-                        {cadetesPlayers.map((n, i) => (
-                          <option key={i} value={n} />
-                        ))}
-                      </datalist>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                      <div style={{ position: 'relative', flex: '0 1 25%', maxWidth: '25%', minWidth: '120px' }}>
+                        <input
+                          value={cadetesNewName}
+                          onChange={(e) => { setCadetesNewName(e.target.value); setCadetesDropdownOpen(true); }}
+                          onFocus={() => setCadetesDropdownOpen(true)}
+                          style={{
+                            width: '100%',
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '8px',
+                            color: '#ffffff',
+                            fontWeight: 700,
+                            fontSize: '1rem',
+                            padding: '0.6rem 0.8rem',
+                            textTransform: 'uppercase'
+                          }}
+                          placeholder="Escribir o seleccionar nombre"
+                        />
+                        {cadetesDropdownOpen && (
+                          <>
+                            <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setCadetesDropdownOpen(false)} />
+                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, marginTop: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', boxShadow: '0 6px 18px rgba(0,0,0,0.5)', overflow: 'hidden', maxHeight: '220px', overflowY: 'auto' }}>
+                              {cadetesPlayers.filter(n => !cadetesNewName.trim() || n.includes(cadetesNewName.trim().toUpperCase())).map((n) => (
+                                <div key={n} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.6rem', cursor: 'pointer' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+                                  <span onClick={() => { setCadetesNewName(n); setCadetesDropdownOpen(false); }} style={{ flex: 1, color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', textTransform: 'uppercase' }}>{n}</span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setCadetesPlayers(prev => prev.filter(x => x !== n));
+                                      setCadetesByMatch(prev => {
+                                        const next = {};
+                                        Object.entries(prev).forEach(([mid, arr]) => {
+                                          const f = (arr || []).filter(x => x !== n);
+                                          if (f.length) next[mid] = f;
+                                        });
+                                        return next;
+                                      });
+                                      if (cadetesNewName === n) setCadetesNewName('');
+                                    }}
+                                    style={{
+                                      background: 'transparent',
+                                      border: 'none',
+                                      color: '#ef4444',
+                                      fontSize: '1.1rem',
+                                      cursor: 'pointer',
+                                      padding: '0 0 0 0.5rem',
+                                      lineHeight: 1
+                                    }}
+                                    title="Borrar del desplegable"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                              {cadetesPlayers.filter(n => !cadetesNewName.trim() || n.includes(cadetesNewName.trim().toUpperCase())).length === 0 && (
+                                <div style={{ padding: '0.4rem 0.6rem', color: '#64748b', fontSize: '0.85rem' }}>Sin coincidencias</div>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
                       <button
                         onClick={() => {
                           const name = cadetesNewName.trim().toUpperCase();
@@ -3992,6 +4030,7 @@ export default function App() {
                             setTimeout(() => setCadetesJornadaWarning(false), 2500);
                           }
                           setCadetesNewName('');
+                          setCadetesDropdownOpen(false);
                         }}
                         disabled={!cadetesNewName.trim()}
                         style={{
