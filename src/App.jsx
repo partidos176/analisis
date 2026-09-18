@@ -7475,6 +7475,7 @@ export default function App() {
               })()}
                   {activeTab === 'alineacion' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.6rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem' }}>
                     <button
                       onClick={async () => {
@@ -7529,6 +7530,28 @@ export default function App() {
                       }}
                     >
                       {alineacionGuardado ? 'GUARDADO ✓' : 'GUARDAR'}
+                    </button>
+                  </div>
+                    <button
+                      onClick={async () => {
+                        if (currentMatch) { try { await saveMatchData(currentMatch.id); } catch {} }
+                        setVista('totales');
+                        setTotalesTab('cadetes');
+                      }}
+                      style={{
+                        background: '#0284c7',
+                        color: '#ffffff',
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        padding: '0.5rem 1.4rem',
+                        borderRadius: 'var(--radius-full)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      CADETES
                     </button>
                   </div>
                   {alineacionError && (
