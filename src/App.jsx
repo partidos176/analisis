@@ -4080,7 +4080,7 @@ export default function App() {
                           background: 'var(--bg-secondary)',
                           border: '1px solid var(--border-subtle)',
                           borderRadius: '8px',
-                          color: '#ffffff',
+                          color: '#22c55e',
                           fontWeight: 700,
                           fontSize: '0.9rem',
                           padding: '0.6rem 0.8rem',
@@ -4102,7 +4102,7 @@ export default function App() {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
                             {names.map((name) => (
                               <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
-                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
+                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>{name}</span>
                                 <button
                                   onClick={() => setCadetesByMatch(prev => ({ ...prev, [cadetesMatchId]: (prev[cadetesMatchId] || []).filter(n => n !== name) }))}
                                   style={{
@@ -8103,6 +8103,11 @@ export default function App() {
                             }}
                           >
 
+                            {players.some(p => p && p.name && (p.status === 'titular' || p.status === 'suplente') && esCadete(p.name)) && (
+                              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+                                <span style={{ background: 'rgba(15,23,42,0.85)', color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', padding: '0.25rem 0.8rem', borderRadius: '8px 8px 0 0', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Los jugadores con anillo <span style={{ color: '#ef4444' }}>rojo</span> son cadetes</span>
+                              </div>
+                            )}
 
                             {titulares.length === 0 && (
                               <div className="no-export" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
