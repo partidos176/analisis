@@ -3891,8 +3891,9 @@ export default function App() {
                       FALTA SELECCIONAR JORNADA
                     </div>
                   )}
-                  <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%', alignItems: 'flex-start' }}>
-                    <div style={{ flex: '0 1 auto', minWidth: '220px', maxWidth: '100%', width: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', order: 2 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '560px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', order: 2 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start' }}>
                       <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
                       <select
                         value={cadetesMatchId}
@@ -3915,6 +3916,7 @@ export default function App() {
                           <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
                         ))}
                       </select>
+                      </div>
                       {(() => {
                         if (!cadetesMatchId) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Selecciona una jornada para ver sus jugadores</span>;
                         const names = cadetesByMatch[cadetesMatchId] || [];
@@ -3945,9 +3947,9 @@ export default function App() {
                         );
                       })()}
                     </div>
-                    <div style={{ flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1rem', order: 1 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', order: 1 }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                      <div style={{ position: 'relative', flex: '0 1 25%', maxWidth: '25%', minWidth: '120px' }}>
+                      <div style={{ position: 'relative', flex: 1 }}>
                         <input
                           value={cadetesNewName}
                           onChange={(e) => { setCadetesNewName(e.target.value); setCadetesDropdownOpen(true); }}
