@@ -2386,7 +2386,7 @@ export default function App() {
                     const contarJornada = (gl, md) => {
                       const jornada = Number(md);
                       if (!gl || !jornada) return;
-                      const n = gl.filter(g => g).length;
+                      const n = gl.filter(g => g && g.team !== 'away').length;
                       golesPorJornada[jornada] = (golesPorJornada[jornada] || 0) + n;
                     };
                     matches.forEach(m => {
