@@ -4049,8 +4049,12 @@ export default function App() {
                       </button>
                       <button
                         onClick={() => {
-                          const m = matches.find(x => x.id === cadetesMatchId) || currentMatch;
-                          if (!m) { alert('Selecciona una jornada para ir a su alineación'); return; }
+                          const m = matches.find(x => x.id === cadetesMatchId);
+                          if (!m) {
+                            setCadetesJornadaWarning(true);
+                            setTimeout(() => setCadetesJornadaWarning(false), 2500);
+                            return;
+                          }
                           setVista('analisis');
                           handleOpenMatch(m);
                         }}
