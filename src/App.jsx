@@ -3905,7 +3905,7 @@ export default function App() {
                           whiteSpace: 'nowrap'
                         }}
                       >
-                        GUARDAR
+                        INSERTAR
                       </button>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
