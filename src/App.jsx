@@ -139,7 +139,8 @@ const totalesTabsDef = [
   { id: 'tiempojugado', label: 'TOTAL JUGADO' },
   { id: 'minutosjugados', label: 'MINUTOS JORNADA' },
   { id: 'jugadores', label: 'DATOS JUGADOR' },
-  { id: 'posesion', label: 'TOTAL POSESIÓN' }
+  { id: 'posesion', label: 'TOTAL POSESIÓN' },
+  { id: 'cadetes', label: 'CADETES' }
 ];
 
 export default function App() {
@@ -2852,7 +2853,26 @@ export default function App() {
                                         return [...golesCols, ...otrasCols].map(f => (
                                           <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                         ));
-                                      })()}
+})()}
+              {totalesTab === 'cadetes' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                    CADETES
+                  </span>
+                  <div style={{ color: '#94a3b8', textAlign: 'center', fontSize: '1rem' }}>
+                    Próximamente: Estadísticas y análisis de categorías inferiores
+                  </div>
+                </div>
+              )}
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
                                     </tr>
                                   ))}
