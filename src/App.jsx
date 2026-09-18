@@ -3916,7 +3916,6 @@ export default function App() {
                           <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
                         ))}
                       </select>
-                      </div>
                       {(() => {
                         if (!cadetesMatchId) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Selecciona una jornada para ver sus jugadores</span>;
                         const names = cadetesByMatch[cadetesMatchId] || [];
@@ -3946,6 +3945,7 @@ export default function App() {
                           </div>
                         );
                       })()}
+                      </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', order: 1 }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
