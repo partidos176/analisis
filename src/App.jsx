@@ -3854,11 +3854,6 @@ export default function App() {
                           <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
                         ))}
                       </select>
-                      {(() => {
-                        const sel = matches.find(m => m.id === cadetesMatchId);
-                        if (!sel) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>No hay jornada seleccionada</span>;
-                        return <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{'J' + sel.matchday + ' — ' + (sel.homeTeam || '') + ' vs ' + (sel.awayTeam || '')}</span>;
-                      })()}
                     </div>
                     <div style={{ flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
