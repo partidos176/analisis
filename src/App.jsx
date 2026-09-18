@@ -3871,9 +3871,6 @@ export default function App() {
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
-                    CADETES
-                  </span>
                   {cadetesJornadaWarning && (
                     <div style={{
                       position: 'fixed',
