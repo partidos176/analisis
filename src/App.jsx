@@ -2880,7 +2880,8 @@ export default function App() {
                   </span>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px', margin: '0 auto', width: '100%' }}>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <select
+                      <input
+                        list="cadetesNames"
                         value={cadetesNewName}
                         onChange={(e) => setCadetesNewName(e.target.value)}
                         style={{
@@ -2892,15 +2893,15 @@ export default function App() {
                           fontWeight: 700,
                           fontSize: '1rem',
                           padding: '0.6rem 0.8rem',
-                          textTransform: 'uppercase',
-                          cursor: 'pointer'
+                          textTransform: 'uppercase'
                         }}
-                      >
-                        <option value="">-- Seleccionar o escribir nombre --</option>
+                        placeholder="Escribir o seleccionar nombre"
+                      />
+                      <datalist id="cadetesNames">
                         {cadetesPlayers.map((n, i) => (
-                          <option key={i} value={n}>{n}</option>
+                          <option key={i} value={n} />
                         ))}
-                      </select>
+                      </datalist>
                       <button
                         onClick={() => {
                           const name = cadetesNewName.trim().toUpperCase();
