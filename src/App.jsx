@@ -3957,17 +3957,16 @@ export default function App() {
                         onClick={() => {
                           const name = cadetesNewName.trim().toUpperCase();
                           if (!name) return;
+                          if (!cadetesMatchId) { alert('Selecciona una jornada para añadir el jugador a su alineación'); return; }
                           if (!cadetesPlayers.includes(name)) {
                             setCadetesPlayers(prev => [...prev, name].sort());
                           }
-                          if (cadetesMatchId) {
-                            setCadetesByMatch(prev => {
-                              const cur = prev[cadetesMatchId] || [];
-                              if (cur.includes(name)) return prev;
-                              return { ...prev, [cadetesMatchId]: [...cur, name].sort() };
-                            });
-                            addCadeteToAlineacion(cadetesMatchId, name);
-                          }
+                          setCadetesByMatch(prev => {
+                            const cur = prev[cadetesMatchId] || [];
+                            if (cur.includes(name)) return prev;
+                            return { ...prev, [cadetesMatchId]: [...cur, name].sort() };
+                          });
+                          addCadeteToAlineacion(cadetesMatchId, name);
                           setCadetesNewName('');
                         }}
                         disabled={!cadetesNewName.trim()}
