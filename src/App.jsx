@@ -2836,7 +2836,7 @@ export default function App() {
                                       const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
                                       const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
                                       return [...golesCols, ...otrasCols].map(f => (
-                                        <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL' ? '#16a34a' : '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', background: f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL' ? 'rgba(22,163,74,0.1)' : 'transparent' }}>{f}</th>
+                                        <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
                                       ));
                                     })()}
                                      <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
@@ -2850,7 +2850,7 @@ export default function App() {
                                         const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
                                         const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
                                         return [...golesCols, ...otrasCols].map(f => (
-                                          <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900, background: f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL' ? 'rgba(22,163,74,0.1)' : 'transparent' }}>{cruce[a][f] || ''}</td>
+                                          <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                         ));
                                       })()}
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
