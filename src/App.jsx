@@ -334,6 +334,7 @@ export default function App() {
   const [cadetesMinutosName, setCadetesMinutosName] = useState('');
   const [cadetesDropdownOpen, setCadetesDropdownOpen] = useState(false);
   const [cadetesJornadaWarning, setCadetesJornadaWarning] = useState(false);
+  const [cadetesInsertOk, setCadetesInsertOk] = useState(false);
   const [cadetesByMatch, setCadetesByMatch] = useState(() => {
     try {
       const saved = localStorage.getItem('cadetesByMatch');
@@ -1080,11 +1081,13 @@ export default function App() {
       if (list.some(p => p && normalizePlayerName(p.name) === norm)) return;
       const emptyIdx = list.findIndex(p => !p || !p.name);
       if (emptyIdx !== -1) {
-        list[emptyIdx] = { ...list[emptyIdx], name: norm, status: '-' };
+        list[emptyIdx] = { ...list[emptyIdx], name: norm, status: '-', esCadete: true };
       } else {
-        list = [...list, { name: norm, status: '-' }];
+        list = [...list, { name: norm, status: '-', esCadete: true }];
       }
       await set(pRef, sanitizeForFirebase(list));
+      setCadetesInsertOk(true);
+      setTimeout(() => setCadetesInsertOk(false), 2500);
       if (currentMatch && currentMatch.id === matchId) {
         setPlayers(prev => {
           if (prev.some(p => p && normalizePlayerName(p.name) === norm)) return prev;
@@ -1094,13 +1097,20 @@ export default function App() {
             copy.push({ name: '', status: '-' });
             idx = copy.length - 1;
           }
-          copy[idx] = { ...copy[idx], name: norm, status: '-' };
+          copy[idx] = { ...copy[idx], name: norm, status: '-', esCadete: true };
           return copy;
         });
       }
     } catch (err) {
       console.error('Error añadiendo cadete a alineación:', err);
     }
+  };
+
+  const esCadete = (name) => {
+    const norm = normalizePlayerName(name);
+    if (!norm) return false;
+    if ((cadetesByMatch[currentMatch?.id] || []).some(n => normalizePlayerName(n) === norm)) return true;
+    return players.some(p => p && p.esCadete && normalizePlayerName(p.name) === norm);
   };
 
   const handleBackToList = async () => {
@@ -3892,65 +3902,29 @@ export default function App() {
                       FALTA SELECCIONAR JORNADA
                     </div>
                   )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '720px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', order: 2 }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start' }}>
-                      <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
-                      <select
-                        value={cadetesMatchId}
-                        onChange={(e) => setCadetesMatchId(e.target.value)}
-                        style={{
-                          background: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                          borderRadius: '8px',
-                          color: '#ffffff',
-                          fontWeight: 700,
-                          fontSize: '0.9rem',
-                          padding: '0.6rem 0.8rem',
-                          cursor: 'pointer',
-                          width: 'auto',
-                          maxWidth: '100%'
-                        }}
-                      >
-                        <option value="">-- Seleccionar jornada --</option>
-                        {[...matches].filter(m => m.matchday).sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
-                          <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
-                        ))}
-                      </select>
-                      {(() => {
-                        if (!cadetesMatchId) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Selecciona una jornada para ver sus jugadores</span>;
-                        const names = cadetesByMatch[cadetesMatchId] || [];
-                        if (names.length === 0) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin jugadores en esta jornada</span>;
-                        return (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
-                            {names.map((name) => (
-                              <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
-                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
-                                <button
-                                  onClick={() => setCadetesByMatch(prev => ({ ...prev, [cadetesMatchId]: (prev[cadetesMatchId] || []).filter(n => n !== name) }))}
-                                  style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    color: '#ef4444',
-                                    fontSize: '1.2rem',
-                                    cursor: 'pointer',
-                                    padding: '0',
-                                    lineHeight: 1
-                                  }}
-                                  title="Quitar de la jornada"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })()}
-                      </div>
+                  {cadetesInsertOk && (
+                    <div style={{
+                      position: 'fixed',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      background: '#16a34a',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '1.5rem',
+                      padding: '1.5rem 3rem',
+                      borderRadius: '12px',
+                      zIndex: 1000,
+                      textTransform: 'uppercase',
+                      textAlign: 'center'
+                    }}>
+                      JUGADOR EN ALINEACIÓN
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', order: 1 }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%' }}>
-                      <div style={{ position: 'relative', flex: 1 }}>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '1000px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%', maxWidth: '840px', order: 1 }}>
+                      <div style={{ position: 'relative', flex: '0 1 240px', maxWidth: '240px', minWidth: '120px' }}>
                         <input
                           value={cadetesNewName}
                           onChange={(e) => { setCadetesNewName(e.target.value); setCadetesDropdownOpen(true); }}
@@ -4048,8 +4022,17 @@ export default function App() {
                         INSERTAR
                       </button>
                       <button
-                        onClick={() => {
-                          const m = matches.find(x => x.id === cadetesMatchId);
+                        onClick={async () => {
+                          if (!cadetesMatchId) {
+                            setCadetesJornadaWarning(true);
+                            setTimeout(() => setCadetesJornadaWarning(false), 2500);
+                            return;
+                          }
+                          let m = matches.find(x => x.id === cadetesMatchId);
+                          try {
+                            const snap = await get(ref(db, `matches/${cadetesMatchId}`));
+                            if (snap.exists()) m = { id: cadetesMatchId, ...snap.val() };
+                          } catch {}
                           if (!m) {
                             setCadetesJornadaWarning(true);
                             setTimeout(() => setCadetesJornadaWarning(false), 2500);
@@ -4072,7 +4055,63 @@ export default function App() {
                       >
                         ALINEACIÓN
                       </button>
-                      <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', alignSelf: 'center', marginLeft: '3rem' }}>MINUTOS JUGADOS:</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start', order: 3 }}>
+                      <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
+                      <select
+                        value={cadetesMatchId}
+                        onChange={(e) => setCadetesMatchId(e.target.value)}
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          fontSize: '0.9rem',
+                          padding: '0.6rem 0.8rem',
+                          cursor: 'pointer',
+                          width: 'auto',
+                          maxWidth: '100%'
+                        }}
+                      >
+                        <option value="">-- Seleccionar jornada --</option>
+                        {[...matches].filter(m => m.matchday).sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
+                          <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
+                        ))}
+                      </select>
+                      {(() => {
+                        if (!cadetesMatchId) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Selecciona una jornada para ver sus jugadores</span>;
+                        const names = cadetesByMatch[cadetesMatchId] || [];
+                        if (names.length === 0) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin jugadores en esta jornada</span>;
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
+                            {names.map((name) => (
+                              <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
+                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
+                                <button
+                                  onClick={() => setCadetesByMatch(prev => ({ ...prev, [cadetesMatchId]: (prev[cadetesMatchId] || []).filter(n => n !== name) }))}
+                                  style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#ef4444',
+                                    fontSize: '1.2rem',
+                                    cursor: 'pointer',
+                                    padding: '0',
+                                    lineHeight: 1
+                                  }}
+                                  title="Quitar de la jornada"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    <div style={{ marginLeft: 'auto', width: 'fit-content', maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', order: 2 }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>MINUTOS JUGADOS:</span>
                       <select
                         value={cadetesMinutosName}
                         onChange={(e) => setCadetesMinutosName(e.target.value)}
@@ -4086,7 +4125,6 @@ export default function App() {
                           padding: '0.6rem 0.8rem',
                           textTransform: 'uppercase',
                           cursor: 'pointer',
-                          alignSelf: 'center',
                           maxWidth: '100%'
                         }}
                       >
@@ -4095,8 +4133,8 @@ export default function App() {
                           <option key={n} value={n}>{n}</option>
                         ))}
                       </select>
-                    </div>
-                    {cadetesMinutosName && (() => {
+                      </div>
+                      {cadetesMinutosName && (() => {
                       const norm = normalizePlayerName(cadetesMinutosName);
                       const calcMin = (pl, subs, durationSec) => {
                         const list = Array.isArray(pl) ? pl : (pl ? Object.values(pl) : []);
@@ -4132,18 +4170,18 @@ export default function App() {
                       rows.sort((a, b) => a.md - b.md);
                       if (rows.length === 0) return <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Sin convocatorias como titular o suplente</span>;
                       return (
-                        <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: '100%' }}>
+                        <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: 'auto' }}>
                           <thead>
                             <tr>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADA</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>TITULAR/SUPLENTE</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>MINUTOS</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', maxWidth: '14rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>JORNADA</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '9rem' }}>ROL</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '7rem' }}>MINUTOS</th>
                             </tr>
                           </thead>
                           <tbody>
                             {rows.map((r, i) => (
                               <tr key={i}>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{r.label}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap', maxWidth: '14rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.label}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: r.status === 'titular' ? '#38bdf8' : '#f59e0b', fontWeight: 900, textTransform: 'uppercase' }}>{r.status}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{Math.floor(r.secs / 60)}</td>
                               </tr>
@@ -4152,6 +4190,7 @@ export default function App() {
                         </table>
                       );
                     })()}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -7947,7 +7986,7 @@ export default function App() {
                             width: size,
                             height: size,
                             borderRadius: '50%',
-                            border: `3px solid ${p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'no convocado' ? '#000000' : p.status === 'tenerife c' ? '#06b6d4' : '#334155'}`,
+                            border: `3px solid ${esCadete(p.name) ? '#ef4444' : p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'no convocado' ? '#000000' : p.status === 'tenerife c' ? '#06b6d4' : '#334155'}`,
                             overflow: 'hidden',
                             position: 'relative',
                             cursor: p.status === 'no convocado' ? 'pointer' : 'grab',
@@ -7960,7 +7999,7 @@ export default function App() {
                           {foto ? (
                             <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                           ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: esCadete(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
                           )}
                            {!!p.name && <XBtn idx={p.idx} />}
                           </div>
@@ -8118,13 +8157,13 @@ export default function App() {
                                      width: 100,
                                     height: 100,
                                     borderRadius: '50%',
-                                    border: `3px solid ${isNoConvocado ? '#000000' : '#38bdf8'}`,
+                                    border: `3px solid ${esCadete(p.name) ? '#ef4444' : isNoConvocado ? '#000000' : '#38bdf8'}`,
                                     overflow: 'hidden',
                                     background: '#0f172a',
                                     position: 'relative',
                                     boxShadow: draggingMapIdx === p.idx ? '0 6px 18px rgba(0,0,0,0.5)' : '0 2px 10px rgba(0,0,0,0.4)'
                                   }}>
-                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: esCadete(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                    {!!p.name && <XBtn idx={p.idx} />}
                                   </div>
                                   <div style={{ marginTop: 2, maxWidth: 124, background: p.status === 'titular' ? 'rgba(56,189,248,0.95)' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : p.status === 'no convocado' ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 12, textAlign: 'center', padding: '1px 4px', letterSpacing: '0.02em', lineHeight: 1.2, borderRadius: 4, overflowWrap: 'break-word' }}>{p.name}</div>
@@ -8288,7 +8327,7 @@ export default function App() {
                                     width: 90,
                                     height: 90,
                                     borderRadius: '50%',
-                                    border: `3px solid ${isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? '#000000' : '#334155'}`,
+                                    border: `3px solid ${esCadete(p.name) ? '#ef4444' : isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? '#000000' : '#334155'}`,
                                     overflow: 'hidden',
                                     position: 'relative',
                                     cursor: 'pointer',
@@ -8296,7 +8335,7 @@ export default function App() {
                                     boxShadow: isTit || isSup ? '0 2px 8px rgba(0,0,0,0.35)' : 'none'
                                   }}
                                 >
-                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: esCadete(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : isNo ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor' || (!isTit && !isSup && !isNo)) ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
                                   </div>
