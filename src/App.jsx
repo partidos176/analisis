@@ -2282,9 +2282,9 @@ export default function App() {
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
                       const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                      gl.forEach(g => { if (g) addGoal(g.name || 'P. META RIVAL', g.tipo); });
+                      gl.forEach(g => { if (g && g.team !== 'away') addGoal(g.name || 'P. META RIVAL', g.tipo); });
                     });
-                    golesList.forEach(g => { if (g) addGoal(g.name || 'P. META RIVAL', g.tipo); });
+                    golesList.forEach(g => { if (g && g.team !== 'away') addGoal(g.name || 'P. META RIVAL', g.tipo); });
                     const filas = Object.entries(stats).sort((a, b) => b[1].total - a[1].total);
                     const asistStats = {};
                     const addAsist = (name2) => {
@@ -2292,7 +2292,7 @@ export default function App() {
                       asistStats[name2] = (asistStats[name2] || 0) + 1;
                     };
                     const contarAsist = (gl) => {
-                      gl.forEach(g => { if (g && g.name2) addAsist(g.name2); });
+                      gl.forEach(g => { if (g && g.team !== 'away' && g.name2) addAsist(g.name2); });
                     };
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
@@ -2312,7 +2312,7 @@ export default function App() {
                     ];
                     const contarGoles = (gl) => {
                       gl.forEach(g => {
-                        if (!g) return;
+                        if (!g || g.team === 'away') return;
                         totalGoles += 1;
                         const min = g.minuto || 0;
                         const p = periodos.find(p => min >= p.desde && min <= p.hasta) || periodos[periodos.length - 1];
@@ -2323,7 +2323,7 @@ export default function App() {
                     let pMetaCount = 0;
                     const contarAccion = (gl) => {
                       gl.forEach(g => {
-                        if (!g) return;
+                        if (!g || g.team === 'away') return;
                         if (g.tipo === 'P. META RIVAL' || g.tipo === 'P. META') { pMetaCount += 1; return; }
                         const acc = g.accion || 'SIN ACCIÓN';
                         accionStats[acc] = (accionStats[acc] || 0) + 1;
