@@ -331,6 +331,7 @@ export default function App() {
   });
   const [cadetesNewName, setCadetesNewName] = useState('');
   const [cadetesMatchId, setCadetesMatchId] = useState('');
+  const [cadetesJornadaWarning, setCadetesJornadaWarning] = useState(false);
   const [cadetesByMatch, setCadetesByMatch] = useState(() => {
     try {
       const saved = localStorage.getItem('cadetesByMatch');
@@ -3873,6 +3874,26 @@ export default function App() {
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     CADETES
                   </span>
+                  {cadetesJornadaWarning && (
+                    <div style={{
+                      position: 'fixed',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      background: '#dc2626',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '1.5rem',
+                      padding: '1.5rem 3rem',
+                      borderRadius: '12px',
+                      zIndex: 1000,
+                      animation: 'blink 0.5s infinite',
+                      textTransform: 'uppercase',
+                      textAlign: 'center'
+                    }}>
+                      FALTA SELECCIONAR JORNADA
+                    </div>
+                  )}
                   <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%', alignItems: 'flex-start' }}>
                     <div style={{ flex: '0 1 auto', minWidth: '220px', maxWidth: '100%', width: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                       <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>JORNADAS</span>
@@ -3968,7 +3989,8 @@ export default function App() {
                             });
                             addCadeteToAlineacion(cadetesMatchId, name);
                           } else {
-                            alert('Falta seleccionar jornada');
+                            setCadetesJornadaWarning(true);
+                            setTimeout(() => setCadetesJornadaWarning(false), 2500);
                           }
                           setCadetesNewName('');
                         }}
