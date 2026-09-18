@@ -982,9 +982,10 @@ export default function App() {
       let rawPlayers = match.players ? normalizeArray(match.players) : defaultPlayersList();
       // normaliza nombres legacy (JUAN->JUANDA), trim, upper
       rawPlayers = rawPlayers.map(p => p && p.name ? { ...p, name: normalizePlayerName(p.name) } : p);
-      // rellena a 24 y dedup
+      // rellena a 24 y dedup (se permiten hasta 40 para no perder
+      // jugadores añadidos como cadetes cuando la plantilla está llena)
       while (rawPlayers.length < 24) rawPlayers.push({ name: '', status: '-' });
-      rawPlayers = dedupePlayers(rawPlayers).slice(0, 24);
+      rawPlayers = dedupePlayers(rawPlayers).slice(0, 40);
       setPlayers(rawPlayers);
     }
     setTimerSeconds(match.timerSeconds ?? 0);
@@ -1111,6 +1112,20 @@ export default function App() {
     if (!norm) return false;
     if ((cadetesByMatch[currentMatch?.id] || []).some(n => normalizePlayerName(n) === norm)) return true;
     return players.some(p => p && p.esCadete && normalizePlayerName(p.name) === norm);
+  };
+
+  const esCadeteGlobal = (name) => {
+    const norm = normalizePlayerName(name);
+    if (!norm) return false;
+    for (const arr of Object.values(cadetesByMatch)) {
+      if ((arr || []).some(n => normalizePlayerName(n) === norm)) return true;
+    }
+    if (esCadete(name)) return true;
+    for (const m of matches) {
+      const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+      if (pl.some(p => p && p.esCadete && normalizePlayerName(p.name) === norm)) return true;
+    }
+    return false;
   };
 
   const handleBackToList = async () => {
@@ -3556,7 +3571,7 @@ export default function App() {
                             <tbody>
                               {filas.map(([n, m]) => (
                                 <tr key={n}>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', color: '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>{n}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', color: esCadeteGlobal(n) ? '#ef4444' : '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>{n}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{formatTime(m)}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{totalTitular[n] || 0}</td>
@@ -4056,7 +4071,7 @@ export default function App() {
                         ALINEACIÓN
                       </button>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start', order: 3 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start', order: 2 }}>
                       <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
                       <select
                         value={cadetesMatchId}
@@ -4109,7 +4124,7 @@ export default function App() {
                         );
                       })()}
                     </div>
-                    <div style={{ marginLeft: 'auto', width: 'fit-content', maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', order: 2 }}>
+                    <div style={{ marginLeft: 'auto', width: 'fit-content', maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center', order: 3 }}>
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>MINUTOS JUGADOS:</span>
                       <select
