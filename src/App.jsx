@@ -453,7 +453,6 @@ export default function App() {
   }, [posesionDropdownOpen]);
   const [dataLoadedId, setDataLoadedId] = useState(null);
   const [saveError, setSaveError] = useState('');
-  const [alineacionGuardado, setAlineacionGuardado] = useState(false);
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const fichaJugadorRef = useRef(null);
   const alineacionRef = useRef(null);
@@ -7529,28 +7528,6 @@ export default function App() {
                       }}
                     >
                       ↓
-                    </button>
-                    <button
-                      onClick={async () => {
-                        if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
-                        await saveMatchData(currentMatch.id);
-                        setAlineacionGuardado(true);
-                        setTimeout(() => setAlineacionGuardado(false), 2000);
-                      }}
-                      style={{
-                        background: alineacionGuardado ? '#16a34a' : '#0284c7',
-                        color: '#ffffff',
-                        fontWeight: 800,
-                        fontSize: '0.85rem',
-                        padding: '0.5rem 1.4rem',
-                        borderRadius: 'var(--radius-full)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                      }}
-                    >
-                      {alineacionGuardado ? 'GUARDADO ✓' : 'GUARDAR'}
                     </button>
                   </div>
                     <button
