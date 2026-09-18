@@ -2857,106 +2857,13 @@ export default function App() {
                                   {cruceRivalAcciones.map(a => (
                                     <tr key={a}>
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ef4444', fontWeight: 700, whiteSpace: 'nowrap' }}>{a.replace('RIVAL ', 'R. ')}</td>
-                                      {(() => {
+{(() => {
                                         const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
                                         const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
                                         return [...golesCols, ...otrasCols].map(f => (
                                           <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                         ));
-})()}
-              {totalesTab === 'cadetes' && (
-                <div style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '2rem',
-                  minHeight: '400px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem'
-                }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
-                    CADETES
-                  </span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px', margin: '0 auto', width: '100%' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input
-                        list="cadetesNames"
-                        value={cadetesNewName}
-                        onChange={(e) => setCadetesNewName(e.target.value)}
-                        style={{
-                          flex: 1,
-                          background: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                          borderRadius: '8px',
-                          color: '#ffffff',
-                          fontWeight: 700,
-                          fontSize: '1rem',
-                          padding: '0.6rem 0.8rem',
-                          textTransform: 'uppercase'
-                        }}
-                        placeholder="Escribir o seleccionar nombre"
-                      />
-                      <datalist id="cadetesNames">
-                        {cadetesPlayers.map((n, i) => (
-                          <option key={i} value={n} />
-                        ))}
-                      </datalist>
-                      <button
-                        onClick={() => {
-                          const name = cadetesNewName.trim().toUpperCase();
-                          if (name && !cadetesPlayers.includes(name)) {
-                            setCadetesPlayers(prev => [...prev, name].sort());
-                            setCadetesNewName('');
-                          }
-                        }}
-                        disabled={!cadetesNewName.trim()}
-                        style={{
-                          background: '#16a34a',
-                          color: '#ffffff',
-                          fontWeight: 900,
-                          fontSize: '0.9rem',
-                          padding: '0.6rem 1rem',
-                          borderRadius: '8px',
-                          border: 'none',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap'
-                        }}
-                      >
-                        GUARDAR
-                      </button>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                      {cadetesPlayers.length === 0 ? (
-                        <span style={{ color: '#64748b', fontSize: '0.9rem', textAlign: 'center' }}>
-                          No hay jugadores guardados aún
-                        </span>
-                      ) : (
-                        cadetesPlayers.map((name, i) => (
-                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
-                            <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
-                            <button
-                              onClick={() => setCadetesPlayers(prev => prev.filter((_, idx) => idx !== i))}
-                              style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#ef4444',
-                                fontSize: '1.2rem',
-                                cursor: 'pointer',
-                                padding: '0',
-                                lineHeight: 1
-                              }}
-                              title="Eliminar"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+                                      })()}
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
                                     </tr>
                                   ))}
@@ -3908,6 +3815,99 @@ export default function App() {
                 </div>
                 );
               })()}
+              {totalesTab === 'cadetes' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                    CADETES
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px', margin: '0 auto', width: '100%' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input
+                        list="cadetesNames"
+                        value={cadetesNewName}
+                        onChange={(e) => setCadetesNewName(e.target.value)}
+                        style={{
+                          flex: 1,
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          fontSize: '1rem',
+                          padding: '0.6rem 0.8rem',
+                          textTransform: 'uppercase'
+                        }}
+                        placeholder="Escribir o seleccionar nombre"
+                      />
+                      <datalist id="cadetesNames">
+                        {cadetesPlayers.map((n, i) => (
+                          <option key={i} value={n} />
+                        ))}
+                      </datalist>
+                      <button
+                        onClick={() => {
+                          const name = cadetesNewName.trim().toUpperCase();
+                          if (name && !cadetesPlayers.includes(name)) {
+                            setCadetesPlayers(prev => [...prev, name].sort());
+                            setCadetesNewName('');
+                          }
+                        }}
+                        disabled={!cadetesNewName.trim()}
+                        style={{
+                          background: '#16a34a',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.9rem',
+                          padding: '0.6rem 1rem',
+                          borderRadius: '8px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        GUARDAR
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {cadetesPlayers.length === 0 ? (
+                        <span style={{ color: '#64748b', fontSize: '0.9rem', textAlign: 'center' }}>
+                          No hay jugadores guardados aún
+                        </span>
+                      ) : (
+                        cadetesPlayers.map((name, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
+                            <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
+                            <button
+                              onClick={() => setCadetesPlayers(prev => prev.filter((_, idx) => idx !== i))}
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#ef4444',
+                                fontSize: '1.2rem',
+                                cursor: 'pointer',
+                                padding: '0',
+                                lineHeight: 1
+                              }}
+                              title="Eliminar"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
           </div>
         </main>
       </div>
