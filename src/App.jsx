@@ -2665,7 +2665,7 @@ export default function App() {
                                       <>
                                         {filasAccionRival.map(([n, v]) => (
                                           <tr key={n}>
-                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
+                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n.replace('RIVAL ', 'R. ')}</td>
                                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v || '-'}</td>
                                           </tr>
                                         ))}
