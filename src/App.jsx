@@ -3948,7 +3948,7 @@ export default function App() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', order: 1 }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', width: '100%', maxWidth: '320px' }}>
                       <div style={{ position: 'relative', flex: 1 }}>
                         <input
                           value={cadetesNewName}
