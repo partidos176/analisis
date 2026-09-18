@@ -323,6 +323,13 @@ export default function App() {
   const [selectedJornadaTiempo, setSelectedJornadaTiempo] = useState('');
   const [playerStatus, setPlayerStatus] = useState('titular');
   const [players, setPlayers] = useState(defaultPlayersList());
+  const [cadetesPlayers, setCadetesPlayers] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cadetesPlayers');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [cadetesNewName, setCadetesNewName] = useState('');
   const [alineacionError, setAlineacionError] = useState(false);
   const [menuJugadorIdx, setMenuJugadorIdx] = useState(null);
   const [draggingMapIdx, setDraggingMapIdx] = useState(null);
@@ -359,6 +366,9 @@ export default function App() {
     forceHistUpdate(v => v + 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMatch?.id]);
+  useEffect(() => {
+    try { localStorage.setItem('cadetesPlayers', JSON.stringify(cadetesPlayers)); } catch {}
+  }, [cadetesPlayers]);
   useEffect(() => {
     const onKey = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && activeTab === 'alineacion' && currentMatch && undoSnapshotRef.current) {
@@ -2868,8 +2878,81 @@ export default function App() {
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     CADETES
                   </span>
-                  <div style={{ color: '#94a3b8', textAlign: 'center', fontSize: '1rem' }}>
-                    Próximamente: Estadísticas y análisis de categorías inferiores
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px', margin: '0 auto', width: '100%' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <select
+                        value={cadetesNewName}
+                        onChange={(e) => setCadetesNewName(e.target.value)}
+                        style={{
+                          flex: 1,
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          fontSize: '1rem',
+                          padding: '0.6rem 0.8rem',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="">-- Seleccionar o escribir nombre --</option>
+                        {cadetesPlayers.map((n, i) => (
+                          <option key={i} value={n}>{n}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          const name = cadetesNewName.trim().toUpperCase();
+                          if (name && !cadetesPlayers.includes(name)) {
+                            setCadetesPlayers(prev => [...prev, name].sort());
+                            setCadetesNewName('');
+                          }
+                        }}
+                        disabled={!cadetesNewName.trim()}
+                        style={{
+                          background: '#16a34a',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.9rem',
+                          padding: '0.6rem 1rem',
+                          borderRadius: '8px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        GUARDAR
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {cadetesPlayers.length === 0 ? (
+                        <span style={{ color: '#64748b', fontSize: '0.9rem', textAlign: 'center' }}>
+                          No hay jugadores guardados aún
+                        </span>
+                      ) : (
+                        cadetesPlayers.map((name, i) => (
+                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
+                            <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
+                            <button
+                              onClick={() => setCadetesPlayers(prev => prev.filter((_, idx) => idx !== i))}
+                              style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#ef4444',
+                                fontSize: '1.2rem',
+                                cursor: 'pointer',
+                                padding: '0',
+                                lineHeight: 1
+                              }}
+                              title="Eliminar"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
