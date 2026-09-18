@@ -1068,6 +1068,39 @@ export default function App() {
     }
   };
 
+  const addCadeteToAlineacion = async (matchId, name) => {
+    const norm = normalizePlayerName(name);
+    if (!matchId || !norm) return;
+    try {
+      const pRef = ref(db, `matches/${matchId}/players`);
+      const snap = await get(pRef);
+      let list = normalizeArray(snap.exists() ? snap.val() : []);
+      if (list.some(p => p && normalizePlayerName(p.name) === norm)) return;
+      const emptyIdx = list.findIndex(p => !p || !p.name);
+      if (emptyIdx !== -1) {
+        list[emptyIdx] = { ...list[emptyIdx], name: norm, status: '-' };
+      } else {
+        list = [...list, { name: norm, status: '-' }];
+      }
+      await set(pRef, sanitizeForFirebase(list));
+      if (currentMatch && currentMatch.id === matchId) {
+        setPlayers(prev => {
+          if (prev.some(p => p && normalizePlayerName(p.name) === norm)) return prev;
+          const copy = [...prev];
+          let idx = copy.findIndex(q => !q.name);
+          if (idx === -1) {
+            copy.push({ name: '', status: '-' });
+            idx = copy.length - 1;
+          }
+          copy[idx] = { ...copy[idx], name: norm, status: '-' };
+          return copy;
+        });
+      }
+    } catch (err) {
+      console.error('Error añadiendo cadete a alineación:', err);
+    }
+  };
+
   const handleBackToList = async () => {
     if (currentMatch) {
       try {
@@ -3933,6 +3966,7 @@ export default function App() {
                               if (cur.includes(name)) return prev;
                               return { ...prev, [cadetesMatchId]: [...cur, name].sort() };
                             });
+                            addCadeteToAlineacion(cadetesMatchId, name);
                           }
                           setCadetesNewName('');
                         }}
