@@ -330,6 +330,7 @@ export default function App() {
     } catch { return []; }
   });
   const [cadetesNewName, setCadetesNewName] = useState('');
+  const [cadetesMatchId, setCadetesMatchId] = useState('');
   const [alineacionError, setAlineacionError] = useState(false);
   const [menuJugadorIdx, setMenuJugadorIdx] = useState(null);
   const [draggingMapIdx, setDraggingMapIdx] = useState(null);
@@ -3829,7 +3830,36 @@ export default function App() {
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     CADETES
                   </span>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '500px', margin: '0 auto', width: '100%' }}>
+                  <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', width: '100%' }}>
+                    <div style={{ flex: 1, minWidth: '280px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>JORNADAS</span>
+                      <select
+                        value={cadetesMatchId}
+                        onChange={(e) => setCadetesMatchId(e.target.value)}
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          fontSize: '0.9rem',
+                          padding: '0.6rem 0.8rem',
+                          cursor: 'pointer',
+                          width: '100%'
+                        }}
+                      >
+                        <option value="">-- Seleccionar jornada --</option>
+                        {[...matches].filter(m => m.matchday).sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
+                          <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
+                        ))}
+                      </select>
+                      {(() => {
+                        const sel = matches.find(m => m.id === cadetesMatchId);
+                        if (!sel) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>No hay jornada seleccionada</span>;
+                        return <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{'J' + sel.matchday + ' — ' + (sel.homeTeam || '') + ' vs ' + (sel.awayTeam || '')}</span>;
+                      })()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: '300px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <input
                         list="cadetesNames"
@@ -3904,6 +3934,7 @@ export default function App() {
                           </div>
                         ))
                       )}
+                    </div>
                     </div>
                   </div>
                 </div>
