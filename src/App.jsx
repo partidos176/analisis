@@ -5525,6 +5525,11 @@ export default function App() {
                             setTimeout(() => setIgualarAviso(false), 2500);
                             return;
                           }
+                          if (onRivalCount > offRivalCount) {
+                            setIgualarAviso(true);
+                            setTimeout(() => setIgualarAviso(false), 2500);
+                            return;
+                          }
                           if (logAction('ON RIVAL')) {
                             setFromRival(true);
                             setOnRivalCount(onRivalCount + 1);
