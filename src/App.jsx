@@ -2525,7 +2525,7 @@ export default function App() {
                                 {filas.map(([n, s]) => (
                                   <tr key={n}>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'center', color: '#ffffff', fontWeight: 700 }}>{n}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total || '-'}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total || '-'}</td>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.pie || '-'}</td>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.cabeza || '-'}</td>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.penal || '-'}</td>
@@ -2862,7 +2862,7 @@ export default function App() {
                         cruceRivalTotal[f] = (cruceRivalTotal[f] || 0) + cruce[a][f];
                       });
                     });
-                    const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && crucePropiasAcciones.some(a => (cruce[a][f] || 0) > 0));
+                    const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && crucePropiasAcciones.some(a => (cruce[a][f] || 0) > 0)).sort((a, b) => (a === 'OCASION' ? -1 : b === 'OCASION' ? 1 : 0));
                     const cruceRivalFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL' && f !== 'PENAL + GOL' && cruceRivalAcciones.some(a => (cruce[a][f] || 0) > 0));
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -2916,8 +2916,9 @@ export default function App() {
                                     <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
                                     {(() => {
                                       const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
-                                      const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
-                                      return [...golesCols, ...otrasCols].map(f => (
+                                      const ocasionCols = cruceRivalFinalizaciones.filter(f => f === 'OCASION');
+                                      const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && f !== 'OCASION');
+                                      return [...ocasionCols, ...golesCols, ...otrasCols].map(f => (
                                         <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
                                       ));
                                     })()}
@@ -2930,8 +2931,9 @@ export default function App() {
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ef4444', fontWeight: 700, whiteSpace: 'nowrap' }}>{a.replace('RIVAL ', 'R. ')}</td>
 {(() => {
                                         const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
-                                        const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
-                                        return [...golesCols, ...otrasCols].map(f => (
+                                        const ocasionCols = cruceRivalFinalizaciones.filter(f => f === 'OCASION');
+                                        const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && f !== 'OCASION');
+                                        return [...ocasionCols, ...golesCols, ...otrasCols].map(f => (
                                           <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                         ));
                                       })()}
@@ -2942,8 +2944,9 @@ export default function App() {
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {(() => {
                                       const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
-                                      const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
-                                      return [...golesCols, ...otrasCols].map(f => (
+                                      const ocasionCols = cruceRivalFinalizaciones.filter(f => f === 'OCASION');
+                                      const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && f !== 'OCASION');
+                                      return [...ocasionCols, ...golesCols, ...otrasCols].map(f => (
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalTotal[f] || '-'}</td>
                                       ));
                                     })()}
@@ -3642,7 +3645,7 @@ export default function App() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div>
                           <div style={{ marginBottom: '0.8rem' }}>
-                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>MINUTOS JORNADA:</label>
+                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>PARTIDO:</label>
                             <select
                               value={selectedJornadaTiempo}
                               onChange={e => setSelectedJornadaTiempo(e.target.value)}
@@ -3694,7 +3697,7 @@ export default function App() {
                                     const rolColor = rol === 'titular' ? '#39ff14' : rol === 'suplente' ? '#eab308' : rol === 'lesion' ? '#38bdf8' : rol === 'division honor' ? '#f472b6' : rol === 'tenerife c' ? '#06b6d4' : '#ef4444';
                                     return (
                                       <tr key={n}>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', width: '12rem', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{n}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', width: '12rem', color: esCadeteGlobal(n) ? '#ef4444' : '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{n}</td>
                                         <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', width: '9rem', textAlign: 'center', color: rolColor, fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>{rol}</td>
                                         <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', width: '7rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.9rem' }}>{m > 0 ? formatTime(m) : '-'}</td>
                                       </tr>
@@ -3724,7 +3727,7 @@ export default function App() {
                     const tfeGl = homeGl.filter(g => g && g.team !== 'away');
                     const isHomeTfe = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
                     const score = isHomeTfe ? ` (${tfeGl.length}-${awayGl.length})` : ` (${awayGl.length}-${tfeGl.length})`;
-                    return { id: m.id, matchday: m.matchday, label: 'JORNADA ' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
+                    return { id: m.id, matchday: m.matchday, label: 'J.' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
                   })
                   .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
 
@@ -3761,19 +3764,21 @@ export default function App() {
                     if (onPropioStart !== null) ownSecs += endTime - onPropioStart;
                     if (onRivalStart !== null) rivalSecs += endTime - onRivalStart;
                     const ownPct = Math.round((ownSecs / periodoTotal) * 100);
+                    const ownEfec = (ownSecs + rivalSecs) > 0 ? Math.round((ownSecs / (ownSecs + rivalSecs)) * 100) : 0;
+                    const rivalEfec = (ownSecs + rivalSecs) > 0 ? Math.round((rivalSecs / (ownSecs + rivalSecs)) * 100) : 0;
                     const rivalPct = Math.round((rivalSecs / periodoTotal) * 100);
                     const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
-                    return { label: 'JORNADA ' + md + ' — ' + p.start.name + ' — ' + teamInfo + score, ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
+                    return { label: 'J.' + md + ' — ' + p.start.name + ' — ' + teamInfo + score, ownPct: String(ownPct), ownEfec: String(ownEfec), rivalEfec: String(rivalEfec), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
                   });
                   let tOwn = 0, tRiv = 0, tDur = 0;
                   rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
-                  const subtotal = { label: 'JORNADA ' + md + ' — TOTAL — ' + teamInfo + score, ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0), ownSecs: tOwn, rivalSecs: tRiv, periodoTotal: tDur };
+                  const subtotal = { label: 'J.' + md + ' — TOTAL — ' + teamInfo + score, ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), ownEfec: String((tOwn + tRiv) > 0 ? Math.round((tOwn / (tOwn + tRiv)) * 100) : 0), rivalEfec: String((tOwn + tRiv) > 0 ? Math.round((tRiv / (tOwn + tRiv)) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0), ownSecs: tOwn, rivalSecs: tRiv, periodoTotal: tDur };
                   return { rows: rws, subtotal, matchday: md };
                 };
                 const allMatchData = selectedIds.map(id => { const m = matches.find(x => x.id === id); return m ? buildRowsForMatch(m) : null; }).filter(Boolean);
                 let grandOwn = 0, grandRiv = 0, grandDur = 0;
                 allMatchData.forEach(d => { grandOwn += d.subtotal.ownSecs; grandRiv += d.subtotal.rivalSecs; grandDur += d.subtotal.periodoTotal; });
-                const grandTotal = { label: 'TOTAL GENERAL', ownPct: String(grandDur > 0 ? Math.round((grandOwn / grandDur) * 100) : 0), rivalPct: String(grandDur > 0 ? Math.round((grandRiv / grandDur) * 100) : 0), neutroPct: String(grandDur > 0 ? Math.round(Math.max(0, grandDur - grandOwn - grandRiv) / grandDur * 100) : 0) };
+                const grandTotal = { label: 'TOTAL GENERAL', ownPct: String(grandDur > 0 ? Math.round((grandOwn / grandDur) * 100) : 0), ownEfec: String((grandOwn + grandRiv) > 0 ? Math.round((grandOwn / (grandOwn + grandRiv)) * 100) : 0), rivalEfec: String((grandOwn + grandRiv) > 0 ? Math.round((grandRiv / (grandOwn + grandRiv)) * 100) : 0), rivalPct: String(grandDur > 0 ? Math.round((grandRiv / grandDur) * 100) : 0), neutroPct: String(grandDur > 0 ? Math.round(Math.max(0, grandDur - grandOwn - grandRiv) / grandDur * 100) : 0) };
                 const toggleMatch = (id) => { setPosesionMatchIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]); };
                 const toggleAll = () => { if (posesionMatchIds.length === matchOptions.length) { setPosesionMatchIds([]); } else { setPosesionMatchIds(matchOptions.map(o => o.id)); } };
                 const dropdownLabel = selectedIds.length === 0 ? 'Seleccionar jornada' : selectedIds.length === matchOptions.length ? 'Todas' : selectedIds.length === 1 ? 'jornada' : selectedIds.length + ' jornadas';
@@ -3783,7 +3788,7 @@ export default function App() {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', position: 'relative' }}>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', position: 'relative', minWidth: '24rem' }}>
                             {matchOptions.length > 0 ? (
                               <div style={{ position: 'relative' }}>
                                 <div
@@ -3819,9 +3824,8 @@ export default function App() {
                               </div>
                             ) : 'Período'}
                           </th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#22c55e' }}>Propio</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#38bdf8' }}>Posesion propia</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#ef4444' }}>Posesion rival</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Ver <button onClick={() => setHiddenPoseRows(new Set())} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1rem', marginLeft: '0.3rem', verticalAlign: 'middle' }} title="Mostrar todas">&#8634;</button></th>
                         </tr>
                       </thead>
@@ -3829,10 +3833,9 @@ export default function App() {
                         {allMatchData.flatMap((d, mi) => [
                           ...d.rows.filter(r => !hiddenPoseRows.has(r.label)).map((r, ri) => (
                             <tr key={mi + '-' + ri} style={{ background: ri % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap' }}>{r.label}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{r.ownEfec}%</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{r.rivalEfec}%</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center' }}>
                                 <button onClick={() => setHiddenPoseRows(prev => { const s = new Set(prev); s.has(r.label) ? s.delete(r.label) : s.add(r.label); return s; })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1.1rem' }} title="Ocultar/Mostrar">&#128065;</button>
                               </td>
@@ -3840,9 +3843,8 @@ export default function App() {
                           )), ...(!hiddenPoseRows.has(d.subtotal.label) ? [
                           <tr key={'sub-' + mi} style={{ background: 'rgba(56,189,248,0.12)' }}>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{d.subtotal.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.neutroPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.ownEfec}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.rivalEfec}%</td>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center' }}>
                               <button onClick={() => setHiddenPoseRows(prev => { const s = new Set(prev); s.has(d.subtotal.label) ? s.delete(d.subtotal.label) : s.add(d.subtotal.label); return s; })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1.1rem' }} title="Ocultar/Mostrar">&#128065;</button>
                             </td>
@@ -3852,9 +3854,8 @@ export default function App() {
                         {allMatchData.length > 0 && !hiddenPoseRows.has(grandTotal.label) && (
                           <tr style={{ background: 'rgba(251,191,36,0.15)' }}>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 900, fontSize: '1rem' }}>{grandTotal.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.neutroPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.ownEfec}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.rivalEfec}%</td>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center' }}></td>
                           </tr>
                         )}
@@ -3866,7 +3867,7 @@ export default function App() {
                       .filter(m => m.matchday)
                       .map(m => {
                         const d = buildRowsForMatch(m);
-                        return d.rows.length > 0 ? { name: 'J ' + m.matchday, Propio: Math.round(d.subtotal.ownSecs / 60), Rival: Math.round(d.subtotal.rivalSecs / 60), Neutro: Math.round((d.subtotal.periodoTotal - d.subtotal.ownSecs - d.subtotal.rivalSecs) / 60) } : null;
+                        return d.rows.length > 0 ? (() => { const ef = d.subtotal.ownSecs + d.subtotal.rivalSecs; const pct = (s) => ef > 0 ? Math.round((s / ef) * 100) : 0; return { name: 'J ' + m.matchday, 'Posesion propia': pct(d.subtotal.ownSecs), 'Posesion rival': pct(d.subtotal.rivalSecs) }; })() : null;
                       })
                       .filter(Boolean)
                       .sort((a, b) => (parseInt(a.name.slice(1)) || 0) - (parseInt(b.name.slice(1)) || 0));
@@ -3876,12 +3877,11 @@ export default function App() {
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
                           <XAxis dataKey="name" tick={{ fill: '#ffffff', fontSize: 12 }} />
-                          <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} unit=" min" />
-                          <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => value + ' min'} />
+                          <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} unit="%" domain={[0, 80]} />
+                          <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => value + '%'} />
                           <Legend wrapperStyle={{ color: '#ffffff', cursor: 'pointer' }} onClick={(e) => { setHiddenLines(prev => ({ ...prev, [e.dataKey]: !prev[e.dataKey] })); }} />
-                          <Line type="monotone" dataKey="Propio" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Propio} onClick={() => setHiddenLines(prev => ({ ...prev, Propio: !prev.Propio }))} style={{ cursor: 'pointer' }} />
-                          <Line type="monotone" dataKey="Rival" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Rival} onClick={() => setHiddenLines(prev => ({ ...prev, Rival: !prev.Rival }))} style={{ cursor: 'pointer' }} />
-                          <Line type="monotone" dataKey="Neutro" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Neutro} onClick={() => setHiddenLines(prev => ({ ...prev, Neutro: !prev.Neutro }))} style={{ cursor: 'pointer' }} />
+                          <Line type="monotone" dataKey="Posesion propia" stroke="#38bdf8" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines['Posesion propia']} onClick={() => setHiddenLines(prev => ({ ...prev, ['Posesion propia']: !prev['Posesion propia'] }))} style={{ cursor: 'pointer' }} />
+                          <Line type="monotone" dataKey="Posesion rival" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines['Posesion rival']} onClick={() => setHiddenLines(prev => ({ ...prev, ['Posesion rival']: !prev['Posesion rival'] }))} style={{ cursor: 'pointer' }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -4142,7 +4142,7 @@ export default function App() {
                         <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: 'auto' }}>
                           <thead>
                             <tr>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', maxWidth: '14rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>JORNADA</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADA</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '9rem' }}>ROL</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '7rem' }}>MINUTOS</th>
                             </tr>
@@ -4150,7 +4150,7 @@ export default function App() {
                           <tbody>
                             {rows.map((r, i) => (
                               <tr key={i}>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap', maxWidth: '14rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.label}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{r.label}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: r.status === 'titular' ? '#38bdf8' : '#f59e0b', fontWeight: 900, textTransform: 'uppercase' }}>{r.status}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{Math.floor(r.secs / 60)}</td>
                               </tr>
@@ -7751,10 +7751,10 @@ export default function App() {
                               <tr key={i} style={r.total ? { background: 'rgba(251,191,36,0.15)' } : {}}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem' }}>{r.label}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ff6ec7', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.real)}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.efec)}<br />({r.real > 0 ? ((r.efec / r.real) * 100).toFixed(2) : '0.00'}%)</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.neutro)}<br />({r.real > 0 ? ((r.neutro / r.real) * 100).toFixed(2) : '0.00'}%)</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? ((r.own / r.efec) * 100).toFixed(2) : '0.00'}%</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? ((r.rival / r.efec) * 100).toFixed(2) : '0.00'}%</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.efec)}<br />({r.real > 0 ? Math.round((r.efec / r.real) * 100) : 0}%)</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.neutro)}<br />({r.real > 0 ? Math.round((r.neutro / r.real) * 100) : 0}%)</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? Math.round((r.own / r.efec) * 100) : 0}%</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? Math.round((r.rival / r.efec) * 100) : 0}%</td>
                               </tr>
                             ))}
                           </tbody>
