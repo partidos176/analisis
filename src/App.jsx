@@ -3721,7 +3721,9 @@ export default function App() {
                   .map(m => {
                     const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                     const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                    const score = ` (${homeGl.length}-${awayGl.length})`;
+                    const tfeGl = homeGl.filter(g => g && g.team !== 'away');
+                    const isHomeTfe = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
+                    const score = isHomeTfe ? ` (${tfeGl.length}-${awayGl.length})` : ` (${awayGl.length}-${tfeGl.length})`;
                     return { id: m.id, matchday: m.matchday, label: 'JORNADA ' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
                   })
                   .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
@@ -3741,7 +3743,9 @@ export default function App() {
                   const teamInfo = (m.homeTeam || '') + ' vs ' + (m.awayTeam || '');
                   const homeGl2 = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                   const awayGl2 = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                  const score = ' (' + homeGl2.length + '-' + awayGl2.length + ')';
+                  const tfeGl2 = homeGl2.filter(g => g && g.team !== 'away');
+                  const isHomeTfe2 = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
+                  const score = isHomeTfe2 ? ' (' + tfeGl2.length + '-' + awayGl2.length + ')' : ' (' + awayGl2.length + '-' + tfeGl2.length + ')';
                   const rws = pds.map(p => {
                     const startTime = parseTime(p.start.time);
                     const endTime = p.end ? parseTime(p.end.time) : (m.timerSeconds || 0);
@@ -5470,6 +5474,11 @@ export default function App() {
                             setTimeout(() => setIgualarAviso(false), 2500);
                             return;
                           }
+                          if (onNeutroCount > offNeutroCount) {
+                            setIgualarAviso(true);
+                            setTimeout(() => setIgualarAviso(false), 2500);
+                            return;
+                          }
                           if (logAction('ON PROPIO')) {
                             setOnNeutroCount(onNeutroCount + 1);
                           }
@@ -7140,7 +7149,7 @@ export default function App() {
                             }}
                           >
                             <option value="">-</option>
-                            {(window.__onFieldPlayers || []).map(name => (
+                            {[...new Set([...(window.__onFieldPlayers || []), ...players.map(p => p && p.name).filter(Boolean).map(n => n.toUpperCase()), ...Object.keys(jugadoresData).map(n => n.toUpperCase())])].map(name => (
                               <option key={name} value={name}>{name}</option>
                             ))}
                             <option value="RIVAL">RIVAL</option>
@@ -7544,7 +7553,7 @@ export default function App() {
                       }
                     });
                     const filas = acciones.filter(a => finalizaciones.some(f => matriz[a][f] > 0));
-                    const cols = finalizaciones.filter(f => acciones.some(a => matriz[a][f] > 0));
+                    const cols = finalizaciones.filter(f => acciones.some(a => matriz[a][f] > 0)).sort((a, b) => (a === 'OCASION' ? -1 : b === 'OCASION' ? 1 : 0));
                     if (filas.length === 0) {
                       return (
                         <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
@@ -7558,8 +7567,7 @@ export default function App() {
                           <thead>
                             <tr>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>
-                              {cols.map(f => {
+                              {cols.map((f, ci) => {
                                 const renderVertical = (parts) => <>{parts.map((p, i) => <div key={i}>{p}</div>)}</>;
                                 let vertical = null;
                                 if (f.includes('+')) {
@@ -7568,7 +7576,10 @@ export default function App() {
                                 } else if (f.includes(' ')) {
                                   vertical = f.split(' ');
                                 }
-                                return <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{vertical ? renderVertical(vertical) : f}</th>;
+                                return (<React.Fragment key={f}>
+                                  <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{vertical ? renderVertical(vertical) : f}</th>
+                                  {ci === 0 && <th key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>}
+                                </React.Fragment>);
                               })}
                             </tr>
                           </thead>
@@ -7576,36 +7587,44 @@ export default function App() {
                             {filas.filter(a => !a.includes('RIVAL')).map(a => (
                               <tr key={a}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>
-                                {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                {cols.map((f, ci) => (
+                                  <React.Fragment key={f}>
+                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>}
+                                  </React.Fragment>
                                 ))}
                               </tr>
                             ))}
                             {filas.some(a => !a.includes('RIVAL')) && (
                               <tr>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL PROPIO</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>
-                                {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                {cols.map((f, ci) => (
+                                  <React.Fragment key={f}>
+                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>}
+                                  </React.Fragment>
                                 ))}
                               </tr>
                             )}
                             {filas.filter(a => a.includes('RIVAL')).map(a => (
                               <tr key={a}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ef4444', fontWeight: 700, whiteSpace: 'nowrap' }}>{a.replace('RIVAL ', 'R. ')}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>
-                                {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                {cols.map((f, ci) => (
+                                  <React.Fragment key={f}>
+                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>}
+                                  </React.Fragment>
                                 ))}
                               </tr>
                             ))}
                             {filas.some(a => a.includes('RIVAL')) && (
                               <tr>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL RIVAL</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>
-                                {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                {cols.map((f, ci) => (
+                                  <React.Fragment key={f}>
+                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>}
+                                  </React.Fragment>
                                 ))}
                               </tr>
                             )}
@@ -7632,7 +7651,9 @@ export default function App() {
                 const teamInfo = (currentMatch?.homeTeam || '') + ' vs ' + (currentMatch?.awayTeam || '');
                 const homeGl = Array.isArray(golesList) ? golesList : [];
                 const awayGl = Array.isArray(golesRivalList) ? golesRivalList : [];
-                const score = ' (' + homeGl.length + '-' + awayGl.length + ')';
+                const tfeGl = homeGl.filter(g => g && g.team !== 'away');
+                const isHomeTfe = (currentMatch?.homeTeam || '').toUpperCase().includes('TENERIFE');
+                const score = isHomeTfe ? ' (' + tfeGl.length + '-' + awayGl.length + ')' : ' (' + awayGl.length + '-' + tfeGl.length + ')';
                 const rws = pds.map(p => {
                   const startTime = parseTime(p.start.time);
                   const endTime = p.end ? parseTime(p.end.time) : timerSeconds;
@@ -8104,6 +8125,7 @@ export default function App() {
 
                         <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
                           {/* Campo con foto de fondo a la izquierda, cajetines a la derecha */}
+                          <div className="mapa-campo-wrap" style={{ display: 'flex', flexDirection: 'column', flex: '0 0 78%', width: '78%', maxWidth: '80%', alignSelf: 'flex-start' }}>
                           <div
                             ref={campoRef}
                             className="mapa-campo"
@@ -8111,10 +8133,9 @@ export default function App() {
                             onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
                             onDrop={handleFieldDrop}
                             style={{
-                              flex: '0 1 55%',
-                              maxWidth: '55%',
-                              marginBottom: '2.5rem',
-                              alignSelf: 'stretch',
+                              flex: 'none',
+                              width: '100%',
+                              maxWidth: '100%',
                               background: 'transparent',
                               borderRadius: 12,
                               border: 'none',
@@ -8125,12 +8146,6 @@ export default function App() {
                               touchAction: 'none'
                             }}
                           >
-
-                            {players.some(p => p && p.name && (p.status === 'titular' || p.status === 'suplente') && esCadete(p.name)) && (
-                              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
-                                <span style={{ background: 'rgba(15,23,42,0.85)', color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', padding: '0.25rem 0.8rem', borderRadius: '8px 8px 0 0', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Los jugadores con anillo <span style={{ color: '#ef4444' }}>rojo</span> son cadetes</span>
-                              </div>
-                            )}
 
                             {titulares.length === 0 && (
                               <div className="no-export" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
@@ -8215,7 +8230,7 @@ export default function App() {
                               );
                             })}
                           </div>
-
+                          </div>
                           {/* Columna derecha: zonas + plantilla (a la derecha del campo) */}
                           <div className="mapa-derecha" style={{ flex: '0 0 300px', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem', marginLeft: '-9rem' }}>
                             {/* Cajetín bajo el campo: suplentes */}
@@ -8281,7 +8296,11 @@ export default function App() {
                               </div>
                             ))}
                           </div>
-
+                        {players.some(p => p && p.name && (p.status === 'titular' || p.status === 'suplente') && esCadete(p.name)) && (
+                          <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '0.4rem', transform: 'translateX(3rem)' }}>
+                            <span style={{ background: 'rgba(15,23,42,0.85)', color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', padding: '0.25rem 0.8rem', borderRadius: '8px', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>Los jugadores con anillo <span style={{ color: '#ef4444' }}>rojo</span> son cadetes</span>
+                          </div>
+                        )}
                         {/* Plantilla completa */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', order: -1 }}>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', justifyItems: 'center' }}>
@@ -8473,7 +8492,7 @@ export default function App() {
       </header>
 
       <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ width: '100%', maxWidth: '520px' }}>
+        <div style={{ width: '100%', maxWidth: '620px' }}>
 
           {/* Formulario */}
           <div style={{
@@ -8556,17 +8575,17 @@ export default function App() {
                     background: 'var(--bg-secondary)',
                     border: '1px solid var(--border-subtle)',
                     borderRadius: 'var(--radius-md)',
-                    padding: '0.75rem 1rem',
+                    padding: '1.1rem 1.25rem',
                     gap: '1rem'
                   }}>
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontWeight: 700, color: '#38bdf8' }}>{m.homeTeam}</span>
-                      <span style={{ margin: '0 0.4rem', color: '#ffffff', fontWeight: 700 }}>vs</span>
-                      <span style={{ fontWeight: 700, color: '#f87171' }}>{m.awayTeam}</span>
-                      <span style={{ marginLeft: '0.75rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.1rem' }}>
+                    <div style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ marginRight: '0.75rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.05rem' }}>
                         J{m.matchday}
                       </span>
-                      <span style={{ marginLeft: '1.5rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.1rem' }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#38bdf8' }}>{m.homeTeam}</span>
+                      <span style={{ margin: '0 0.4rem', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>vs</span>
+                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#f87171' }}>{m.awayTeam}</span>
+                      <span style={{ marginLeft: '1.5rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.05rem' }}>
                         {(() => {
                           const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
                           const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
@@ -8574,7 +8593,7 @@ export default function App() {
                           const golesRival = (m.golesRivalList || []).length;
                           const homeScore = homeIsTenerife ? golesTenerife : golesRival;
                           const awayScore = awayIsTenerife ? golesTenerife : golesRival;
-                          return `${homeScore} - ${awayScore}`;
+                          return `${homeScore}-${awayScore}`;
                         })()}
                       </span>
                     </div>
