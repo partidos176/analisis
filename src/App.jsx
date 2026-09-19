@@ -5761,8 +5761,11 @@ export default function App() {
                             const logPos = actionLog.map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= 0);
                             const pdsPos = [];
                             let psPos = null;
-                            logPos.forEach(e => {
-                              if (e.name === '1ª PARTE' || e.name === '2ª PARTE') { psPos = e; }
+                            [...logPos].reverse().forEach(e => {
+                              if (e.name === '1ª PARTE' || e.name === '2ª PARTE') {
+                                if (psPos) { pdsPos.push({ start: psPos, end: e }); }
+                                psPos = e;
+                              }
                               else if (isFinMarker(e.name) && psPos) { pdsPos.push({ start: psPos, end: e }); psPos = null; }
                             });
                             if (psPos) pdsPos.push({ start: psPos, end: null });
@@ -7618,8 +7621,11 @@ export default function App() {
                 const log = actionLog || [];
                 const pds = [];
                 let ps = null;
-                log.forEach(e => {
-                  if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { ps = e; }
+                [...log].reverse().forEach(e => {
+                  if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) {
+                    if (ps) { pds.push({ start: ps, end: e }); }
+                    ps = e;
+                  }
                   else if (e && e.time && isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
                 });
                 if (ps) { pds.push({ start: ps, end: null }); }
