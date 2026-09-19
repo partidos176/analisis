@@ -5761,7 +5761,7 @@ export default function App() {
                             const logPos = actionLog.map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= 0);
                             const pdsPos = [];
                             let psPos = null;
-                            [...logPos].reverse().forEach(e => {
+                            logPos.forEach(e => {
                               if (e.name === '1ª PARTE' || e.name === '2ª PARTE') { psPos = e; }
                               else if (isFinMarker(e.name) && psPos) { pdsPos.push({ start: psPos, end: e }); psPos = null; }
                             });
@@ -7618,7 +7618,7 @@ export default function App() {
                 const log = actionLog || [];
                 const pds = [];
                 let ps = null;
-                [...log].reverse().forEach(e => {
+                log.forEach(e => {
                   if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { ps = e; }
                   else if (e && e.time && isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
                 });
