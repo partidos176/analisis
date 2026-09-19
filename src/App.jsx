@@ -7682,39 +7682,86 @@ export default function App() {
                 rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ffffff' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ffffff', order: -1 }}>
                     JORNADA {currentMatch?.matchday || '?'} — {teamInfo}{score}
                   </div>
-                  <div style={{ width: '100%', maxWidth: '500px', overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>Período</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#22c55e' }}>Propio</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rws.map((r, ri) => (
-                          <tr key={ri} style={{ background: ri % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
-                          </tr>
-                        ))}
-                        {rws.length > 0 && (
-                          <tr style={{ background: 'rgba(251,191,36,0.15)' }}>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 900, fontSize: '1rem' }}>TOTAL</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0}%</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center', order: 1, width: '100%' }}>
+                  <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ff6ec7' }}>
+                        TIEMPO REAL JUGADO: {Math.floor(tDur / 60)}:{String(tDur % 60).padStart(2, '0')}
+                      </div>
+                      {rws.map((r, ri) => (
+                        <div key={'tj' + ri} style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ff6ec7' }}>
+                          {r.label}: {Math.floor(r.periodoTotal / 60)}:{String(r.periodoTotal % 60).padStart(2, '0')}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#38bdf8' }}>
+                        TIEMPO EFECTIVO PROPIO: {Math.floor(tOwn / 60)}:{String(tOwn % 60).padStart(2, '0')}
+                      </div>
+                      {rws.map((r, ri) => (
+                        <div key={'te' + ri} style={{ fontWeight: 700, fontSize: '0.95rem', color: '#38bdf8' }}>
+                          {r.label}: {Math.floor(r.ownSecs / 60)}:{String(r.ownSecs % 60).padStart(2, '0')}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ef4444' }}>
+                        TIEMPO EFECTIVO RIVAL: {Math.floor(tRiv / 60)}:{String(tRiv % 60).padStart(2, '0')}
+                      </div>
+                      {rws.map((r, ri) => (
+                        <div key={'tr' + ri} style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ef4444' }}>
+                          {r.label}: {Math.floor(r.rivalSecs / 60)}:{String(r.rivalSecs % 60).padStart(2, '0')}
+                        </div>
+                      ))}
+                    </div>
                   </div>
+                  </div>
+                  {(() => {
+                    const fmt = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+                    const filas = ['1ª PARTE', '2ª PARTE'].map(l => rws.find(r => r.label === l)).filter(Boolean);
+                    if (filas.length === 0) return null;
+                    const vals = filas.map(p => {
+                      const real = p.periodoTotal;
+                      const efec = p.ownSecs + p.rivalSecs;
+                      return { label: p.label, real, efec, own: p.ownSecs, rival: p.rivalSecs, neutro: Math.max(0, real - efec) };
+                    });
+                    const totReal = vals.reduce((s, v) => s + v.real, 0);
+                    const totEfec = vals.reduce((s, v) => s + v.efec, 0);
+                    const totOwn = vals.reduce((s, v) => s + v.own, 0);
+                    const totRival = vals.reduce((s, v) => s + v.rival, 0);
+                    const rows = [...vals.map(v => ({ ...v, total: false })), { label: 'TOTAL', real: totReal, efec: totEfec, own: totOwn, rival: totRival, neutro: Math.max(0, totReal - totEfec), total: true }];
+                    return (
+                      <div style={{ width: '100%' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                          <thead>
+                            <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff', minWidth: '9rem' }}>Periodo</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ff6ec7' }}>Tiempo real</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Tiempo efectivo</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Tiempo neutro</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Posesion propia</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ef4444' }}>Posesion rival</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rows.map((r, i) => (
+                              <tr key={i} style={r.total ? { background: 'rgba(251,191,36,0.15)' } : {}}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem' }}>{r.label}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ff6ec7', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.real)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.efec)}<br />({r.real > 0 ? ((r.efec / r.real) * 100).toFixed(2) : '0.00'}%)</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.neutro)}<br />({r.real > 0 ? ((r.neutro / r.real) * 100).toFixed(2) : '0.00'}%)</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? ((r.own / r.efec) * 100).toFixed(2) : '0.00'}%</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? ((r.rival / r.efec) * 100).toFixed(2) : '0.00'}%</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                 </div>
                 );
               })()}
