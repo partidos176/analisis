@@ -140,7 +140,8 @@ const totalesTabsDef = [
   { id: 'minutosjugados', label: 'MINUTOS JORNADA' },
   { id: 'jugadores', label: 'DATOS JUGADOR' },
   { id: 'posesion', label: 'TOTAL POSESIÓN' },
-  { id: 'cadetes', label: 'CADETES' }
+  { id: 'cadetes', label: 'CADETES' },
+  { id: 'prueba', label: 'PRUEBA' }
 ];
 
 export default function App() {
@@ -148,6 +149,13 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [vista, setVista] = useState('menu');
   const [timelineVideo, setTimelineVideo] = useState(null);
+  const [pruebaVideo, setPruebaVideo] = useState(null);
+  const [pruebaSeconds, setPruebaSeconds] = useState(0);
+  const [pruebaRunning, setPruebaRunning] = useState(false);
+  const [pruebaLog, setPruebaLog] = useState([]);
+  const [pruebaAviso, setPruebaAviso] = useState(false);
+  const [pruebaSpeed, setPruebaSpeed] = useState(1);
+  const pruebaVideoRef = useRef(null);
   const [timelineTime, setTimelineTime] = useState(0);
   const [fin1Time, setFin1Time] = useState(null);
   const [fin1EndTime, setFin1EndTime] = useState(null);
@@ -158,6 +166,15 @@ export default function App() {
   const [showAllRows1, setShowAllRows1] = useState(false);
   const [showAllRows2, setShowAllRows2] = useState(false);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
+  const pruebaVideoUrl = useMemo(() => pruebaVideo ? URL.createObjectURL(pruebaVideo) : null, [pruebaVideo]);
+  useEffect(() => {
+    if (!pruebaRunning) return;
+    const id = setInterval(() => setPruebaSeconds(s => s + 1), 1000 / pruebaSpeed);
+    return () => clearInterval(id);
+  }, [pruebaRunning, pruebaSpeed]);
+  useEffect(() => {
+    if (pruebaVideoRef.current) pruebaVideoRef.current.playbackRate = pruebaSpeed;
+  }, [pruebaSpeed, pruebaVideoUrl]);
   const timelineVideoRef = useRef(null);
 
   useEffect(() => {
@@ -4228,6 +4245,131 @@ export default function App() {
                       })()}
                      </div>
                     </div>
+                  </div>
+                </div>
+              )}
+              {totalesTab === 'prueba' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem',
+                  alignItems: 'center'
+                }}>
+                  <label style={{ background: '#0284c7', color: '#ffffff', borderRadius: '8px', padding: '0.6rem 1.5rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Insertar video
+                    <input type="file" accept="video/*" hidden onChange={(e) => setPruebaVideo(e.target.files[0] || null)} />
+                  </label>
+                  <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
+                  {pruebaVideoUrl && (
+                    <video ref={pruebaVideoRef} src={pruebaVideoUrl} controls onPlay={() => setPruebaRunning(true)} onPause={() => setPruebaRunning(false)} onEnded={() => setPruebaRunning(false)} style={{ flex: '1 1 480px', maxWidth: '800px', width: '100%', borderRadius: '8px', background: '#000' }} />
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', flex: '1 1 280px', maxWidth: '360px', width: '100%' }}>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#ffffff' }}>
+                      {String(Math.floor(pruebaSeconds / 60)).padStart(2, '0')}:{String(pruebaSeconds % 60).padStart(2, '0')}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <button onClick={() => { const order = [1, 1.5, 2, 3, 4, 0.5]; setPruebaSpeed(order[(order.indexOf(pruebaSpeed) + 1) % order.length]); }} style={{ background: '#7c3aed', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>Velocidad {pruebaSpeed}x</button>
+                      <button onClick={() => { setPruebaRunning(false); setPruebaSeconds(0); setPruebaLog([]); }} style={{ background: '#475569', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>Reiniciar</button>
+                      <button onClick={async () => {
+                        const toSecs = (t) => (typeof t === 'number' ? t : (() => { const p = String(t || '0:0').split(':').map(Number); return (p[0] || 0) * 60 + (p[1] || 0); })());
+                        const fmtT = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+                        let own = 0, riv = 0, opS = null, orS = null;
+                        pruebaLog.forEach(e => {
+                          const s = toSecs(e.time);
+                          if (e.name === 'ON PROPIO') { if (opS === null) opS = s; }
+                          else if (e.name === 'OFF PROPIO' && opS !== null) { own += Math.max(0, s - opS); opS = null; }
+                          else if (e.name === 'ON RIVAL') { if (orS === null) orS = s; }
+                          else if (e.name === 'OFF RIVAL' && orS !== null) { riv += Math.max(0, s - orS); orS = null; }
+                        });
+                        if (opS !== null) own += Math.max(0, pruebaSeconds - opS);
+                        if (orS !== null) riv += Math.max(0, pruebaSeconds - orS);
+                        const tot = Math.max(1, pruebaSeconds);
+                        const pc = (s) => Math.round((s / tot) * 100);
+                        const XLSX = await import('xlsx');
+                        const wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+                          { CONCEPTO: 'TIEMPO TOTAL', VALOR: fmtT(pruebaSeconds) },
+                          { CONCEPTO: 'ON PROPIO', VALOR: pruebaLog.filter(e => e.name === 'ON PROPIO').length },
+                          { CONCEPTO: 'OFF PROPIO', VALOR: pruebaLog.filter(e => e.name === 'OFF PROPIO').length },
+                          { CONCEPTO: 'ON RIVAL', VALOR: pruebaLog.filter(e => e.name === 'ON RIVAL').length },
+                          { CONCEPTO: 'OFF RIVAL', VALOR: pruebaLog.filter(e => e.name === 'OFF RIVAL').length },
+                          { CONCEPTO: 'TIEMPO PROPIO', VALOR: fmtT(own) },
+                          { CONCEPTO: 'TIEMPO RIVAL', VALOR: fmtT(riv) },
+                          { CONCEPTO: 'TIEMPO NEUTRO', VALOR: fmtT(Math.max(0, tot - own - riv)) },
+                          { CONCEPTO: '% PROPIO', VALOR: pc(own) },
+                          { CONCEPTO: '% RIVAL', VALOR: pc(riv) },
+                          { CONCEPTO: '% NEUTRO', VALOR: pc(Math.max(0, tot - own - riv)) }
+                        ]), 'Resumen');
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pruebaLog.map(e => ({ nombre: e.name, tiempo: fmtT(toSecs(e.time)) }))), 'Marcas');
+                        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'prueba_posesion.xlsx';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>Exportar Excel</button>
+                    </div>
+                    {(() => {
+                      const pOn = pruebaLog.filter(e => e.name === 'ON PROPIO').length;
+                      const pOff = pruebaLog.filter(e => e.name === 'OFF PROPIO').length;
+                      const rOn = pruebaLog.filter(e => e.name === 'ON RIVAL').length;
+                      const rOff = pruebaLog.filter(e => e.name === 'OFF RIVAL').length;
+                      const avisa = () => { setPruebaAviso(true); setTimeout(() => setPruebaAviso(false), 2500); };
+                      const marca = (name) => {
+                        if (name === 'ON PROPIO' && (rOn !== rOff || pOn > pOff)) return avisa();
+                        if (name === 'OFF PROPIO' && pOff >= pOn) return avisa();
+                        if (name === 'ON RIVAL' && (pOn !== pOff || rOn > rOff)) return avisa();
+                        if (name === 'OFF RIVAL' && rOff >= rOn) return avisa();
+                        const first = pruebaLog.length === 0 && (name === 'ON PROPIO' || name === 'ON RIVAL');
+                        setPruebaLog(prev => [...prev, { name, time: first ? 0 : pruebaSeconds }]);
+                      };
+                      const toSecs = (t) => {
+                        if (typeof t === 'number') return t;
+                        const p = String(t || '0:0').split(':').map(Number);
+                        return (p[0] || 0) * 60 + (p[1] || 0);
+                      };
+                      let own = 0, riv = 0, opS = null, orS = null;
+                      pruebaLog.forEach(e => {
+                        const s = toSecs(e.time);
+                        if (e.name === 'ON PROPIO') { if (opS === null) opS = s; }
+                        else if (e.name === 'OFF PROPIO' && opS !== null) { own += Math.max(0, s - opS); opS = null; }
+                        else if (e.name === 'ON RIVAL') { if (orS === null) orS = s; }
+                        else if (e.name === 'OFF RIVAL' && orS !== null) { riv += Math.max(0, s - orS); orS = null; }
+                      });
+                      if (opS !== null) own += Math.max(0, pruebaSeconds - opS);
+                      if (orS !== null) riv += Math.max(0, pruebaSeconds - orS);
+                      const tot = Math.max(1, pruebaSeconds);
+                      const pc = (s) => Math.round((s / tot) * 100);
+                      const btn = (bg) => ({ background: bg, color: '#ffffff', border: 'none', borderRadius: '50%', width: '75px', height: '75px', fontWeight: 900, fontSize: '0.8rem', cursor: 'pointer', textTransform: 'uppercase' });
+                      return (
+                        <>
+                          {pruebaAviso && (<div style={{ color: '#ef4444', fontWeight: 800, textTransform: 'uppercase' }}>Iguala antes</div>)}
+                          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                              <button onClick={() => marca('ON PROPIO')} style={btn('#f97316')}>ON<br />Propio<br />{pOn}</button>
+                              <button onClick={() => marca('ON RIVAL')} style={btn('#ef4444')}>ON<br />Rival<br />{rOn}</button>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                              <button onClick={() => marca('OFF PROPIO')} style={btn('#f97316')}>OFF<br />Propio<br />{pOff}</button>
+                              <button onClick={() => marca('OFF RIVAL')} style={btn('#ef4444')}>OFF<br />Rival<br />{rOff}</button>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem', fontFamily: 'var(--font-mono)' }}>
+                            <span style={{ color: '#22c55e' }}>PROPIO {pc(own)}%</span>
+                            <span style={{ color: '#ef4444' }}>RIVAL {pc(riv)}%</span>
+                            <span style={{ color: '#f59e0b' }}>NEUTRO {pc(Math.max(0, tot - own - riv))}%</span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
                   </div>
                 </div>
               )}
