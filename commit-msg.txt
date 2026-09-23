@@ -1,6 +1,6 @@
-fix(minutos jornada): corregir renderizado J2 en rosado (evitar [object Object])
+fix(minutos jornada): colorear todos los J+NÚMERO en rosado (regex)
 
-- El `.replace('J2', <span>...)` en string convertía el elemento React a
-  "[object Object]" en pantalla
-- Cambiado a `split('J2')` + mapeo de partes con `<span style={{color:'#f472b6'}}>J2</span>`
-  intercalado, renderizando correctamente solo "J2" en rosado
+- Antes solo "J2" se ponía en rosado; ahora se usa split con regex `/(J\d+)/`
+  para detectar cualquier "J" seguido de dígitos (J1, J2, J3, J10, etc.)
+- Cada coincidencia se envuelve en <span style={{color:'#f472b6'}}>...</span>
+- El resto del nombre de la jornada (equipos, separadores) queda en blanco
