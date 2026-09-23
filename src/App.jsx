@@ -27,6 +27,7 @@ import saulImg from './jugadores/saul.jpg';
 import lorenImg from './jugadores/loren.jpg';
 import oriolImg from './jugadores/oriol.jpg';
 import samuelImg from './jugadores/samuel.jpg';
+import bonillaImg from './jugadores/bonilla.png';
 import lucasSanchezImg from './jugadores/lucas_sanchez.jpg';
 import campoRefImg from './jugadores/campo_ref.jpg';
 
@@ -57,7 +58,7 @@ const jugadoresData = {
   SAUL: { foto: saulImg, pos1: 'DELANTERO' },
   LOREN: { foto: lorenImg, pos1: 'MEDIO CENTRO' },
   ORIOL: { foto: oriolImg, pos1: 'MEDIO CENTRO' },
-  BONILLA: { pos1: 'INTERIOR IZQUIERDO' },
+  BONILLA: { foto: bonillaImg, pos1: 'INTERIOR IZQUIERDO' },
   SAMUEL: { foto: samuelImg, pos1: 'EXTREMO IZQUIERDO' },
 };
 
@@ -7144,20 +7145,6 @@ export default function App() {
                         <span>FINAL+FUERA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{finalFueraCount}</span>
                       </button>
-                      <button
-                        onClick={() => { if (logAction('DESPEJE DEFENSA', 'finalizacion')) { setDespejeDefensaCount(despejeDefensaCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                      >
-                        <span>DESPEJE DEFENSA</span>
-                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejeDefensaCount}</span>
-                      </button>
-                      <button
-                        onClick={() => { if (logAction('DESPEJE PORTERO', 'finalizacion')) { setDespejePorteroCount(despejePorteroCount + 1); setActiveTab('acciones'); } }}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                      >
-                        <span>DESPEJE PORTERO</span>
-                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejePorteroCount}</span>
-                      </button>
                     </div>
                     {/* Columna central: OCASION + volver */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
@@ -7187,6 +7174,20 @@ export default function App() {
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#eab308', color: '#000000', fontWeight: 900, fontSize: '2.6rem', lineHeight: '1', padding: '0.6rem 2rem', borderRadius: '12px', minWidth: 'fit-content', cursor: 'pointer', border: 'none', marginTop: '1.5rem' }}
                       >
                         <span>&#8629;</span>
+                      </button>
+                      <button
+                        onClick={() => { if (logAction('DESPEJE PORTERO', 'finalizacion')) { setDespejePorteroCount(despejePorteroCount + 1); setActiveTab('acciones'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>DESPEJE PORTERO</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejePorteroCount}</span>
+                      </button>
+                      <button
+                        onClick={() => { if (logAction('DESPEJE DEFENSA', 'finalizacion')) { setDespejeDefensaCount(despejeDefensaCount + 1); setActiveTab('acciones'); } }}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      >
+                        <span>DESPEJE DEFENSA</span>
+                        <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejeDefensaCount}</span>
                       </button>
                     </div>
                     {/* Columna derecha */}
@@ -7545,7 +7546,7 @@ export default function App() {
                             ))}
                           </select>
                         </div>
-                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>por</span>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem' }}>X</span>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>ENTRA</span>
                           <select
