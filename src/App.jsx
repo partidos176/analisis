@@ -6023,7 +6023,7 @@ export default function App() {
                           }
                         }}
                         style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '1.8rem' }}>
-                        GUARDAR
+                        EXPORTAR
                       </button>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'stretch' }}>
                         <button
@@ -6048,7 +6048,7 @@ export default function App() {
                               const rawText = XLSX.utils.sheet_to_json(rawWs, { header: 1 })[1]?.[0];
                               const data = JSON.parse(rawText);
                               applyMatchData(data, true);
-                              alert('Datos importados en el partido actual. Pulsa GUARDAR para conservarlos.');
+                              alert('Datos importados en el partido actual. Pulsa EXPORTAR para conservarlos.');
                             } catch (err) {
                               alert('Error al importar Excel: ' + (err?.message || err));
                             }
@@ -6056,7 +6056,7 @@ export default function App() {
                           inp.click();
                         }}
                         style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
-                        IMPORTAR EXCEL
+                        IMPORTAR
                       </button>
                       </div>
                     </div>
@@ -8787,7 +8787,7 @@ export default function App() {
 
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <button type="submit" className="btn-emerald" style={{ flex: 1, justifyContent: 'center', padding: '0.6rem', fontWeight: 700 }}>
-                  {editingId ? 'Actualizar' : 'Guardar Partido'}
+                  {editingId ? 'Actualizar' : 'Generar Partido'}
                 </button>
                 {editingId && (
                   <button type="button" className="btn-secondary" onClick={handleCancelEdit} style={{ padding: '0.6rem 1rem', fontWeight: 700 }}>
@@ -8806,7 +8806,51 @@ export default function App() {
               borderRadius: 'var(--radius-lg)',
               padding: '1.5rem'
             }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '1rem' }}>Partidos guardados</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0 }}>Partidos Guardados</h3>
+                <label style={{ background: '#0284c7', color: '#ffffff', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', textTransform: 'uppercase' }}>
+                  Importar
+                  <input type="file" accept=".xlsx,.xls" hidden onChange={async (e) => {
+                    const file = e.target.files && e.target.files[0];
+                    e.target.value = '';
+                    if (!file) return;
+                    try {
+                      const XLSX = await import('xlsx');
+                      const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+                      const sh = (name) => { const ws = wb.Sheets[name]; return ws ? XLSX.utils.sheet_to_json(ws) : []; };
+                      const resumen = sh('Resumen')[0] || {};
+                      const golesList = [];
+                      const golesRivalList = [];
+                      sh('Goles').forEach(g => {
+                        if (!g) return;
+                        const { equipo, ...resto } = g;
+                        if (String(equipo || '').toUpperCase() === 'RIVAL') golesRivalList.push(resto);
+                        else golesList.push(resto);
+                      });
+                      const matchData = {
+                        homeTeam: resumen.local || '',
+                        awayTeam: resumen.visitante || '',
+                        matchday: Number(resumen.jornada) || 0,
+                        homeScore: 0,
+                        awayScore: 0,
+                        createdAt: Date.now(),
+                        players: sh('Jugadores').map(j => ({ name: j.nombre || '', status: j.estado || '-' })),
+                        actionLog: sh('Acciones').map(a => ({ time: a.tiempo, name: a.nombre, type: a.tipo || 'accion' })),
+                        golesList,
+                        golesRivalList,
+                        sustituciones: sh('Sustituciones').map(s => ({ minuto: Number(s.minuto) || 0, entra: s.entra || '', sale: s.sale || '' }))
+                      };
+                      if (!matchData.homeTeam || !matchData.awayTeam || !matchData.matchday) { window.alert('Excel sin datos de partido válidos'); return; }
+                      const matchesRef = ref(db, 'matches');
+                      const newMatchRef = push(matchesRef);
+                      await set(newMatchRef, sanitizeForFirebase(matchData));
+                    } catch (err) {
+                      console.error('Error al importar:', err);
+                      window.alert('No se pudo importar: ' + (err && err.message ? err.message : err));
+                    }
+                  }} />
+                </label>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {matches.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)).map((m) => (
                   <div key={m.id} style={{
@@ -8841,6 +8885,36 @@ export default function App() {
                     <div style={{ display: 'flex', gap: '0.4rem' }}>
                       <button className="btn-sm btn-primary" onClick={() => handleOpenMatch(m)}>
                         Abrir
+                      </button>
+                      <button className="btn-sm" onClick={async () => {
+                        const normArr = (v) => Array.isArray(v) ? v : (v ? Object.values(v) : []);
+                        const gl = normArr(m.golesList).filter(g => g && g.team !== 'away');
+                        const gr = normArr(m.golesRivalList);
+                        const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
+                        const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
+                        const golesTenerife = gl.length;
+                        const golesRival = gr.length;
+                        const XLSX = await import('xlsx');
+                        const wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([{
+                          jornada: m.matchday, local: m.homeTeam || '', visitante: m.awayTeam || '',
+                          golesLocal: homeIsTenerife ? golesTenerife : golesRival,
+                          golesVisitante: awayIsTenerife ? golesTenerife : golesRival
+                        }]), 'Resumen');
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(normArr(m.players).map(p => ({ nombre: p.name, estado: p.status }))), 'Jugadores');
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(normArr(m.actionLog).map(e => ({ tiempo: e.time, nombre: e.name, tipo: e.type }))), 'Acciones');
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([...gl.map(g => ({ equipo: 'PROPIO', ...g })), ...gr.map(g => ({ equipo: 'RIVAL', ...g }))]), 'Goles');
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(normArr(m.sustituciones).map(s => ({ minuto: s.minuto, entra: s.entra, sale: s.sale }))), 'Sustituciones');
+                        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `J${m.matchday || '?'}_${m.homeTeam || ''}_vs_${m.awayTeam || ''}.xlsx`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }} style={{ background: '#16a34a', color: '#ffffff' }}>
+                        Exportar
                       </button>
                       <button className="btn-sm btn-secondary" onClick={() => handleEdit(m)}>
                         Editar
