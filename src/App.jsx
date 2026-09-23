@@ -1001,11 +1001,10 @@ export default function App() {
       let rawPlayers = match.players ? normalizeArray(match.players) : defaultPlayersList();
       // normaliza nombres legacy (JUAN->JUANDA), trim, upper
       rawPlayers = rawPlayers.map(p => p && p.name ? { ...p, name: normalizePlayerName(p.name) } : p);
-      // rellena a 24 y dedup (se permiten hasta 40 para no perder
+      // rellena a 24 (se permiten hasta 40 para no perder
       // jugadores añadidos como cadetes cuando la plantilla está llena)
       while (rawPlayers.length < 24) rawPlayers.push({ name: '', status: '-' });
-      rawPlayers = dedupePlayers(rawPlayers).slice(0, 40);
-      setPlayers(rawPlayers);
+      setPlayers(rawPlayers.slice(0, 40));
     }
     setTimerSeconds(match.timerSeconds ?? 0);
     setTimerRunning(match.timerRunning ?? false);

@@ -1,7 +1,0 @@
-fix(minutos jornada): filtrar partidos sin minutos en hoja DATOS
-
-- En la tabla 'MINUTOS POR JORNADA' de la hoja DATOS JUGADOR, solo mostrar
-  los partidos donde el jugador seleccionado tenga minutos > 0 (titular o suplente)
-- Antes se listaban todas las jornadas, incluyendo las que el jugador no jugó
-- Se pasa `titular` y `suplente` por jugador al array `minutosPorJornada`
-  y se filtra con `mMin.titular[jugadorSeleccionado] > 0 || mMin.suplente[...] > 0`
