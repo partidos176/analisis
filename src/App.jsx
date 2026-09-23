@@ -8286,7 +8286,7 @@ export default function App() {
                             width: size,
                             height: size,
                             borderRadius: '50%',
-                            border: `3px solid ${esCadete(p.name) ? '#ef4444' : p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'no convocado' ? '#000000' : p.status === 'tenerife c' ? '#06b6d4' : '#334155'}`,
+                            border: `3px solid ${esCadeteGlobal(p.name) ? '#ef4444' : p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'no convocado' ? '#000000' : p.status === 'tenerife c' ? '#06b6d4' : '#334155'}`,
                             overflow: 'hidden',
                             position: 'relative',
                             cursor: p.status === 'no convocado' ? 'pointer' : 'grab',
@@ -8299,7 +8299,7 @@ export default function App() {
                           {foto ? (
                             <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                           ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: esCadete(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: esCadeteGlobal(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
                           )}
                            {!!p.name && <XBtn idx={p.idx} />}
                           </div>
@@ -8457,13 +8457,13 @@ export default function App() {
                                      width: 100,
                                     height: 100,
                                     borderRadius: '50%',
-                                    border: `3px solid ${esCadete(p.name) ? '#ef4444' : isNoConvocado ? '#000000' : '#38bdf8'}`,
+                                    border: `3px solid ${esCadeteGlobal(p.name) ? '#ef4444' : isNoConvocado ? '#000000' : '#38bdf8'}`,
                                     overflow: 'hidden',
                                     background: '#0f172a',
                                     position: 'relative',
                                     boxShadow: draggingMapIdx === p.idx ? '0 6px 18px rgba(0,0,0,0.5)' : '0 2px 10px rgba(0,0,0,0.4)'
                                   }}>
-                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: esCadete(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: esCadeteGlobal(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                    {!!p.name && <XBtn idx={p.idx} />}
                                   </div>
                                   <div style={{ marginTop: 2, maxWidth: 124, background: p.status === 'titular' ? 'rgba(56,189,248,0.95)' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : p.status === 'no convocado' ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 12, textAlign: 'center', padding: '1px 4px', letterSpacing: '0.02em', lineHeight: 1.2, borderRadius: 4, overflowWrap: 'break-word' }}>{p.name}</div>
@@ -8537,7 +8537,7 @@ export default function App() {
                               </div>
                             ))}
                           </div>
-                        {players.some(p => p && p.name && (p.status === 'titular' || p.status === 'suplente') && esCadete(p.name)) && (
+                        {players.some(p => p && p.name && (p.status === 'titular' || p.status === 'suplente') && esCadeteGlobal(p.name)) && (
                           <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '0.4rem', transform: 'translateX(3rem)' }}>
                             <span style={{ background: 'rgba(15,23,42,0.85)', color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', padding: '0.25rem 0.8rem', borderRadius: '8px', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>Los jugadores con anillo <span style={{ color: '#ef4444' }}>rojo</span> son cadetes</span>
                           </div>
@@ -8631,7 +8631,7 @@ export default function App() {
                                     width: 90,
                                     height: 90,
                                     borderRadius: '50%',
-                                    border: `3px solid ${esCadete(p.name) ? '#ef4444' : isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? '#000000' : '#334155'}`,
+                                    border: `3px solid ${esCadeteGlobal(p.name) ? '#ef4444' : isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? '#000000' : '#334155'}`,
                                     overflow: 'hidden',
                                     position: 'relative',
                                     cursor: 'pointer',
@@ -8639,7 +8639,7 @@ export default function App() {
                                     boxShadow: isTit || isSup ? '0 2px 8px rgba(0,0,0,0.35)' : 'none'
                                   }}
                                 >
-                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: esCadete(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: esCadeteGlobal(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : isNo ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor' || (!isTit && !isSup && !isNo)) ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
                                   </div>
