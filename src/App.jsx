@@ -313,7 +313,7 @@ export default function App() {
   const [offRivalCount, setOffRivalCount] = useState(0);
   const [onNeutroCount, setOnNeutroCount] = useState(0);
   const [offNeutroCount, setOffNeutroCount] = useState(0);
-  const [perdidasCount, setPerdidasCount] = useState(0);
+  const [perdidasCount, setPerdidasCount] = useState(0); const [transicionCount, setTransicionCount] = useState(0);
   const [fueraCount, setFueraCount] = useState(0);
   const [blocajeCount, setBlocajeCount] = useState(0);
   const [finalBocaCount, setFinalBocaCount] = useState(0);
@@ -978,6 +978,7 @@ export default function App() {
     setOnNeutroCount(Math.max(match.onNeutroCount ?? 0, logAcciones['ON NEUTRO'] || 0, logAcciones['ON PROPIO'] || 0));
     setOffNeutroCount(Math.max(match.offNeutroCount ?? 0, logAcciones['OFF NEUTRO'] || 0, logAcciones['OFF PROPIO'] || 0));
     setPerdidasCount(Math.max(match.perdidasCount ?? 0, logAcciones['PÉRDIDAS'] || 0));
+    setTransicionCount(Math.max(match.transicionCount ?? 0, logAcciones['TRANSICION'] || 0));
     setFueraCount(match.fueraCount ?? 0);
     setBlocajeCount(match.blocajeCount ?? 0);
     setFinalBocaCount(match.finalBocaCount ?? 0);
@@ -1056,6 +1057,7 @@ export default function App() {
       onNeutroCount,
       offNeutroCount,
       perdidasCount,
+      transicionCount,
       fueraCount,
       blocajeCount,
       finalBocaCount,
@@ -1163,6 +1165,7 @@ export default function App() {
     if (!currentMatch) return;
     saveMatchData(currentMatch.id);
   }, [currentMatch, tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount, tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount, centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount, rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount, rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount, inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount,       perdidasCount,
+      transicionCount,
       fueraCount,
       blocajeCount,
       finalBocaCount,
@@ -1428,7 +1431,9 @@ export default function App() {
       'OFF RIVAL': setOffRivalCount,
       'OFF NEUTRO': setOffNeutroCount,
       'OFF PROPIO': setOffNeutroCount,
-      'PÉRDIDAS': setPerdidasCount,
+    'PÉRDIDAS': setPerdidasCount,
+    'TRANSICION': setTransicionCount,
+      'TRANSICION': setTransicionCount,
       'OCASION': setOcasionCount,
       'FUERA': setFueraCount,
       'BLOCAJE': setBlocajeCount,
@@ -5872,6 +5877,47 @@ export default function App() {
                           textAlign: 'center'
                         }}>
                           {offRivalCount}
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (logAction('TRANSICION')) {
+                            setTransicionCount(transicionCount + 1);
+                          }
+                        }}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          background: '#8b5cf6',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.7rem',
+                          padding: '1rem',
+                          borderRadius: '50%',
+                          width: '75px',
+                          height: '75px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          gap: '0.2rem',
+                          cursor: 'pointer',
+                          border: 'none',
+                          marginTop: '0.5rem'
+                        }}
+                      >
+                        <span>TRANSICION</span>
+                        <span style={{
+                          background: '#ffffff',
+                          color: '#8b5cf6',
+                          fontWeight: 900,
+                          fontSize: '0.8rem',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '8px',
+                          minWidth: '20px',
+                          textAlign: 'center'
+                        }}>
+                          {transicionCount}
                         </span>
                       </button>
                       </div>
