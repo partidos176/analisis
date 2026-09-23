@@ -1,0 +1,10 @@
+fix(importar): preservar posiciones exactas de jugadores al importar partido
+
+- Nuevo parámetro `skipPlayers` en `applyMatchData` para evitar tocar el array
+  de jugadores al importar desde Excel
+- En botón IMPORTAR: 1) setPlayers(data.players) EXACTO del export (con
+  mapX/mapY/orden), 2) applyMatchData(..., skipPlayers=true) para resto
+- Antes: applyMatchData normalizaba nombres y rellenaba a 24, rompiendo
+  orden/posiciones; luego setPlayers intentaba restaurar pero ya era tarde
+- Ahora el orden y posiciones (mapX/mapY) del partido exportado se mantienen
+  idénticos al importar

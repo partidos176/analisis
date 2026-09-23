@@ -941,8 +941,14 @@ export default function App() {
     setCorteError('');
   };
 
-  const applyMatchData = (match, keepCurrent = false) => {
+  const applyMatchData = (match, keepCurrent = false, skipPlayers = false) => {
     resetMatchData();
+    if (!skipPlayers) {
+      let rawPlayers = match.players ? normalizeArray(match.players) : defaultPlayersList();
+      rawPlayers = rawPlayers.map(p => p && p.name ? { ...p, name: normalizePlayerName(p.name) } : p);
+      while (rawPlayers.length < 24) rawPlayers.push({ name: '', status: '-' });
+      setPlayers(rawPlayers.slice(0, 40));
+    }
     const logAcciones = {};
     normalizeArray(match.actionLog).forEach(e => {
       if (e && e.type === 'accion' && !isPeriodMarker(e.name)) {
@@ -3252,10 +3258,12 @@ const minutosPorJornada = [];
                                 <th style={{ padding: '0.3rem 0.6rem', color: '#eab308', fontWeight: 800, textAlign: 'center', borderBottom: '1px solid #334155', fontSize: '0.9rem' }}>SUPLENTE</th>
                               </tr>
                             </thead>
-                            <tbody>
-                              {minutosPorJornada.map((j, i) => (
-                                <tr key={i}>
-                                  <td style={{ padding: '0.3rem 0.6rem', color: '#ffffff', fontWeight: 700, borderBottom: '1px solid #1e293b' }}>{j.name}</td>
+<tbody>
+      {minutosPorJornada.map((j, i) => (
+        <tr key={i}>
+        <td style={{ padding: '0.3rem 0.6rem', color: '#ffffff', fontWeight: 700, borderBottom: '1px solid #1e293b' }}>
+          {j.name.replace('J2', <span style={{ color: '#f472b6' }}>J2</span>)}
+        </td>
                                   <td style={{ padding: '0.3rem 0.6rem', color: j.titular > 0 ? '#39ff14' : '#475569', fontWeight: j.titular > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
                                     {j.titular > 0 ? formatTime(j.titular) : '-'}
                                   </td>
@@ -6041,16 +6049,21 @@ const minutosPorJornada = [];
                           inp.onchange = async () => {
                             const file = inp.files[0];
                             if (!file) return;
-                            try {
-                              const XLSX = await import('xlsx');
-                              const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-                              const rawWs = wb.Sheets['RAW'];
-                              if (!rawWs) { alert('Este Excel no fue generado por "Guardar" (falta hoja RAW)'); return; }
-                              const rawText = XLSX.utils.sheet_to_json(rawWs, { header: 1 })[1]?.[0];
-                              const data = JSON.parse(rawText);
-                              applyMatchData(data, true);
-                              alert('Datos importados en el partido actual. Pulsa EXPORTAR para conservarlos.');
-                            } catch (err) {
+try {
+        const XLSX = await import('xlsx');
+        const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+        const rawWs = wb.Sheets['RAW'];
+        if (!rawWs) { alert('Este Excel no fue generado por "Guardar" (falta hoja RAW)'); return; }
+        const rawText = XLSX.utils.sheet_to_json(rawWs, { header: 1 })[1]?.[0];
+        const data = JSON.parse(rawText);
+        // 1) Restaurar players EXACTAMENTE como se exportaron (con mapX/mapY y orden)
+        if (data.players && Array.isArray(data.players)) {
+          setPlayers(data.players.slice(0, 40));
+        }
+        // 2) Aplicar resto de datos (actionLog, goles, sustituciones, timer, etc.) SIN tocar players
+        applyMatchData(data, true, true);
+        alert('Datos importados en el partido actual. Pulsa EXPORTAR para conservarlos.');
+      } catch (err) {
                               alert('Error al importar Excel: ' + (err?.message || err));
                             }
                           };
