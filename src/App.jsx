@@ -3262,7 +3262,18 @@ const minutosPorJornada = [];
       {minutosPorJornada.map((j, i) => (
         <tr key={i}>
         <td style={{ padding: '0.3rem 0.6rem', color: '#ffffff', fontWeight: 700, borderBottom: '1px solid #1e293b' }}>
-          {j.name.replace('J2', <span style={{ color: '#f472b6' }}>J2</span>)}
+          {j.name.includes('J2') ? (
+            <>
+              {j.name.split('J2').map((part, idx) => (
+                <React.Fragment key={idx}>
+                  {part}
+                  {idx < 1 && <span style={{ color: '#f472b6' }}>J2</span>}
+                </React.Fragment>
+              ))}
+            </>
+          ) : (
+            j.name
+          )}
         </td>
                                   <td style={{ padding: '0.3rem 0.6rem', color: j.titular > 0 ? '#39ff14' : '#475569', fontWeight: j.titular > 0 ? 700 : 400, textAlign: 'center', borderBottom: '1px solid #1e293b' }}>
                                     {j.titular > 0 ? formatTime(j.titular) : '-'}

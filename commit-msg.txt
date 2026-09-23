@@ -1,10 +1,6 @@
-fix(importar): preservar posiciones exactas de jugadores al importar partido
+fix(minutos jornada): corregir renderizado J2 en rosado (evitar [object Object])
 
-- Nuevo parámetro `skipPlayers` en `applyMatchData` para evitar tocar el array
-  de jugadores al importar desde Excel
-- En botón IMPORTAR: 1) setPlayers(data.players) EXACTO del export (con
-  mapX/mapY/orden), 2) applyMatchData(..., skipPlayers=true) para resto
-- Antes: applyMatchData normalizaba nombres y rellenaba a 24, rompiendo
-  orden/posiciones; luego setPlayers intentaba restaurar pero ya era tarde
-- Ahora el orden y posiciones (mapX/mapY) del partido exportado se mantienen
-  idénticos al importar
+- El `.replace('J2', <span>...)` en string convertía el elemento React a
+  "[object Object]" en pantalla
+- Cambiado a `split('J2')` + mapeo de partes con `<span style={{color:'#f472b6'}}>J2</span>`
+  intercalado, renderizando correctamente solo "J2" en rosado
