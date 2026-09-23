@@ -1003,12 +1003,9 @@ export default function App() {
     setOcasionCount(match.ocasionCount ?? 0);
     setGolesList(normalizeArray(match.golesList));
     setGolesRivalList(normalizeArray(match.golesRivalList));
-    {
+    if (!skipPlayers) {
       let rawPlayers = match.players ? normalizeArray(match.players) : defaultPlayersList();
-      // normaliza nombres legacy (JUAN->JUANDA), trim, upper
       rawPlayers = rawPlayers.map(p => p && p.name ? { ...p, name: normalizePlayerName(p.name) } : p);
-      // rellena a 24 (se permiten hasta 40 para no perder
-      // jugadores añadidos como cadetes cuando la plantilla está llena)
       while (rawPlayers.length < 24) rawPlayers.push({ name: '', status: '-' });
       setPlayers(rawPlayers.slice(0, 40));
     }
@@ -3204,13 +3201,13 @@ export default function App() {
                     });
                     contarRivalGoals({ players, golesRivalList, timerSeconds }, sustituciones);
 const minutosPorJornada = [];
-      matches.forEach(m => {
-        const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
-        const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
-        if (mMin.titular[jugadorSeleccionado] > 0 || mMin.suplente[jugadorSeleccionado] > 0) {
-          minutosPorJornada.push({ name: `J${m.matchday || '?'} — ${m.homeTeam || '?'} vs ${m.awayTeam || '?'}`, minutos: mMin.minutos, titular: mMin.titular[jugadorSeleccionado], suplente: mMin.suplente[jugadorSeleccionado] });
-        }
-      });
+  matches.forEach(m => {
+    const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+    const mMin = calcMatchMinutes(pl, m.sustituciones, m.timerSeconds || 0);
+    if (mMin.titular[jugadorSeleccionado] > 0 || mMin.suplente[jugadorSeleccionado] > 0) {
+      minutosPorJornada.push({ name: `J${m.matchday || '?'} — ${m.homeTeam || '?'} vs ${m.awayTeam || '?'}`, minutos: mMin.minutos[jugadorSeleccionado] || 0, titular: mMin.titular[jugadorSeleccionado], suplente: mMin.suplente[jugadorSeleccionado] });
+    }
+  });
                     return (
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginBottom: '0.5rem' }}>
@@ -5969,7 +5966,7 @@ const minutosPorJornada = [];
                             const wb = XLSX.utils.book_new();
                             const wsResumen = XLSX.utils.json_to_sheet(Object.entries(resumen).map(([k, v]) => ({ CAMPO: k, VALOR: v })));
                             XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
-                            const wsJugadores = XLSX.utils.json_to_sheet(players.map(p => ({ nombre: p.name, estado: p.status, mapX: p.mapX, mapY: p.mapY })));
+                            const wsJugadores = XLSX.utils.json_to_sheet(players.map(p => ({ nombre: p.name, estado: p.status, mapX: p.mapX, mapY: p.mapY, esCadete: p.esCadete })));
                             XLSX.utils.book_append_sheet(wb, wsJugadores, 'Jugadores');
                             const wsAcciones = XLSX.utils.json_to_sheet(actionLog.map(e => ({ tiempo: e.time, nombre: e.name, tipo: e.type })));
                             XLSX.utils.book_append_sheet(wb, wsAcciones, 'Acciones');
@@ -6053,27 +6050,43 @@ const minutosPorJornada = [];
                           const inp = document.createElement('input');
                           inp.type = 'file';
                           inp.accept = '.xlsx,.xls';
-                          inp.onchange = async () => {
-                            const file = inp.files[0];
-                            if (!file) return;
-try {
-        const XLSX = await import('xlsx');
-        const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-        const rawWs = wb.Sheets['RAW'];
-        if (!rawWs) { alert('Este Excel no fue generado por "Guardar" (falta hoja RAW)'); return; }
-        const rawText = XLSX.utils.sheet_to_json(rawWs, { header: 1 })[1]?.[0];
-        const data = JSON.parse(rawText);
-        // 1) Restaurar players EXACTAMENTE como se exportaron (con mapX/mapY y orden)
-        if (data.players && Array.isArray(data.players)) {
-          setPlayers(data.players.slice(0, 40));
+inp.onchange = async () => {
+        const file = inp.files[0];
+        if (!file) return;
+        try {
+          const XLSX = await import('xlsx');
+          const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+          const rawWs = wb.Sheets['RAW'];
+          if (!rawWs) { alert('Este Excel no fue generado por "Guardar" (falta hoja RAW)'); return; }
+          const rawText = XLSX.utils.sheet_to_json(rawWs, { header: 1 })[1]?.[0];
+          const data = JSON.parse(rawText);
+          // 1) Aplicar resto de datos (actionLog, goles, sustituciones, timer, etc.) SIN tocar players
+          applyMatchData(data, true, true);
+          // 2) Restaurar players desde la hoja 'Jugadores' (evita truncamiento JSON en RAW)
+          const jugWs = wb.Sheets['Jugadores'];
+          let importedPlayers = [];
+          if (jugWs) {
+            const jugRows = XLSX.utils.sheet_to_json(jugWs);
+            importedPlayers = jugRows.map(r => ({
+              name: r.nombre,
+              status: r.estado,
+              mapX: r.mapX,
+              mapY: r.mapY,
+              esCadete: r.esCadete === true || r.esCadete === 'true'
+            })).filter(p => p.name);
+          }
+          // Fallback a RAW si no hay hoja Jugadores
+          if (importedPlayers.length === 0 && data.players && Array.isArray(data.players)) {
+            importedPlayers = data.players;
+          }
+          if (importedPlayers.length > 0) {
+            setPlayers(importedPlayers.slice(0, 40));
+          }
+          alert('Datos importados en el partido actual. Pulsa EXPORTAR para conservarlos.');
+        } catch (err) {
+          alert('Error al importar Excel: ' + (err?.message || err));
         }
-        // 2) Aplicar resto de datos (actionLog, goles, sustituciones, timer, etc.) SIN tocar players
-        applyMatchData(data, true, true);
-        alert('Datos importados en el partido actual. Pulsa EXPORTAR para conservarlos.');
-      } catch (err) {
-                              alert('Error al importar Excel: ' + (err?.message || err));
-                            }
-                          };
+      };
                           inp.click();
                         }}
                         style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>

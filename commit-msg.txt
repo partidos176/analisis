@@ -1,6 +1,7 @@
-fix(minutos jornada): colorear todos los J+NÚMERO en rosado (regex)
+fix(importar): preservar esCadete y anillo rojo en ALINEACIÓN al importar Excel
 
-- Antes solo "J2" se ponía en rosado; ahora se usa split con regex `/(J\d+)/`
-  para detectar cualquier "J" seguido de dígitos (J1, J2, J3, J10, etc.)
-- Cada coincidencia se envuelve en <span style={{color:'#f472b6'}}>...</span>
-- El resto del nombre de la jornada (equipos, separadores) queda en blanco
+- Export: hoja 'Jugadores' ahora incluye campo `esCadete` (boolean)
+- Import: se lee `esCadete` desde hoja 'Jugadores' (evita truncamiento JSON en RAW)
+- `esCadeteGlobal(p.name)` usa esta propiedad + lista global + partidos
+- Ahora el anillo rojo (#ef4444) aparece correctamente en jugadores cadetes
+  al importar un partido, igual que en el original
