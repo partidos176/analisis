@@ -8932,27 +8932,94 @@ inp.onchange = async () => {
                         const normArr = (v) => Array.isArray(v) ? v : (v ? Object.values(v) : []);
                         const gl = normArr(m.golesList).filter(g => g && g.team !== 'away');
                         const gr = normArr(m.golesRivalList);
-                        const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
-                        const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
-                        const golesTenerife = gl.length;
-                        const golesRival = gr.length;
+                        const allGl = normArr(m.golesList);
+                        const allGr = normArr(m.golesRivalList);
+                        const allPl = normArr(m.players);
+                        const allLog = normArr(m.actionLog);
+                        const allSust = normArr(m.sustituciones);
                         const XLSX = await import('xlsx');
                         const wb = XLSX.utils.book_new();
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([{
-                          jornada: m.matchday, local: m.homeTeam || '', visitante: m.awayTeam || '',
-                          golesLocal: homeIsTenerife ? golesTenerife : golesRival,
-                          golesVisitante: awayIsTenerife ? golesTenerife : golesRival
-                        }]), 'Resumen');
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(normArr(m.players).map(p => ({ nombre: p.name, estado: p.status }))), 'Jugadores');
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(normArr(m.actionLog).map(e => ({ tiempo: e.time, nombre: e.name, tipo: e.type }))), 'Acciones');
+                        const resumen = {
+                          matchday: m.matchday, homeTeam: m.homeTeam, awayTeam: m.awayTeam,
+                          tiroDerechaCount: m.tiroDerechaCount ?? 0, tiroAreaCount: m.tiroAreaCount ?? 0,
+                          rivalTiroDerechaCount: m.rivalTiroDerechaCount ?? 0, rivalTiroAreaCount: m.rivalTiroAreaCount ?? 0,
+                          tiroIzquierdaCount: m.tiroIzquierdaCount ?? 0, tiroFrontalCount: m.tiroFrontalCount ?? 0,
+                          faltaDerechaCount: m.faltaDerechaCount ?? 0, faltaIzquierdaCount: m.faltaIzquierdaCount ?? 0,
+                          faltaFrontalCount: m.faltaFrontalCount ?? 0, centroDerechaCount: m.centroDerechaCount ?? 0,
+                          centroIzquierdaCount: m.centroIzquierdaCount ?? 0, cornerIzquierdaCount: m.cornerIzquierdaCount ?? 0,
+                          cornerDerechaCount: m.cornerDerechaCount ?? 0,
+                          rivalTiroIzquierdaCount: m.rivalTiroIzquierdaCount ?? 0, rivalTiroFrontalCount: m.rivalTiroFrontalCount ?? 0,
+                          rivalFaltaDerechaCount: m.rivalFaltaDerechaCount ?? 0, rivalFaltaIzquierdaCount: m.rivalFaltaIzquierdaCount ?? 0,
+                          rivalFaltaFrontalCount: m.rivalFaltaFrontalCount ?? 0, rivalCentroDerechaCount: m.rivalCentroDerechaCount ?? 0,
+                          rivalCentroIzquierdaCount: m.rivalCentroIzquierdaCount ?? 0, rivalCornerIzquierdaCount: m.rivalCornerIzquierdaCount ?? 0,
+                          rivalCornerDerechaCount: m.rivalCornerDerechaCount ?? 0,
+                          inicioPropioCount: m.inicioPropioCount ?? 0, inicioRivalCount: m.inicioRivalCount ?? 0,
+                          onRivalCount: m.onRivalCount ?? 0, offRivalCount: m.offRivalCount ?? 0,
+                          onNeutroCount: m.onNeutroCount ?? 0, offNeutroCount: m.offNeutroCount ?? 0,
+                          perdidasCount: m.perdidasCount ?? 0, fueraCount: m.fueraCount ?? 0,
+                          blocajeCount: m.blocajeCount ?? 0, despejeDefensaCount: m.despejeDefensaCount ?? 0,
+                          despejePorteroCount: m.despejePorteroCount ?? 0,
+                          golCount: allGl.length, golRivalCount: allGr.length, penalCount: m.penalCount ?? 0,
+                          saqueEsquinaFueraCount: m.saqueEsquinaFueraCount ?? 0, infraccionCount: m.infraccionCount ?? 0,
+                          ocasionCount: m.ocasionCount ?? 0, timerSeconds: m.timerSeconds
+                        };
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(Object.entries(resumen).map(([k, v]) => ({ CAMPO: k, VALOR: v }))), 'Resumen');
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allPl.map(p => ({ nombre: p.name, estado: p.status, mapX: p.mapX, mapY: p.mapY, esCadete: p.esCadete }))), 'Jugadores');
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allLog.map(e => ({ tiempo: e.time, nombre: e.name, tipo: e.type }))), 'Acciones');
                         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([...gl.map(g => ({ equipo: 'PROPIO', ...g })), ...gr.map(g => ({ equipo: 'RIVAL', ...g }))]), 'Goles');
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(normArr(m.sustituciones).map(s => ({ minuto: s.minuto, entra: s.entra, sale: s.sale }))), 'Sustituciones');
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allSust.map(s => ({ minuto: s.minuto, entra: s.entra, sale: s.sale }))), 'Sustituciones');
+                        const parseT = (str) => { const p = String(str).split(':').map(Number); return (p[0] || 0) * 60 + (p[1] || 0); };
+                        const logPos = allLog.map(e => ({ ...e, secs: parseT(e.time) })).filter(e => e.secs >= 0);
+                        const pdsPos = [];
+                        let psPos = null;
+                        [...logPos].reverse().forEach(e => {
+                          if (e.name === '1ª PARTE' || e.name === '2ª PARTE') {
+                            if (psPos) { pdsPos.push({ start: psPos, end: e }); }
+                            psPos = e;
+                          }
+                          else if (isFinMarker(e.name) && psPos) { pdsPos.push({ start: psPos, end: e }); psPos = null; }
+                        });
+                        if (psPos) pdsPos.push({ start: psPos, end: null });
+                        const posRows = pdsPos.map(p => {
+                          const startT = parseT(p.start.time);
+                          const endT = p.end ? parseT(p.end.time) : (m.timerSeconds || 0);
+                          const total = Math.max(1, endT - startT);
+                          const entries = logPos.filter(e => e.secs >= startT && e.secs <= endT && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).sort((a, b) => a.secs - b.secs);
+                          let ownSecs = 0, rivalSecs = 0, opStart = null, orStart = null;
+                          entries.forEach(e => {
+                            if (e.name === 'ON PROPIO') opStart = e.secs;
+                            else if (e.name === 'OFF PROPIO' && opStart !== null) { ownSecs += e.secs - opStart; opStart = null; }
+                            else if (e.name === 'ON RIVAL') orStart = e.secs;
+                            else if (e.name === 'OFF RIVAL' && orStart !== null) { rivalSecs += e.secs - orStart; orStart = null; }
+                          });
+                          if (opStart !== null) ownSecs += endT - opStart;
+                          if (orStart !== null) rivalSecs += endT - orStart;
+                          const neutroSecs = Math.max(0, total - ownSecs - rivalSecs);
+                          const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+                          return { periodo: p.start.name, propio: fmt(ownSecs) + ' (' + Math.round((ownSecs / total) * 100) + '%)', rival: fmt(rivalSecs) + ' (' + Math.round((rivalSecs / total) * 100) + '%)', neutro: fmt(neutroSecs) + ' (' + Math.round((neutroSecs / total) * 100) + '%)' };
+                        });
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(posRows.length ? posRows : [{ periodo: 'SIN DATOS', propio: '', rival: '', neutro: '' }]), 'Posesion');
+                        const accionesDatos = ['TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS'];
+                        const finalizacionesDatos = ['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'];
+                        const matrizDatos = {};
+                        accionesDatos.forEach(a => { matrizDatos[a] = {}; finalizacionesDatos.forEach(f => { matrizDatos[a][f] = 0; }); });
+                        let ultimaAccion = null;
+                        [...allLog].reverse().forEach(entry => {
+                          if (entry.type === 'accion' && accionesDatos.includes(entry.name)) ultimaAccion = entry.name;
+                          else if (entry.type === 'finalizacion' && finalizacionesDatos.includes(entry.name) && ultimaAccion) { matrizDatos[ultimaAccion][entry.name] += 1; }
+                        });
+                        const filasDatos = accionesDatos.filter(a => finalizacionesDatos.some(f => matrizDatos[a][f] > 0));
+                        const colsDatos = finalizacionesDatos.filter(f => accionesDatos.some(a => matrizDatos[a][f] > 0));
+                        const datosRows = filasDatos.map(a => ({ ACCION: a, ...Object.fromEntries(colsDatos.map(f => [f, matrizDatos[a][f] || ''])), TOTAL: colsDatos.reduce((s, f) => s + matrizDatos[a][f], 0) }));
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosRows.length ? datosRows : [{ ACCION: 'SIN DATOS' }]), 'Datos');
+                        const rawData = { ...resumen, players: allPl, actionLog: allLog, golesList: allGl, golesRivalList: allGr, sustituciones: allSust, timerSeconds: m.timerSeconds, timerRunning: m.timerRunning };
+                        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['DATOS'], [JSON.stringify(rawData)]]), 'RAW');
                         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
                         const blob = new Blob([wbout], { type: 'application/octet-stream' });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = `J${m.matchday || '?'}_${m.homeTeam || ''}_vs_${m.awayTeam || ''}.xlsx`;
+                        a.download = `J${m.matchday || '?'}_${m.homeTeam || ''}_vs_${m.awayTeam || ''}_datos.xlsx`;
                         a.click();
                         URL.revokeObjectURL(url);
                       }} style={{ background: '#16a34a', color: '#ffffff' }}>
