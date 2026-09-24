@@ -8852,7 +8852,15 @@ inp.onchange = async () => {
                       const XLSX = await import('xlsx');
                       const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
                       const sh = (name) => { const ws = wb.Sheets[name]; return ws ? XLSX.utils.sheet_to_json(ws) : []; };
-                      const resumen = sh('Resumen')[0] || {};
+                      let resumen = sh('Resumen')[0] || {};
+                      if (!resumen.local && !resumen.homeTeam) {
+                        // Formato del EXPORTAR de acciones: filas {CAMPO, VALOR}
+                        const porCampo = {};
+                        sh('Resumen').forEach(r => { if (r && r.CAMPO != null) porCampo[r.CAMPO] = r.VALOR; });
+                        if (porCampo.homeTeam != null || porCampo.matchday != null) {
+                          resumen = { local: porCampo.homeTeam, visitante: porCampo.awayTeam, jornada: porCampo.matchday };
+                        }
+                      }
                       const golesList = [];
                       const golesRivalList = [];
                       sh('Goles').forEach(g => {
@@ -8868,7 +8876,7 @@ inp.onchange = async () => {
                         homeScore: 0,
                         awayScore: 0,
                         createdAt: Date.now(),
-                        players: sh('Jugadores').map(j => ({ name: j.nombre || '', status: j.estado || '-' })),
+                        players: sh('Jugadores').map(j => ({ name: j.nombre || '', status: j.estado || '-', mapX: j.mapX, mapY: j.mapY, esCadete: j.esCadete === true || j.esCadete === 'true' })),
                         actionLog: sh('Acciones').map(a => ({ time: a.tiempo, name: a.nombre, type: a.tipo || 'accion' })),
                         golesList,
                         golesRivalList,
