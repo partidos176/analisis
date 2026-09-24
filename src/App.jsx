@@ -140,7 +140,8 @@ const totalesTabsDef = [
   { id: 'minutosjugados', label: 'MINUTOS JORNADA' },
   { id: 'jugadores', label: 'DATOS JUGADOR' },
   { id: 'posesion', label: 'TOTAL POSESIÓN' },
-  { id: 'cadetes', label: 'CADETES' }
+  { id: 'cadetes', label: 'CADETES' },
+  { id: 'prueba', label: 'PRUEBA' }
 ];
 
 export default function App() {
@@ -158,6 +159,22 @@ export default function App() {
   const [showAllRows1, setShowAllRows1] = useState(false);
   const [showAllRows2, setShowAllRows2] = useState(false);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
+  const [pruebaFile, setPruebaFile] = useState(null);
+  const [pruebaTime, setPruebaTime] = useState(0);
+  const [pruebaPlaying, setPruebaPlaying] = useState(false);
+  const [pruebaMarks, setPruebaMarks] = useState([]);
+  const [pruebaIguala, setPruebaIguala] = useState(false);
+  const [pruebaSpeed, setPruebaSpeed] = useState(1);
+  const pruebaVideoRef = useRef(null);
+  const pruebaVideoUrl = useMemo(() => pruebaFile ? URL.createObjectURL(pruebaFile) : null, [pruebaFile]);
+  useEffect(() => {
+    if (!pruebaPlaying) return;
+    const iv = setInterval(() => setPruebaTime(t => t + 1), 1000 / pruebaSpeed);
+    return () => clearInterval(iv);
+  }, [pruebaPlaying, pruebaSpeed]);
+  useEffect(() => {
+    if (pruebaVideoRef.current) pruebaVideoRef.current.playbackRate = pruebaSpeed;
+  }, [pruebaSpeed, pruebaVideoUrl]);
   const timelineVideoRef = useRef(null);
 
   useEffect(() => {
@@ -333,6 +350,8 @@ export default function App() {
   const [cadetesMatchId, setCadetesMatchId] = useState('');
   const [cadetesDropdownOpen, setCadetesDropdownOpen] = useState(false);
   const [cadetesJornadaWarning, setCadetesJornadaWarning] = useState(false);
+  const [cadeteOk, setCadeteOk] = useState(false);
+  const [minutosJugador, setMinutosJugador] = useState('');
   const [cadetesByMatch, setCadetesByMatch] = useState(() => {
     try {
       const saved = localStorage.getItem('cadetesByMatch');
@@ -982,8 +1001,11 @@ export default function App() {
       rawPlayers = rawPlayers.map(p => p && p.name ? { ...p, name: normalizePlayerName(p.name) } : p);
       // rellena a 24 y dedup
       while (rawPlayers.length < 24) rawPlayers.push({ name: '', status: '-' });
-      rawPlayers = dedupePlayers(rawPlayers).slice(0, 24);
-      setPlayers(rawPlayers);
+      rawPlayers = dedupePlayers(rawPlayers);
+      // conserva los cadetes más allá del corte de 24 para que no se pierdan
+      const base = rawPlayers.slice(0, 24);
+      const extras = rawPlayers.slice(24).filter(p => p && p.name);
+      setPlayers([...base, ...extras]);
     }
     setTimerSeconds(match.timerSeconds ?? 0);
     setTimerRunning(match.timerRunning ?? false);
@@ -1079,11 +1101,13 @@ export default function App() {
       if (list.some(p => p && normalizePlayerName(p.name) === norm)) return;
       const emptyIdx = list.findIndex(p => !p || !p.name);
       if (emptyIdx !== -1) {
-        list[emptyIdx] = { ...list[emptyIdx], name: norm, status: '-' };
+        list[emptyIdx] = { ...list[emptyIdx], name: norm, status: '-', esCadete: true };
       } else {
-        list = [...list, { name: norm, status: '-' }];
+        list = [...list, { name: norm, status: '-', esCadete: true }];
       }
       await set(pRef, sanitizeForFirebase(list));
+      setCadeteOk(true);
+      setTimeout(() => setCadeteOk(false), 2500);
       if (currentMatch && currentMatch.id === matchId) {
         setPlayers(prev => {
           if (prev.some(p => p && normalizePlayerName(p.name) === norm)) return prev;
@@ -1093,13 +1117,33 @@ export default function App() {
             copy.push({ name: '', status: '-' });
             idx = copy.length - 1;
           }
-          copy[idx] = { ...copy[idx], name: norm, status: '-' };
+          copy[idx] = { ...copy[idx], name: norm, status: '-', esCadete: true };
           return copy;
         });
       }
     } catch (err) {
       console.error('Error añadiendo cadete a alineación:', err);
     }
+  };
+
+  const esCadete = (name) => {
+    const norm = normalizePlayerName(name);
+    if (!norm) return false;
+    if ((cadetesByMatch[currentMatch?.id] || []).some(n => normalizePlayerName(n) === norm)) return true;
+    return players.some(p => p && p.esCadete && normalizePlayerName(p.name) === norm);
+  };
+  const esCadeteGlobal = (name) => {
+    const norm = normalizePlayerName(name);
+    if (!norm) return false;
+    for (const lista of Object.values(cadetesByMatch)) {
+      if ((lista || []).some(n => normalizePlayerName(n) === norm)) return true;
+    }
+    if (esCadete(name)) return true;
+    for (const m of matches) {
+      const pls = Array.isArray(m.players) ? m.players : m.players ? Object.values(m.players) : [];
+      if (pls.some(p => p && p.esCadete && normalizePlayerName(p.name) === norm)) return true;
+    }
+    return false;
   };
 
   const handleBackToList = async () => {
@@ -2499,7 +2543,7 @@ export default function App() {
                                 {filas.map(([n, s]) => (
                                   <tr key={n}>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'center', color: '#ffffff', fontWeight: 700 }}>{n}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total || '-'}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total || '-'}</td>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.pie || '-'}</td>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.cabeza || '-'}</td>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.penal || '-'}</td>
@@ -2836,7 +2880,7 @@ export default function App() {
                         cruceRivalTotal[f] = (cruceRivalTotal[f] || 0) + cruce[a][f];
                       });
                     });
-                    const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && crucePropiasAcciones.some(a => (cruce[a][f] || 0) > 0));
+                    const crucePropiasFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && crucePropiasAcciones.some(a => (cruce[a][f] || 0) > 0)).sort((a, b) => a === 'OCASION' ? -1 : +(b === 'OCASION'));
                     const cruceRivalFinalizaciones = cruceFinalizaciones.filter(f => f !== 'GOL' && f !== 'PENAL + GOL' && cruceRivalAcciones.some(a => (cruce[a][f] || 0) > 0));
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -2890,8 +2934,9 @@ export default function App() {
                                     <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'left', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>ACCION</th>
                                     {(() => {
                                       const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
-                                      const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
-                                      return [...golesCols, ...otrasCols].map(f => (
+                                      const ocasCols = cruceRivalFinalizaciones.filter(f => f === 'OCASION');
+                                      const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && f !== 'OCASION');
+                                      return [...ocasCols, ...golesCols, ...otrasCols].map(f => (
                                         <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
                                       ));
                                     })()}
@@ -2904,8 +2949,9 @@ export default function App() {
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ef4444', fontWeight: 700, whiteSpace: 'nowrap' }}>{a.replace('RIVAL ', 'R. ')}</td>
 {(() => {
                                         const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
-                                        const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
-                                        return [...golesCols, ...otrasCols].map(f => (
+                                        const ocasCols = cruceRivalFinalizaciones.filter(f => f === 'OCASION');
+                                        const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && f !== 'OCASION');
+                                        return [...ocasCols, ...golesCols, ...otrasCols].map(f => (
                                           <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                         ));
                                       })()}
@@ -2916,8 +2962,9 @@ export default function App() {
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {(() => {
                                       const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
-                                      const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL');
-                                      return [...golesCols, ...otrasCols].map(f => (
+                                      const ocasCols = cruceRivalFinalizaciones.filter(f => f === 'OCASION');
+                                      const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && f !== 'OCASION');
+                                      return [...ocasCols, ...golesCols, ...otrasCols].map(f => (
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalTotal[f] || '-'}</td>
                                       ));
                                     })()}
@@ -3545,7 +3592,7 @@ export default function App() {
                             <tbody>
                               {filas.map(([n, m]) => (
                                 <tr key={n}>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', color: '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>{n}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', color: esCadeteGlobal(n) ? '#ef4444' : '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>{n}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{formatTime(m)}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{totalTitular[n] || 0}</td>
@@ -3616,7 +3663,7 @@ export default function App() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div>
                           <div style={{ marginBottom: '0.8rem' }}>
-                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>MINUTOS JORNADA:</label>
+                            <label style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: '0.5rem' }}>PARTIDO:</label>
                             <select
                               value={selectedJornadaTiempo}
                               onChange={e => setSelectedJornadaTiempo(e.target.value)}
@@ -3668,7 +3715,7 @@ export default function App() {
                                     const rolColor = rol === 'titular' ? '#39ff14' : rol === 'suplente' ? '#eab308' : rol === 'lesion' ? '#38bdf8' : rol === 'division honor' ? '#f472b6' : rol === 'tenerife c' ? '#06b6d4' : '#ef4444';
                                     return (
                                       <tr key={n}>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', width: '12rem', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{n}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', width: '12rem', color: esCadeteGlobal(n) ? '#ef4444' : '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{n}</td>
                                         <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', width: '9rem', textAlign: 'center', color: rolColor, fontWeight: 800, textTransform: 'uppercase', fontSize: '0.85rem' }}>{rol}</td>
                                         <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.6rem', width: '7rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.9rem' }}>{m > 0 ? formatTime(m) : '-'}</td>
                                       </tr>
@@ -3695,8 +3742,9 @@ export default function App() {
                   .map(m => {
                     const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                     const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                    const score = ` (${homeGl.length}-${awayGl.length})`;
-                    return { id: m.id, matchday: m.matchday, label: 'JORNADA ' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
+                    const propios = homeGl.filter(g => g && g.team !== 'away');
+                    const score = (m.homeTeam || '').toUpperCase().includes('TENERIFE') ? ` (${propios.length}-${awayGl.length})` : ` (${awayGl.length}-${propios.length})`;
+                    return { id: m.id, matchday: m.matchday, label: 'J.' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
                   })
                   .sort((a, b) => (a.matchday || 0) - (b.matchday || 0));
 
@@ -3715,7 +3763,8 @@ export default function App() {
                   const teamInfo = (m.homeTeam || '') + ' vs ' + (m.awayTeam || '');
                   const homeGl2 = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                   const awayGl2 = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                  const score = ' (' + homeGl2.length + '-' + awayGl2.length + ')';
+                  const propios2 = homeGl2.filter(g => g && g.team !== 'away');
+                  const score = (m.homeTeam || '').toUpperCase().includes('TENERIFE') ? ` (${propios2.length}-${awayGl2.length})` : ` (${awayGl2.length}-${propios2.length})`;
                   const rws = pds.map(p => {
                     const startTime = parseTime(p.start.time);
                     const endTime = p.end ? parseTime(p.end.time) : (m.timerSeconds || 0);
@@ -3733,17 +3782,19 @@ export default function App() {
                     const ownPct = Math.round((ownSecs / periodoTotal) * 100);
                     const rivalPct = Math.round((rivalSecs / periodoTotal) * 100);
                     const neutroPct = Math.round(Math.max(0, periodoTotal - ownSecs - rivalSecs) / periodoTotal * 100);
-                    return { label: 'JORNADA ' + md + ' — ' + p.start.name + ' — ' + teamInfo + score, ownPct: String(ownPct), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
+                    const ownEfec = (ownSecs + rivalSecs) > 0 ? Math.round((ownSecs / (ownSecs + rivalSecs)) * 100) : 0;
+                    const rivalEfec = (ownSecs + rivalSecs) > 0 ? Math.round((rivalSecs / (ownSecs + rivalSecs)) * 100) : 0;
+                    return { label: 'J.' + md + ' — ' + p.start.name + ' — ' + teamInfo + score, ownPct: String(ownPct), ownEfec: String(ownEfec), rivalEfec: String(rivalEfec), rivalPct: String(rivalPct), neutroPct: String(neutroPct), ownSecs, rivalSecs, periodoTotal };
                   });
                   let tOwn = 0, tRiv = 0, tDur = 0;
                   rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
-                  const subtotal = { label: 'JORNADA ' + md + ' — TOTAL — ' + teamInfo + score, ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0), ownSecs: tOwn, rivalSecs: tRiv, periodoTotal: tDur };
+                  const subtotal = { label: 'J.' + md + ' — TOTAL — ' + teamInfo + score, ownPct: String(tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0), ownEfec: String((tOwn + tRiv) > 0 ? Math.round((tOwn / (tOwn + tRiv)) * 100) : 0), rivalEfec: String((tOwn + tRiv) > 0 ? Math.round((tRiv / (tOwn + tRiv)) * 100) : 0), rivalPct: String(tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0), neutroPct: String(tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0), ownSecs: tOwn, rivalSecs: tRiv, periodoTotal: tDur };
                   return { rows: rws, subtotal, matchday: md };
                 };
                 const allMatchData = selectedIds.map(id => { const m = matches.find(x => x.id === id); return m ? buildRowsForMatch(m) : null; }).filter(Boolean);
                 let grandOwn = 0, grandRiv = 0, grandDur = 0;
                 allMatchData.forEach(d => { grandOwn += d.subtotal.ownSecs; grandRiv += d.subtotal.rivalSecs; grandDur += d.subtotal.periodoTotal; });
-                const grandTotal = { label: 'TOTAL GENERAL', ownPct: String(grandDur > 0 ? Math.round((grandOwn / grandDur) * 100) : 0), rivalPct: String(grandDur > 0 ? Math.round((grandRiv / grandDur) * 100) : 0), neutroPct: String(grandDur > 0 ? Math.round(Math.max(0, grandDur - grandOwn - grandRiv) / grandDur * 100) : 0) };
+                const grandTotal = { label: 'TOTAL GENERAL', ownPct: String(grandDur > 0 ? Math.round((grandOwn / grandDur) * 100) : 0), ownEfec: String((grandOwn + grandRiv) > 0 ? Math.round((grandOwn / (grandOwn + grandRiv)) * 100) : 0), rivalEfec: String((grandOwn + grandRiv) > 0 ? Math.round((grandRiv / (grandOwn + grandRiv)) * 100) : 0), rivalPct: String(grandDur > 0 ? Math.round((grandRiv / grandDur) * 100) : 0), neutroPct: String(grandDur > 0 ? Math.round(Math.max(0, grandDur - grandOwn - grandRiv) / grandDur * 100) : 0) };
                 const toggleMatch = (id) => { setPosesionMatchIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]); };
                 const toggleAll = () => { if (posesionMatchIds.length === matchOptions.length) { setPosesionMatchIds([]); } else { setPosesionMatchIds(matchOptions.map(o => o.id)); } };
                 const dropdownLabel = selectedIds.length === 0 ? 'Seleccionar jornada' : selectedIds.length === matchOptions.length ? 'Todas' : selectedIds.length === 1 ? 'jornada' : selectedIds.length + ' jornadas';
@@ -3753,7 +3804,7 @@ export default function App() {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead>
                         <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', position: 'relative' }}>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', position: 'relative', minWidth: '24rem' }}>
                             {matchOptions.length > 0 ? (
                               <div style={{ position: 'relative' }}>
                                 <div
@@ -3789,9 +3840,8 @@ export default function App() {
                               </div>
                             ) : 'Período'}
                           </th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#22c55e' }}>Propio</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#38bdf8' }}>Posesion propia</th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#ef4444' }}>Posesion rival</th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Ver <button onClick={() => setHiddenPoseRows(new Set())} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1rem', marginLeft: '0.3rem', verticalAlign: 'middle' }} title="Mostrar todas">&#8634;</button></th>
                         </tr>
                       </thead>
@@ -3800,9 +3850,8 @@ export default function App() {
                           ...d.rows.filter(r => !hiddenPoseRows.has(r.label)).map((r, ri) => (
                             <tr key={mi + '-' + ri} style={{ background: ri % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{r.ownEfec}%</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{r.rivalEfec}%</td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center' }}>
                                 <button onClick={() => setHiddenPoseRows(prev => { const s = new Set(prev); s.has(r.label) ? s.delete(r.label) : s.add(r.label); return s; })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1.1rem' }} title="Ocultar/Mostrar">&#128065;</button>
                               </td>
@@ -3810,9 +3859,8 @@ export default function App() {
                           )), ...(!hiddenPoseRows.has(d.subtotal.label) ? [
                           <tr key={'sub-' + mi} style={{ background: 'rgba(56,189,248,0.12)' }}>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{d.subtotal.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.neutroPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.ownEfec}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{d.subtotal.rivalEfec}%</td>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center' }}>
                               <button onClick={() => setHiddenPoseRows(prev => { const s = new Set(prev); s.has(d.subtotal.label) ? s.delete(d.subtotal.label) : s.add(d.subtotal.label); return s; })} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ffffff', fontSize: '1.1rem' }} title="Ocultar/Mostrar">&#128065;</button>
                             </td>
@@ -3822,9 +3870,8 @@ export default function App() {
                         {allMatchData.length > 0 && !hiddenPoseRows.has(grandTotal.label) && (
                           <tr style={{ background: 'rgba(251,191,36,0.15)' }}>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 900, fontSize: '1rem' }}>{grandTotal.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.neutroPct}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.ownEfec}%</td>
+                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{grandTotal.rivalEfec}%</td>
                             <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center' }}></td>
                           </tr>
                         )}
@@ -3836,7 +3883,11 @@ export default function App() {
                       .filter(m => m.matchday)
                       .map(m => {
                         const d = buildRowsForMatch(m);
-                        return d.rows.length > 0 ? { name: 'J ' + m.matchday, Propio: Math.round(d.subtotal.ownSecs / 60), Rival: Math.round(d.subtotal.rivalSecs / 60), Neutro: Math.round((d.subtotal.periodoTotal - d.subtotal.ownSecs - d.subtotal.rivalSecs) / 60) } : null;
+                        return d.rows.length > 0 ? (() => {
+                          const n = d.subtotal.ownSecs + d.subtotal.rivalSecs;
+                          const r = e => n > 0 ? Math.round(e / n * 100) : 0;
+                          return { name: 'J ' + m.matchday, "Posesion propia": r(d.subtotal.ownSecs), "Posesion rival": r(d.subtotal.rivalSecs) };
+                        })() : null;
                       })
                       .filter(Boolean)
                       .sort((a, b) => (parseInt(a.name.slice(1)) || 0) - (parseInt(b.name.slice(1)) || 0));
@@ -3846,12 +3897,11 @@ export default function App() {
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
                           <XAxis dataKey="name" tick={{ fill: '#ffffff', fontSize: 12 }} />
-                          <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} unit=" min" />
-                          <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => value + ' min'} />
+                          <YAxis tick={{ fill: '#ffffff', fontSize: 12 }} unit="%" domain={[0, 80]} />
+                          <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => value + '%'} />
                           <Legend wrapperStyle={{ color: '#ffffff', cursor: 'pointer' }} onClick={(e) => { setHiddenLines(prev => ({ ...prev, [e.dataKey]: !prev[e.dataKey] })); }} />
-                          <Line type="monotone" dataKey="Propio" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Propio} onClick={() => setHiddenLines(prev => ({ ...prev, Propio: !prev.Propio }))} style={{ cursor: 'pointer' }} />
-                          <Line type="monotone" dataKey="Rival" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Rival} onClick={() => setHiddenLines(prev => ({ ...prev, Rival: !prev.Rival }))} style={{ cursor: 'pointer' }} />
-                          <Line type="monotone" dataKey="Neutro" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines.Neutro} onClick={() => setHiddenLines(prev => ({ ...prev, Neutro: !prev.Neutro }))} style={{ cursor: 'pointer' }} />
+                          <Line type="monotone" dataKey="Posesion propia" stroke="#38bdf8" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines['Posesion propia']} onClick={() => setHiddenLines(prev => ({ ...prev, "Posesion propia": !prev["Posesion propia"] }))} style={{ cursor: 'pointer' }} />
+                          <Line type="monotone" dataKey="Posesion rival" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} hide={hiddenLines['Posesion rival']} onClick={() => setHiddenLines(prev => ({ ...prev, "Posesion rival": !prev["Posesion rival"] }))} style={{ cursor: 'pointer' }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -3891,65 +3941,29 @@ export default function App() {
                       FALTA SELECCIONAR JORNADA
                     </div>
                   )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '560px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', order: 2 }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start' }}>
-                      <span style={{ color: '#94a3b8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
-                      <select
-                        value={cadetesMatchId}
-                        onChange={(e) => setCadetesMatchId(e.target.value)}
-                        style={{
-                          background: 'var(--bg-secondary)',
-                          border: '1px solid var(--border-subtle)',
-                          borderRadius: '8px',
-                          color: '#ffffff',
-                          fontWeight: 700,
-                          fontSize: '0.9rem',
-                          padding: '0.6rem 0.8rem',
-                          cursor: 'pointer',
-                          width: 'auto',
-                          maxWidth: '100%'
-                        }}
-                      >
-                        <option value="">-- Seleccionar jornada --</option>
-                        {[...matches].filter(m => m.matchday).sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
-                          <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
-                        ))}
-                      </select>
-                      {(() => {
-                        if (!cadetesMatchId) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Selecciona una jornada para ver sus jugadores</span>;
-                        const names = cadetesByMatch[cadetesMatchId] || [];
-                        if (names.length === 0) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin jugadores en esta jornada</span>;
-                        return (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
-                            {names.map((name) => (
-                              <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
-                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>{name}</span>
-                                <button
-                                  onClick={() => setCadetesByMatch(prev => ({ ...prev, [cadetesMatchId]: (prev[cadetesMatchId] || []).filter(n => n !== name) }))}
-                                  style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    color: '#ef4444',
-                                    fontSize: '1.2rem',
-                                    cursor: 'pointer',
-                                    padding: '0',
-                                    lineHeight: 1
-                                  }}
-                                  title="Quitar de la jornada"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        );
-                      })()}
-                      </div>
+                  {cadeteOk && (
+                    <div style={{
+                      position: 'fixed',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      background: '#16a34a',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '1.5rem',
+                      padding: '1.5rem 3rem',
+                      borderRadius: '12px',
+                      zIndex: 1000,
+                      textTransform: 'uppercase',
+                      textAlign: 'center'
+                    }}>
+                      JUGADOR EN ALINEACIÓN
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', order: 1 }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                      <div style={{ position: 'relative', flex: 1 }}>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '1000px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%', maxWidth: '840px', order: 1, flexWrap: 'wrap' }}>
+                      <div style={{ position: 'relative', flex: '0 1 240px', maxWidth: '240px', minWidth: '120px' }}>
                         <input
                           value={cadetesNewName}
                           onChange={(e) => { setCadetesNewName(e.target.value); setCadetesDropdownOpen(true); }}
@@ -4047,8 +4061,17 @@ export default function App() {
                         INSERTAR
                       </button>
                       <button
-                        onClick={() => {
-                          const m = matches.find(x => x.id === cadetesMatchId);
+                        onClick={async () => {
+                          if (!cadetesMatchId) {
+                            setCadetesJornadaWarning(true);
+                            setTimeout(() => setCadetesJornadaWarning(false), 2500);
+                            return;
+                          }
+                          let m = matches.find(x => x.id === cadetesMatchId);
+                          try {
+                            const snap = await get(ref(db, `matches/${cadetesMatchId}`));
+                            if (snap.exists()) m = { id: cadetesMatchId, ...snap.val() };
+                          } catch {}
                           if (!m) {
                             setCadetesJornadaWarning(true);
                             setTimeout(() => setCadetesJornadaWarning(false), 2500);
@@ -4066,12 +4089,290 @@ export default function App() {
                           borderRadius: '8px',
                           border: 'none',
                           cursor: 'pointer',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          order: -1,
+                          flex: '1 1 100%',
+                          maxWidth: '240px'
                         }}
                       >
                         ALINEACIÓN
                       </button>
+                      <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>MINUTOS JUGADOS:</span>
+                          <select
+                            value={minutosJugador}
+                            onChange={(e) => setMinutosJugador(e.target.value)}
+                            style={{
+                              background: 'var(--bg-secondary)',
+                              border: '1px solid var(--border-subtle)',
+                              borderRadius: '8px',
+                              color: '#ffffff',
+                              fontWeight: 700,
+                              fontSize: '0.9rem',
+                              padding: '0.6rem 0.8rem',
+                              textTransform: 'uppercase',
+                              cursor: 'pointer',
+                              maxWidth: '100%'
+                            }}
+                          >
+                            <option value="">-- Jugador --</option>
+                            {cadetesPlayers.map(n => (
+                              <option key={n} value={n}>{n}</option>
+                            ))}
+                          </select>
+                        </div>
+                        {minutosJugador && (() => {
+                          const norm = normalizePlayerName(minutosJugador);
+                          const calc = (playersArr, subsArr, durSec) => {
+                            const p = (Array.isArray(playersArr) ? playersArr : playersArr ? Object.values(playersArr) : []).find(x => x && normalizePlayerName(x.name) === norm);
+                            if (!p || (p.status !== 'titular' && p.status !== 'suplente')) return null;
+                            let ini = p.status === 'titular' ? 0 : null;
+                            let secs = 0;
+                            (Array.isArray(subsArr) ? subsArr : subsArr ? Object.values(subsArr) : []).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0)).forEach(s => {
+                              const t = (s.minuto || 0) * 60;
+                              if (normalizePlayerName(s.sale) === norm && ini !== null) {
+                                secs += Math.max(0, t - ini);
+                                ini = null;
+                              } else if (normalizePlayerName(s.entra) === norm) {
+                                if (ini !== null) secs += Math.max(0, t - ini);
+                                ini = t;
+                              }
+                            });
+                            if (ini !== null) secs += Math.max(0, (durSec || 0) - ini);
+                            return { status: p.status, secs };
+                          };
+                          const filas = [];
+                          matches.forEach(m => {
+                            if (currentMatch && m.id === currentMatch.id) return;
+                            const r = calc(m.players, m.sustituciones, m.timerSeconds || 0);
+                            if (r) filas.push({ md: Number(m.matchday) || 0, label: 'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || ''), ...r });
+                          });
+                          if (currentMatch) {
+                            const r = calc(players, sustituciones, timerSeconds);
+                            if (r) filas.push({ md: Number(currentMatch.matchday) || 0, label: 'J' + currentMatch.matchday + ' — ' + (currentMatch.homeTeam || '') + ' vs ' + (currentMatch.awayTeam || ''), ...r });
+                          }
+                          filas.sort((a, b) => a.md - b.md);
+                          if (filas.length === 0) return <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Sin convocatorias como titular o suplente</span>;
+                          return (
+                            <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: 'auto' }}>
+                              <thead>
+                                <tr>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADA</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '9rem' }}>ROL</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', width: '7rem' }}>MINUTOS</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filas.map((f, i) => (
+                                  <tr key={i}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{f.label}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f.status === 'titular' ? '#38bdf8' : '#f59e0b', fontWeight: 900, textTransform: 'uppercase' }}>{f.status}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{Math.floor(f.secs / 60)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          );
+                        })()}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '2.5rem' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Cadetes han subido:</span>
+                            <span style={{ background: '#ffffff', color: '#0284c7', fontWeight: 900, fontSize: '0.9rem', padding: '0.15rem 0.5rem', borderRadius: '8px', minWidth: '24px', textAlign: 'center' }}>{cadetesPlayers.length}</span>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '0.3rem' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Minutos totales jugados:</span>
+                            <span style={{ background: '#ffffff', color: '#0284c7', fontWeight: 900, fontSize: '0.9rem', padding: '0.15rem 0.5rem', borderRadius: '8px', minWidth: '24px', textAlign: 'center' }}>{(() => {
+                              let lista = (matches || []).filter(m => !(currentMatch && m.id === currentMatch.id));
+                              if (currentMatch) lista.push({ players, sustituciones, timerSeconds, id: currentMatch.id });
+                              let total = 0;
+                              cadetesPlayers.forEach(name => {
+                                const norm = normalizePlayerName(name);
+                                lista.forEach(m => {
+                                  const pls = m.players, subs = m.sustituciones, dur = m.timerSeconds || 0;
+                                  const p = (Array.isArray(pls) ? pls : pls ? Object.values(pls) : []).find(x => x && normalizePlayerName(x.name) === norm);
+                                  if (!p || (p.status !== 'titular' && p.status !== 'suplente')) return;
+                                  let ini = p.status === 'titular' ? 0 : null;
+                                  let acc = 0;
+                                  (Array.isArray(subs) ? subs : subs ? Object.values(subs) : []).filter(s => s && s.sale && s.entra).sort((a, b) => (a.minuto || 0) - (b.minuto || 0)).forEach(s => {
+                                    const t = (s.minuto || 0) * 60;
+                                    if (normalizePlayerName(s.sale) === norm && ini !== null) { acc += Math.max(0, t - ini); ini = null; }
+                                    else if (normalizePlayerName(s.entra) === norm) { if (ini !== null) acc += Math.max(0, t - ini); ini = t; }
+                                  });
+                                  if (ini !== null) acc += Math.max(0, dur - ini);
+                                  total += acc;
+                                });
+                              });
+                              return Math.floor(total / 60);
+                            })()}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'stretch', alignSelf: 'flex-start', order: 2 }}>
+                      <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100%', textAlign: 'center' }}>JORNADAS</span>
+                      <select
+                        value={cadetesMatchId}
+                        onChange={(e) => setCadetesMatchId(e.target.value)}
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: '#22c55e',
+                          fontWeight: 700,
+                          fontSize: '0.9rem',
+                          padding: '0.6rem 0.8rem',
+                          cursor: 'pointer',
+                          width: 'auto',
+                          maxWidth: '100%'
+                        }}
+                      >
+                        <option value="">-- Seleccionar jornada --</option>
+                        {[...matches].filter(m => m.matchday).sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
+                          <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
+                        ))}
+                      </select>
+                      {(() => {
+                        if (!cadetesMatchId) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Selecciona una jornada para ver sus jugadores</span>;
+                        const names = cadetesByMatch[cadetesMatchId] || [];
+                        if (names.length === 0) return <span style={{ color: '#64748b', fontSize: '0.85rem' }}>Sin jugadores en esta jornada</span>;
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
+                            {names.map((name) => (
+                              <div key={name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.8rem' }}>
+                                <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>{name}</span>
+                                <button
+                                  onClick={() => setCadetesByMatch(prev => ({ ...prev, [cadetesMatchId]: (prev[cadetesMatchId] || []).filter(n => n !== name) }))}
+                                  style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: '#ef4444',
+                                    fontSize: '1.2rem',
+                                    cursor: 'pointer',
+                                    padding: '0',
+                                    lineHeight: 1
+                                  }}
+                                  title="Quitar de la jornada"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {totalesTab === 'prueba' && (
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+                  <label style={{ background: '#0284c7', color: '#ffffff', borderRadius: '8px', padding: '0.6rem 1.5rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Insertar video
+                    <input type="file" accept="video/*" hidden onChange={(e) => setPruebaFile(e.target.files[0] || null)} />
+                  </label>
+                  <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
+                    {pruebaVideoUrl && (
+                      <video ref={pruebaVideoRef} src={pruebaVideoUrl} controls onPlay={() => setPruebaPlaying(true)} onPause={() => setPruebaPlaying(false)} onEnded={() => setPruebaPlaying(false)} style={{ flex: '1 1 480px', maxWidth: '800px', width: '100%', borderRadius: '8px', background: '#000' }} />
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', flex: '1 1 280px', maxWidth: '360px', width: '100%' }}>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#ffffff' }}>{String(Math.floor(pruebaTime / 60)).padStart(2, '0')}:{String(pruebaTime % 60).padStart(2, '0')}</div>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        <button onClick={() => { const v = [1, 1.5, 2, 3, 4, 0.5]; setPruebaSpeed(v[(v.indexOf(pruebaSpeed) + 1) % v.length]); }} style={{ background: '#7c3aed', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>Velocidad {pruebaSpeed}x</button>
+                        <button onClick={() => { setPruebaPlaying(false); setPruebaTime(0); setPruebaMarks([]); }} style={{ background: '#475569', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>Reiniciar</button>
+                        <button onClick={async () => {
+                          const parseT = (e) => typeof e === 'number' ? e : (() => { const t = String(e || '0:0').split(':').map(Number); return (t[0] || 0) * 60 + (t[1] || 0); })();
+                          const fmt = e => String(Math.floor(e / 60)).padStart(2, '0') + ':' + String(Math.floor(e % 60)).padStart(2, '0');
+                          let n = 0, r = 0, i = null, a = null;
+                          pruebaMarks.forEach(t => {
+                            const o = parseT(t.time);
+                            if (t.name === 'ON PROPIO') { if (i === null) i = o; }
+                            else if (t.name === 'OFF PROPIO' && i !== null) { n += Math.max(0, o - i); i = null; }
+                            else if (t.name === 'ON RIVAL') { if (a === null) a = o; }
+                            else if (t.name === 'OFF RIVAL' && a !== null) { r += Math.max(0, o - a); a = null; }
+                          });
+                          if (i !== null) n += Math.max(0, pruebaTime - i);
+                          if (a !== null) r += Math.max(0, pruebaTime - a);
+                          const o = Math.max(1, pruebaTime);
+                          const s = e => Math.round(e / o * 100);
+                          const XLSX = await import('xlsx');
+                          const wb = XLSX.utils.book_new();
+                          XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
+                            { CONCEPTO: 'TIEMPO TOTAL', VALOR: fmt(pruebaTime) },
+                            { CONCEPTO: 'ON PROPIO', VALOR: pruebaMarks.filter(e => e.name === 'ON PROPIO').length },
+                            { CONCEPTO: 'OFF PROPIO', VALOR: pruebaMarks.filter(e => e.name === 'OFF PROPIO').length },
+                            { CONCEPTO: 'ON RIVAL', VALOR: pruebaMarks.filter(e => e.name === 'ON RIVAL').length },
+                            { CONCEPTO: 'OFF RIVAL', VALOR: pruebaMarks.filter(e => e.name === 'OFF RIVAL').length },
+                            { CONCEPTO: 'TIEMPO PROPIO', VALOR: fmt(n) },
+                            { CONCEPTO: 'TIEMPO RIVAL', VALOR: fmt(r) },
+                            { CONCEPTO: 'TIEMPO NEUTRO', VALOR: fmt(Math.max(0, o - n - r)) },
+                            { CONCEPTO: '% PROPIO', VALOR: s(n) },
+                            { CONCEPTO: '% RIVAL', VALOR: s(r) },
+                            { CONCEPTO: '% NEUTRO', VALOR: s(Math.max(0, o - n - r)) }
+                          ]), 'Resumen');
+                          XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pruebaMarks.map(m => ({ nombre: m.name, tiempo: fmt(parseT(m.time)) }))), 'Marcas');
+                          const data = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                          const blob = new Blob([data], { type: 'application/octet-stream' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = 'prueba_posesion.xlsx';
+                          link.click();
+                          URL.revokeObjectURL(url);
+                        }} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>Exportar Excel</button>
+                      </div>
+                      {(() => {
+                        const onCount = pruebaMarks.filter(e => e.name === 'ON PROPIO').length;
+                        const offCount = pruebaMarks.filter(e => e.name === 'OFF PROPIO').length;
+                        const onRival = pruebaMarks.filter(e => e.name === 'ON RIVAL').length;
+                        const offRival = pruebaMarks.filter(e => e.name === 'OFF RIVAL').length;
+                        const showIguala = () => { setPruebaIguala(true); setTimeout(() => setPruebaIguala(false), 2500); };
+                        const tag = (name) => {
+                          if (name === 'ON PROPIO' && (onRival !== offRival || onCount > offCount)) return showIguala();
+                          if (name === 'OFF PROPIO' && offCount >= onCount) return showIguala();
+                          if (name === 'ON RIVAL' && (onCount !== offCount || onRival > offRival)) return showIguala();
+                          if (name === 'OFF RIVAL' && offRival >= onRival) return showIguala();
+                          const first = pruebaMarks.length === 0 && (name === 'ON PROPIO' || name === 'ON RIVAL');
+                          setPruebaMarks(prev => [...prev, { name, time: first ? 0 : pruebaTime }]);
+                        };
+                        const parseT = (e) => { if (typeof e === 'number') return e; const t = String(e || '0:0').split(':').map(Number); return (t[0] || 0) * 60 + (t[1] || 0); };
+                        let s = 0, c = 0, l = null, d = null;
+                        pruebaMarks.forEach(e => {
+                          const t = parseT(e.time);
+                          if (e.name === 'ON PROPIO') { if (l === null) l = t; }
+                          else if (e.name === 'OFF PROPIO' && l !== null) { s += Math.max(0, t - l); l = null; }
+                          else if (e.name === 'ON RIVAL') { if (d === null) d = t; }
+                          else if (e.name === 'OFF RIVAL' && d !== null) { c += Math.max(0, t - d); d = null; }
+                        });
+                        if (l !== null) s += Math.max(0, pruebaTime - l);
+                        if (d !== null) c += Math.max(0, pruebaTime - d);
+                        const f = Math.max(1, pruebaTime);
+                        const p = e => Math.round(e / f * 100);
+                        const btnRedondo = (bg) => ({ background: bg, color: '#ffffff', border: 'none', borderRadius: '50%', width: '75px', height: '75px', fontWeight: 900, fontSize: '0.8rem', cursor: 'pointer', textTransform: 'uppercase' });
+                        return (
+                          <>
+                            {pruebaIguala && (<div style={{ color: '#ef4444', fontWeight: 800, textTransform: 'uppercase' }}>Iguala antes</div>)}
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <button onClick={() => tag('ON PROPIO')} style={btnRedondo('#f97316')}>ON<br />Propio<br />{onCount}</button>
+                                <button onClick={() => tag('ON RIVAL')} style={btnRedondo('#ef4444')}>ON<br />Rival<br />{onRival}</button>
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <button onClick={() => tag('OFF PROPIO')} style={btnRedondo('#f97316')}>OFF<br />Propio<br />{offCount}</button>
+                                <button onClick={() => tag('OFF RIVAL')} style={btnRedondo('#ef4444')}>OFF<br />Rival<br />{offRival}</button>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem', fontFamily: 'var(--font-mono)' }}>
+                              <span style={{ color: '#22c55e' }}>PROPIO {p(s)}%</span>
+                              <span style={{ color: '#ef4444' }}>RIVAL {p(c)}%</span>
+                              <span style={{ color: '#f59e0b' }}>NEUTRO {p(Math.max(0, f - s - c))}%</span>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -7390,7 +7691,7 @@ export default function App() {
                       }
                     });
                     const filas = acciones.filter(a => finalizaciones.some(f => matriz[a][f] > 0));
-                    const cols = finalizaciones.filter(f => acciones.some(a => matriz[a][f] > 0));
+                    const cols = finalizaciones.filter(f => acciones.some(a => matriz[a][f] > 0)).sort((a, b) => a === 'OCASION' ? -1 : +(b === 'OCASION'));
                     if (filas.length === 0) {
                       return (
                         <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
@@ -7404,8 +7705,7 @@ export default function App() {
                           <thead>
                             <tr>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>
-                              {cols.map(f => {
+                              {cols.map((f, idx) => {
                                 const renderVertical = (parts) => <>{parts.map((p, i) => <div key={i}>{p}</div>)}</>;
                                 let vertical = null;
                                 if (f.includes('+')) {
@@ -7414,7 +7714,7 @@ export default function App() {
                                 } else if (f.includes(' ')) {
                                   vertical = f.split(' ');
                                 }
-                                return <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{vertical ? renderVertical(vertical) : f}</th>;
+                                return <React.Fragment key={f}><th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{vertical ? renderVertical(vertical) : f}</th>{idx === 0 && <th key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>}</React.Fragment>;
                               })}
                             </tr>
                           </thead>
@@ -7422,36 +7722,44 @@ export default function App() {
                             {filas.filter(a => !a.includes('RIVAL')).map(a => (
                               <tr key={a}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>
-                                {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                {cols.map((f, idx) => (
+                                  <React.Fragment key={f}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                    {idx === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>}
+                                  </React.Fragment>
                                 ))}
                               </tr>
                             ))}
                             {filas.some(a => !a.includes('RIVAL')) && (
                               <tr>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL PROPIO</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>
-                                {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                {cols.map((f, idx) => (
+                                  <React.Fragment key={f}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                    {idx === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>}
+                                  </React.Fragment>
                                 ))}
                               </tr>
                             )}
                             {filas.filter(a => a.includes('RIVAL')).map(a => (
                               <tr key={a}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ef4444', fontWeight: 700, whiteSpace: 'nowrap' }}>{a.replace('RIVAL ', 'R. ')}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>
-                                {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                {cols.map((f, idx) => (
+                                  <React.Fragment key={f}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                    {idx === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>}
+                                  </React.Fragment>
                                 ))}
                               </tr>
                             ))}
                             {filas.some(a => a.includes('RIVAL')) && (
                               <tr>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL RIVAL</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>
-                                {cols.map(f => (
-                                  <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                {cols.map((f, idx) => (
+                                  <React.Fragment key={f}>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                    {idx === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>}
+                                  </React.Fragment>
                                 ))}
                               </tr>
                             )}
@@ -7475,7 +7783,8 @@ export default function App() {
                 const teamInfo = (currentMatch?.homeTeam || '') + ' vs ' + (currentMatch?.awayTeam || '');
                 const homeGl = Array.isArray(golesList) ? golesList : [];
                 const awayGl = Array.isArray(golesRivalList) ? golesRivalList : [];
-                const score = ' (' + homeGl.length + '-' + awayGl.length + ')';
+                const propios = homeGl.filter(g => g && g.team !== 'away');
+                const score = (currentMatch?.homeTeam || '').toUpperCase().includes('TENERIFE') ? ` (${propios.length}-${awayGl.length})` : ` (${awayGl.length}-${propios.length})`;
                 const rws = pds.map(p => {
                   const startTime = parseTime(p.start.time);
                   const endTime = p.end ? parseTime(p.end.time) : timerSeconds;
@@ -7499,39 +7808,73 @@ export default function App() {
                 rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ffffff' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ffffff', order: -1 }}>
                     JORNADA {currentMatch?.matchday || '?'} — {teamInfo}{score}
                   </div>
-                  <div style={{ width: '100%', maxWidth: '500px', overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>Período</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#22c55e' }}>Propio</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#ef4444' }}>Rival</th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#f59e0b' }}>Neutro</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center', order: 1, width: '100%' }}>
+                    <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ff6ec7' }}>TIEMPO REAL JUGADO: {Math.floor(tDur / 60)}:{String(tDur % 60).padStart(2, '0')}</div>
                         {rws.map((r, ri) => (
-                          <tr key={ri} style={{ background: ri % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{r.label}</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.ownPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.rivalPct}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.neutroPct}%</td>
-                          </tr>
+                          <div key={'tj' + ri} style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ff6ec7' }}>{r.label}: {Math.floor(r.periodoTotal / 60)}:{String(r.periodoTotal % 60).padStart(2, '0')}</div>
                         ))}
-                        {rws.length > 0 && (
-                          <tr style={{ background: 'rgba(251,191,36,0.15)' }}>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', color: '#fbbf24', fontWeight: 900, fontSize: '1rem' }}>TOTAL</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{tDur > 0 ? Math.round((tOwn / tDur) * 100) : 0}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{tDur > 0 ? Math.round((tRiv / tDur) * 100) : 0}%</td>
-                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: 900, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{tDur > 0 ? Math.round(Math.max(0, tDur - tOwn - tRiv) / tDur * 100) : 0}%</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#38bdf8' }}>TIEMPO EFECTIVO PROPIO: {Math.floor(tOwn / 60)}:{String(tOwn % 60).padStart(2, '0')}</div>
+                        {rws.map((r, ri) => (
+                          <div key={'te' + ri} style={{ fontWeight: 700, fontSize: '0.95rem', color: '#38bdf8' }}>{r.label}: {Math.floor(r.ownSecs / 60)}:{String(r.ownSecs % 60).padStart(2, '0')}</div>
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ef4444' }}>TIEMPO EFECTIVO RIVAL: {Math.floor(tRiv / 60)}:{String(tRiv % 60).padStart(2, '0')}</div>
+                        {rws.map((r, ri) => (
+                          <div key={'tr' + ri} style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ef4444' }}>{r.label}: {Math.floor(r.rivalSecs / 60)}:{String(r.rivalSecs % 60).padStart(2, '0')}</div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
+                  {(() => {
+                    const fmt = e => Math.floor(e / 60) + ':' + String(e % 60).padStart(2, '0');
+                    const parts = ['1ª PARTE', '2ª PARTE'].map(n => rws.find(r => r.label === n)).filter(Boolean);
+                    if (parts.length === 0) return null;
+                    const rows = parts.map(p => {
+                      const real = p.periodoTotal, efec = p.ownSecs + p.rivalSecs;
+                      return { label: p.label, real, efec, own: p.ownSecs, rival: p.rivalSecs, neutro: Math.max(0, real - efec) };
+                    });
+                    const tReal = rows.reduce((s, r) => s + r.real, 0);
+                    const tEfec = rows.reduce((s, r) => s + r.efec, 0);
+                    const tOwn2 = rows.reduce((s, r) => s + r.own, 0);
+                    const tRiv2 = rows.reduce((s, r) => s + r.rival, 0);
+                    const all = [...rows.map(r => ({ ...r, total: false })), { label: 'TOTAL', real: tReal, efec: tEfec, own: tOwn2, rival: tRiv2, neutro: Math.max(0, tReal - tEfec), total: true }];
+                    return (
+                      <div style={{ width: '100%' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                          <thead>
+                            <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff', minWidth: '9rem' }}>Periodo</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ff6ec7' }}>Tiempo real</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Tiempo efectivo</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Tiempo neutro</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Posesion propia</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ef4444' }}>Posesion rival</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {all.map((r, ri) => (
+                              <tr key={ri} style={r.total ? { background: 'rgba(251,191,36,0.15)' } : {}}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem' }}>{r.label}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ff6ec7', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.real)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.efec)}<br />({r.real > 0 ? Math.round(r.efec / r.real * 100) : 0}%)</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.neutro)}<br />({r.real > 0 ? Math.round(r.neutro / r.real * 100) : 0}%)</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? Math.round(r.own / r.efec * 100) : 0}%</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? Math.round(r.rival / r.efec * 100) : 0}%</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                 </div>
                 );
               })()}
@@ -7867,7 +8210,7 @@ export default function App() {
                             width: size,
                             height: size,
                             borderRadius: '50%',
-                            border: `3px solid ${p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'no convocado' ? '#000000' : p.status === 'tenerife c' ? '#06b6d4' : '#334155'}`,
+                            border: `3px solid ${esCadete(p.name) ? '#ef4444' : p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'no convocado' ? '#000000' : p.status === 'tenerife c' ? '#06b6d4' : '#334155'}`,
                             overflow: 'hidden',
                             position: 'relative',
                             cursor: p.status === 'no convocado' ? 'pointer' : 'grab',
@@ -7880,10 +8223,11 @@ export default function App() {
                           {foto ? (
                             <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                           ) : (
-                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: size * 0.3, color: esCadete(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name?.slice(0, 2)}</div>
                           )}
                            {!!p.name && <XBtn idx={p.idx} />}
                           </div>
+                          <div style={{ marginTop: 2, background: p.status === 'titular' ? '#38bdf8' : p.status === 'suplente' ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : p.status === 'no convocado' ? '#e2e8f0' : '#334155', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: Math.max(9, size * 0.18), padding: '0 4px', borderRadius: 4, lineHeight: 1.2, textAlign: 'center', overflowWrap: 'break-word', maxWidth: '100%' }}>{p.name}</div>
                         </div>
                       );
                     };
@@ -7946,6 +8290,7 @@ export default function App() {
 
                         <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
                           {/* Campo con foto de fondo a la izquierda, cajetines a la derecha */}
+                          <div className="mapa-campo-wrap" style={{ display: 'flex', flexDirection: 'column', flex: '0 0 78%', width: '78%', maxWidth: '80%', alignSelf: 'flex-start' }}>
                           <div
                             ref={campoRef}
                             className="mapa-campo"
@@ -7953,10 +8298,9 @@ export default function App() {
                             onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
                             onDrop={handleFieldDrop}
                             style={{
-                              flex: '0 1 55%',
-                              maxWidth: '55%',
-                              marginBottom: '2.5rem',
-                              alignSelf: 'stretch',
+                              flex: 'none',
+                              width: '100%',
+                              maxWidth: '100%',
                               background: 'transparent',
                               borderRadius: 12,
                               border: 'none',
@@ -8038,22 +8382,23 @@ export default function App() {
                                      width: 100,
                                     height: 100,
                                     borderRadius: '50%',
-                                    border: `3px solid ${isNoConvocado ? '#000000' : '#38bdf8'}`,
+                                    border: `3px solid ${esCadete(p.name) ? '#ef4444' : isNoConvocado ? '#000000' : '#38bdf8'}`,
                                     overflow: 'hidden',
                                     background: '#0f172a',
                                     position: 'relative',
                                     boxShadow: draggingMapIdx === p.idx ? '0 6px 18px rgba(0,0,0,0.5)' : '0 2px 10px rgba(0,0,0,0.4)'
                                   }}>
-                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: esCadete(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                    {!!p.name && <XBtn idx={p.idx} />}
                                   </div>
                                   <div style={{ marginTop: 2, maxWidth: 124, background: p.status === 'titular' ? 'rgba(56,189,248,0.95)' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : p.status === 'no convocado' ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor') ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 12, textAlign: 'center', padding: '1px 4px', letterSpacing: '0.02em', lineHeight: 1.2, borderRadius: 4, overflowWrap: 'break-word' }}>{p.name}</div>
                                   </div>
-                              );
-                            })}
-                          </div>
+                               );
+                             })}
+                           </div>
+                           </div>
 
-                          {/* Columna derecha: zonas + plantilla (a la derecha del campo) */}
+                           {/* Columna derecha: zonas + plantilla (a la derecha del campo) */}
                           <div className="mapa-derecha" style={{ flex: '0 0 300px', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem', marginLeft: '-9rem' }}>
                             {/* Cajetín bajo el campo: suplentes */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
@@ -8118,6 +8463,11 @@ export default function App() {
                               </div>
                             ))}
                           </div>
+                          {players.some(p => p && p.name && (p.status === 'titular' || p.status === 'suplente') && esCadete(p.name)) && (
+                            <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '0.4rem', transform: 'translateX(3rem)' }}>
+                              <span style={{ background: 'rgba(15,23,42,0.85)', color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', padding: '0.25rem 0.8rem', borderRadius: '8px', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>Los jugadores con anillo <span style={{ color: '#ef4444' }}>rojo</span> son cadetes</span>
+                            </div>
+                          )}
 
                         {/* Plantilla completa */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', order: -1 }}>
@@ -8208,7 +8558,7 @@ export default function App() {
                                     width: 90,
                                     height: 90,
                                     borderRadius: '50%',
-                                    border: `3px solid ${isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? '#000000' : '#334155'}`,
+                                    border: `3px solid ${esCadete(p.name) ? '#ef4444' : isTit ? '#38bdf8' : isSup ? '#f59e0b' : isNo ? '#000000' : '#334155'}`,
                                     overflow: 'hidden',
                                     position: 'relative',
                                     cursor: 'pointer',
@@ -8216,7 +8566,7 @@ export default function App() {
                                     boxShadow: isTit || isSup ? '0 2px 8px rgba(0,0,0,0.35)' : 'none'
                                   }}
                                 >
-                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
+                                  {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: esCadete(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : isNo ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor' || (!isTit && !isSup && !isNo)) ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
                                   </div>
@@ -8310,7 +8660,7 @@ export default function App() {
       </header>
 
       <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ width: '100%', maxWidth: '520px' }}>
+        <div style={{ width: '100%', maxWidth: '620px' }}>
 
           {/* Formulario */}
           <div style={{
@@ -8393,25 +8743,23 @@ export default function App() {
                     background: 'var(--bg-secondary)',
                     border: '1px solid var(--border-subtle)',
                     borderRadius: 'var(--radius-md)',
-                    padding: '0.75rem 1rem',
+                    padding: '1.1rem 1.25rem',
                     gap: '1rem'
                   }}>
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontWeight: 700, color: '#38bdf8' }}>{m.homeTeam}</span>
-                      <span style={{ margin: '0 0.4rem', color: '#ffffff', fontWeight: 700 }}>vs</span>
-                      <span style={{ fontWeight: 700, color: '#f87171' }}>{m.awayTeam}</span>
-                      <span style={{ marginLeft: '0.75rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.1rem' }}>
+                    <div style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ marginRight: '0.75rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.05rem' }}>
                         J{m.matchday}
                       </span>
-                      <span style={{ marginLeft: '1.5rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.1rem' }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#38bdf8' }}>{m.homeTeam}</span>
+                      <span style={{ margin: '0 0.4rem', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>vs</span>
+                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#f87171' }}>{m.awayTeam}</span>
+                      <span style={{ marginLeft: '1.5rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.05rem' }}>
                         {(() => {
                           const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
                           const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
                           const golesTenerife = (m.golesList || []).filter(g => g && g.team !== 'away').length;
                           const golesRival = (m.golesRivalList || []).length;
-                          const homeScore = homeIsTenerife ? golesTenerife : golesRival;
-                          const awayScore = awayIsTenerife ? golesTenerife : golesRival;
-                          return `${homeScore} - ${awayScore}`;
+                          return `${homeIsTenerife ? golesTenerife : golesRival}-${awayIsTenerife ? golesTenerife : golesRival}`;
                         })()}
                       </span>
                     </div>

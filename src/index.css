@@ -440,3 +440,18 @@ video::-webkit-media-controls-current-time-display {
 .exportando .no-export {
   display: none !important;
 }
+.mapa-campo-wrap {
+  flex-direction: column;
+  display: flex;
+}
+.mapa-campo-wrap > .mapa-campo {
+  flex: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+@media (width <= 640px) {
+  .mapa-campo-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
