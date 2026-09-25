@@ -396,11 +396,65 @@ export default function App() {
     forceHistUpdate(v => v + 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMatch?.id]);
+  const cadetesSyncRef = useRef({ loadedPlayers: false, lastPlayers: '', loadedByMatch: false, lastByMatch: '' });
+  useEffect(() => {
+    // Carga inicial desde Firebase; si está vacío, migra lo local una vez
+    let off1, off2;
+    try {
+      off1 = onValue(ref(db, 'cadetesPlayers'), (snap) => {
+        if (snap.exists()) {
+          const val = snap.val();
+          cadetesSyncRef.current.lastPlayers = JSON.stringify(val);
+          setCadetesPlayers(Array.isArray(val) ? val : []);
+          try { localStorage.setItem('cadetesPlayers', JSON.stringify(val)); } catch {}
+        } else {
+          try {
+            const local = localStorage.getItem('cadetesPlayers');
+            if (local) {
+              const v = JSON.parse(local);
+              cadetesSyncRef.current.lastPlayers = JSON.stringify(v);
+              set(ref(db, 'cadetesPlayers'), sanitizeForFirebase(v)).catch(() => {});
+            }
+          } catch {}
+        }
+        cadetesSyncRef.current.loadedPlayers = true;
+      }, () => { cadetesSyncRef.current.loadedPlayers = true; });
+      off2 = onValue(ref(db, 'cadetesByMatch'), (snap) => {
+        if (snap.exists()) {
+          const val = snap.val();
+          cadetesSyncRef.current.lastByMatch = JSON.stringify(val);
+          setCadetesByMatch(val && typeof val === 'object' ? val : {});
+          try { localStorage.setItem('cadetesByMatch', JSON.stringify(val)); } catch {}
+        } else {
+          try {
+            const local = localStorage.getItem('cadetesByMatch');
+            if (local) {
+              const v = JSON.parse(local);
+              cadetesSyncRef.current.lastByMatch = JSON.stringify(v);
+              set(ref(db, 'cadetesByMatch'), sanitizeForFirebase(v)).catch(() => {});
+            }
+          } catch {}
+        }
+        cadetesSyncRef.current.loadedByMatch = true;
+      }, () => { cadetesSyncRef.current.loadedByMatch = true; });
+    } catch {}
+    return () => { try { off1 && off1(); } catch {} try { off2 && off2(); } catch {} };
+  }, []);
   useEffect(() => {
     try { localStorage.setItem('cadetesPlayers', JSON.stringify(cadetesPlayers)); } catch {}
+    if (!cadetesSyncRef.current.loadedPlayers) return;
+    const raw = JSON.stringify(cadetesPlayers);
+    if (raw === cadetesSyncRef.current.lastPlayers) return;
+    cadetesSyncRef.current.lastPlayers = raw;
+    set(ref(db, 'cadetesPlayers'), sanitizeForFirebase(cadetesPlayers)).catch(() => {});
   }, [cadetesPlayers]);
   useEffect(() => {
     try { localStorage.setItem('cadetesByMatch', JSON.stringify(cadetesByMatch)); } catch {}
+    if (!cadetesSyncRef.current.loadedByMatch) return;
+    const raw = JSON.stringify(cadetesByMatch);
+    if (raw === cadetesSyncRef.current.lastByMatch) return;
+    cadetesSyncRef.current.lastByMatch = raw;
+    set(ref(db, 'cadetesByMatch'), sanitizeForFirebase(cadetesByMatch)).catch(() => {});
   }, [cadetesByMatch]);
   useEffect(() => {
     const onKey = (e) => {
