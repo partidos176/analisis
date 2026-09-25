@@ -2979,7 +2979,7 @@ export default function App() {
                           cruce[acc] = cruce[acc] || {};
                           cruce[acc][entry.name] = (cruce[acc][entry.name] || 0) + 1;
                           cruceTotal[entry.name] = (cruceTotal[entry.name] || 0) + 1;
-                          cruceRows[acc] = (cruceRows[acc] || 0) + 1;
+                          if (entry.name !== 'OCASION') cruceRows[acc] = (cruceRows[acc] || 0) + 1;
                         }
                       });
                     };
@@ -3037,7 +3037,7 @@ export default function App() {
                                     <tr key={a}>
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
                                       {crucePropiasFinalizaciones.map(f => (
-                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
+                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? (f === 'OCASION' ? '#eab308' : '#39ff14') : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                       ))}
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
                                     </tr>
@@ -3084,7 +3084,7 @@ export default function App() {
                                         const ocasionCols = cruceRivalFinalizaciones.filter(f => f === 'OCASION');
                                         const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && f !== 'OCASION');
                                         return [...ocasionCols, ...golesCols, ...otrasCols].map(f => (
-                                          <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
+                                          <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? (f === 'OCASION' ? '#eab308' : '#39ff14') : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                         ));
                                       })()}
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
