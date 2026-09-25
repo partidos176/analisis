@@ -512,6 +512,8 @@ export default function App() {
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
+  const [fin2Aviso, setFin2Aviso] = useState(false);
+  const [copiaLocalOk, setCopiaLocalOk] = useState(false);
   const [editingTimer, setEditingTimer] = useState(false);
   const [timerEditMin, setTimerEditMin] = useState('');
   const [timerEditSec, setTimerEditSec] = useState('');
@@ -527,6 +529,10 @@ export default function App() {
     return () => { clearTimeout(timer); document.removeEventListener('click', handler); };
   }, [posesionDropdownOpen]);
   const [dataLoadedId, setDataLoadedId] = useState(null);
+
+  useEffect(() => {
+    setCopiaLocalOk(false);
+  }, [currentMatch?.id]);
   const [saveError, setSaveError] = useState('');
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const fichaJugadorRef = useRef(null);
@@ -768,7 +774,13 @@ export default function App() {
     const unsubscribe = onValue(matchesRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const list = Object.entries(data).map(([id, val]) => ({ id, ...val }));
+        const list = Object.entries(data).map(([id, val]) => ({ ...val, id }));
+        // Auto-reparar: si algún partido guardó un campo "id" interno que no coincide con su clave, quitarlo
+        Object.entries(data).forEach(([id, val]) => {
+          if (val && typeof val === 'object' && val.id && val.id !== id) {
+            update(ref(db, `matches/${id}`), { id: null }).catch((e) => console.warn('No se pudo limpiar id interno:', id, e));
+          }
+        });
         setMatches(list);
       } else {
         setMatches([]);
@@ -832,9 +844,27 @@ export default function App() {
   };
 
   const handleDeleteMatch = async (match) => {
+    if (!match || !match.id) return;
     if (!window.confirm(`¿Borrar el partido ${match.homeTeam} vs ${match.awayTeam} (J${match.matchday})?`)) return;
     try {
+      const duplicados = matches.filter(x => x && x.id !== match.id && Number(x.matchday) === Number(match.matchday));
+      // Si el partido borrado está abierto, cerrarlo ANTES (si no, el autoguardado lo recrea)
+      if (currentMatch && currentMatch.id === match.id) {
+        setCurrentMatch(null);
+        resetMatchData();
+      }
       await remove(ref(db, `matches/${match.id}`));
+      // Verificar que de verdad se borró
+      const check = await get(ref(db, `matches/${match.id}`));
+      if (check.exists()) {
+        window.alert('No se pudo borrar el partido (sigue en la base de datos). Error de permisos o el autoguardado lo volvió a crear. id: ' + match.id);
+        return;
+      }
+      if (duplicados.length > 0) {
+        window.alert(`Partido borrado.\nAVISO: quedan ${duplicados.length} partido(s) más con J${match.matchday} (duplicados): ${duplicados.map(d => `${d.homeTeam} vs ${d.awayTeam} (id ${d.id})`).join(', ')}`);
+      } else {
+        window.alert('Partido borrado correctamente.');
+      }
     } catch (err) {
       console.error('Error al borrar el partido:', err);
       window.alert('No se pudo borrar el partido: ' + (err && err.message ? err.message : err));
@@ -894,6 +924,10 @@ export default function App() {
     setOffRivalCount(0);
     setOnNeutroCount(0);
     setOffNeutroCount(0);
+    setPerdidasCount(0);
+    setTransicionCount(0);
+    setTiroAreaCount(0);
+    setRivalTiroAreaCount(0);
     setFueraCount(0);
     setBlocajeCount(0);
     setFinalBocaCount(0);
@@ -1153,6 +1187,7 @@ export default function App() {
   // A. Copia local del partido (funciona sin conexión): localStorage + descarga JSON
   const guardarCopiaLocal = () => {
     if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
+    setCopiaLocalOk(false);
     try {
       const payload = buildMatchPayload();
       const entry = {
@@ -1173,7 +1208,49 @@ export default function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `copia_J${currentMatch.matchday || '?'}_${currentMatch.homeTeam || ''}_vs_${currentMatch.awayTeam || ''}.json`;
+      a.download = `datos J${currentMatch.matchday || '?'}_${currentMatch.homeTeam || ''}_vs_${currentMatch.awayTeam || ''}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      setCopiaLocalOk(true);
+      alert('Copia local guardada (' + new Date(entry.savedAt).toLocaleString() + ')');
+    } catch (err) {
+      alert('No se pudo guardar la copia: ' + (err?.message || err));
+    }
+  };
+
+  const exportarCopiaDeMatch = (m) => {
+    if (!m) return;
+    if (currentMatch && currentMatch.id === m.id) { guardarCopiaLocal(); return; }
+    try {
+      const norm = (v) => (Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []));
+      const payload = sanitizeForFirebase({
+        ...m,
+        players: norm(m.players),
+        actionLog: norm(m.actionLog),
+        golesList: norm(m.golesList),
+        golesRivalList: norm(m.golesRivalList),
+        sustituciones: norm(m.sustituciones)
+      });
+      delete payload.id;
+      const entry = {
+        app: 'futboltotal-copia-partido', version: 1,
+        savedAt: Date.now(),
+        matchId: m.id,
+        homeTeam: m.homeTeam, awayTeam: m.awayTeam, matchday: m.matchday,
+        payload
+      };
+      const raw = JSON.stringify(entry);
+      try {
+        localStorage.setItem(`ft_copia_${m.id}`, raw);
+        localStorage.setItem(`ft_copia_${m.id}_meta`, JSON.stringify({ savedAt: entry.savedAt }));
+      } catch {
+        alert('Copia generada, pero no cupo en el almacenamiento local: conserva el archivo descargado.');
+      }
+      const blob = new Blob([raw], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `datos J${m.matchday || '?'}_${m.homeTeam || ''}_vs_${m.awayTeam || ''}.json`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
       alert('Copia local guardada (' + new Date(entry.savedAt).toLocaleString() + ')');
@@ -4780,24 +4857,24 @@ const minutosPorJornada = [];
                     >
                       FIN 1ª PARTE
                     </button>
-                    <button
-                      onClick={() => handleFin('FIN 2ª PARTE')}
-                      style={{
-                        background: '#dc2626',
-                        color: '#ffffff',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                        padding: '0.3rem 0.8rem',
-                        borderRadius: 'var(--radius-full)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        minWidth: '80px',
-                        textAlign: 'center',
-                        flex: 1
-                      }}
-                    >
-                      FIN 2ª PARTE
-                    </button>
+<button
+          onClick={() => setFin2Aviso(true)}
+          style={{
+            background: '#dc2626',
+            color: '#ffffff',
+            fontWeight: 700,
+            fontSize: '0.75rem',
+            padding: '0.3rem 0.8rem',
+            borderRadius: 'var(--radius-full)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            minWidth: '80px',
+            textAlign: 'center',
+            flex: 1
+          }}
+        >
+          FIN 2ª PARTE
+        </button>
                     <button
                       onClick={handleResetContador}
                       style={{
@@ -4817,6 +4894,30 @@ const minutosPorJornada = [];
                       RESET
                     </button>
                   </div>
+                  {fin2Aviso && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ background: '#1e293b', border: '3px solid #dc2626', borderRadius: '16px', padding: '1.8rem 2.4rem', maxWidth: '430px', textAlign: 'center', color: '#ffffff', display: 'flex', flexDirection: 'column', gap: '1.1rem', boxShadow: '0 10px 40px rgba(0,0,0,0.6)' }}>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#fca5a5' }}>GUARDAR DATOS</div>
+                        <div style={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.5 }}>
+                          Recuerda pulsar <span style={{ color: '#38bdf8' }}>GUARDAR</span> o <span style={{ color: '#38bdf8' }}>EXPORTAR</span> para no perder el partido.
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
+                          <button
+                            onClick={() => { setFin2Aviso(false); guardarCopiaLocal(); }}
+                            style={{ background: '#dc2626', color: '#ffffff', fontWeight: 900, fontSize: '1rem', padding: '0.7rem 1.6rem', borderRadius: '10px', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.04em' }}
+                          >
+                            EXPORTAR
+                          </button>
+                          <button
+                            onClick={() => setFin2Aviso(false)}
+                            style={{ background: '#64748b', color: '#ffffff', fontWeight: 900, fontSize: '1rem', padding: '0.7rem 1.6rem', borderRadius: '10px', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.04em' }}
+                          >
+                            CANCELAR
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -5870,48 +5971,48 @@ const minutosPorJornada = [];
                           {onRivalCount}
                         </span>
                       </button>
-                      <div style={{ position: 'relative' }}>
-                      <button
-                        onClick={() => {
-                          if (logAction('PÉRDIDAS')) {
-                            setPerdidasCount(perdidasCount + 1);
-                          }
-                        }}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: '#ffffff',
-                          color: '#334155',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          padding: '1rem',
-                          borderRadius: '50%',
-                          width: '75px',
-                          height: '75px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          gap: '0.2rem',
-                          cursor: 'pointer',
-                          border: 'none'
-                        }}
-                      >
-                        <span>PÉRDIDAS</span>
-                        <span style={{
-                          background: '#334155',
-                          color: '#ffffff',
-                          fontWeight: 900,
-                          fontSize: '0.8rem',
-                          padding: '0.1rem 0.4rem',
-                          borderRadius: '8px',
-                          minWidth: '20px',
-                          textAlign: 'center'
-                        }}>
-                          {perdidasCount}
-                        </span>
-                      </button>
-                      {igualarAviso && (
+<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+          <button
+            onClick={() => {
+              if (logAction('PÉRDIDAS')) {
+                setPerdidasCount(perdidasCount + 1);
+              }
+            }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#ffffff',
+              color: '#334155',
+              fontWeight: 900,
+              fontSize: '0.8rem',
+              padding: '1rem',
+              borderRadius: '50%',
+              width: '75px',
+              height: '75px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              gap: '0.2rem',
+              cursor: 'pointer',
+              border: 'none'
+            }}
+          >
+            <span>PÉRDIDAS</span>
+            <span style={{
+              background: '#334155',
+              color: '#ffffff',
+              fontWeight: 900,
+              fontSize: '0.8rem',
+              padding: '0.1rem 0.4rem',
+              borderRadius: '8px',
+              minWidth: '20px',
+              textAlign: 'center'
+            }}>
+              {perdidasCount}
+            </span>
+          </button>
+          {igualarAviso && (
                         <div style={{
                           position: 'absolute',
                           top: '5px',
@@ -6082,190 +6183,33 @@ const minutosPorJornada = [];
                   gap: '0.5rem',
                   minWidth: '280px'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <button
-                      onClick={async () => {
-                        if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
-                        try {
-                          // B. No bloquear el Excel si no hay conexión: timeout de 8s al guardado en Firebase
-                          let guardadoOk = false;
-                          try {
-                            guardadoOk = await Promise.race([
-                              saveMatchData(currentMatch.id).then(() => true),
-                              new Promise(res => setTimeout(() => res(false), 8000))
-                            ]);
-                          } catch { guardadoOk = false; }
-                          const XLSX = await import('xlsx');
-                            const resumen = {
-                              matchday: currentMatch.matchday,
-                              homeTeam: currentMatch.homeTeam,
-                              awayTeam: currentMatch.awayTeam,
-                              tiroDerechaCount, tiroAreaCount, rivalTiroDerechaCount, rivalTiroAreaCount,
-                              tiroIzquierdaCount, tiroFrontalCount, faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount,
-                              centroDerechaCount, centroIzquierdaCount, cornerIzquierdaCount, cornerDerechaCount,
-                              rivalTiroIzquierdaCount, rivalTiroFrontalCount, rivalFaltaDerechaCount, rivalFaltaIzquierdaCount,
-                              rivalFaltaFrontalCount, rivalCentroDerechaCount, rivalCentroIzquierdaCount, rivalCornerIzquierdaCount, rivalCornerDerechaCount,
-                              inicioPropioCount, inicioRivalCount, onRivalCount, offRivalCount, onNeutroCount, offNeutroCount, perdidasCount,
-                              fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount, golCount: golesList.length, golRivalCount: golesRivalList.length, penalCount,
-                              saqueEsquinaFueraCount, infraccionCount, ocasionCount, timerSeconds
-                            };
-                            const wb = XLSX.utils.book_new();
-                            const wsResumen = XLSX.utils.json_to_sheet(Object.entries(resumen).map(([k, v]) => ({ CAMPO: k, VALOR: v })));
-                            XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
-                            const wsJugadores = XLSX.utils.json_to_sheet(players.map(p => ({ nombre: p.name, estado: p.status, mapX: p.mapX, mapY: p.mapY, esCadete: p.esCadete })));
-                            XLSX.utils.book_append_sheet(wb, wsJugadores, 'Jugadores');
-                            const wsAcciones = XLSX.utils.json_to_sheet(actionLog.map(e => ({ tiempo: e.time, nombre: e.name, tipo: e.type })));
-                            XLSX.utils.book_append_sheet(wb, wsAcciones, 'Acciones');
-                            const wsGoles = XLSX.utils.json_to_sheet([...golesList.map(g => ({ equipo: 'PROPIO', ...g })), ...golesRivalList.map(g => ({ equipo: 'RIVAL', ...g }))]);
-                            XLSX.utils.book_append_sheet(wb, wsGoles, 'Goles');
-                            const wsSust = XLSX.utils.json_to_sheet((sustituciones || []).map(s => ({ minuto: s.minuto, entra: s.entra, sale: s.sale })));
-                            XLSX.utils.book_append_sheet(wb, wsSust, 'Sustituciones');
-                            const logPos = actionLog.map(e => ({ ...e, secs: parseTime(e.time) })).filter(e => e.secs >= 0);
-                            const pdsPos = [];
-                            let psPos = null;
-                            [...logPos].reverse().forEach(e => {
-                              if (e.name === '1ª PARTE' || e.name === '2ª PARTE') {
-                                if (psPos) { pdsPos.push({ start: psPos, end: e }); }
-                                psPos = e;
-                              }
-                              else if (isFinMarker(e.name) && psPos) { pdsPos.push({ start: psPos, end: e }); psPos = null; }
-                            });
-                            if (psPos) pdsPos.push({ start: psPos, end: null });
-                            const posRows = pdsPos.map(p => {
-                              const startT = parseTime(p.start.time);
-                              const endT = p.end ? parseTime(p.end.time) : timerSeconds;
-                              const total = Math.max(1, endT - startT);
-                              const entries = logPos.filter(e => e.secs >= startT && e.secs <= endT && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).sort((a, b) => a.secs - b.secs);
-                              let ownSecs = 0, rivalSecs = 0, opStart = null, orStart = null;
-                              entries.forEach(e => {
-                                if (e.name === 'ON PROPIO') opStart = e.secs;
-                                else if (e.name === 'OFF PROPIO' && opStart !== null) { ownSecs += e.secs - opStart; opStart = null; }
-                                else if (e.name === 'ON RIVAL') orStart = e.secs;
-                                else if (e.name === 'OFF RIVAL' && orStart !== null) { rivalSecs += e.secs - orStart; orStart = null; }
-                              });
-                              if (opStart !== null) ownSecs += endT - opStart;
-                              if (orStart !== null) rivalSecs += endT - orStart;
-                              const neutroSecs = Math.max(0, total - ownSecs - rivalSecs);
-                              const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-                              return { periodo: p.start.name, propio: fmt(ownSecs) + ' (' + Math.round((ownSecs / total) * 100) + '%)', rival: fmt(rivalSecs) + ' (' + Math.round((rivalSecs / total) * 100) + '%)', neutro: fmt(neutroSecs) + ' (' + Math.round((neutroSecs / total) * 100) + '%)' };
-                            });
-                            const wsPos = XLSX.utils.json_to_sheet(posRows.length ? posRows : [{ periodo: 'SIN DATOS', propio: '', rival: '', neutro: '' }]);
-                            XLSX.utils.book_append_sheet(wb, wsPos, 'Posesion');
-                            const accionesDatos = ['TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS'];
-                            const finalizacionesDatos = ['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'];
-                            const matrizDatos = {};
-                            accionesDatos.forEach(a => { matrizDatos[a] = {}; finalizacionesDatos.forEach(f => { matrizDatos[a][f] = 0; }); });
-                            let ultimaAccion = null;
-                            [...actionLog].reverse().forEach(entry => {
-                              if (entry.type === 'accion' && accionesDatos.includes(entry.name)) ultimaAccion = entry.name;
-                              else if (entry.type === 'finalizacion' && finalizacionesDatos.includes(entry.name) && ultimaAccion) { matrizDatos[ultimaAccion][entry.name] += 1; }
-                            });
-                            const filasDatos = accionesDatos.filter(a => finalizacionesDatos.some(f => matrizDatos[a][f] > 0));
-                            const colsDatos = finalizacionesDatos.filter(f => accionesDatos.some(a => matrizDatos[a][f] > 0));
-                            const datosRows = filasDatos.map(a => ({ ACCION: a, ...Object.fromEntries(colsDatos.map(f => [f, matrizDatos[a][f] || ''])), TOTAL: colsDatos.reduce((s, f) => s + matrizDatos[a][f], 0) }));
-                            const wsDatos = XLSX.utils.json_to_sheet(datosRows.length ? datosRows : [{ ACCION: 'SIN DATOS' }]);
-                            XLSX.utils.book_append_sheet(wb, wsDatos, 'Datos');
-                            const rawData = { ...resumen, players, actionLog, golesList, golesRivalList, sustituciones, timerSeconds, timerRunning };
-                            const wsRaw = XLSX.utils.aoa_to_sheet([['DATOS'], [JSON.stringify(rawData)]]);
-                            XLSX.utils.book_append_sheet(wb, wsRaw, 'RAW');
-                            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                            const blob = new Blob([wbout], { type: 'application/octet-stream' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `J${currentMatch.matchday || '?'}_${currentMatch.homeTeam || ''}_vs_${currentMatch.awayTeam || ''}_datos.xlsx`;
-                            a.click();
-                            URL.revokeObjectURL(url);
-                            alert(guardadoOk ? 'Partido guardado y archivo Excel generado' : 'Sin conexión: Excel generado con los datos locales (no se guardó en Firebase)');
-                          } catch (err) {
-                            alert('Error al guardar: ' + (err?.message || err));
-                          }
-                        }}
-                        style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '1.8rem' }}>
-                        EXPORTAR
-                      </button>
-                      <button
-                        onClick={guardarCopiaLocal}
-                        title="Guarda una copia del partido en este dispositivo (funciona sin internet)"
-                        style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '1.8rem', marginLeft: '0.5rem' }}>
-                        COPIA LOCAL
-                      </button>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'stretch' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', position: 'relative', top: '1.8rem' }}>
+          <button
+            onClick={guardarCopiaLocal}
+            title="Guarda una copia del partido en este dispositivo (funciona sin internet)"
+            style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.55rem 1.3rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.04em' }}
+          >
+            EXPORTAR
+          </button>
+          {copiaLocalOk && (
+            <span style={{ background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.9rem', padding: '0.35rem 0.6rem', borderRadius: '8px' }}>
+              OK COPIA
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'stretch' }}>
                         <button
                           onClick={toggleGrabarAudio}
                           style={{ background: grabandoAudio ? '#ef4444' : '#a855f7', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.7rem 1.8rem', fontWeight: 800, fontSize: '1.05rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '-1.6rem', left: '-6rem' }}>
                           {grabandoAudio ? '■ PARAR' : 'NOTA DE VOZ'}
                         </button>
                       <button
-                        onClick={() => {
-                          if (!currentMatch) { alert('Abre primero el partido donde quieres importar los datos'); return; }
-                          const inp = document.createElement('input');
-                          inp.type = 'file';
-                          inp.accept = '.xlsx,.xls';
-inp.onchange = async () => {
-        const file = inp.files[0];
-        if (!file) return;
-        try {
-          const XLSX = await import('xlsx');
-          const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-          const rawWs = wb.Sheets['RAW'];
-          if (!rawWs) { alert('Este Excel no fue generado por "Guardar" (falta hoja RAW)'); return; }
-          const rawText = XLSX.utils.sheet_to_json(rawWs, { header: 1 })[1]?.[0];
-          const data = JSON.parse(rawText);
-          // 1) Aplicar resto de datos (actionLog, goles, sustituciones, timer, etc.) SIN tocar players
-          applyMatchData(data, true, true);
-          // 2) Restaurar players desde la hoja 'Jugadores' (evita truncamiento JSON en RAW)
-          const jugWs = wb.Sheets['Jugadores'];
-          let importedPlayers = [];
-          if (jugWs) {
-            const jugRows = XLSX.utils.sheet_to_json(jugWs);
-            importedPlayers = jugRows.map(r => ({
-              name: r.nombre,
-              status: r.estado,
-              mapX: r.mapX,
-              mapY: r.mapY,
-              esCadete: r.esCadete === true || r.esCadete === 'true'
-            })).filter(p => p.name);
-          }
-          // Fallback a RAW si no hay hoja Jugadores
-          if (importedPlayers.length === 0 && data.players && Array.isArray(data.players)) {
-            importedPlayers = data.players;
-          }
-          if (importedPlayers.length > 0) {
-            setPlayers(importedPlayers.slice(0, 40));
-          }
-          alert('Datos importados en el partido actual. Pulsa EXPORTAR para conservarlos.');
-        } catch (err) {
-          alert('Error al importar Excel: ' + (err?.message || err));
-        }
-      };
-                          inp.click();
-                        }}
-                        style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
-                        IMPORTAR
-                      </button>
-                      <button
                         onClick={recuperarCopiaArchivo}
                         title="Restaura una copia local desde un archivo .json (funciona sin internet)"
-                        style={{ background: '#a855f7', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em', marginTop: '0.5rem' }}>
-                        RECUPERAR COPIA
+                        style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
+                        IMPORTAR
                       </button>
-                      {(() => {
-                        let ts = null;
-                        try {
-                          const meta = currentMatch && JSON.parse(localStorage.getItem(`ft_copia_${currentMatch.id}_meta`) || 'null');
-                          ts = meta && meta.savedAt;
-                        } catch {}
-                        if (!ts) return null;
-                        return (
-                          <button
-                            onClick={recuperarCopiaMemoria}
-                            title="Restaura la copia guardada en este dispositivo"
-                            style={{ background: 'transparent', border: '1px solid #a855f7', color: '#a855f7', borderRadius: '6px', padding: '0.4rem 1rem', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', marginTop: '0.5rem' }}>
-                            COPIA {new Date(ts).toLocaleString()}
-                          </button>
-                        );
-                      })()}
                       </div>
                     </div>
                   <button
@@ -7683,6 +7627,7 @@ inp.onchange = async () => {
                             <option value="ERROR RIVAL">ERROR RIVAL</option>
                             <option value="PROPIA META">PROPIA META</option>
                             <option value="TRANSICION">TRANSICION</option>
+                            <option value="ACCION INDIVIDUAL">ACCION INDIVIDUAL</option>
                           </select>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', minWidth: '36px' }}>
@@ -9018,48 +8963,41 @@ inp.onchange = async () => {
                 <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0 }}>Partidos Guardados</h3>
                 <label style={{ background: '#0284c7', color: '#ffffff', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', textTransform: 'uppercase' }}>
                   Importar
-                  <input type="file" accept=".xlsx,.xls" hidden onChange={async (e) => {
+                  <input type="file" accept=".json,application/json" hidden onChange={async (e) => {
                     const file = e.target.files && e.target.files[0];
                     e.target.value = '';
                     if (!file) return;
                     try {
-                      const XLSX = await import('xlsx');
-                      const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-                      const sh = (name) => { const ws = wb.Sheets[name]; return ws ? XLSX.utils.sheet_to_json(ws) : []; };
-                      let resumen = sh('Resumen')[0] || {};
-                      if (!resumen.local && !resumen.homeTeam) {
-                        // Formato del EXPORTAR de acciones: filas {CAMPO, VALOR}
-                        const porCampo = {};
-                        sh('Resumen').forEach(r => { if (r && r.CAMPO != null) porCampo[r.CAMPO] = r.VALOR; });
-                        if (porCampo.homeTeam != null || porCampo.matchday != null) {
-                          resumen = { local: porCampo.homeTeam, visitante: porCampo.awayTeam, jornada: porCampo.matchday };
-                        }
-                      }
-                      const golesList = [];
-                      const golesRivalList = [];
-                      sh('Goles').forEach(g => {
-                        if (!g) return;
-                        const { equipo, ...resto } = g;
-                        if (String(equipo || '').toUpperCase() === 'RIVAL') golesRivalList.push(resto);
-                        else golesList.push(resto);
-                      });
+                      const text = await file.text();
+                      let entry = null;
+                      try { entry = JSON.parse(text); } catch { window.alert('No se pudo leer el archivo JSON'); return; }
+                      const data = entry && entry.payload ? entry.payload : entry;
+                      if (!data || typeof data !== 'object') { window.alert('Archivo JSON no válido'); return; }
+                      const norm = (v) => (Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.values(v) : []));
+                      const payload = { ...data };
+                      delete payload.matchday;
+                      delete payload.homeTeam;
+                      delete payload.awayTeam;
+                      delete payload.id;
+                      payload.players = norm(data.players);
+                      payload.actionLog = norm(data.actionLog);
+                      payload.golesList = norm(data.golesList);
+                      payload.golesRivalList = norm(data.golesRivalList);
+                      payload.sustituciones = norm(data.sustituciones);
                       const matchData = {
-                        homeTeam: resumen.local || '',
-                        awayTeam: resumen.visitante || '',
-                        matchday: Number(resumen.jornada) || 0,
+                        homeTeam: (entry && entry.homeTeam) || data.homeTeam || '',
+                        awayTeam: (entry && entry.awayTeam) || data.awayTeam || '',
+                        matchday: Number((entry && entry.matchday) || data.matchday) || 0,
                         homeScore: 0,
                         awayScore: 0,
                         createdAt: Date.now(),
-                        players: sh('Jugadores').map(j => ({ name: j.nombre || '', status: j.estado || '-', mapX: j.mapX, mapY: j.mapY, esCadete: j.esCadete === true || j.esCadete === 'true' })),
-                        actionLog: sh('Acciones').map(a => ({ time: a.tiempo, name: a.nombre, type: a.tipo || 'accion' })),
-                        golesList,
-                        golesRivalList,
-                        sustituciones: sh('Sustituciones').map(s => ({ minuto: Number(s.minuto) || 0, entra: s.entra || '', sale: s.sale || '' }))
+                        ...payload
                       };
-                      if (!matchData.homeTeam || !matchData.awayTeam || !matchData.matchday) { window.alert('Excel sin datos de partido válidos'); return; }
+                      if (!matchData.homeTeam || !matchData.awayTeam || !matchData.matchday) { window.alert('El archivo JSON no tiene datos de partido válidos (faltan equipos o jornada)'); return; }
                       const matchesRef = ref(db, 'matches');
                       const newMatchRef = push(matchesRef);
                       await set(newMatchRef, sanitizeForFirebase(matchData));
+                      window.alert(`Partido importado: J${matchData.matchday} ${matchData.homeTeam} vs ${matchData.awayTeam}`);
                     } catch (err) {
                       console.error('Error al importar:', err);
                       window.alert('No se pudo importar: ' + (err && err.message ? err.message : err));
@@ -9102,101 +9040,7 @@ inp.onchange = async () => {
                       <button className="btn-sm btn-primary" onClick={() => handleOpenMatch(m)}>
                         Abrir
                       </button>
-                      <button className="btn-sm" onClick={async () => {
-                        const normArr = (v) => Array.isArray(v) ? v : (v ? Object.values(v) : []);
-                        const gl = normArr(m.golesList).filter(g => g && g.team !== 'away');
-                        const gr = normArr(m.golesRivalList);
-                        const allGl = normArr(m.golesList);
-                        const allGr = normArr(m.golesRivalList);
-                        const allPl = normArr(m.players);
-                        const allLog = normArr(m.actionLog);
-                        const allSust = normArr(m.sustituciones);
-                        const XLSX = await import('xlsx');
-                        const wb = XLSX.utils.book_new();
-                        const resumen = {
-                          matchday: m.matchday, homeTeam: m.homeTeam, awayTeam: m.awayTeam,
-                          tiroDerechaCount: m.tiroDerechaCount ?? 0, tiroAreaCount: m.tiroAreaCount ?? 0,
-                          rivalTiroDerechaCount: m.rivalTiroDerechaCount ?? 0, rivalTiroAreaCount: m.rivalTiroAreaCount ?? 0,
-                          tiroIzquierdaCount: m.tiroIzquierdaCount ?? 0, tiroFrontalCount: m.tiroFrontalCount ?? 0,
-                          faltaDerechaCount: m.faltaDerechaCount ?? 0, faltaIzquierdaCount: m.faltaIzquierdaCount ?? 0,
-                          faltaFrontalCount: m.faltaFrontalCount ?? 0, centroDerechaCount: m.centroDerechaCount ?? 0,
-                          centroIzquierdaCount: m.centroIzquierdaCount ?? 0, cornerIzquierdaCount: m.cornerIzquierdaCount ?? 0,
-                          cornerDerechaCount: m.cornerDerechaCount ?? 0,
-                          rivalTiroIzquierdaCount: m.rivalTiroIzquierdaCount ?? 0, rivalTiroFrontalCount: m.rivalTiroFrontalCount ?? 0,
-                          rivalFaltaDerechaCount: m.rivalFaltaDerechaCount ?? 0, rivalFaltaIzquierdaCount: m.rivalFaltaIzquierdaCount ?? 0,
-                          rivalFaltaFrontalCount: m.rivalFaltaFrontalCount ?? 0, rivalCentroDerechaCount: m.rivalCentroDerechaCount ?? 0,
-                          rivalCentroIzquierdaCount: m.rivalCentroIzquierdaCount ?? 0, rivalCornerIzquierdaCount: m.rivalCornerIzquierdaCount ?? 0,
-                          rivalCornerDerechaCount: m.rivalCornerDerechaCount ?? 0,
-                          inicioPropioCount: m.inicioPropioCount ?? 0, inicioRivalCount: m.inicioRivalCount ?? 0,
-                          onRivalCount: m.onRivalCount ?? 0, offRivalCount: m.offRivalCount ?? 0,
-                          onNeutroCount: m.onNeutroCount ?? 0, offNeutroCount: m.offNeutroCount ?? 0,
-                          perdidasCount: m.perdidasCount ?? 0, fueraCount: m.fueraCount ?? 0,
-                          blocajeCount: m.blocajeCount ?? 0, despejeDefensaCount: m.despejeDefensaCount ?? 0,
-                          despejePorteroCount: m.despejePorteroCount ?? 0,
-                          golCount: allGl.length, golRivalCount: allGr.length, penalCount: m.penalCount ?? 0,
-                          saqueEsquinaFueraCount: m.saqueEsquinaFueraCount ?? 0, infraccionCount: m.infraccionCount ?? 0,
-                          ocasionCount: m.ocasionCount ?? 0, timerSeconds: m.timerSeconds
-                        };
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(Object.entries(resumen).map(([k, v]) => ({ CAMPO: k, VALOR: v }))), 'Resumen');
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allPl.map(p => ({ nombre: p.name, estado: p.status, mapX: p.mapX, mapY: p.mapY, esCadete: p.esCadete }))), 'Jugadores');
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allLog.map(e => ({ tiempo: e.time, nombre: e.name, tipo: e.type }))), 'Acciones');
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([...gl.map(g => ({ equipo: 'PROPIO', ...g })), ...gr.map(g => ({ equipo: 'RIVAL', ...g }))]), 'Goles');
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(allSust.map(s => ({ minuto: s.minuto, entra: s.entra, sale: s.sale }))), 'Sustituciones');
-                        const parseT = (str) => { const p = String(str).split(':').map(Number); return (p[0] || 0) * 60 + (p[1] || 0); };
-                        const logPos = allLog.map(e => ({ ...e, secs: parseT(e.time) })).filter(e => e.secs >= 0);
-                        const pdsPos = [];
-                        let psPos = null;
-                        [...logPos].reverse().forEach(e => {
-                          if (e.name === '1ª PARTE' || e.name === '2ª PARTE') {
-                            if (psPos) { pdsPos.push({ start: psPos, end: e }); }
-                            psPos = e;
-                          }
-                          else if (isFinMarker(e.name) && psPos) { pdsPos.push({ start: psPos, end: e }); psPos = null; }
-                        });
-                        if (psPos) pdsPos.push({ start: psPos, end: null });
-                        const posRows = pdsPos.map(p => {
-                          const startT = parseT(p.start.time);
-                          const endT = p.end ? parseT(p.end.time) : (m.timerSeconds || 0);
-                          const total = Math.max(1, endT - startT);
-                          const entries = logPos.filter(e => e.secs >= startT && e.secs <= endT && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).sort((a, b) => a.secs - b.secs);
-                          let ownSecs = 0, rivalSecs = 0, opStart = null, orStart = null;
-                          entries.forEach(e => {
-                            if (e.name === 'ON PROPIO') opStart = e.secs;
-                            else if (e.name === 'OFF PROPIO' && opStart !== null) { ownSecs += e.secs - opStart; opStart = null; }
-                            else if (e.name === 'ON RIVAL') orStart = e.secs;
-                            else if (e.name === 'OFF RIVAL' && orStart !== null) { rivalSecs += e.secs - orStart; orStart = null; }
-                          });
-                          if (opStart !== null) ownSecs += endT - opStart;
-                          if (orStart !== null) rivalSecs += endT - orStart;
-                          const neutroSecs = Math.max(0, total - ownSecs - rivalSecs);
-                          const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-                          return { periodo: p.start.name, propio: fmt(ownSecs) + ' (' + Math.round((ownSecs / total) * 100) + '%)', rival: fmt(rivalSecs) + ' (' + Math.round((rivalSecs / total) * 100) + '%)', neutro: fmt(neutroSecs) + ' (' + Math.round((neutroSecs / total) * 100) + '%)' };
-                        });
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(posRows.length ? posRows : [{ periodo: 'SIN DATOS', propio: '', rival: '', neutro: '' }]), 'Posesion');
-                        const accionesDatos = ['TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS'];
-                        const finalizacionesDatos = ['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION'];
-                        const matrizDatos = {};
-                        accionesDatos.forEach(a => { matrizDatos[a] = {}; finalizacionesDatos.forEach(f => { matrizDatos[a][f] = 0; }); });
-                        let ultimaAccion = null;
-                        [...allLog].reverse().forEach(entry => {
-                          if (entry.type === 'accion' && accionesDatos.includes(entry.name)) ultimaAccion = entry.name;
-                          else if (entry.type === 'finalizacion' && finalizacionesDatos.includes(entry.name) && ultimaAccion) { matrizDatos[ultimaAccion][entry.name] += 1; }
-                        });
-                        const filasDatos = accionesDatos.filter(a => finalizacionesDatos.some(f => matrizDatos[a][f] > 0));
-                        const colsDatos = finalizacionesDatos.filter(f => accionesDatos.some(a => matrizDatos[a][f] > 0));
-                        const datosRows = filasDatos.map(a => ({ ACCION: a, ...Object.fromEntries(colsDatos.map(f => [f, matrizDatos[a][f] || ''])), TOTAL: colsDatos.reduce((s, f) => s + matrizDatos[a][f], 0) }));
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosRows.length ? datosRows : [{ ACCION: 'SIN DATOS' }]), 'Datos');
-                        const rawData = { ...resumen, players: allPl, actionLog: allLog, golesList: allGl, golesRivalList: allGr, sustituciones: allSust, timerSeconds: m.timerSeconds, timerRunning: m.timerRunning };
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['DATOS'], [JSON.stringify(rawData)]]), 'RAW');
-                        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                        const blob = new Blob([wbout], { type: 'application/octet-stream' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `J${m.matchday || '?'}_${m.homeTeam || ''}_vs_${m.awayTeam || ''}_datos.xlsx`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                      }} style={{ background: '#16a34a', color: '#ffffff' }}>
+                      <button className="btn-sm" onClick={() => exportarCopiaDeMatch(m)} style={{ background: '#16a34a', color: '#ffffff' }}>
                         Exportar
                       </button>
                       <button className="btn-sm btn-secondary" onClick={() => handleEdit(m)}>
