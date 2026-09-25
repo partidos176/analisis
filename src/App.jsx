@@ -3608,7 +3608,14 @@ const minutosPorJornada = [];
                   gap: '1.5rem'
                 }}>
                   {(() => {
-                    const names = [...new Set([...players.map(p => p.name).filter(Boolean), ...Object.keys(jugadoresData)])];
+                    const names = [...new Set([
+                      ...players.map(p => p.name).filter(Boolean),
+                      ...Object.keys(jugadoresData),
+                      ...matches.flatMap(m => {
+                        const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                        return pl.map(p => p && p.name).filter(Boolean);
+                      })
+                    ])];
                     const calcMatchMinutes = (pl, subs, durationSec) => {
                       const minutos = {};
                       const titular = {};
@@ -3766,7 +3773,14 @@ const minutosPorJornada = [];
                   gap: '1.5rem'
                 }}>
                   {(() => {
-                    const names = [...new Set([...players.map(p => p.name).filter(Boolean), ...Object.keys(jugadoresData)])];
+                    const names = [...new Set([
+                      ...players.map(p => p.name).filter(Boolean),
+                      ...Object.keys(jugadoresData),
+                      ...matches.flatMap(m => {
+                        const pl = Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : []);
+                        return pl.map(p => p && p.name).filter(Boolean);
+                      })
+                    ])];
                     const calcMatchMinutes = (pl, subs, durationSec) => {
                       const minutos = {};
                       names.forEach(n => { minutos[n] = 0; });
