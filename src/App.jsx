@@ -1027,9 +1027,7 @@ export default function App() {
     }
   };
 
-  const saveMatchData = async (id) => {
-    if (!id) return;
-    const payload = sanitizeForFirebase({
+  const buildMatchPayload = () => sanitizeForFirebase({
       tiroDerechaCount,
       tiroAreaCount,
       rivalTiroDerechaCount,
@@ -1084,6 +1082,10 @@ export default function App() {
       actionLog,
       sustituciones
     });
+
+  const saveMatchData = async (id) => {
+    if (!id) return;
+    const payload = buildMatchPayload();
     try {
       const matchRef = ref(db, `matches/${id}`);
       await update(matchRef, payload);
@@ -1092,6 +1094,75 @@ export default function App() {
       console.error('Error guardando datos del partido:', err);
       setSaveError('No se pudieron guardar los datos: ' + (err && err.message ? err.message : err));
     }
+  };
+
+  // A. Copia local del partido (funciona sin conexión): localStorage + descarga JSON
+  const guardarCopiaLocal = () => {
+    if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
+    try {
+      const payload = buildMatchPayload();
+      const entry = {
+        app: 'futboltotal-copia-partido', version: 1,
+        savedAt: Date.now(),
+        matchId: currentMatch.id,
+        homeTeam: currentMatch.homeTeam, awayTeam: currentMatch.awayTeam, matchday: currentMatch.matchday,
+        payload
+      };
+      const raw = JSON.stringify(entry);
+      try {
+        localStorage.setItem(`ft_copia_${currentMatch.id}`, raw);
+        localStorage.setItem(`ft_copia_${currentMatch.id}_meta`, JSON.stringify({ savedAt: entry.savedAt }));
+      } catch {
+        alert('Copia generada, pero no cupo en el almacenamiento local: conserva el archivo descargado.');
+      }
+      const blob = new Blob([raw], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `copia_J${currentMatch.matchday || '?'}_${currentMatch.homeTeam || ''}_vs_${currentMatch.awayTeam || ''}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      alert('Copia local guardada (' + new Date(entry.savedAt).toLocaleString() + ')');
+    } catch (err) {
+      alert('No se pudo guardar la copia: ' + (err?.message || err));
+    }
+  };
+
+  const aplicarCopiaLocal = (entry) => {
+    if (!entry || !entry.payload || !Array.isArray(entry.payload.actionLog) || !Array.isArray(entry.payload.players)) {
+      alert('Archivo de copia no válido'); return;
+    }
+    const base = entry.matchId
+      ? { id: entry.matchId, homeTeam: entry.homeTeam, awayTeam: entry.awayTeam, matchday: entry.matchday }
+      : (currentMatch || {});
+    applyMatchData({ ...base, ...entry.payload }, false);
+    alert('Copia restaurada. Pulsa GUARDAR o EXPORTAR para conservarla en Firebase.');
+  };
+
+  const recuperarCopiaArchivo = () => {
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = '.json,application/json';
+    inp.onchange = () => {
+      const file = inp.files && inp.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try { aplicarCopiaLocal(JSON.parse(reader.result)); }
+        catch { alert('No se pudo leer el archivo de copia'); }
+      };
+      reader.readAsText(file);
+    };
+    inp.click();
+  };
+
+  const recuperarCopiaMemoria = () => {
+    if (!currentMatch) { alert('Abre primero el partido'); return; }
+    try {
+      const raw = localStorage.getItem(`ft_copia_${currentMatch.id}`);
+      if (!raw) { alert('No hay copia local guardada para este partido'); return; }
+      aplicarCopiaLocal(JSON.parse(raw));
+    } catch { alert('No se pudo leer la copia local'); }
   };
 
   const addCadeteToAlineacion = async (matchId, name) => {
@@ -5948,7 +6019,14 @@ const minutosPorJornada = [];
                       onClick={async () => {
                         if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
                         try {
-                          await saveMatchData(currentMatch.id);
+                          // B. No bloquear el Excel si no hay conexión: timeout de 8s al guardado en Firebase
+                          let guardadoOk = false;
+                          try {
+                            guardadoOk = await Promise.race([
+                              saveMatchData(currentMatch.id).then(() => true),
+                              new Promise(res => setTimeout(() => res(false), 8000))
+                            ]);
+                          } catch { guardadoOk = false; }
                           const XLSX = await import('xlsx');
                             const resumen = {
                               matchday: currentMatch.matchday,
@@ -6030,13 +6108,19 @@ const minutosPorJornada = [];
                             a.download = `J${currentMatch.matchday || '?'}_${currentMatch.homeTeam || ''}_vs_${currentMatch.awayTeam || ''}_datos.xlsx`;
                             a.click();
                             URL.revokeObjectURL(url);
-                            alert('Partido guardado y archivo Excel generado');
+                            alert(guardadoOk ? 'Partido guardado y archivo Excel generado' : 'Sin conexión: Excel generado con los datos locales (no se guardó en Firebase)');
                           } catch (err) {
                             alert('Error al guardar: ' + (err?.message || err));
                           }
                         }}
                         style={{ background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '1.8rem' }}>
                         EXPORTAR
+                      </button>
+                      <button
+                        onClick={guardarCopiaLocal}
+                        title="Guarda una copia del partido en este dispositivo (funciona sin internet)"
+                        style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '1.8rem', marginLeft: '0.5rem' }}>
+                        COPIA LOCAL
                       </button>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'stretch' }}>
                         <button
@@ -6092,6 +6176,28 @@ inp.onchange = async () => {
                         style={{ background: '#f97316', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
                         IMPORTAR
                       </button>
+                      <button
+                        onClick={recuperarCopiaArchivo}
+                        title="Restaura una copia local desde un archivo .json (funciona sin internet)"
+                        style={{ background: '#a855f7', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em', marginTop: '0.5rem' }}>
+                        RECUPERAR COPIA
+                      </button>
+                      {(() => {
+                        let ts = null;
+                        try {
+                          const meta = currentMatch && JSON.parse(localStorage.getItem(`ft_copia_${currentMatch.id}_meta`) || 'null');
+                          ts = meta && meta.savedAt;
+                        } catch {}
+                        if (!ts) return null;
+                        return (
+                          <button
+                            onClick={recuperarCopiaMemoria}
+                            title="Restaura la copia guardada en este dispositivo"
+                            style={{ background: 'transparent', border: '1px solid #a855f7', color: '#a855f7', borderRadius: '6px', padding: '0.4rem 1rem', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', marginTop: '0.5rem' }}>
+                            COPIA {new Date(ts).toLocaleString()}
+                          </button>
+                        );
+                      })()}
                       </div>
                     </div>
                   <button
