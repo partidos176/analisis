@@ -280,6 +280,9 @@ export default function App() {
   const [currentMatch, setCurrentMatch] = useState(null);
   const [activeTab, setActiveTab] = useState('acciones');
   const [totalesTab, setTotalesTab] = useState('totalresultados');
+  const [partidoPorcentaje, setPartidoPorcentaje] = useState('');
+  const [equipoPorcentaje, setEquipoPorcentaje] = useState('');
+  const [accionPorcentaje, setAccionPorcentaje] = useState('');
   const [filtroJornada, setFiltroJornada] = useState('');
   const [filtroRol, setFiltroRol] = useState('');
   const [filtroEncuentro, setFiltroEncuentro] = useState('');
@@ -2348,6 +2351,33 @@ export default function App() {
     );
   }
 
+  const ACCIONES_TOTALES = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA'];
+  const matchesDelEquipo = (eq) => {
+    const base = matches.slice();
+    if (currentMatch && !base.some(m => m.id === currentMatch.id)) base.push(currentMatch);
+    return eq ? base.filter(m => m.homeTeam === eq || m.awayTeam === eq) : base;
+  };
+  const accionesParaEquipo = (eq, pj) => {
+    if (!eq) return ACCIONES_TOTALES;
+    const usadas = new Set();
+    const recoger = (al) => {
+      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
+      logArr.forEach(e => {
+        if (e && e.type === 'accion' && !isPeriodMarker(e.name)) usadas.add(e.name);
+      });
+    };
+    const esDelEquipo = (m) => m.homeTeam === eq || m.awayTeam === eq;
+    matches.forEach(m => {
+      if (!esDelEquipo(m)) return;
+      if (pj && m.id !== pj) return;
+      if (currentMatch && m.id === currentMatch.id) return;
+      recoger(m.actionLog);
+    });
+    if (currentMatch && esDelEquipo(currentMatch) && (!pj || pj === currentMatch.id)) recoger(actionLog);
+    const base = eq.toUpperCase().includes('TENERIFE') ? ACCIONES_TOTALES.filter(a => !a.startsWith('RIVAL ')) : ACCIONES_TOTALES.filter(a => a.startsWith('RIVAL '));
+    return base.filter(a => usadas.has(a));
+  };
+
   // Vista de Totales
   if (vista === 'totales') {
     return (
@@ -3230,112 +3260,153 @@ export default function App() {
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  {(() => {
-                    const finalizacionesOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'PENAL + GOL RIVAL', 'GOL RIVAL', 'INFRACCION'];
-                    const accionesOrder = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'];
-                    const cruce = {};
-                    const cruceTotal = {};
-                    finalizacionesOrder.forEach(f => { cruceTotal[f] = 0; });
-                    const procesarLog = (al) => {
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
+                    <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em', alignSelf: 'stretch', textAlign: 'center' }}>EQUIPO</span>
+                    <select
+                      className="input-control"
+                      value={equipoPorcentaje}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setEquipoPorcentaje(v);
+                        const pjOk = !partidoPorcentaje || matchesDelEquipo(v).some(m => m.id === partidoPorcentaje);
+                        if (!pjOk) setPartidoPorcentaje('');
+                        if (accionPorcentaje && !accionesParaEquipo(v, pjOk ? partidoPorcentaje : '').includes(accionPorcentaje)) setAccionPorcentaje('');
+                      }}
+                      style={{ width: 'fit-content', maxWidth: '100%', background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.6rem 0.9rem', fontWeight: 800, fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
+                    >
+                      <option value="">— Selecciona un equipo —</option>
+                      {[...new Set(matches.flatMap(m => [m.homeTeam, m.awayTeam]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')).map(t => (
+                        <option key={t} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
+                    <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em', alignSelf: 'stretch', textAlign: 'center' }}>ACCIONES</span>
+                    <select
+                      className="input-control"
+                      value={accionPorcentaje}
+                      onChange={(e) => setAccionPorcentaje(e.target.value)}
+                      style={{ width: 'fit-content', maxWidth: '100%', background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.6rem 0.9rem', fontWeight: 800, fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
+                    >
+                      <option value="">— Selecciona una acción —</option>
+                      {accionesParaEquipo(equipoPorcentaje, partidoPorcentaje).map(a => (
+                          <option key={a} value={a}>{a}</option>
+                        ))}
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
+                    <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em', alignSelf: 'stretch', textAlign: 'center' }}>JORNADA</span>
+                    <select
+                      className="input-control"
+                      value={partidoPorcentaje}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setPartidoPorcentaje(v);
+                        if (accionPorcentaje && !accionesParaEquipo(equipoPorcentaje, v).includes(accionPorcentaje)) setAccionPorcentaje('');
+                      }}
+                      style={{ width: 'fit-content', maxWidth: '100%', background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.6rem 0.9rem', fontWeight: 800, fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
+                    >
+                      <option value="">TODAS</option>
+                      {matchesDelEquipo(equipoPorcentaje).slice().sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => {
+                        const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
+                        const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
+                        const golesTenerife = (m.golesList || []).filter(g => g && g.team !== 'away').length;
+                        const golesRival = (m.golesRivalList || []).length;
+                        const homeScore = homeIsTenerife ? golesTenerife : golesRival;
+                        const awayScore = awayIsTenerife ? golesTenerife : golesRival;
+                        return (
+                          <option key={m.id} value={m.id}>
+                            {`J${m.matchday ?? '?'} ${m.homeTeam || ''} vs ${m.awayTeam || ''} ${homeScore}-${awayScore}`}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  </div>
+                  {equipoPorcentaje && accionPorcentaje && (() => {
+                    const finalsOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'PENAL + GOL RIVAL', 'GOL RIVAL', 'INFRACCION'];
+                    const res = {};
+                    const contar = (al) => {
                       const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
-                      const crono = [...logArr].reverse();
                       let ultimaAccion = '';
-                      crono.forEach(entry => {
+                      [...logArr].reverse().forEach(entry => {
                         if (!entry) return;
-                        if (entry.type === 'accion' && !isPeriodMarker(entry.name)) {
-                          ultimaAccion = entry.name;
-                        } else if (entry.type === 'finalizacion') {
-                          const acc = ultimaAccion || 'SIN ACCION';
-                          cruce[acc] = cruce[acc] || {};
-                          cruce[acc][entry.name] = (cruce[acc][entry.name] || 0) + 1;
-                          cruceTotal[entry.name] = (cruceTotal[entry.name] || 0) + 1;
-                        }
+                        if (entry.type === 'accion' && !isPeriodMarker(entry.name)) ultimaAccion = entry.name;
+                        else if (entry.type === 'finalizacion' && ultimaAccion === accionPorcentaje) res[entry.name] = (res[entry.name] || 0) + 1;
                       });
                     };
-                    matches.forEach(m => {
+                    const esDelEquipo = (m) => m.homeTeam === equipoPorcentaje || m.awayTeam === equipoPorcentaje;
+                    const pasaJornada = (m) => !partidoPorcentaje || m.id === partidoPorcentaje;
+                    matchesDelEquipo(equipoPorcentaje).forEach(m => {
+                      if (!pasaJornada(m)) return;
                       if (currentMatch && m.id === currentMatch.id) return;
-                      procesarLog(m.actionLog);
+                      contar(m.actionLog);
                     });
-                    procesarLog(actionLog);
-                    const ordenar = (arr, ord) => arr.slice().sort((a, b) => ((ord.indexOf(a) === -1 ? 999 : ord.indexOf(a)) - (ord.indexOf(b) === -1 ? 999 : ord.indexOf(b))) || a.localeCompare(b));
-                    const cruceAcciones = ordenar(Object.keys(cruce), accionesOrder);
-                    const cruceFinalizaciones = ordenar(Object.keys(cruceTotal).filter(f => cruceTotal[f] > 0 && f !== 'OCASION'), finalizacionesOrder);
-                    const propiasAcciones = cruceAcciones.filter(a => !a.startsWith('RIVAL '));
-                    const rivalAcciones = cruceAcciones.filter(a => a.startsWith('RIVAL '));
-                    const sumaFila = (a) => Object.keys(cruce[a] || {}).reduce((s, f) => s + (f === 'OCASION' ? 0 : (cruce[a][f] || 0)), 0);
-                    const pct = (n, d) => (d > 0 ? ((n / d) * 100).toFixed(1) + '%' : '–');
-                    const granTotal = cruceAcciones.reduce((s, a) => s + sumaFila(a), 0);
-                    const totalDe = (acciones) => acciones.reduce((s, a) => s + sumaFila(a), 0);
-                    const cols = (fins, esRival) => {
-                      const golesCols = fins.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
-                      const ocasionCols = fins.filter(f => f === 'OCASION');
-                      const otrasCols = fins.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && f !== 'OCASION');
-                      return esRival ? [...ocasionCols, ...golesCols, ...otrasCols] : fins;
-                    };
-                    const thStyle = { border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' };
-                    const tdStyle = { border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', fontFamily: 'var(--font-mono)', fontWeight: 900 };
-                    const tabla = (acciones, fins, esRival) => {
-                      const totalGrupo = totalDe(acciones);
-                      const totalPorFin = {};
-                      fins.forEach(f => { totalPorFin[f] = 0; });
-                      acciones.forEach(a => fins.forEach(f => { totalPorFin[f] += (cruce[a] && cruce[a][f]) || 0; }));
-                      if (!acciones.length || !fins.length || !totalGrupo) return null;
-                      const columnas = cols(fins, esRival);
+                    if (currentMatch && esDelEquipo(currentMatch) && pasaJornada(currentMatch)) contar(actionLog);
+                    const data = finalsOrder.filter(f => f !== 'OCASION' && res[f] > 0).map(f => ({ name: f, v: res[f] }));
+                    const total = data.reduce((s, d) => s + d.v, 0);
+                    const colores = ['#38bdf8', '#f87171', '#facc15', '#4ade80', '#c084fc', '#fb923c', '#22d3ee', '#f472b6', '#a3e635', '#fde047', '#34d399', '#60a5fa', '#e879f9', '#94a3b8', '#ef4444'];
+                    if (!total) {
                       return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          <div style={{ textAlign: 'center' }}>
-                            <span style={{ color: esRival ? '#ef4444' : '#ffffff', fontWeight: 800, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                              {esRival ? 'TOTAL % RIVAL' : 'TOTAL % PROPIAS'}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <table style={{ borderCollapse: 'collapse', fontSize: '0.95rem' }}>
-                              <thead>
-                                <tr>
-                                  <th style={{ ...thStyle, textAlign: 'left' }}>ACCION</th>
-                                  {columnas.map(f => <th key={f} style={thStyle}>{f}</th>)}
-                                  <th style={{ ...thStyle, background: '#f97316', color: '#ffffff' }}>TOTAL</th>
-                                  <th style={{ ...thStyle, background: '#f97316', color: '#ffffff' }}>% TOTAL</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {acciones.map(a => {
-                                  const rowTotal = sumaFila(a);
-                                  return (
-                                    <tr key={a}>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: esRival ? '#ef4444' : '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{esRival ? a.replace('RIVAL ', 'R. ') : a}</td>
-                                      {columnas.map(f => {
-                                        const v = (cruce[a] && cruce[a][f]) || 0;
-                                        return <td key={f} style={{ ...tdStyle, color: v > 0 ? (f === 'OCASION' ? '#eab308' : '#39ff14') : '#475569' }}>{v > 0 ? pct(v, rowTotal) : ''}</td>;
-                                      })}
-                                      <td style={{ ...tdStyle, color: '#ffffff', background: '#f97316' }}>{rowTotal || '-'}</td>
-                                      <td style={{ ...tdStyle, color: '#ffffff', background: '#f97316' }}>{pct(rowTotal, totalGrupo)}</td>
-                                    </tr>
-                                  );
-                                })}
-                                <tr>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                  {columnas.map(f => (
-                                    <td key={f} style={{ ...tdStyle, color: '#ffffff', background: '#f97316' }}>{pct(totalPorFin[f] || 0, totalGrupo)}</td>
-                                  ))}
-                                  <td style={{ ...tdStyle, color: '#ffffff', background: '#f97316' }}>{totalGrupo}</td>
-                                  <td style={{ ...tdStyle, color: '#ffffff', background: '#f97316' }}>100%</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
+                        <div style={{ textAlign: 'center', color: '#94a3b8', fontWeight: 700, fontSize: '0.95rem' }}>
+                          Sin registros de {accionPorcentaje} para {equipoPorcentaje}.
                         </div>
                       );
-                    };
+                    }
+                    const cx = 380, cy = 215, R = 145, rIn = 0;
+                    const pt = (rad, a) => [cx + rad * Math.cos(a), cy + rad * Math.sin(a)];
+                    let ang = -Math.PI / 2;
+                    const arcs = data.map((d, i) => {
+                      const frac = d.v / total;
+                      const a0 = ang;
+                      const a1 = ang + frac * 2 * Math.PI;
+                      ang = a1;
+                      const mid = (a0 + a1) / 2;
+                      const large = frac > 0.5 ? 1 : 0;
+                      let path, fillRule;
+                      if (frac >= 1) {
+                        path = `M ${cx - R} ${cy} A ${R} ${R} 0 1 1 ${cx + R} ${cy} A ${R} ${R} 0 1 1 ${cx - R} ${cy} Z M ${cx - rIn} ${cy} A ${rIn} ${rIn} 0 1 1 ${cx + rIn} ${cy} A ${rIn} ${rIn} 0 1 1 ${cx - rIn} ${cy} Z`;
+                        fillRule = 'evenodd';
+                      } else {
+                        const [ox0, oy0] = pt(R, a0);
+                        const [ox1, oy1] = pt(R, a1);
+                        const [ix1, iy1] = pt(rIn, a1);
+                        const [ix0, iy0] = pt(rIn, a0);
+                        path = `M ${ox0} ${oy0} A ${R} ${R} 0 ${large} 1 ${ox1} ${oy1} L ${ix1} ${iy1} A ${rIn} ${rIn} 0 ${large} 0 ${ix0} ${iy0} Z`;
+                      }
+                      const [px, py] = pt(R + 8, mid);
+                      const [qx, qy] = pt(R + 42, mid);
+                      const der = Math.cos(mid) >= 0 ? 1 : -1;
+                      const labelX = cx + der * 215;
+                      const [mx, my] = pt((R + rIn) / 2, mid);
+                      return { ...d, color: colores[i % colores.length], path, fillRule, pct: (frac * 100).toFixed(1), frac, px, py, qx, qy, der, labelX, mx, my };
+                    });
                     return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        {tabla(propiasAcciones, cruceFinalizaciones, false)}
-                        {tabla(rivalAcciones, cruceFinalizaciones, true)}
-                        {granTotal === 0 && (
-                          <div style={{ textAlign: 'center', color: '#94a3b8', fontWeight: 700, fontSize: '0.95rem' }}>
-                            Sin finalizaciones registradas todavía.
-                          </div>
-                        )}
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <svg viewBox="0 0 760 430" style={{ width: '100%', maxWidth: '760px', height: 'auto' }}>
+                          {arcs.map(a => <path key={a.name} d={a.path} fill={a.color} fillRule={a.fillRule} stroke="#0f172a" strokeWidth="2" />)}
+                          {arcs.map(a => a.frac >= 0.06 && (
+                            <text key={`p-${a.name}`} x={a.mx} y={a.my} textAnchor="middle" dominantBaseline="middle" style={{ fill: '#ffffff', fontWeight: 800, fontSize: '16px' }}>{a.pct}%</text>
+                          ))}
+{arcs.map(a => (
+                              <g key={`l-${a.name}`} style={{ stroke: a.color, strokeWidth: 1.5, strokeDasharray: '4 4', fill: 'none' }}>
+                                <line x1={a.px} y1={a.py} x2={a.qx} y2={a.qy} />
+                                <line x1={a.qx} y1={a.qy} x2={a.labelX} y2={a.qy} />
+                                <circle cx={a.labelX} cy={a.qy} r="4.5" fill={a.color} stroke="none" />
+                              </g>
+                            ))}
+                            {arcs.map(a => (
+                              <g key={`t-${a.name}`}>
+                                <text x={a.labelX + a.der * 12} y={a.qy - 3} textAnchor={a.der > 0 ? 'start' : 'end'} style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.name}</text>
+                                <text x={a.labelX + a.der * 12} y={a.qy + 15} textAnchor="middle" style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.v}</text>
+                              </g>
+                            ))}
+                          <circle cx={cx} cy={cy} r={rIn - 3} fill="#0f172a" stroke="#0f172a" strokeWidth="3" />
+                        </svg>
+                        <div style={{ textAlign: 'center', marginTop: '2.5rem', fontWeight: 800, fontSize: '1.2rem', color: '#ffffff', textDecoration: 'underline' }}>
+                          TOTAL: {total}
+                        </div>
                       </div>
                     );
                   })()}

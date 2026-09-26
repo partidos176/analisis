@@ -1,15 +1,25 @@
-feat(totales): nueva hoja TOTAL % con porcentajes de acciones y finalizaciones
+feat(totales%): rediseño completo hoja TOTAL %
 
-- Nueva pestaña 'TOTAL %' dentro del bloque TOTAL, colocada justo después de
-  TOTAL ACCIONES (totalesTabsDef, App.jsx:140).
-- Dos matrices de porcentaje con el mismo cruce acción-finalización que TOTAL
-  ACCIONES (todos los partidos más el abierto):
-  * TOTAL % PROPIAS: para cada acción propia, % de cada finalización sobre el
-    total de esa fila, número de finalizaciones (TOTAL) y su % sobre el total
-    de las finalizaciones propias; fila TOTAL con el % de cada finalización.
-  * TOTAL % RIVAL: idem para las acciones RIVAL, con las columnas en el mismo
-    orden que en TOTAL ACCIONES.
-- Las OCASIONES quedan fuera de todas las tablas: ni fila ni columna, y los
-  totales y porcentajes se recalculan solo sobre finalizaciones reales.
-- Sin tabla resumen previa: la hoja se limita a las dos matrices y al aviso
-  'Sin finalizaciones registradas todavía' cuando no hay datos.
+UI desplegables:
+- Fila única centrada: EQUIPO | ACCIONES | JORNADA (con etiquetas amarillas 1rem)
+- Jornada muestra "TODAS" en lugar de "— Selecciona una jornada —"
+- Equipo TENERIFE filtra acciones RIVAL (solo propias); rivales solo RIVAL
+
+Gráfica donut (SVG):
+- Diámetro interior = 0 (tarta completa)
+- Colores fijos, leyenda externa con líneas punteadas y círculos de color
+- % dentro de porciones ≥6%, valores en blanco
+- Etiquetas finales: nombre alineado lateral, valor centrado bajo el nombre
+- TOTAL subrayado debajo de la gráfica (marginTop 2.5rem)
+
+Lógica conteo:
+- `contar` itera en reversa (última acción antes de finalización)
+- `accionesParaEquipo` respeta filtro TENERIFE/RIVAL
+- OCASION excluida de la gráfica
+
+Correcciones visuales:
+- Valores finales mismo color que su porción, 15px, negrita
+- TOTAL en 1.2rem, blanco, subrayado
+- Row gap 1rem, flex-end alineado abajo, centrado horizontal
+
+Build + deploy Firebase OK (prueba-60d41.web.app)
