@@ -1,22 +1,15 @@
-feat(import/export): importar/exportar JSON y arreglo del borrado de partidos
+feat(totales): nueva hoja TOTAL % con porcentajes de acciones y finalizaciones
 
-- Partidos Guardados: el Exportar de cada fila genera ahora el JSON de copia
-  (mismo formato que el EXPORTAR de ACCIONES, sin campo id en el payload);
-  el Importar de la cabecera acepta .json y crea un partido nuevo a partir del
-  archivo (equipos, jornada y payload completo), sustituyendo al importador de Excel.
-- ACCIONES: reorganizados los botones (PÉRDIDAS con aviso IGUALAR arriba,
-  EXPORTAR con badge OK COPIA, IMPORTAR junto a NOTA DE VOZ); eliminados el
-  EXPORTAR grande (ya solo autoguarda), el IMPORTAR de Excel y el botón de
-  memoria COPIA <fecha>.
-- FIN 2ª PARTE: el confirm del navegador se sustituye por un modal "GUARDAR
-  DATOS" con opciones EXPORTAR y CANCELAR.
-- fix(borrar partido): cierra el partido abierto antes de borrar (el
-  autoguardado lo recreaba), verifica con get() que la ruta quedó vacía y
-  avisa si quedan partidos duplicados con la misma jornada.
-- fix(lista de partidos): la lista usa la clave de Firebase como id
-  ({...val, id}); antes el id interno importado desde un JSON mandaba sobre la
-  clave real y el borrado iba a una ruta inexistente. Se limpia automáticamente
-  el campo id interno de los partidos que lo tengan.
-- fix(resetMatchData): reinicia también pérdidas, transición, tiros a puerta y
-  tiros a puerta del rival al crear un partido.
-- GOLES: nueva opción ACCION INDIVIDUAL en el desplegable ORIGEN.
+- Nueva pestaña 'TOTAL %' dentro del bloque TOTAL, colocada justo después de
+  TOTAL ACCIONES (totalesTabsDef, App.jsx:140).
+- Dos matrices de porcentaje con el mismo cruce acción-finalización que TOTAL
+  ACCIONES (todos los partidos más el abierto):
+  * TOTAL % PROPIAS: para cada acción propia, % de cada finalización sobre el
+    total de esa fila, número de finalizaciones (TOTAL) y su % sobre el total
+    de las finalizaciones propias; fila TOTAL con el % de cada finalización.
+  * TOTAL % RIVAL: idem para las acciones RIVAL, con las columnas en el mismo
+    orden que en TOTAL ACCIONES.
+- Las OCASIONES quedan fuera de todas las tablas: ni fila ni columna, y los
+  totales y porcentajes se recalculan solo sobre finalizaciones reales.
+- Sin tabla resumen previa: la hoja se limita a las dos matrices y al aviso
+  'Sin finalizaciones registradas todavía' cuando no hay datos.
