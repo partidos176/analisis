@@ -6755,8 +6755,67 @@ const minutosPorJornada = [];
                           </button>
                         </>
                       )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginLeft: 'auto', order: 10 }}>
+                          <button
+                            onClick={() => {
+                              const accionesConTiempo = actionLog.filter(e => e && e.time && e.type === 'accion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name));
+                              if (!accionesConTiempo.length) { setCorteError('No hay acciones con tiempo'); return; }
+                              const filas = [];
+                              let numCorte = 0;
+                              accionesConTiempo.forEach((e, i) => {
+                                const parts = String(e.time).split(':').map(Number);
+                                const secs = (parts[0] || 0) * 60 + (parts[1] || 0);
+                                const offset = offsetParaPeriodo(periodoDeAccion(e));
+                                const videoSecs = Math.max(0, secs + offset);
+                                const duracion = 10;
+                                numCorte++;
+                                filas.push({
+                                  id: Date.now() + i,
+                                  concepto: e.name,
+                                  inicio: videoSecs,
+                                  fin: videoSecs + duracion,
+                                  duracion: duracion,
+                                  numCorte: numCorte,
+                                  videoUrl: null
+                                });
+                              });
+                              const exportData = {
+                                app: 'tratamiento-dibujos',
+                                version: 1,
+                                guardado: new Date().toISOString(),
+                                filas: filas.sort((a, b) => a.inicio - b.inicio)
+                              };
+                              const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                              const base = videoFileName || 'acciones';
+                              const nombreArchivo = `${base.replace(/\.[^.]+$/, '')}_para_tratamiento_bd.json`;
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = nombreArchivo;
+                              document.body.appendChild(a);
+                              a.click();
+                              a.remove();
+                              setTimeout(() => URL.revokeObjectURL(url), 3000);
+                              setCorteError('');
+                            }}
+                            style={{
+                              background: '#0ea5e9',
+                              color: '#ffffff',
+                              fontWeight: 900,
+                              fontSize: '0.85rem',
+                              padding: '0.6rem 1rem',
+                              borderRadius: '10px',
+                              border: 'none',
+                              cursor: 'pointer',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em'
+                            }}
+                          >
+                            Exportar base datos
+                          </button>
+                      </div>
                       {videoTimeOffset !== null && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                           {videoTimeOffset2 === null && (
                           <button
                             onClick={() => {
