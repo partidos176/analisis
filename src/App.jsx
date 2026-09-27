@@ -6769,9 +6769,21 @@ const minutosPorJornada = [];
                                 const videoSecs = Math.max(0, secs + offset);
                                 const duracion = 10;
                                 numCorte++;
+                                const accionIdx = actionLog.findIndex(a => a === e);
+                                const fins = [];
+                                for (let fi = accionIdx - 1; fi >= 0; fi--) {
+                                  const prev = actionLog[fi];
+                                  if (!prev) break;
+                                  if (prev.type === 'finalizacion') { if (prev.name) fins.push(prev.name); continue; }
+                                  if (prev.type === 'accion') break;
+                                }
+                                fins.reverse();
                                 filas.push({
                                   id: Date.now() + i,
-                                  concepto: e.name,
+                                  concepto: [e.name, ...fins.map(f => `(${f})`)].join(' '),
+                                  accion: e.name,
+                                  finalizacion: fins.join(' - '),
+                                  finalizaciones: fins,
                                   inicio: videoSecs,
                                   fin: videoSecs + duracion,
                                   duracion: duracion,
@@ -6779,11 +6791,27 @@ const minutosPorJornada = [];
                                   videoUrl: null
                                 });
                               });
+                              const ordenadas = filas
+                                .sort((a, b) => a.inicio - b.inicio)
+                                .map((f, i) => ({ ...f, numCorte: i + 1 }));
+                              const cortes = [];
+                              const duracionCortes = {};
+                              const nombreCortes = {};
+                              const iniciosUsados = new Set();
+                              ordenadas.forEach(f => {
+                                let ini = Math.round(Number(f.inicio) * 1000) / 1000;
+                                while (iniciosUsados.has(ini)) ini = Math.round((ini + 0.04) * 1000) / 1000;
+                                iniciosUsados.add(ini);
+                                cortes.push(ini);
+                                duracionCortes[String(ini)] = f.duracion;
+                                nombreCortes[String(ini)] = f.concepto;
+                              });
                               const exportData = {
                                 app: 'tratamiento-dibujos',
-                                version: 1,
+                                version: 4,
                                 guardado: new Date().toISOString(),
-                                filas: filas.sort((a, b) => a.inicio - b.inicio)
+                                cortes: { cortes, duracionCortes, nombreCortes, cortesEditados: {} },
+                                filas: ordenadas
                               };
                               const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
                               const base = videoFileName || 'acciones';
