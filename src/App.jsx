@@ -6780,7 +6780,7 @@ const minutosPorJornada = [];
                                 fins.reverse();
                                 filas.push({
                                   id: Date.now() + i,
-                                  concepto: [e.name, ...fins.map(f => `(${f})`)].join(' '),
+                                  concepto: fins.length ? fins.join(' - ') : e.name,
                                   accion: e.name,
                                   finalizacion: fins.join(' - '),
                                   finalizaciones: fins,
@@ -6797,6 +6797,7 @@ const minutosPorJornada = [];
                               const cortes = [];
                               const duracionCortes = {};
                               const nombreCortes = {};
+                              const accionCortes = {};
                               const iniciosUsados = new Set();
                               ordenadas.forEach(f => {
                                 let ini = Math.round(Number(f.inicio) * 1000) / 1000;
@@ -6805,12 +6806,13 @@ const minutosPorJornada = [];
                                 cortes.push(ini);
                                 duracionCortes[String(ini)] = f.duracion;
                                 nombreCortes[String(ini)] = f.concepto;
+                                accionCortes[String(ini)] = f.accion;
                               });
                               const exportData = {
                                 app: 'tratamiento-dibujos',
-                                version: 4,
+                                version: 5,
                                 guardado: new Date().toISOString(),
-                                cortes: { cortes, duracionCortes, nombreCortes, cortesEditados: {} },
+                                cortes: { cortes, duracionCortes, nombreCortes, accionCortes, cortesEditados: {} },
                                 filas: ordenadas
                               };
                               const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
