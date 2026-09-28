@@ -2579,12 +2579,12 @@ export default function App() {
                     if (localMatches.length === 0 && awayMatches.length === 0) return null;
                     const allCells = [];
                     if (localMatches.length > 0) {
-                      [{ label: 'VICTORIAS LOCAL', value: lVic, color: '#22c55e' }, { label: 'EMPATES LOCAL', value: lEmp, color: '#fbbf24' }, { label: 'DERROTAS LOCAL', value: lDer, color: '#ef4444' }, { label: 'GOLES A FAVOR LOCAL', value: lGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA LOCAL', value: lGc, color: '#f97316' }].forEach(item => allCells.push(item));
+                      [{ label: 'VICTORIAS LOCAL', value: lVic, color: '#22c55e' }, { label: 'EMPATES LOCAL', value: lEmp, color: '#fbbf24' }, { label: 'DERROTAS LOCAL', value: lDer, color: '#ef4444' }, { label: 'GOLES PROPIOS LOCAL', value: lGf, color: '#38bdf8' }, { label: 'GOLES RIVAL LOCAL', value: lGc, color: '#f97316' }].forEach(item => allCells.push(item));
                     }
                     if (awayMatches.length > 0) {
-                      [{ label: 'VICTORIAS VISITANTE', value: vVic, color: '#22c55e' }, { label: 'EMPATES VISITANTE', value: vEmp, color: '#fbbf24' }, { label: 'DERROTAS VISITANTE', value: vDer, color: '#ef4444' }, { label: 'GOLES A FAVOR VISITANTE', value: vGf, color: '#38bdf8' }, { label: 'GOLES EN CONTRA VISITANTE', value: vGc, color: '#f97316' }].forEach(item => allCells.push(item));
+                      [{ label: 'VICTORIAS VISITANTE', value: vVic, color: '#22c55e' }, { label: 'EMPATES VISITANTE', value: vEmp, color: '#fbbf24' }, { label: 'DERROTAS VISITANTE', value: vDer, color: '#ef4444' }, { label: 'GOLES PROPIOS VISITANTE', value: vGf, color: '#38bdf8' }, { label: 'GOLES RIVAL VISITANTE', value: vGc, color: '#f97316' }].forEach(item => allCells.push(item));
                     }
-                    [{ label: 'TOTAL VICTORIAS', value: lVic + vVic, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL EMPATES', value: lEmp + vEmp, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL DERROTAS', value: lDer + vDer, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL GOLES A FAVOR', value: lGf + vGf, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL GOLES EN CONTRA', value: lGc + vGc, color: '#ff6ec7', labelColor: '#ff6ec7' }].forEach(item => allCells.push(item));
+                    [{ label: 'TOTAL VICTORIAS', value: lVic + vVic, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL EMPATES', value: lEmp + vEmp, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL DERROTAS', value: lDer + vDer, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL GOLES PROPIOS', value: lGf + vGf, color: '#ff6ec7', labelColor: '#ff6ec7' }, { label: 'TOTAL GOLES RIVAL', value: lGc + vGc, color: '#ff6ec7', labelColor: '#ff6ec7' }].forEach(item => allCells.push(item));
                     return (
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', marginTop: '1.5rem' }}>
                         {allCells.map((item, i) => (
@@ -2765,18 +2765,18 @@ export default function App() {
                     ];
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1, margin: 0, padding: 0 }}>GOLES A FAVOR</span>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', lineHeight: 1, margin: 0, padding: 0 }}>GOLES PROPIOS</span>
                         <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                           <div style={{ flex: 1, minWidth: '320px', overflowX: 'auto' }}>
-                            <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>GOLES</span>
+                            <span style={{ color: '#f97316', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', display: 'block', marginBottom: '0.5rem' }}>GOLES</span>
                             <table style={{ width: 'auto', margin: '0 auto', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                               <thead>
                                 <tr>
-<th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PIE</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>CABEZA</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>PENAL</th>
+<th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>PIE</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>CABEZA</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>PENAL</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -2797,8 +2797,8 @@ export default function App() {
                             <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                               <thead>
                                 <tr>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JUGADOR</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JUGADOR</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -2818,8 +2818,8 @@ export default function App() {
                           <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                             <thead>
                               <tr>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
-                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f97316', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
+                                <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f97316', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -2882,8 +2882,8 @@ export default function App() {
                             <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                               <thead>
                                 <tr>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>PROCEDENCIA</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#38bdf8', fontWeight: 800, textTransform: 'uppercase' }}>GOLES</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f97316', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>PROCEDENCIA</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f97316', fontWeight: 800, textTransform: 'uppercase' }}>GOLES</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -2909,14 +2909,14 @@ export default function App() {
                         </div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', padding: '1rem 2rem' }}>
-                          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES EN CONTRA</span>
+                          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>GOLES RIVAL</span>
                           <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', justifyContent: 'center', marginTop: '2rem' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                 <thead>
                                   <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f97316', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JORNADAS</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f97316', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>GOLES</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -2978,8 +2978,8 @@ export default function App() {
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                                 <thead>
                                   <tr>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f87171', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>PROCEDENCIA</th>
-                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f87171', fontWeight: 800, textTransform: 'uppercase' }}>GOLES</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f97316', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>PROCEDENCIA</th>
+                                    <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f97316', fontWeight: 800, textTransform: 'uppercase' }}>GOLES</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -3137,7 +3137,7 @@ export default function App() {
                                     {crucePropiasFinalizaciones.map(f => (
                                       <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
                                     ))}
-                                     <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                     <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -3147,7 +3147,7 @@ export default function App() {
                                       {crucePropiasFinalizaciones.map(f => (
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? (f === 'OCASION' ? '#eab308' : '#39ff14') : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                       ))}
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
                                     </tr>
                                   ))}
                                   <tr>
@@ -3155,7 +3155,7 @@ export default function App() {
                                     {crucePropiasFinalizaciones.map(f => (
                                       <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasTotal[f] || '-'}</td>
                                     ))}
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem' }}>{''}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasAcciones.reduce((sum, a) => sum + (cruceRows[a] || 0), 0) || '-'}</td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -3180,7 +3180,7 @@ export default function App() {
                                         <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{f}</th>
                                       ));
                                     })()}
-                                     <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                     <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -3195,7 +3195,7 @@ export default function App() {
                                           <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? (f === 'OCASION' ? '#eab308' : '#39ff14') : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                         ));
                                       })()}
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRows[a] || '-'}</td>
                                     </tr>
                                   ))}
                                   <tr>
@@ -3208,7 +3208,7 @@ export default function App() {
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalTotal[f] || '-'}</td>
                                       ));
                                     })()}
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem' }}>{''}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalAcciones.reduce((sum, a) => sum + (cruceRows[a] || 0), 0) || '-'}</td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -8196,7 +8196,7 @@ const minutosPorJornada = [];
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
                           <thead>
                             <tr>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
                               {cols.map((f, ci) => {
                                 const renderVertical = (parts) => <>{parts.map((p, i) => <div key={i}>{p}</div>)}</>;
                                 let vertical = null;
@@ -8207,7 +8207,7 @@ const minutosPorJornada = [];
                                   vertical = f.split(' ');
                                 }
                                 return (<React.Fragment key={f}>
-                                  <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#94a3b8', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{vertical ? renderVertical(vertical) : f}</th>
+                                  <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#f9a8d4', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{vertical ? renderVertical(vertical) : f}</th>
                                   {ci === 0 && <th key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>}
                                 </React.Fragment>);
                               })}
