@@ -5052,7 +5052,7 @@ const minutosPorJornada = [];
                       FIN 1ª PARTE
                     </button>
 <button
-          onClick={() => setFin2Aviso(true)}
+          onClick={() => { handleFin('FIN 2ª PARTE'); setFin2Aviso(true); }}
           style={{
             background: '#dc2626',
             color: '#ffffff',
