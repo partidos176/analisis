@@ -364,7 +364,6 @@ export default function App() {
       return parsed && typeof parsed === 'object' ? parsed : {};
     } catch { return {}; }
   });
-  const [alineacionError, setAlineacionError] = useState(false);
   const [menuJugadorIdx, setMenuJugadorIdx] = useState(null);
   const [draggingMapIdx, setDraggingMapIdx] = useState(null);
   const campoRef = useRef(null);
@@ -1570,16 +1569,6 @@ export default function App() {
     } finally {
       setGenerandoPreview(false);
     }
-  };
-
-  const handleAceptar = () => {
-    const titulares = players.filter(p => p.status === 'titular').length;
-    if (titulares !== 11) {
-      setAlineacionError(true);
-      setTimeout(() => setAlineacionError(false), 3000);
-      return;
-    }
-    setActiveTab('acciones');
   };
 
   const formatTime = (secs) => {
@@ -4892,23 +4881,6 @@ const minutosPorJornada = [];
               <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
                 {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : `JORNADA ${currentMatch.matchday}`}
               </span>
-              {activeTab === 'alineacion' && (
-                <button
-                  onClick={handleAceptar}
-                  style={{
-                    background: '#0284c7',
-                    color: '#ffffff',
-                    fontWeight: 700,
-                    fontSize: '0.75rem',
-                    padding: '0.3rem 0.8rem',
-                    borderRadius: 'var(--radius-full)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}
-                >
-                  ACEPTAR
-                </button>
-              )}
               {activeTab === 'acciones' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   {editingTimer ? (
@@ -8391,8 +8363,8 @@ const minutosPorJornada = [];
                 );
               })()}
                   {activeTab === 'alineacion' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.6rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%', position: 'relative' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.6rem', position: 'absolute', top: 0, right: 0, zIndex: 5 }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.6rem' }}>
                     <button
                       onClick={async () => {
@@ -8427,48 +8399,7 @@ const minutosPorJornada = [];
                       ↓
                     </button>
                   </div>
-                    <button
-                      onClick={async () => {
-                        if (currentMatch) { try { await saveMatchData(currentMatch.id); } catch {} }
-                        setVista('totales');
-                        setTotalesTab('cadetes');
-                      }}
-                      style={{
-                        background: '#0284c7',
-                        color: '#ffffff',
-                        fontWeight: 800,
-                        fontSize: '0.85rem',
-                        padding: '0.5rem 1.4rem',
-                        borderRadius: 'var(--radius-full)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                      }}
-                    >
-                      CADETES
-                    </button>
                   </div>
-                  {alineacionError && (
-                    <div style={{
-                      position: 'fixed',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      background: '#dc2626',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '1.5rem',
-                      padding: '1.5rem 3rem',
-                      borderRadius: '12px',
-                      zIndex: 1000,
-                      animation: 'blink 0.5s infinite'
-                    }}>
-                      ERROR DE ALINEACION
-                    </div>
-                  )}
-
-
                   {/* === MAPA DE CAMPO === */}
                   <div ref={alineacionRef} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%', overflow: 'visible' }}>
                   <div style={{ textAlign: 'center', color: '#ffffff', fontWeight: 900, fontSize: '1.4rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
