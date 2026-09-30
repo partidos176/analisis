@@ -30,6 +30,8 @@ import samuelImg from './jugadores/samuel.jpg';
 import bonillaImg from './jugadores/bonilla.png';
 import lucasSanchezImg from './jugadores/lucas_sanchez.jpg';
 import campoRefImg from './jugadores/campo_ref.jpg';
+import devianImg from './jugadores/devian.png';
+import denissonImg from './jugadores/denisson.png';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
@@ -60,6 +62,12 @@ const jugadoresData = {
   ORIOL: { foto: oriolImg, pos1: 'MEDIO CENTRO' },
   BONILLA: { foto: bonillaImg, pos1: 'INTERIOR IZQUIERDO' },
   SAMUEL: { foto: samuelImg, pos1: 'EXTREMO IZQUIERDO' },
+};
+
+// Fotos solo para la pagina CADETES (no se usan en la alineacion ni en el campo)
+const fotosCadetes = {
+  DEVIAN: devianImg,
+  DENISSON: denissonImg,
 };
 
 const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'JUAN ': 'JUANDA' };
@@ -4573,7 +4581,7 @@ const minutosPorJornada = [];
                       rows.sort((a, b) => a.md - b.md);
                       if (rows.length === 0) return <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Sin convocatorias como titular o suplente</span>;
                       return (
-                        <>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem', flexWrap: 'wrap' }}>
                         <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: 'auto' }}>
                           <thead>
                             <tr>
@@ -4592,7 +4600,15 @@ const minutosPorJornada = [];
                             ))}
                           </tbody>
                         </table>
-                        </>
+                        {fotosCadetes[norm] && (
+                          <img
+                            src={fotosCadetes[norm]}
+                            alt={norm}
+                            draggable={false}
+                            style={{ width: '170px', height: '220px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexShrink: 0 }}
+                          />
+                        )}
+                        </div>
                       );
                       })()}
                       <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '2.5rem' }}>
