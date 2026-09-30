@@ -90,6 +90,33 @@ const dedupePlayers = (list) => {
   });
 };
 
+// Jugadores en cancha en un minuto concreto del partido: titulares de salida
+// mas las sustituciones ocurridas hasta ese minuto (misma escala que guardan
+// goles y sustituciones: Math.floor(timerSeconds / 60)).
+const jugadoresEnCancha = (minuto, playersList, subsList) => {
+  const titulars = (playersList || []).filter(p => p && p.status === 'titular').map(p => p.name).filter(Boolean);
+  const onField = [...titulars];
+  (subsList || [])
+    .filter(s => s && s.sale && s.entra)
+    .sort((a, b) => (a.minuto || 0) - (b.minuto || 0))
+    .forEach(s => {
+      if ((s.minuto || 0) <= (minuto || 0)) {
+        const outIdx = onField.indexOf(s.sale);
+        if (outIdx !== -1) onField.splice(outIdx, 1);
+        if (!onField.includes(s.entra)) onField.push(s.entra);
+      }
+    });
+  return [...new Set(onField.map(n => String(n).toUpperCase()))];
+};
+
+// Lista de asistentes para un gol: la de su propio minuto. Si el gol no tiene
+// minuto (goles antiguos o importados) se cae a la cancha en vivo.
+const asistentesDelGol = (g, playersList, subsList, fallback) => {
+  const m = g && g.minuto;
+  if (m === null || m === undefined || m === '' || !Number.isFinite(Number(m))) return fallback || [];
+  return jugadoresEnCancha(Number(m), playersList, subsList);
+};
+
 // Firebase Realtime Database no acepta `undefined` ni arrays dispersos en `update`.
 // Convertimos `undefined` -> null y los arrays dispersos a arrays densos/objetos.
 const sanitizeForFirebase = (value) => {
@@ -225,6 +252,18 @@ export default function App() {
       setLoading(false);
     });
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const alCambiar = () => {
+      const fs = document.fullscreenElement;
+      setFsActivo(!!fs);
+      if (fs && videoRef.current && contenedorVideoRef.current && fs === videoRef.current) {
+        contenedorVideoRef.current.requestFullscreen().catch(() => {});
+      }
+    };
+    document.addEventListener('fullscreenchange', alCambiar);
+    return () => document.removeEventListener('fullscreenchange', alCambiar);
   }, []);
 
   useEffect(() => {
@@ -557,6 +596,8 @@ export default function App() {
   const [videoTimeOffset2, setVideoTimeOffset2] = useState(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const videoRef = useRef(null);
+  const contenedorVideoRef = useRef(null);
+  const [fsActivo, setFsActivo] = useState(false);
   const [corteSegundos, setCorteSegundos] = useState(15);
   const [filtroAccion, setFiltroAccion] = useState('');
   const [corteError, setCorteError] = useState('');
@@ -6642,7 +6683,8 @@ const minutosPorJornada = [];
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                   {videoUrl && (
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '900px' }}>
+                    <div id="video-container" ref={contenedorVideoRef} className="video-contenedor" style={{ position: 'relative', width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                      <div className="video-marco" style={{ position: 'relative', width: '100%' }}>
                       <video
                         ref={videoRef}
                         src={videoUrl}
@@ -6658,6 +6700,7 @@ const minutosPorJornada = [];
                       />
                       <canvas
                         ref={trailCanvasRef}
+                        className="overlay-fs"
                         onClick={(e) => {
                           if (!trackingMode) return;
                           const canvas = e.target;
@@ -6678,7 +6721,7 @@ const minutosPorJornada = [];
                           pointerEvents: trackingMode ? 'auto' : 'none'
                         }}
                       />
-                      <div style={{ position: 'absolute', bottom: '32px', left: '50px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
+                      <div className="contador-fs" style={{ position: 'absolute', bottom: '32px', left: '50px', zIndex: 10, display: 'flex', alignItems: 'center' }}>
                         <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.85rem', fontFamily: 'var(--font-mono)' }}>
                           {(() => {
                             const offset = offsetParaVideo(videoCurrentTime);
@@ -6691,10 +6734,8 @@ const minutosPorJornada = [];
                         onClick={() => { if (videoRef.current) { videoRef.current.pause(); } setVideoUrl(null); setVideoFile(null); setVideoFileName(''); setVideoTimeOffset(null); setVideoTimeOffset2(null); setAccionSeleccionada(null); setPreviewVideoUrl(null); }}
                         style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.85)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, zIndex: 10 }}
                       >×</button>
-                    </div>
-                  )}
-                  {videoUrl && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', order: -1, flexWrap: 'wrap', justifyContent: 'center' }}>
+                      </div>
+                      <div className="video-barra" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', order: -1, flexWrap: 'wrap', justifyContent: 'center' }}>
                       {videoTimeOffset === null && (
                         <button
                           onClick={() => {
@@ -6892,6 +6933,80 @@ const minutosPorJornada = [];
                           )}
                         </div>
                       )}
+                    </div>
+                      <div className="video-barra-abajo" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <button
+                        className="btn-saltar"
+                        onClick={() => {
+                          const v = videoRef.current;
+                          if (!v) return;
+                          v.currentTime = Math.max(0, v.currentTime - 5);
+                        }}
+                        style={{
+                          background: '#0ea5e9',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.85rem',
+                          padding: '0.6rem 1rem',
+                          borderRadius: '10px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}
+                      >
+                        −5 seg.
+                      </button>
+                      <button
+                        className="btn-saltar"
+                        onClick={() => {
+                          const v = videoRef.current;
+                          if (!v) return;
+                          const dur = Number.isFinite(v.duration) ? v.duration : Infinity;
+                          v.currentTime = Math.min(dur, v.currentTime + 5);
+                        }}
+                        style={{
+                          background: '#0ea5e9',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.85rem',
+                          padding: '0.6rem 1rem',
+                          borderRadius: '10px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}
+                      >
+                        +5 seg.
+                      </button>
+                      <button
+                        className="btn-saltar"
+                        onClick={() => {
+                          const c = contenedorVideoRef.current;
+                          if (!c) return;
+                          if (document.fullscreenElement) {
+                            document.exitFullscreen().catch(() => {});
+                          } else if (c.requestFullscreen) {
+                            c.requestFullscreen().catch(() => {});
+                          }
+                        }}
+                        style={{
+                          background: '#8b5cf6',
+                          color: '#ffffff',
+                          fontWeight: 900,
+                          fontSize: '0.85rem',
+                          padding: '0.6rem 1rem',
+                          borderRadius: '10px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}
+                      >
+                        {fsActivo ? 'Salir' : 'Full'}
+                      </button>
+                      </div>
                     </div>
                   )}
 
@@ -7831,7 +7946,13 @@ const minutosPorJornada = [];
                             }}
                           >
                             <option value="">-</option>
-                            {(window.__onFieldPlayers || []).map(name => (
+                            {(() => {
+                              const lista = asistentesDelGol(g, players, sustituciones, window.__onFieldPlayers || []);
+                              // Si lo guardado no esta entre los del minuto del gol se anade
+                              // igual, para que la seleccion no desaparezca del desplegable.
+                              const fuera = (g.name2 && g.name2 !== 'SIN ASISTENCIA' && !lista.includes(g.name2)) ? [g.name2] : [];
+                              return [...fuera, ...lista];
+                            })().map(name => (
                               <option key={name} value={name}>{name}</option>
                             ))}
                             <option value="SIN ASISTENCIA">SIN ASISTENCIA</option>
