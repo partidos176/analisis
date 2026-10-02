@@ -32,6 +32,7 @@ import lucasSanchezImg from './jugadores/lucas_sanchez.jpg';
 import campoRefImg from './jugadores/campo_ref.jpg';
 import devianImg from './jugadores/devian.png';
 import denissonImg from './jugadores/denisson.png';
+import braisImg from './jugadores/brais.png';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
@@ -68,7 +69,12 @@ const jugadoresData = {
 const fotosCadetes = {
   DEVIAN: devianImg,
   DENISSON: denissonImg,
+  BRAIS: braisImg,
 };
+
+// La hoja ALINEACION tambien pinta a los cadetes (entran con
+// addCadeteToAlineacion), asi que ahi hay que mirar tambien en fotosCadetes.
+const fotoDeJugador = (n) => (jugadoresData[n] && jugadoresData[n].foto) || fotosCadetes[n] || null;
 
 const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'JUAN ': 'JUANDA' };
 const normalizePlayerName = (raw) => {
@@ -8709,7 +8715,7 @@ const minutosPorJornada = [];
                       >×</button>
                     );
                     const circulo = (p, size = 56, extraStyle = {}) => {
-                      const foto = jugadoresData[p.name]?.foto;
+                      const foto = fotoDeJugador(p.name);
                       return (
                         <div
                           key={p.idx ?? p.name}
@@ -8902,7 +8908,7 @@ const minutosPorJornada = [];
                               const def = FORMACION_11[i] || { x: 50, y: 50 };
                               const x = p.mapX ?? def.x;
                               const y = p.mapY ?? def.y;
-                              const foto = jugadoresData[p.name]?.foto;
+                              const foto = fotoDeJugador(p.name);
                               const isNoConvocado = p.status === 'no convocado';
                               return (
                                 <div
@@ -9051,7 +9057,7 @@ const minutosPorJornada = [];
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', justifyItems: 'center' }}>
                              {players.filter(p => p.name && p.status === '-').map(p => {
                               const idx = players.indexOf(p);
-                              const foto = jugadoresData[p.name]?.foto;
+                              const foto = fotoDeJugador(p.name);
                               const isTit = p.status === 'titular';
                               const isSup = p.status === 'suplente';
                               const isNo = p.status === 'no convocado';
@@ -9162,7 +9168,7 @@ const minutosPorJornada = [];
                             })}
                             {/* Huecos vacíos para agregar nuevos nombres */}
                             {playerOptions.filter(n => !players.some(q => q.name === n)).map(n => {
-                              const foto = jugadoresData[n]?.foto;
+                              const foto = fotoDeJugador(n);
                               return (
                                 <div
                                   key={'free_' + n}
