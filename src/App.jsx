@@ -9375,12 +9375,25 @@ const minutosPorJornada = [];
                     gap: '1rem'
                   }}>
                     <div style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      <span style={{ marginRight: '0.75rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.05rem' }}>
-                        J{m.matchday}
-                      </span>
-                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#38bdf8' }}>{m.homeTeam}</span>
-                      <span style={{ margin: '0 0.4rem', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>vs</span>
-                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#f87171' }}>{m.awayTeam}</span>
+                      {(() => {
+                        // C.D. Tenerife siempre en azul y el rival siempre en rojo,
+                        // sea local o visitante. Si no juega Tenerife se mantiene
+                        // la regla de siempre: local azul, visitante rojo.
+                        const esTenerife = (t) => !!t && t.toUpperCase().includes('TENERIFE');
+                        const hayTenerife = esTenerife(m.homeTeam) || esTenerife(m.awayTeam);
+                        const colorLocal = hayTenerife ? (esTenerife(m.homeTeam) ? '#38bdf8' : '#f87171') : '#38bdf8';
+                        const colorVisitante = hayTenerife ? (esTenerife(m.awayTeam) ? '#38bdf8' : '#f87171') : '#f87171';
+                        return (
+                          <>
+                            <span style={{ marginRight: '0.75rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.05rem' }}>
+                              J{m.matchday}
+                            </span>
+                            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: colorLocal }}>{m.homeTeam}</span>
+                            <span style={{ margin: '0 0.4rem', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>vs</span>
+                            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: colorVisitante }}>{m.awayTeam}</span>
+                          </>
+                        );
+                      })()}
                       <span style={{ marginLeft: '1.5rem', fontFamily: 'var(--font-mono)', color: '#ffffff', fontWeight: 900, fontSize: '1.05rem' }}>
                         {(() => {
                           const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
