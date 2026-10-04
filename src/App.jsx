@@ -38,6 +38,12 @@ import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, Ca
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 
+// Gol a favor del Tenerife: los del rival van en golesRivalList, pero la
+// hoja de goles también mete filas con name 'RIVAL' (botón GOL RIVAL con
+// team 'away', o +AÑADIR GOL con team 'home' si se elige RIVAL de
+// goleador). Solo cuentan las que no son del rival por ninguna vía.
+const esGolPropio = (g) => !!g && g.team !== 'away' && String(g.name || '').toUpperCase() !== 'RIVAL';
+
 const jugadoresData = {
   CARDENES: { foto: cardenesImg, pos1: 'INTERIOR IZQUIERDO' },
   ANCOR: { foto: ancorImg, pos1: 'MEDIO CENTRO' },
@@ -1439,7 +1445,7 @@ export default function App() {
       penalGolCount,
       penalGolRivalCount,
       saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
-  useEffect(() => { setGolCount(golesList.filter(g => g && g.team !== 'away').length); }, [golesList]);
+  useEffect(() => { setGolCount(golesList.filter(esGolPropio).length); }, [golesList]);
   useEffect(() => { setGolRivalCount(golesRivalList.length); }, [golesRivalList]);
 
   const generarTodosLosCortes = async () => {
@@ -2666,9 +2672,9 @@ export default function App() {
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
                       const gl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
-                      gl.forEach(g => { if (g && g.team !== 'away') addGoal(g.name || 'P. META RIVAL', g.tipo); });
+                      gl.forEach(g => { if (esGolPropio(g)) addGoal(g.name || 'P. META RIVAL', g.tipo); });
                     });
-                    golesList.forEach(g => { if (g && g.team !== 'away') addGoal(g.name || 'P. META RIVAL', g.tipo); });
+                    golesList.forEach(g => { if (esGolPropio(g)) addGoal(g.name || 'P. META RIVAL', g.tipo); });
                     const filas = Object.entries(stats).sort((a, b) => b[1].total - a[1].total);
                     const asistStats = {};
                     const addAsist = (name2) => {
@@ -2676,7 +2682,7 @@ export default function App() {
                       asistStats[name2] = (asistStats[name2] || 0) + 1;
                     };
                     const contarAsist = (gl) => {
-                      gl.forEach(g => { if (g && g.team !== 'away' && g.name2) addAsist(g.name2); });
+                      gl.forEach(g => { if (esGolPropio(g) && g.name2) addAsist(g.name2); });
                     };
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
@@ -2696,7 +2702,7 @@ export default function App() {
                     ];
                     const contarGoles = (gl) => {
                       gl.forEach(g => {
-                        if (!g || g.team === 'away') return;
+                        if (!esGolPropio(g)) return;
                         totalGoles += 1;
                         const min = g.minuto || 0;
                         const p = periodos.find(p => min >= p.desde && min <= p.hasta) || periodos[periodos.length - 1];
@@ -2707,7 +2713,7 @@ export default function App() {
                     let pMetaCount = 0;
                     const contarAccion = (gl) => {
                       gl.forEach(g => {
-                        if (!g || g.team === 'away') return;
+                        if (!esGolPropio(g)) return;
                         if (g.tipo === 'P. META RIVAL' || g.tipo === 'P. META') { pMetaCount += 1; return; }
                         const acc = g.accion || 'SIN ACCIÓN';
                         accionStats[acc] = (accionStats[acc] || 0) + 1;
@@ -2770,7 +2776,7 @@ export default function App() {
                     const contarJornada = (gl, md) => {
                       const jornada = Number(md);
                       if (!gl || !jornada) return;
-                      const n = gl.filter(g => g && g.team !== 'away').length;
+                      const n = gl.filter(esGolPropio).length;
                       golesPorJornada[jornada] = (golesPorJornada[jornada] || 0) + n;
                     };
                     matches.forEach(m => {
@@ -3355,7 +3361,7 @@ export default function App() {
                       {matchesDelEquipo(equipoPorcentaje).slice().sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => {
                         const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
                         const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
-                        const golesTenerife = (m.golesList || []).filter(g => g && g.team !== 'away').length;
+                        const golesTenerife = (m.golesList || []).filter(esGolPropio).length;
                         const golesRival = (m.golesRivalList || []).length;
                         const homeScore = homeIsTenerife ? golesTenerife : golesRival;
                         const awayScore = awayIsTenerife ? golesTenerife : golesRival;
@@ -4214,7 +4220,7 @@ const minutosPorJornada = [];
                   .map(m => {
                     const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                     const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                    const tfeGl = homeGl.filter(g => g && g.team !== 'away');
+                    const tfeGl = homeGl.filter(esGolPropio);
                     const isHomeTfe = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
                     const score = isHomeTfe ? ` (${tfeGl.length}-${awayGl.length})` : ` (${awayGl.length}-${tfeGl.length})`;
                     return { id: m.id, matchday: m.matchday, label: 'J.' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '') + score };
@@ -4236,7 +4242,7 @@ const minutosPorJornada = [];
                   const teamInfo = (m.homeTeam || '') + ' vs ' + (m.awayTeam || '');
                   const homeGl2 = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                   const awayGl2 = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                  const tfeGl2 = homeGl2.filter(g => g && g.team !== 'away');
+                  const tfeGl2 = homeGl2.filter(esGolPropio);
                   const isHomeTfe2 = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
                   const score = isHomeTfe2 ? ' (' + tfeGl2.length + '-' + awayGl2.length + ')' : ' (' + awayGl2.length + '-' + tfeGl2.length + ')';
                   const rws = pds.map(p => {
@@ -4929,14 +4935,14 @@ const minutosPorJornada = [];
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.homeTeam}</span>
                 {currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE')
-                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.filter(g => g.team !== 'away').length}</span>
+                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.filter(esGolPropio).length}</span>
                   : <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
               <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ffffff' }}>vs</span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.awayTeam}</span>
                 {currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE')
-                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.filter(g => g.team !== 'away').length}</span>
+                  ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.filter(esGolPropio).length}</span>
                   : <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
               </>
@@ -7866,12 +7872,28 @@ const minutosPorJornada = [];
                             value={g.name}
                             onChange={(e) => {
                               const val = e.target.value;
+                              const previa = golesList[i] || {};
+                              const eraRival = String(previa.name || '').toUpperCase() === 'RIVAL' || previa.team === 'away';
+                              const esRival = val === 'RIVAL';
                               setGolesList(prev => {
                                 const updated = [...prev];
-                                updated[i] = { ...updated[i], name: val };
+                                updated[i] = { ...updated[i], name: val, team: esRival ? 'away' : 'home' };
                                 if (val && updated[i].tipo && updated[i].name2) { setActiveTab('acciones'); }
                                 return updated;
                               });
+                              // Simetría con el botón GOL RIVAL (que escribe en las dos
+                              // listas): el marcador rival sale de golesRivalList.
+                              if (esRival && !eraRival) {
+                                setGolesRivalList(prev => [...prev, { accion: previa.accion || '', periodo: previa.periodo, minuto: previa.minuto }]);
+                              }
+                              if (!esRival && eraRival) {
+                                setGolesRivalList(prev => {
+                                  const idx = prev.findIndex(x => x && x.minuto === previa.minuto && x.periodo === previa.periodo);
+                                  if (idx > 0) return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+                                  if (idx === 0) return prev.slice(1);
+                                  return prev;
+                                });
+                              }
                             }}
                             style={{
                               background: 'var(--bg-secondary)',
@@ -8396,7 +8418,7 @@ const minutosPorJornada = [];
                 const teamInfo = (currentMatch?.homeTeam || '') + ' vs ' + (currentMatch?.awayTeam || '');
                 const homeGl = Array.isArray(golesList) ? golesList : [];
                 const awayGl = Array.isArray(golesRivalList) ? golesRivalList : [];
-                const tfeGl = homeGl.filter(g => g && g.team !== 'away');
+                const tfeGl = homeGl.filter(esGolPropio);
                 const isHomeTfe = (currentMatch?.homeTeam || '').toUpperCase().includes('TENERIFE');
                 const score = isHomeTfe ? ' (' + tfeGl.length + '-' + awayGl.length + ')' : ' (' + awayGl.length + '-' + tfeGl.length + ')';
                 const rws = pds.map(p => {
@@ -9398,7 +9420,7 @@ const minutosPorJornada = [];
                         {(() => {
                           const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
                           const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
-                          const golesTenerife = (m.golesList || []).filter(g => g && g.team !== 'away').length;
+                          const golesTenerife = (m.golesList || []).filter(esGolPropio).length;
                           const golesRival = (m.golesRivalList || []).length;
                           const homeScore = homeIsTenerife ? golesTenerife : golesRival;
                           const awayScore = awayIsTenerife ? golesTenerife : golesRival;
