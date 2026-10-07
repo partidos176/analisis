@@ -351,7 +351,7 @@ const filtroRotulo = (nombre, ancho, alto) => {
     const fTam = Math.max(14, Math.round(32 * (alto / 720)));
     partes.push('drawbox=x=0:y=0:w=iw:h=' + hBarra + ':color=black@0.65:t=fill');
     partes.push("drawtext=fontfile='" + fuenteFiltro.replace(/'/g, "\\'") + "':text='" + escaparTexto(nombre) + "'"
-      + ':fontcolor=#facc15:fontsize=' + fTam + ':x=(w-text_w)/2:y=' + Math.round(hBarra / 2)
+      + ':fontcolor=#facc15:fontsize=' + fTam + ':x=(w-text_w)/2:y=(' + hBarra + '-text_h)/2'
       + ':expansion=none:fix_bounds=1');
   }
   return partes.join(',');
@@ -434,6 +434,18 @@ const entradaOperando = (o, dur) => {
   return { args: ['-ss', Number(o.ini).toFixed(3), '-i', cachedVideoPath, '-t', dur.toFixed(3)] };
 };
 
+// Los modelos de transicion de la app y el nombre equivalente en xfade.
+// Comprobado uno a uno contra este build de ffmpeg: los siete existen.
+const MODELO_XFADE = {
+  crossfade: 'fade',
+  negro: 'fadeblack',
+  flash: 'fadewhite',
+  'slide-left': 'slideleft',
+  'slide-right': 'slideright',
+  'zoom-in': 'zoomin',
+  wipe: 'wipeleft',
+};
+
 const construirFundido = async (t, i, dir, ancho, alto, hilos) => {
   const d = Number(t.dur);
   if (!(d > 0.05)) throw new Error('fundido ' + i + ': duracion invalida');
@@ -449,13 +461,16 @@ const construirFundido = async (t, i, dir, ancho, alto, hilos) => {
   // y un fundido de 2 s tardaba 9,8 s. Con xfade, que es codigo nativo, el mismo
   // fundido tarda 4,1 s: 2,4 veces menos, y con 25 transiciones la diferencia
   // es de minutos.
+  const modelo = String(t.modelo || 'crossfade');
+  const xfade = MODELO_XFADE[modelo] || 'fade';
+  if (!MODELO_XFADE[modelo]) console.log('[Fundido] modelo desconocido: ' + modelo + ', se usa fundido cruzado');
   const fc = "[0:v]" + caja + '[a];[1:v]' + caja + '[b];'
-    + '[a][b]xfade=transition=fade:duration=' + dnum + ':offset=0[v]';
+    + '[a][b]xfade=transition=' + xfade + ':duration=' + dnum + ':offset=0[v]';
   const t0 = Date.now();
   await execFileAsync(ffmpegPath, [...a.args, ...b.args,
     '-filter_complex', fc, '-map', '[v]', '-t', dnum,
     ...parametrosCodificacion(out, hilos)], { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
-  console.log('[Montaje] fundido ' + i + ' (' + d.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
+  console.log('[Fundido] ' + i + ': ' + modelo + ' -> ' + xfade + ' (' + d.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
   return out;
 };
 
