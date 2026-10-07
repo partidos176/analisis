@@ -71,9 +71,48 @@ const guardarMetaCache = () => {
   try { fs.writeFileSync(metaPath, JSON.stringify({ name: cachedVideoName, size: cachedVideoSize })); } catch {}
 };
 
+// Carpeta fija de videos de partida. Si el fichero esta aqui, con el mismo
+// nombre y tamano que el que cargo el navegador, se usa directamente y no hay
+// que subir los GB por la red (todo es local: el navegador y este servidor
+// estan en la misma maquina).
+const VIDEOS_DIR = path.join(__dirname, 'videos');
+try { fs.mkdirSync(VIDEOS_DIR, { recursive: true }); } catch (e) { console.warn('No se pudo crear videos:', e.message); }
+
+const listarVideos = () => {
+  try {
+    return fs.readdirSync(VIDEOS_DIR)
+      .filter((f) => /\.(mp4|mov|mkv|webm|m4v|avi)$/i.test(f))
+      .map((f) => {
+        try {
+          const st = fs.statSync(path.join(VIDEOS_DIR, f));
+          return st.isFile() && st.size > 0 ? { name: f, size: st.size } : null;
+        } catch (_) { return null; }
+      })
+      .filter(Boolean)
+      .slice(0, 300);
+  } catch (_) { return []; }
+};
+
+// La fuente para un montaje: primero la carpeta fija (sin subir nada), y si no
+// la cache, pero solo si el tamano cuadra: con otra no se recortaria el video
+// que toca.
+const resolverFuente = (origen) => {
+  if (origen && origen.nombre) {
+    try {
+      const p = path.join(VIDEOS_DIR, path.basename(String(origen.nombre)));
+      const st = fs.statSync(p);
+      if (st.isFile() && st.size > 0 && st.size === Number(origen.size)) return p;
+    } catch (_) {}
+  }
+  if (cachedVideoPath && fs.existsSync(cachedVideoPath)) {
+    if (!origen || !Number(origen.size) || Number(origen.size) === cachedVideoSize) return cachedVideoPath;
+  }
+  return null;
+};
+
 app.get('/api/cortar', (req, res) => {
   console.log('GET /api/cortar - health check');
-  res.json({ ok: true, cached: !!cachedVideoPath, cachedName: cachedVideoName, cachedSize: cachedVideoSize });
+  res.json({ ok: true, cached: !!cachedVideoPath, cachedName: cachedVideoName, cachedSize: cachedVideoSize, videos: listarVideos() });
 });
 
 app.options('/api/cortar', (req, res) => {
@@ -378,7 +417,7 @@ const rutaRecurso = (id, ext) => path.join(RECURSOS_DIR, id + '.' + (ext || 'bin
 // Traduce un tramo del plan a los argumentos de entrada de ffmpeg, y devuelve
 // su duracion. Un tramo puede ser del video fuente, de un clip subido (las
 // animaciones, que el navegador genera y el servidor no tiene) o de una imagen.
-const entradaTramo = (t) => {
+const entradaTramo = (t, fuente) => {
   if (t.tipo === 'clip' || t.tipo === 'imagen') {
     const ext = t.ext || sniffExtension(t.id);
     const fichero = rutaRecurso(t.id, ext);
@@ -395,7 +434,7 @@ const entradaTramo = (t) => {
   const dur = Number(t.fin) - Number(t.ini);
   // -ss ANTES de -i: el salto por indice evita decodificar todo lo anterior,
   // que en un partido de 98 min seria inaceptable.
-  return { args: ['-ss', Number(t.ini).toFixed(3), '-i', cachedVideoPath, '-t', dur.toFixed(3)], dur };
+  return { args: ['-ss', Number(t.ini).toFixed(3), '-i', fuente || cachedVideoPath, '-t', dur.toFixed(3)], dur };
 };
 
 const sniffExtension = (id) => {
@@ -408,8 +447,8 @@ const sniffExtension = (id) => {
 
 // Recorta un tramo, sea del fuente, de un clip o de una imagen, y lo deja en un
 // mp4 con los parametros comunes.
-const recortarTramo = async (t, i, dir, ancho, alto, hilos) => {
-  const { args, dur } = entradaTramo(t);
+const recortarTramo = async (t, i, dir, ancho, alto, hilos, fuente) => {
+  const { args, dur } = entradaTramo(t, fuente);
   if (!(dur > 0.02)) throw new Error('tramo ' + i + ': duracion invalida');
   const out = path.join(dir, 'seg-' + i + '.mp4');
   const ffmpegArgs = [...args, '-vf', filtroRotulo(t.nombre, ancho, alto), ...parametrosCodificacion(out, hilos)];
@@ -424,14 +463,14 @@ const recortarTramo = async (t, i, dir, ancho, alto, hilos) => {
 // durante 'dur' segundos. Los dos operandos pueden venir del video fuente o de
 // un clip subido (una animacion), asi que se describen aparte.
 
-const entradaOperando = (o, dur) => {
+const entradaOperando = (o, dur, fuente) => {
   if (!o || !(dur > 0.02)) throw new Error('fundido: operando invalido');
   if (o.origen === 'recurso') {
     const fichero = rutaRecurso(o.id, o.ext);
     if (!fs.existsSync(fichero)) throw new Error('fundido: recurso no subido ' + o.id);
     return { args: ['-ss', Number(o.desde).toFixed(3), '-i', fichero, '-t', dur.toFixed(3)] };
   }
-  return { args: ['-ss', Number(o.ini).toFixed(3), '-i', cachedVideoPath, '-t', dur.toFixed(3)] };
+  return { args: ['-ss', Number(o.ini).toFixed(3), '-i', fuente || cachedVideoPath, '-t', dur.toFixed(3)] };
 };
 
 // Los modelos de transicion de la app y el nombre equivalente en xfade.
@@ -446,11 +485,11 @@ const MODELO_XFADE = {
   wipe: 'wipeleft',
 };
 
-const construirFundido = async (t, i, dir, ancho, alto, hilos) => {
+const construirFundido = async (t, i, dir, ancho, alto, hilos, fuente) => {
   const d = Number(t.dur);
   if (!(d > 0.05)) throw new Error('fundido ' + i + ': duracion invalida');
-  const a = entradaOperando(t.a, d);
-  const b = entradaOperando(t.b, d);
+  const a = entradaOperando(t.a, d, fuente);
+  const b = entradaOperando(t.b, d, fuente);
   const out = path.join(dir, 'seg-' + i + '.mp4');
   // scale+pad deja los dos operandos con la misma caja; fps y format son
   // necesarios porque el filtro blend exige que coincidan.
@@ -558,9 +597,9 @@ app.get('/api/estado', (req, res) => {
 app.post('/api/montaje', async (req, res) => {
   let dir = null;
   try {
-    if (!reintentarFuente()) {
-      return res.status(409).json({ error: 'sin-fuente', detalle: 'El servidor no tiene el video fuente en la cache' });
-    }
+    // Restaura la cache si existe en disco; no es condicion para seguir: la
+    // fuente puede venir de la carpeta fija de videos.
+    reintentarFuente();
     const segs = (req.body && Array.isArray(req.body.segmentos)) ? req.body.segmentos : null;
     if (!segs || !segs.length) { console.log('[Montaje] 400: no vinieron segmentos'); return res.status(400).json({ error: 'No se recibieron segmentos' }); }
     if (segs.length > MONTAJE_MAX_SEGMENTOS) { console.log('[Montaje] 400: demasiados segmentos (' + segs.length + ')'); return res.status(400).json({ error: 'Demasiados segmentos: ' + segs.length }); }
@@ -606,6 +645,20 @@ app.post('/api/montaje', async (req, res) => {
     }
     if (total > MONTAJE_MAX_SEGUNDOS) { console.log('[Montaje] 400: ' + total.toFixed(1) + ' s superan el maximo'); return res.status(400).json({ error: 'El montaje supera el maximo de ' + MONTAJE_MAX_SEGUNDOS + ' s' }); }
 
+    // De donde salen los tramos de video: la carpeta fija 'videos' si el
+    // fichero esta ahi con el mismo nombre y tamano, o la cache. Sin fuente y
+    // con tramos que la necesitan, 409 para que el cliente la suba y reintente.
+    const origen = (req.body && req.body.origen) || null;
+    const necesitaFuente = limpio.some((t) => t.tipo === 'fuente'
+      || (t.tipo === 'transicion' && ((t.a && t.a.origen !== 'recurso') || (t.b && t.b.origen !== 'recurso'))));
+    const fuente = resolverFuente(origen);
+    if (necesitaFuente && !fuente) {
+      console.log('[Montaje] 409: sin fuente. Origen pedido: ' + JSON.stringify(origen)
+        + ' | cache: ' + (cachedVideoName || 'ninguna') + ' ' + cachedVideoSize + ' bytes');
+      return res.status(409).json({ error: 'sin-fuente', detalle: 'El servidor no tiene el video fuente (ni en la carpeta videos ni en la cache)' });
+    }
+    console.log('[Montaje] fuente: ' + (fuente || '(ninguna, solo recursos)'));
+
     dir = path.join(tmpBase, 'montaje-' + Date.now());
     fs.mkdirSync(dir, { recursive: true });
     const tIni = Date.now();
@@ -622,8 +675,8 @@ app.post('/api/montaje', async (req, res) => {
 
     console.log('[Montaje] ' + limpio.length + ' tramos (' + nFundidos + ' fundidos) con ' + enParalelo + ' en paralelo x ' + hilosPorProceso + ' hilos');
     const ficheros = await enCola(limpio.length, enParalelo, (i) => (limpio[i].tipo === 'transicion'
-      ? construirFundido(limpio[i], i, dir, ancho, alto, hilosPorProceso)
-      : recortarTramo(limpio[i], i, dir, ancho, alto, hilosPorProceso)));
+      ? construirFundido(limpio[i], i, dir, ancho, alto, hilosPorProceso, fuente)
+      : recortarTramo(limpio[i], i, dir, ancho, alto, hilosPorProceso, fuente)));
 
     // Todos los tramos salen con los mismos parametros (mismo codec, misma
     // resolucion, mismo GOP), asi que concatenar es una copia de bits: sin una
