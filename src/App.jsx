@@ -1027,6 +1027,23 @@ export default function App() {
 
   const isFinMarker = (n) => n === 'FIN' || n === 'FIN 1ª PARTE' || n === 'FIN 2ª PARTE';
   const isPeriodMarker = (n) => n === '1ª PARTE' || n === '2ª PARTE' || isFinMarker(n);
+  // Periodos por nombre: el INICIO 1ª se cierra con FIN 1ª (o FIN) y el
+  // INICIO 2ª con FIN 2ª (o FIN). Así, aunque el FIN 1ª y el INICIO 2ª
+  // compartan hora (47:38), cada periodo cierra con su propio FIN y no
+  // se dan duraciones de 00:01.
+  const construirPeriodos = (log) => {
+    const conHora = (log || []).filter(e => e && e.time);
+    const t = (e) => parseTime(e.time);
+    const starts = conHora.filter(e => e.name === '1ª PARTE' || e.name === '2ª PARTE').sort((a, b) => t(a) - t(b));
+    const fins = conHora.filter(e => isFinMarker(e.name)).sort((a, b) => t(a) - t(b));
+    return starts.map((s, i) => {
+      const limite = i + 1 < starts.length ? t(starts[i + 1]) : Infinity;
+      const prefijo = s.name === '2ª PARTE' ? 'FIN 2ª PARTE' : 'FIN 1ª PARTE';
+      const fin = fins.find(f => f.name === prefijo && t(f) >= t(s) && t(f) <= limite)
+        || fins.find(f => t(f) >= t(s) && t(f) <= limite);
+      return { start: s, end: fin || null };
+    });
+  };
   const periodoDeAccion = (entry) => {
     let periodo = '1ª PARTE';
     const crono = [...actionLog].reverse();
@@ -4231,19 +4248,7 @@ const minutosPorJornada = [];
 
                 const buildRowsForMatch = (m) => {
                   const log = normalizeArray(m.actionLog || []);
-                  const pds = [];
-                  let ps = null;
-                  // Por hora y no por inserción (mismo criterio que Posesión).
-                  const ordenadas = [...log].filter(e => e && e.time).sort((a, b) => {
-                    const d = parseTime(a.time) - parseTime(b.time);
-                    if (d !== 0) return d;
-                    return (isFinMarker(a.name) ? 1 : 0) - (isFinMarker(b.name) ? 1 : 0);
-                  });
-                  ordenadas.forEach(e => {
-                    if (e.name === '1ª PARTE' || e.name === '2ª PARTE') { ps = e; }
-                    else if (isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
-                  });
-                  if (ps) { pds.push({ start: ps, end: null }); }
+                  const pds = construirPeriodos(log);
                   const md = m.matchday || 0;
                   const teamInfo = (m.homeTeam || '') + ' vs ' + (m.awayTeam || '');
                   const homeGl2 = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
@@ -8436,24 +8441,7 @@ const minutosPorJornada = [];
               {activeTab === 'posesion' && (() => {
                 const parseTime = (str) => { const p = String(str).split(':').map(Number); return (p[0]||0)*60+(p[1]||0); };
                 const log = actionLog || [];
-                const pds = [];
-                let ps = null;
-                // Emparejar INICIO/FIN por hora, no por orden de inserción:
-                // si el FIN se registró antes que el INICIO se descartaba y el
-                // periodo quedaba abierto (duración = reloj actual).
-                const ordenadas = [...log].filter(e => e && e.time).sort((a, b) => {
-                  const d = parseTime(a.time) - parseTime(b.time);
-                  if (d !== 0) return d;
-                  return (isFinMarker(a.name) ? 1 : 0) - (isFinMarker(b.name) ? 1 : 0);
-                });
-                ordenadas.forEach(e => {
-                  if (e.name === '1ª PARTE' || e.name === '2ª PARTE') {
-                    if (ps) { pds.push({ start: ps, end: e }); }
-                    ps = e;
-                  }
-                  else if (isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
-                });
-                if (ps) { pds.push({ start: ps, end: null }); }
+                const pds = construirPeriodos(log);
                 const teamInfo = (currentMatch?.homeTeam || '') + ' vs ' + (currentMatch?.awayTeam || '');
                 const homeGl = Array.isArray(golesList) ? golesList : [];
                 const awayGl = Array.isArray(golesRivalList) ? golesRivalList : [];
