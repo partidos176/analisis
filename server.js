@@ -16,11 +16,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ffmpegPath = ffmpegStatic;
 
 const app = express();
-app.use(cors());
+// Esta cabecera va ANTES que cors(), no despues. cors() responde al preflight y
+// cierra la peticion, asi que si el middleware de la cabecera estaba despues
+// nunca llegaba a ejecutarse y la cabecera salia vacia. Sin ella, Chrome
+// bloquea que una pagina en https (la web publicada) pida a localhost (este
+// ordenador), que es justamente el caso del que sale "Sin conexion con el
+// servidor". Desde http://localhost:5173 si funcionaba, porque ahi no hay salto
+// de red publica a privada.
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Private-Network', 'true');
   next();
 });
+app.use(cors());
 app.use(express.json({ limit: '2gb' }));
 
 const upload = multer({ storage: multer.diskStorage({ destination: (req, file, cb) => { const d = tmpDir(); req._uploadDir = d; cb(null, d); }, filename: (req, file, cb) => cb(null, 'input.mp4') }), limits: { fileSize: 20 * 1024 * 1024 * 1024 } });
