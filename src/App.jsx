@@ -4233,9 +4233,15 @@ const minutosPorJornada = [];
                   const log = normalizeArray(m.actionLog || []);
                   const pds = [];
                   let ps = null;
-                  [...log].reverse().forEach(e => {
-                    if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) { ps = e; }
-                    else if (e && e.time && isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
+                  // Por hora y no por inserción (mismo criterio que Posesión).
+                  const ordenadas = [...log].filter(e => e && e.time).sort((a, b) => {
+                    const d = parseTime(a.time) - parseTime(b.time);
+                    if (d !== 0) return d;
+                    return (isFinMarker(a.name) ? 1 : 0) - (isFinMarker(b.name) ? 1 : 0);
+                  });
+                  ordenadas.forEach(e => {
+                    if (e.name === '1ª PARTE' || e.name === '2ª PARTE') { ps = e; }
+                    else if (isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
                   });
                   if (ps) { pds.push({ start: ps, end: null }); }
                   const md = m.matchday || 0;
@@ -6566,8 +6572,19 @@ const minutosPorJornada = [];
                       Sin acciones aún
                     </span>
                   )}
-                  {actionLog.map((entry, idx) => (
-                    <div key={idx} style={{
+                  {(() => {
+                    // Orden por hora: la última acción arriba, así el INICIO
+                    // 1ª PARTE de las 00:00 queda como último apunte.
+                    const filas = [...actionLog].sort((a, b) => {
+                      const ta = a && a.time ? parseTime(a.time) : null;
+                      const tb = b && b.time ? parseTime(b.time) : null;
+                      if (ta == null && tb == null) return 0;
+                      if (ta == null) return 1;
+                      if (tb == null) return -1;
+                      return tb - ta;
+                    });
+                    return filas.map((entry, idx) => (
+                    <div key={`${entry.type || ''}_${entry.name || ''}_${entry.time || ''}_${idx}`} style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
@@ -6607,7 +6624,8 @@ const minutosPorJornada = [];
                           const eraGolRival = entry.name === 'GOL RIVAL' || entry.name === 'PENAL + GOL RIVAL';
                           const esGol = nombre === 'GOL' || nombre === 'PENAL + GOL';
                           const esGolRival = nombre === 'GOL RIVAL' || nombre === 'PENAL + GOL RIVAL';
-                          const nuevo = actionLog.map((x, j) => (j === idx ? { ...x, name: nombre } : x));
+                          const realIdx = actionLog.indexOf(entry);
+                          const nuevo = actionLog.map((x, j) => (j === realIdx ? { ...x, name: nombre } : x));
                           setActionLog(nuevo);
                           recomputeCountersFromLog(nuevo);
                           if (eraGol) setGolesList((prev) => prev.slice(0, -1));
@@ -6636,7 +6654,8 @@ const minutosPorJornada = [];
                             const newFin = ev.target.value;
                             if (!newFin) return;
                             const newEntry = { name: newFin, time: entry.time, type: 'finalizacion' };
-                            const newLog = [...actionLog.slice(0, idx + 1), newEntry, ...actionLog.slice(idx + 1)];
+                            const realIdx = actionLog.indexOf(entry);
+                            const newLog = [...actionLog.slice(0, realIdx + 1), newEntry, ...actionLog.slice(realIdx + 1)];
                             setActionLog(newLog);
                             recomputeCountersFromLog(newLog);
                           }}
@@ -6660,7 +6679,7 @@ const minutosPorJornada = [];
                         <button
                           onClick={(ev) => {
                             ev.stopPropagation();
-                            const newLog = actionLog.filter((_, j) => j !== idx);
+                            const newLog = actionLog.filter((x) => x !== entry);
                             setActionLog(newLog);
                             recomputeCountersFromLog(newLog);
                           }}
@@ -6676,7 +6695,7 @@ const minutosPorJornada = [];
                       </>
                       )}
                     </div>
-                  ))}
+                  ))})()}
                   </div>
                 </div>
                 </div>
@@ -7176,9 +7195,9 @@ const minutosPorJornada = [];
                         const ta = a && a.time ? parseTime(a.time) : null;
                         const tb = b && b.time ? parseTime(b.time) : null;
                         if (ta == null && tb == null) return 0;
-                        if (ta == null) return 1;
-                        if (tb == null) return -1;
-                        return ta - tb;
+                        if (ta == null) return -1;
+                        if (tb == null) return 1;
+                        return tb - ta;
                       });
                       return filas.map((entry, idx) => (
                       <div key={`${entry.time || ''}_${entry.name || ''}_${idx}`} onClick={() => {
@@ -7251,7 +7270,7 @@ const minutosPorJornada = [];
                         : actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && e.name === filtroAccion && !['ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name))).sort((a, b) => {
                         const pa = String(a.time).split(':').map(Number);
                         const pb = String(b.time).split(':').map(Number);
-                        return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]);
+                        return (pb[0] * 60 + pb[1]) - (pa[0] * 60 + pa[1]);
                       });
                       const accionesFiltradas = filtroAccion === '__varios__' ? allAccionesFiltradas.slice(0, variosIndex + 1) : allAccionesFiltradas;
                       if (accionesFiltradas.length === 0) return null;
@@ -8419,12 +8438,20 @@ const minutosPorJornada = [];
                 const log = actionLog || [];
                 const pds = [];
                 let ps = null;
-                [...log].reverse().forEach(e => {
-                  if (e && e.time && (e.name === '1ª PARTE' || e.name === '2ª PARTE')) {
+                // Emparejar INICIO/FIN por hora, no por orden de inserción:
+                // si el FIN se registró antes que el INICIO se descartaba y el
+                // periodo quedaba abierto (duración = reloj actual).
+                const ordenadas = [...log].filter(e => e && e.time).sort((a, b) => {
+                  const d = parseTime(a.time) - parseTime(b.time);
+                  if (d !== 0) return d;
+                  return (isFinMarker(a.name) ? 1 : 0) - (isFinMarker(b.name) ? 1 : 0);
+                });
+                ordenadas.forEach(e => {
+                  if (e.name === '1ª PARTE' || e.name === '2ª PARTE') {
                     if (ps) { pds.push({ start: ps, end: e }); }
                     ps = e;
                   }
-                  else if (e && e.time && isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
+                  else if (isFinMarker(e.name) && ps) { pds.push({ start: ps, end: e }); ps = null; }
                 });
                 if (ps) { pds.push({ start: ps, end: null }); }
                 const teamInfo = (currentMatch?.homeTeam || '') + ' vs ' + (currentMatch?.awayTeam || '');
