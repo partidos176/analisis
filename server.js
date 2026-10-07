@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import ffmpegStatic from 'ffmpeg-static';
 
 const execFileAsync = promisify(execFile);
@@ -280,207 +281,345 @@ app.post('/api/trim-webm', upload.single('video'), async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// Montaje completo en el servidor (ffmpeg nativo). El navegador solo manda el
-// plan (tramos/clip/imagen) y los ficheros sueltos; aquí se extraen los
-// tramos del vídeo en caché, se normalizan todos a 1280x720@25 y se concatenan.
-// Si algo falla se responde con error y el cliente se queda en la ruta de
-// grabación por canvas (fallback), así que nunca se pierde la descarga.
-// ---------------------------------------------------------------------------
-const montajeUpload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => { const d = tmpDir(); req._montajeDir = d; cb(null, d); },
-    // Nombre por fieldname (f0, f1, …): dos clips con el mismo nombre de
-    // origen no se pisan entre sí dentro del directorio del trabajo.
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname || '') || '';
-      cb(null, `${file.fieldname || 'archivo'}${ext}`);
-    },
-  }),
-  limits: { fileSize: 20 * 1024 * 1024 * 1024 },
-});
-
-const FONT_CANDIDATES = [
-  'C:\\Windows\\Fonts\\segoeuib.ttf',
-  'C:\\Windows\\Fonts\\arialbd.ttf',
-  'C:\\Windows\\Fonts\\segoeui.ttf',
-  '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
-  '/Library/Fonts/Arial Bold.ttf',
-  '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
-  '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
-];
-const FONT_PATH = FONT_CANDIDATES.find((p) => { try { return fs.existsSync(p); } catch { return false; } }) || null;
-console.log('Fuente para banners:', FONT_PATH || '(sin fuente: se usará la por defecto)');
-
-// Los paths absolutos de Windows llevan 'C:' y ese ':' separa opciones dentro
-// de -vf, así que todos los ficheros auxiliares (fuente y textfile) se copian
-// al directorio del trabajo y se referencian en relativo con cwd en el job.
-const runFfmpeg = (args, timeout = 600000, cwd = null) =>
-  execFileAsync(ffmpegPath, args, { timeout, maxBuffer: 16 * 1024 * 1024, ...(cwd ? { cwd } : {}) });
-
-// Extracción paralela: con 4-6 trabajos a la vez el cuello de botella pasa a
-// ser el disco/CPU en vez de la cola, y un tramo largo no para el resto.
-const poolExtraer = async (trabajos, concurrencia = 5) => {
-  const resultados = new Array(trabajos.length);
-  let i = 0;
-  const worker = async () => {
-    while (i < trabajos.length) {
-      const idx = i++;
-      const t = trabajos[idx];
-      try {
-        await runFfmpeg(t.args, 600000, t.cwd || null);
-        if (!fs.existsSync(t.salida) || fs.statSync(t.salida).size < 32) throw new Error('salida vacía');
-        resultados[idx] = { ok: true, path: t.salida };
-      } catch (err) {
-        resultados[idx] = { ok: false, error: (err && err.message) || String(err) };
-      }
-    }
-  };
-  await Promise.all(Array.from({ length: Math.max(1, Math.min(concurrencia, trabajos.length)) }, worker));
-  return resultados;
-};
-
-app.post('/api/montaje', montajeUpload.any(), async (req, res) => {
-  // Con un plan que solo lleva tramos no entra ningún fichero y multer no
-  // llega a crear el directorio del trabajo: hay que reservarlo aquí.
-  if (!req._montajeDir) req._montajeDir = tmpDir();
-  const dir = req._montajeDir;
-  const t0 = Date.now();
-  res.setHeader('Access-Control-Expose-Headers', 'X-Tiempo-Ms');
-  try {
-    let plan;
-    try {
-      plan = typeof req.body.plan === 'string' ? JSON.parse(req.body.plan) : req.body.plan;
-    } catch { plan = null; }
-    const items = plan && Array.isArray(plan.items) ? plan.items : null;
-    if (!items || !items.length) {
-      if (dir) rmrf(dir);
-      return res.status(400).json({ error: 'Plan de montaje vacío o inválido' });
-    }
-    if (items.length > 500) {
-      if (dir) rmrf(dir);
-      return res.status(400).json({ error: 'Demasiados segmentos (' + items.length + ')' });
-    }
-
-    // Ficheros subidos (clip/imagen): el cliente los nombra f0, f1...
-    const archivos = {};
-    for (const f of (req.files || [])) archivos[f.fieldname] = f.path;
-
-    if (!cachedVideoPath || !fs.existsSync(cachedVideoPath)) {
-      const hayTramos = items.some((it) => it && it.t === 'tramo');
-      if (hayTramos) {
-        if (dir) rmrf(dir);
-        return res.status(400).json({ error: 'No hay vídeo en caché para los tramos', sinCache: true });
-      }
-    }
-
-    const salidas = [];
-    const trabajos = [];
-    const ESCALA = 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1';
-    // Fuente copiada al job: en relativo no hay ':' que rompa -vf.
-    let fuenteRel = null;
-    if (FONT_PATH) {
-      try { fs.copyFileSync(FONT_PATH, path.join(dir, 'banner.ttf')); fuenteRel = 'banner.ttf'; } catch {}
-    }
-    for (let k = 0; k < items.length; k++) {
-      const it = items[k] || {};
-      const salida = path.join(dir, `seg-${String(k).padStart(4, '0')}.mp4`);
-      // 'dur' opcional: si el cliente no lo manda, el clip se toma entero.
-      const durN = Number(it.dur) || 0;
-      // Banner de nombre: el canvas lo pinta en la barra superior durante todo
-      // el segmento, así que aquí se dibuja igual con drawbox + drawtext.
-      let vf = ESCALA;
-      const nombre = it.nombre != null ? String(it.nombre).trim() : '';
-      if (nombre) {
-        const txtRel = `txt-${String(k).padStart(4, '0')}.txt`;
-        fs.writeFileSync(path.join(dir, txtRel), nombre.replace(/\r?\n/g, ' '), 'utf8');
-        vf += ',drawbox=x=0:y=0:w=iw:h=52:color=black@0.65:t=fill'
-          + `,drawtext=${fuenteRel ? `fontfile='${fuenteRel}':` : ''}textfile='${txtRel}'`
-          + ':expansion=none:fontsize=32:fontcolor=0xfacc15:x=(w-text_w)/2:y=26-text_h/2';
-      }
-      const normalizar = ['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-vf', vf,
-        '-r', '25', '-pix_fmt', 'yuv420p', '-g', '25', '-an'];
-      if (it.t === 'tramo') {
-        const ini = Math.max(0, Number(it.ini) || 0);
-        const fin = Math.max(ini + 0.2, Number(it.fin) || 0);
-        trabajos.push({
-          salida, cwd: dir,
-          args: ['-ss', String(ini), '-i', cachedVideoPath, '-t', (fin - ini).toFixed(3),
-            ...normalizar, '-y', salida],
-        });
-      } else if (it.t === 'clip') {
-        const src = archivos['f' + k];
-        if (!src) { if (dir) rmrf(dir); return res.status(400).json({ error: `Falta el clip ${k}` }); }
-        trabajos.push({
-          salida, cwd: dir,
-          args: ['-i', src, ...(durN > 0 ? ['-t', durN.toFixed(3)] : []), ...normalizar, '-y', salida],
-        });
-      } else if (it.t === 'imagen') {
-        const src = archivos['f' + k];
-        if (!src) { if (dir) rmrf(dir); return res.status(400).json({ error: `Falta la imagen ${k}` }); }
-        trabajos.push({
-          salida, cwd: dir,
-          args: ['-loop', '1', '-t', String(durN || 4), '-i', src, ...normalizar, '-y', salida],
-        });
-      } else {
-        if (dir) rmrf(dir);
-        return res.status(400).json({ error: `Tipo de segmento desconocido: ${it.t}` });
-      }
-      salidas.push(salida);
-    }
-
-    console.log(`[Montaje] ${items.length} segmentos, ${trabajos.length} ffmpeg en paralelo`);
-    const resultados = await poolExtraer(trabajos, 5);
-    const fallidos = resultados.map((r, i) => (r && r.ok ? null : { i, e: (r && r.error) || 'desconocido' })).filter(Boolean);
-    if (fallidos.length) {
-      if (dir) rmrf(dir);
-      return res.status(500).json({ error: 'Fallo extrayendo segmentos: ' + fallidos.map((f) => `${f.i}: ${f.e}`).join('; ') });
-    }
-
-    const listPath = path.join(dir, 'lista.txt');
-    // Rutas relativas + cwd: en concat demuxer los ':' de 'C:\...' se comen.
-    fs.writeFileSync(listPath, salidas.map((p) => `file '${path.basename(p)}'`).join('\n'));
-    const finalPath = path.join(dir, 'montaje.mp4');
-
-    // Camino rápido: concat en stream-copy (sin re-codificar) cuando no hay
-    // transiciones que calcular. Si el contenedor lo rechaza, se re-codifica.
-    let rapido = false;
-    if (!plan.conTransiciones) {
-      try {
-        await runFfmpeg(['-f', 'concat', '-safe', '0', '-i', 'lista.txt', '-c', 'copy', '-movflags', '+faststart', '-y', 'montaje.mp4'], 300000, dir);
-        rapido = fs.existsSync(finalPath) && fs.statSync(finalPath).size > 1024;
-      } catch (err) {
-        console.warn('[Montaje] concat en copia falló, se re-codifica:', err.message);
-        rapido = false;
-      }
-    }
-    if (!rapido) {
-      await runFfmpeg(['-f', 'concat', '-safe', '0', '-i', 'lista.txt', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20',
-        '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1',
-        '-r', '25', '-pix_fmt', 'yuv420p', '-g', '25', '-an', '-movflags', '+faststart', '-y', 'montaje.mp4'], 600000, dir);
-    }
-    const size = fs.statSync(finalPath).size;
-    const ms = Date.now() - t0;
-    console.log(`[Montaje] OK: ${size} bytes en ${ms} ms (rapido=${rapido})`);
-    res.setHeader('Content-Type', 'video/mp4');
-    res.setHeader('Content-Disposition', 'inline; filename="montaje.mp4"');
-    res.setHeader('X-Tiempo-Ms', String(ms));
-    // Longitud fija: el cliente puede medir el descargado y mostrar progreso.
-    res.setHeader('Content-Length', String(size));
-    const stream = fs.createReadStream(finalPath);
-    stream.pipe(res);
-    res.on('finish', () => { setTimeout(() => rmrf(dir), 2000); });
-    res.on('close', () => { setTimeout(() => rmrf(dir), 2000); });
-  } catch (err) {
-    console.error('[Montaje] Error:', err.message);
-    if (!res.headersSent) res.status(500).json({ error: 'Error al montar: ' + err.message });
-    if (dir) rmrf(dir);
-  }
-});
-
 const tmpBase = path.join(__dirname, '.tmp-cortes');
 try { fs.rmSync(tmpBase, { recursive: true, force: true }); } catch {}
 fs.mkdirSync(tmpBase, { recursive: true });
+
+// ===========================================================================
+// /api/montaje - compone el montaje con ffmpeg nativo, sin pasar por el
+// navegador. Antes el montaje se grababa en tiempo real sobre un canvas con
+// MediaRecorder (con un techo de 1x: nunca puede bajar de la duracion del
+// propio montaje) y despues se recodificaba entero con ffmpeg.wasm. Aqui se
+// recortan los tramos del fichero fuente directamente y se concatenan, que es
+// una sola pasada de codificacion y sin realtime.
+// ===========================================================================
+
+const MONTAJE_MAX_SEGMENTOS = 500;
+const MONTAJE_MAX_SEGUNDOS = 60 * 60;
+const RECURSOS_DIR = path.join(videoCacheDir, 'recursos');
+try { fs.mkdirSync(RECURSOS_DIR, { recursive: true }); } catch (e) { console.warn('No se pudo crear recursos:', e.message); }
+
+// En los argumentos de un filtro ':' separa opciones y '\' escapa. Una ruta de
+// Windows necesita las dos cosas, y con barras normales ffmpeg la acepta.
+const escaparRutaFiltro = (p) => String(p).replace(/\\/g, '/').replace(/:/g, '\\:');
+
+const fuenteFiltro = escaparRutaFiltro((process.env.FUENTE_ROTULO && fs.existsSync(process.env.FUENTE_ROTULO))
+  ? process.env.FUENTE_ROTULO
+  : (fs.existsSync('C:\\Windows\\Fonts\\arialbd.ttf') ? 'C:\\Windows\\Fonts\\arialbd.ttf' : 'C:\\Windows\\Fonts\\arial.ttf'));
+
+// El rotulo va en linea en el filtro, no en textfile=: en el build de ffmpeg de
+// ffmpeg-static (6.1.1) textfile= siempre falla con "Both text and text file
+// provided", porque el valor por defecto de text= cuenta como informado. Asi que
+// hay que escapar el texto a mano. Pasa por dos analizadores: el de la cadena
+// de filtros (parte en , ; [ ]) y el de opciones (parte en :), de ahi las dos
+// familias de escapes. Con expansion=none el % no se expande y se deja tal cual.
+const escaparTexto = (s) => String(s)
+  .replace(/\\/g, '\\\\')
+  .replace(/'/g, "\\'")
+  .replace(/:/g, '\\:')
+  .replace(/,/g, '\\,')
+  .replace(/;/g, '\\;')
+  .replace(/\[/g, '\\[')
+  .replace(/\]/g, '\\]');
+
+// Escala al ancho de salida, completa con bandas negras si el original no es
+// 16:9 (para no deformar) y pinta el rotulo igual que el canvas: barra negra
+// de 52 px al 65% y el nombre en #facc15 centrado.
+const filtroRotulo = (nombre, ancho, alto) => {
+  const partes = ['scale=' + ancho + ':' + alto + ':force_original_aspect_ratio=decrease',
+    'pad=' + ancho + ':' + alto + ':(ow-iw)/2:(oh-ih)/2'];
+  if (nombre) {
+    const hBarra = Math.max(24, Math.round(52 * (alto / 720)));
+    const fTam = Math.max(14, Math.round(32 * (alto / 720)));
+    partes.push('drawbox=x=0:y=0:w=iw:h=' + hBarra + ':color=black@0.65:t=fill');
+    partes.push('drawtext=fontfile=' + fuenteFiltro + ":text='" + escaparTexto(nombre) + "'"
+      + ':fontcolor=#facc15:fontsize=' + fTam + ':x=(w-text_w)/2:y=' + Math.round(hBarra / 2)
+      + ':expansion=none:fix_bounds=1');
+  }
+  return partes.join(',');
+};
+
+// Estos parametros son los mismos para todos los tramos, sea cual sea su origen.
+// Es lo que permite concatenar luego con -c copy sin recodificar otra vez. El
+// -r 30 es importante: sin el, un tramo que venga de una imagen sale a 25 fps y
+// la concatenacion con copia de bits se descuadra y pierde contenido.
+const parametrosCodificacion = (out, hilos) => [
+  '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20',
+  '-g', '30', '-keyint_min', '30', '-sc_threshold', '0',
+  '-pix_fmt', 'yuv420p', '-an', '-r', '30',
+  // Los nucleos se reparten entre los procesos. Con varios tramos en paralelo
+  // sale mejor un hilo por proceso y que el sistema los vaya turnando; con un
+  // solo tramo, en cambio, los nucleos libres se le dan a ese proceso para que
+  // no se queden mirando.
+  '-threads', String(Math.max(1, hilos || 1)),
+  '-y', out,
+];
+
+const rutaRecurso = (id, ext) => path.join(RECURSOS_DIR, id + '.' + (ext || 'bin'));
+
+// Traduce un tramo del plan a los argumentos de entrada de ffmpeg, y devuelve
+// su duracion. Un tramo puede ser del video fuente, de un clip subido (las
+// animaciones, que el navegador genera y el servidor no tiene) o de una imagen.
+const entradaTramo = (t) => {
+  if (t.tipo === 'clip' || t.tipo === 'imagen') {
+    const ext = t.ext || sniffExtension(t.id);
+    const fichero = rutaRecurso(t.id, ext);
+    if (!fs.existsSync(fichero)) throw new Error('recurso no subido: ' + t.id);
+    if (t.tipo === 'imagen') {
+      const d = Number(t.dur);
+      // -framerate 30 en la entrada para que el bucle de la imagen produzca los
+      // mismos 30 fps que el resto de tramos.
+      return { args: ['-loop', '1', '-framerate', '30', '-t', d.toFixed(3), '-i', fichero], dur: d };
+    }
+    const dur = Math.max(0.05, Number(t.hasta) - Number(t.desde));
+    return { args: ['-ss', Number(t.desde).toFixed(3), '-i', fichero, '-t', dur.toFixed(3)], dur };
+  }
+  const dur = Number(t.fin) - Number(t.ini);
+  // -ss ANTES de -i: el salto por indice evita decodificar todo lo anterior,
+  // que en un partido de 98 min seria inaceptable.
+  return { args: ['-ss', Number(t.ini).toFixed(3), '-i', cachedVideoPath, '-t', dur.toFixed(3)], dur };
+};
+
+const sniffExtension = (id) => {
+  // El cliente manda la extension cuando la sabe; si no, se busca el fichero.
+  for (const ext of ['mp4', 'webm', 'jpg', 'png']) {
+    if (fs.existsSync(rutaRecurso(id, ext))) return ext;
+  }
+  return 'bin';
+};
+
+// Recorta un tramo, sea del fuente, de un clip o de una imagen, y lo deja en un
+// mp4 con los parametros comunes.
+const recortarTramo = async (t, i, dir, ancho, alto, hilos) => {
+  const { args, dur } = entradaTramo(t);
+  if (!(dur > 0.02)) throw new Error('tramo ' + i + ': duracion invalida');
+  const out = path.join(dir, 'seg-' + i + '.mp4');
+  const ffmpegArgs = [...args, '-vf', filtroRotulo(t.nombre, ancho, alto), ...parametrosCodificacion(out, hilos)];
+  const t0 = Date.now();
+  await execFileAsync(ffmpegPath, ffmpegArgs, { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+  console.log('[Montaje] tramo ' + i + ' (' + (t.tipo || 'fuente') + ', ' + dur.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
+  return out;
+};
+
+// ---- Fundidos (transiciones) ---------------------------------------------
+// Una transicion mezcla la cola del tramo anterior con la cabeza del siguiente
+// durante 'dur' segundos. Los dos operandos pueden venir del video fuente o de
+// un clip subido (una animacion), asi que se describen aparte.
+
+const entradaOperando = (o, dur) => {
+  if (!o || !(dur > 0.02)) throw new Error('fundido: operando invalido');
+  if (o.origen === 'recurso') {
+    const fichero = rutaRecurso(o.id, o.ext);
+    if (!fs.existsSync(fichero)) throw new Error('fundido: recurso no subido ' + o.id);
+    return { args: ['-ss', Number(o.desde).toFixed(3), '-i', fichero, '-t', dur.toFixed(3)] };
+  }
+  return { args: ['-ss', Number(o.ini).toFixed(3), '-i', cachedVideoPath, '-t', dur.toFixed(3)] };
+};
+
+const construirFundido = async (t, i, dir, ancho, alto, hilos) => {
+  const d = Number(t.dur);
+  if (!(d > 0.05)) throw new Error('fundido ' + i + ': duracion invalida');
+  const a = entradaOperando(t.a, d);
+  const b = entradaOperando(t.b, d);
+  const out = path.join(dir, 'seg-' + i + '.mp4');
+  // scale+pad deja los dos operandos con la misma caja; fps y format son
+  // necesarios porque el filtro blend exige que coincidan.
+  const caja = 'scale=' + ancho + ':' + alto + ':force_original_aspect_ratio=decrease'
+    + ',pad=' + ancho + ':' + alto + ':(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p';
+  const dnum = d.toFixed(4);
+  // xfade y no blend con all_expr: la formula de blend se evalua pixel a pixel
+  // y un fundido de 2 s tardaba 9,8 s. Con xfade, que es codigo nativo, el mismo
+  // fundido tarda 4,1 s: 2,4 veces menos, y con 25 transiciones la diferencia
+  // es de minutos.
+  const fc = "[0:v]" + caja + '[a];[1:v]' + caja + '[b];'
+    + '[a][b]xfade=transition=fade:duration=' + dnum + ':offset=0[v]';
+  const t0 = Date.now();
+  await execFileAsync(ffmpegPath, [...a.args, ...b.args,
+    '-filter_complex', fc, '-map', '[v]', '-t', dnum,
+    ...parametrosCodificacion(out, hilos)], { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+  console.log('[Montaje] fundido ' + i + ' (' + d.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
+  return out;
+};
+
+// Ejecuta una tarea por hueco, con un limite de cuantas corren a la vez.
+const enCola = async (n, limite, tarea) => {
+  const resultados = new Array(n);
+  let siguiente = 0;
+  const trabajador = async () => {
+    while (siguiente < n) {
+      const i = siguiente++;
+      resultados[i] = await tarea(i);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(limite, n)) }, trabajador));
+  return resultados;
+};
+
+// ---- Subida de recursos (animaciones, imagenes) ---------------------------
+// Se guardan por hash del contenido: si el mismo clip vuelve a usarse en otro
+// montaje no se vuelve a subir.
+
+const sniffMagic = (buf) => {
+  if (buf.length > 3 && buf[0] === 0x1a && buf[1] === 0x45 && buf[2] === 0xdf && buf[3] === 0xa3) return 'webm';
+  if (buf.length > 12 && buf.toString('latin1', 4, 8) === 'ftyp') return 'mp4';
+  if (buf.length > 2 && buf[0] === 0xff && buf[1] === 0xd8) return 'jpg';
+  if (buf.length > 4 && buf.readUInt32BE(0) === 0x89504e47) return 'png';
+  return 'bin';
+};
+
+// La fuente se lee al arrancar, pero si el fichero aparece despues (una subida
+// que termina, o el cache restaurado a mano) el servidor se quedaba diciendo
+// que no hay fuente. Se reintenta en cada peticion mientras no haya ninguna.
+const reintentarFuente = () => {
+  if (cachedVideoPath && fs.existsSync(cachedVideoPath)) return cachedVideoPath;
+  cachedVideoPath = null;
+  cachedVideoName = null;
+  cachedVideoSize = 0;
+  try {
+    const cp = path.join(videoCacheDir, 'cached.mp4');
+    const mp = path.join(videoCacheDir, 'meta.json');
+    if (!fs.existsSync(cp) || !fs.existsSync(mp)) return null;
+    const meta = JSON.parse(fs.readFileSync(mp, 'utf8'));
+    if (!meta || !meta.name) return null;
+    cachedVideoPath = cp;
+    cachedVideoName = meta.name;
+    cachedVideoSize = meta.size || fs.statSync(cp).size;
+    console.log('[Fuente] restaurada desde disco: ' + cachedVideoName);
+    return cachedVideoPath;
+  } catch (_) { return null; }
+};
+
+app.post('/api/recurso', express.raw({ type: '*/*', limit: '400mb' }), (req, res) => {
+  try {
+    const buf = req.body;
+    if (!buf || !buf.length) return res.status(400).json({ error: 'Recurso vacio' });
+    const ext = sniffMagic(buf);
+    if (ext === 'bin') return res.status(400).json({ error: 'Formato no reconocido (se esperaba mp4, webm, jpg o png)' });
+    const id = crypto.createHash('sha1').update(buf).digest('hex');
+    const destino = rutaRecurso(id, ext);
+    const yaEstaba = fs.existsSync(destino);
+    if (!yaEstaba) fs.writeFileSync(destino, buf);
+    console.log('[Recurso] ' + ext + ' ' + buf.length + ' bytes -> ' + id + (yaEstaba ? ' (ya estaba)' : ''));
+    res.json({ ok: true, id, ext, bytes: buf.length, reutilizado: yaEstaba });
+  } catch (err) {
+    console.error('[Recurso] Error:', err.message);
+    res.status(500).json({ error: 'Error guardando el recurso: ' + err.message });
+  }
+});
+
+app.get('/api/estado', (req, res) => {
+  let recursos = 0;
+  try { recursos = fs.readdirSync(RECURSOS_DIR).length; } catch (_) {}
+  reintentarFuente();
+  res.json({
+    ok: true,
+    fuente: !!cachedVideoPath,
+    fuenteNombre: cachedVideoName,
+    fuenteBytes: cachedVideoSize,
+    recursos,
+  });
+});
+
+// ---- Composicion del montaje ---------------------------------------------
+
+app.post('/api/montaje', async (req, res) => {
+  let dir = null;
+  try {
+    if (!reintentarFuente()) {
+      return res.status(409).json({ error: 'sin-fuente', detalle: 'El servidor no tiene el video fuente en la cache' });
+    }
+    const segs = (req.body && Array.isArray(req.body.segmentos)) ? req.body.segmentos : null;
+    if (!segs || !segs.length) { console.log('[Montaje] 400: no vinieron segmentos'); return res.status(400).json({ error: 'No se recibieron segmentos' }); }
+    if (segs.length > MONTAJE_MAX_SEGMENTOS) { console.log('[Montaje] 400: demasiados segmentos (' + segs.length + ')'); return res.status(400).json({ error: 'Demasiados segmentos: ' + segs.length }); }
+    const ancho = Math.min(3840, Math.max(160, Math.round(Number(req.body.ancho) || 1280)));
+    const alto = Math.min(2160, Math.max(90, Math.round(Number(req.body.alto) || 720)));
+
+    // Validar antes de lanzar ffmpeg: un tramo con tiempos rotos haria que un
+    // proceso en paralelo fallara y el concat no se pudiera montar.
+    const limpio = [];
+    let total = 0;
+    for (const s of segs) {
+      const tipo = (s && s.tipo) || 'fuente';
+      const nombre = String((s && s.nombre) || '').slice(0, 120);
+      let dur = 0;
+      try {
+        if (tipo === 'clip') {
+          if (!s.id || !/^[0-9a-f]{40}$/.test(String(s.id))) continue;
+          dur = Number(s.hasta) - Number(s.desde);
+        } else if (tipo === 'transicion') {
+          if (!s.a || !s.b) continue;
+          dur = Number(s.dur);
+        } else if (tipo === 'imagen') {
+          if (!s.id || !/^[0-9a-f]{40}$/.test(String(s.id))) continue;
+          dur = Number(s.dur);
+        } else {
+          const ini = Number(s.ini);
+          const fin = Number(s.fin);
+          if (!Number.isFinite(ini) || !Number.isFinite(fin) || fin <= ini) continue;
+          s.ini = Math.max(0, ini);
+          dur = fin - s.ini;
+        }
+      } catch (_) { continue; }
+      if (!(dur > 0.02)) continue;
+      limpio.push(Object.assign({}, s, { tipo, nombre, _dur: dur }));
+      total += dur;
+    }
+    if (!limpio.length) {
+      // Casi siempre es un tramo de clip o imagen sin id, o con duracion cero.
+      // Sin esto el cliente solo veía un 400 sin explicación.
+      console.log('[Montaje] 400: ningun tramo valido de ' + segs.length + ' recibidos. Primeros: '
+        + JSON.stringify(segs.slice(0, 4)).slice(0, 900));
+      return res.status(400).json({ error: 'Ningun tramo con tiempos validos' });
+    }
+    if (total > MONTAJE_MAX_SEGUNDOS) { console.log('[Montaje] 400: ' + total.toFixed(1) + ' s superan el maximo'); return res.status(400).json({ error: 'El montaje supera el maximo de ' + MONTAJE_MAX_SEGUNDOS + ' s' }); }
+
+    dir = path.join(tmpBase, 'montaje-' + Date.now());
+    fs.mkdirSync(dir, { recursive: true });
+    const tIni = Date.now();
+    const nucleos = Math.max(1, ((os.cpus() || []).length || 4));
+    const enParalelo = Math.max(1, Math.min(4, Math.floor(nucleos / 2) + 1));
+    // Un solo tramo no se puede paralelizar, asi que en vez de wasted los
+    // nucleos se le dan a ese proceso: 15 s de un tramo tardaban 8,8 s usando un
+    // unico hilo. Con varios tramos, el reparto es al reves.
+    const hilosPorProceso = Math.max(1, Math.floor(nucleos / enParalelo));
+    const deFuente = limpio.filter((t) => t.tipo === 'fuente').length;
+    const nFundidos = limpio.filter((t) => t.tipo === 'transicion').length;
+    console.log('[Montaje] ' + limpio.length + ' tramos (' + deFuente + ' del fuente), ' + total.toFixed(1)
+      + 's de contenido, ' + ancho + 'x' + alto + ', en paralelo x' + enParalelo + ' (' + nucleos + ' nucleos)');
+
+    console.log('[Montaje] ' + limpio.length + ' tramos (' + nFundidos + ' fundidos) con ' + enParalelo + ' en paralelo x ' + hilosPorProceso + ' hilos');
+    const ficheros = await enCola(limpio.length, enParalelo, (i) => (limpio[i].tipo === 'transicion'
+      ? construirFundido(limpio[i], i, dir, ancho, alto, hilosPorProceso)
+      : recortarTramo(limpio[i], i, dir, ancho, alto, hilosPorProceso)));
+
+    // Todos los tramos salen con los mismos parametros (mismo codec, misma
+    // resolucion, mismo GOP), asi que concatenar es una copia de bits: sin una
+    // segunda codificacion.
+    const lista = path.join(dir, 'lista.txt');
+    fs.writeFileSync(lista, ficheros.map((f) => "file '" + f.replace(/\\/g, '/') + "'").join('\n'), 'utf8');
+    const outPath = path.join(dir, 'montaje.mp4');
+    await execFileAsync(ffmpegPath, ['-f', 'concat', '-safe', '0', '-i', lista, '-c', 'copy', '-movflags', '+faststart', '-y', outPath],
+      { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+
+    const tam = fs.statSync(outPath).size;
+    const ms = Date.now() - tIni;
+    console.log('[Montaje] OK: ' + limpio.length + ' tramos, ' + total.toFixed(1) + 's en ' + ms
+      + ' ms (x' + (total / (ms / 1000)).toFixed(2) + '), ' + tam + ' bytes');
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Content-Length', tam);
+    res.setHeader('Content-Disposition', 'inline; filename="montaje.mp4"');
+    res.setHeader('Access-Control-Expose-Headers', 'X-Montaje-Ms, X-Montaje-Tramos, X-Montaje-Contenido');
+    res.setHeader('X-Montaje-Ms', String(ms));
+    res.setHeader('X-Montaje-Tramos', String(limpio.length));
+    res.setHeader('X-Montaje-Contenido', total.toFixed(2));
+    fs.createReadStream(outPath).pipe(res);
+    res.on('finish', () => { setTimeout(() => rmrf(dir), 2000); });
+  } catch (err) {
+    console.error('[Montaje] Error:', err.message);
+    res.status(500).json({ error: 'Error componiendo el montaje: ' + err.message });
+    if (dir) rmrf(dir);
+  }
+});
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {

@@ -1,39 +1,13 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+node_modules/
+dist/
+.firebase/
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-.tmp-cortes
-
-# Environment variables
-.env
-.env.*
-!.env.example
-
+# El video de partida cacheado por el servidor. Son 8 GB y se vuelve a subir si
+# hace falta; no tiene sentido en git.
 .video-cache/
-dev.pid
-dev.err
-.vercel/
 
-# Firebase
-.firebase/hosting.*.cache
+# Temporales de los recortes que se generan en cada peticion.
+.tmp-cortes/
+
+# Logs de arranque y del servidor.
+*.log
