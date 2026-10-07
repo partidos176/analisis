@@ -110,6 +110,101 @@ const resolverFuente = (origen) => {
   return null;
 };
 
+// ---- Copia automatica del video de partida --------------------------------
+// El navegador no puede escribir en una carpeta, pero este servidor si. Cuando
+// la web carga un video en la hoja Base de datos, manda nombre y tamano y aqui
+// se busca el fichero en el disco (mismo nombre y mismo tamano) y se copia a
+// 'videos'. Copia de disco a disco: segundos, sin subir GB por el navegador.
+const SALTA_DIRS = new Set(['windows', 'program files', 'program files (x86)', 'programdata',
+  '$recycle.bin', 'system volume information', 'node_modules', '.git', 'appdata',
+  '.video-cache', 'videos', 'recursos', 'dist']);
+
+const buscarVideoEnDisco = (nombre, size) => {
+  const objetivo = String(nombre).toLowerCase();
+  const h = os.homedir();
+  const raices = [];
+  for (const d of ['Downloads', 'Descargas', 'Videos', 'Desktop', 'Escritorio', 'Documents', 'Documentos']) {
+    raices.push(path.join(h, d));
+  }
+  raices.push(h);
+  for (const l of 'CDEFGH') {
+    const raiz = l + ':\\';
+    try { if (fs.statSync(raiz).isDirectory()) raices.push(raiz); } catch (_) {}
+  }
+  const cola = [];
+  for (const r of raices) {
+    try { if (fs.statSync(r).isDirectory()) cola.push({ p: r, prof: 0 }); } catch (_) {}
+  }
+  // Busqueda por anchura con tope: sin el, recorrer un disco entero podia
+  // tardar minutos en una carpeta con cientos de miles de ficheros.
+  let mirados = 0;
+  while (cola.length && mirados < 80000) {
+    const { p, prof } = cola.shift();
+    let ents = null;
+    try { ents = fs.readdirSync(p, { withFileTypes: true }); } catch (_) { continue; }
+    for (const e of ents) {
+      mirados++;
+      const full = path.join(p, e.name);
+      if (e.isDirectory()) {
+        if (prof >= 4) continue;
+        if (SALTA_DIRS.has(e.name.toLowerCase())) continue;
+        cola.push({ p: full, prof: prof + 1 });
+      } else if (e.isFile() && e.name.toLowerCase() === objetivo) {
+        try {
+          const st = fs.statSync(full);
+          if (st.size === Number(size)) return full;
+        } catch (_) {}
+      }
+    }
+  }
+  return null;
+};
+
+app.post('/api/videos/copiar', async (req, res) => {
+  try {
+    const nombre = path.basename(String((req.body && req.body.nombre) || ''));
+    const size = Number(req.body && req.body.size) || 0;
+    if (!nombre || !(size > 0)) return res.status(400).json({ ok: false, motivo: 'faltan nombre o size' });
+    const dst = path.join(VIDEOS_DIR, nombre);
+    try {
+      const st = fs.statSync(dst);
+      if (st.size === size) return res.json({ ok: true, yaEstaba: true, nombre, size });
+    } catch (_) {}
+    const t0 = Date.now();
+    const origen = buscarVideoEnDisco(nombre, size);
+    if (!origen) return res.json({ ok: false, motivo: 'no encontrado en el disco' });
+    await fs.promises.copyFile(origen, dst);
+    try {
+      const st = fs.statSync(dst);
+      if (st.size !== size) { fs.unlinkSync(dst); return res.json({ ok: false, motivo: 'la copia no cuadra de tamano' }); }
+    } catch (_) {}
+    const ms = Date.now() - t0;
+    console.log('[Videos] ' + nombre + ' (' + size + ' bytes) copiado desde ' + origen + ' en ' + ms + ' ms');
+    res.json({ ok: true, nombre, size, ms, origen });
+  } catch (err) {
+    console.error('[Videos] Error copiando:', err.message);
+    res.status(500).json({ ok: false, motivo: err.message });
+  }
+});
+
+app.post('/api/videos/borrar', (req, res) => {
+  try {
+    const nombres = Array.isArray(req.body && req.body.nombres) ? req.body.nombres : [];
+    let borrados = 0;
+    const fallos = [];
+    for (const n of nombres) {
+      const f = path.basename(String(n || ''));
+      if (!f) continue;
+      try { fs.unlinkSync(path.join(VIDEOS_DIR, f)); borrados++; }
+      catch (e) { if (e.code !== 'ENOENT') fallos.push(f); }
+    }
+    if (borrados) console.log('[Videos] borrados ' + borrados + ' de la carpeta');
+    res.json({ ok: true, borrados, fallos });
+  } catch (err) {
+    res.status(500).json({ ok: false, motivo: err.message });
+  }
+});
+
 app.get('/api/cortar', (req, res) => {
   console.log('GET /api/cortar - health check');
   res.json({ ok: true, cached: !!cachedVideoPath, cachedName: cachedVideoName, cachedSize: cachedVideoSize, videos: listarVideos() });
