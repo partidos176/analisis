@@ -310,9 +310,20 @@ try { fs.mkdirSync(RECURSOS_DIR, { recursive: true }); } catch (e) { console.war
 // Windows necesita las dos cosas, y con barras normales ffmpeg la acepta.
 const escaparRutaFiltro = (p) => String(p).replace(/\\/g, '/').replace(/:/g, '\\:');
 
-const fuenteFiltro = escaparRutaFiltro((process.env.FUENTE_ROTULO && fs.existsSync(process.env.FUENTE_ROTULO))
-  ? process.env.FUENTE_ROTULO
-  : (fs.existsSync('C:\\Windows\\Fonts\\arialbd.ttf') ? 'C:\\Windows\\Fonts\\arialbd.ttf' : 'C:\\Windows\\Fonts\\arial.ttf'));
+// La app pinta los rotulos con Inter 800, asi que el servidor tiene que usar
+// la misma fuente: con Arial la letra salia distinta a la de la vista previa.
+// Se prueban por orden: la que indique FUENTE_ROTULO, luego Inter Bold (que es
+// lo mas parecido a Inter 800), y como ultimo recurso Arial.
+const FUENTES_ROTULO = [
+  process.env.FUENTE_ROTULO,
+  'C:\\Windows\\Fonts\\Inter-Bold-slnt=0.ttf',
+  'C:\\Windows\\Fonts\\Inter[wght].ttf',
+  'C:\\Windows\\Fonts\\Inter.ttf',
+  'C:\\Windows\\Fonts\\arialbd.ttf',
+].filter(Boolean);
+const fuenteElegida = FUENTES_ROTULO.find((x) => fs.existsSync(x)) || 'C:\\Windows\\Fonts\\arialbd.ttf';
+const fuenteFiltro = escaparRutaFiltro(fuenteElegida);
+console.log('[Rotulo] fuente: ' + fuenteElegida);
 
 // El rotulo va en linea en el filtro, no en textfile=: en el build de ffmpeg de
 // ffmpeg-static (6.1.1) textfile= siempre falla con "Both text and text file
@@ -339,7 +350,7 @@ const filtroRotulo = (nombre, ancho, alto) => {
     const hBarra = Math.max(24, Math.round(52 * (alto / 720)));
     const fTam = Math.max(14, Math.round(32 * (alto / 720)));
     partes.push('drawbox=x=0:y=0:w=iw:h=' + hBarra + ':color=black@0.65:t=fill');
-    partes.push('drawtext=fontfile=' + fuenteFiltro + ":text='" + escaparTexto(nombre) + "'"
+    partes.push("drawtext=fontfile='" + fuenteFiltro.replace(/'/g, "\\'") + "':text='" + escaparTexto(nombre) + "'"
       + ':fontcolor=#facc15:fontsize=' + fTam + ':x=(w-text_w)/2:y=' + Math.round(hBarra / 2)
       + ':expansion=none:fix_bounds=1');
   }
