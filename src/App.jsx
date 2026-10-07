@@ -7168,8 +7168,20 @@ const minutosPorJornada = [];
                         Sin acciones aún
                       </span>
                     )}
-                    {[...actionLog].reverse().filter(e => !['ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name)).map((entry, idx) => (
-                      <div key={idx} onClick={() => {
+                    {(() => {
+                      // Orden cronológico por hora (no por inserción): lo metido
+                      // después, como el INICIO 1ª PARTE de las 00:00, va al comienzo.
+                      const filas = [...actionLog].reverse().filter(e => !['ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name));
+                      filas.sort((a, b) => {
+                        const ta = a && a.time ? parseTime(a.time) : null;
+                        const tb = b && b.time ? parseTime(b.time) : null;
+                        if (ta == null && tb == null) return 0;
+                        if (ta == null) return 1;
+                        if (tb == null) return -1;
+                        return ta - tb;
+                      });
+                      return filas.map((entry, idx) => (
+                      <div key={`${entry.time || ''}_${entry.name || ''}_${idx}`} onClick={() => {
                         if (entry.time && entry.type !== 'finalizacion' && videoRef.current && videoUrl) {
                           const parts = String(entry.time).split(':').map(Number);
                           const secs = (parts[0] || 0) * 60 + (parts[1] || 0);
@@ -7200,7 +7212,7 @@ const minutosPorJornada = [];
                               const newFin = ev.target.value;
                               if (!newFin) return;
                               const reversedLog = [...actionLog].reverse();
-                              const realIdx = actionLog.length - 1 - idx;
+                              const realIdx = actionLog.indexOf(entry);
                               const newEntry = { name: newFin, time: entry.time, type: 'finalizacion' };
                               const newLog = [...actionLog.slice(0, realIdx), newEntry, ...actionLog.slice(realIdx)];
                               setActionLog(newLog);
@@ -7229,7 +7241,7 @@ const minutosPorJornada = [];
                           </span>
                         )}
                       </div>
-                    ))}
+                    ))})()}
                     </div>
                     {/* Acciones seleccionadas por el filtro */}
                     {filtroAccion && (() => {
