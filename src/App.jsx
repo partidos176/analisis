@@ -3913,7 +3913,6 @@ const minutosPorJornada = [];
                           </span>
                           <ResponsiveContainer width="100%" height={250}>
                             <LineChart data={minutosPorJornada} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                               <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} interval={0} tickFormatter={(v) => v.split('—')[0].trim()} />
                               <YAxis stroke="#94a3b8" fontSize={10} tickFormatter={(v) => Math.round(v / 60)}>
                                 <Label value="MINUTOS" angle={-90} position="insideLeft" offset={20} style={{ fill: '#94a3b8', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', textAnchor: 'middle' }} />
