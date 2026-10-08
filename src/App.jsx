@@ -4374,10 +4374,12 @@ const minutosPorJornada = [];
                       .filter(m => m.matchday)
                       .map(m => {
                         const d = buildRowsForMatch(m);
-                        return d.rows.length > 0 ? (() => { const ef = d.subtotal.ownSecs + d.subtotal.rivalSecs; const pct = (s) => ef > 0 ? Math.round((s / ef) * 100) : 0; return { name: 'J ' + m.matchday, 'Posesion propia': pct(d.subtotal.ownSecs), 'Posesion rival': pct(d.subtotal.rivalSecs) }; })() : null;
+                        return d.rows.length > 0 ? (() => { const ef = d.subtotal.ownSecs + d.subtotal.rivalSecs; const pct = (s) => ef > 0 ? Math.round((s / ef) * 100) : 0; return { createdAt: m.createdAt || 0, matchday: m.matchday || 0, name: 'J ' + m.matchday, 'Posesion propia': pct(d.subtotal.ownSecs), 'Posesion rival': pct(d.subtotal.rivalSecs) }; })() : null;
                       })
                       .filter(Boolean)
-                      .sort((a, b) => (parseInt(a.name.slice(1)) || 0) - (parseInt(b.name.slice(1)) || 0));
+                      // Eje X por fecha de creacion del partido, no por numero de jornada:
+                      // la jornada no tiene por que ir correlativa si se crearon partidos fuera de orden.
+                      .sort((a, b) => ((a.createdAt || 0) - (b.createdAt || 0)) || ((a.matchday || 0) - (b.matchday || 0)));
                     return chartData.length > 0 ? (
                     <div style={{ width: '100%', maxWidth: '700px', height: 300, marginTop: selectedIds.length === 0 ? '4rem' : '2rem' }}>
                       <ResponsiveContainer width="100%" height="100%">
