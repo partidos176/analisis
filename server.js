@@ -74,9 +74,10 @@ const guardarMetaCache = () => {
 // Carpeta fija de videos de partida. Si el fichero esta aqui, con el mismo
 // nombre y tamano que el que cargo el navegador, se usa directamente y no hay
 // que subir los GB por la red (todo es local: el navegador y este servidor
-// estan en la misma maquina).
-const VIDEOS_DIR = path.join(__dirname, 'videos');
-try { fs.mkdirSync(VIDEOS_DIR, { recursive: true }); } catch (e) { console.warn('No se pudo crear videos:', e.message); }
+// estan en la misma maquina). Es la biblioteca de Videos del usuario: por eso
+// aqui NUNCA se borra ni se sobrescribe un fichero que ya estaba.
+const VIDEOS_DIR = 'C:\\Users\\uSer\\Videos';
+try { fs.mkdirSync(VIDEOS_DIR, { recursive: true }); } catch (e) { console.warn('No se pudo abrir la carpeta de videos:', e.message); }
 
 const listarVideos = () => {
   try {
@@ -166,10 +167,16 @@ app.post('/api/videos/copiar', async (req, res) => {
     const size = Number(req.body && req.body.size) || 0;
     if (!nombre || !(size > 0)) return res.status(400).json({ ok: false, motivo: 'faltan nombre o size' });
     const dst = path.join(VIDEOS_DIR, nombre);
-    try {
-      const st = fs.statSync(dst);
-      if (st.size === size) return res.json({ ok: true, yaEstaba: true, nombre, size });
-    } catch (_) {}
+    let dstSize = -1;
+    try { dstSize = fs.statSync(dst).size; } catch (_) {}
+    // Ya esta con el mismo tamano: se usa tal cual. No se apunta para borrar
+    // (lo devuelve el cliente con yaEstaba) porque es un fichero que ya estaba
+    // en la biblioteca del usuario.
+    if (dstSize === size) return res.json({ ok: true, yaEstaba: true, nombre, size });
+    // Hay otro fichero con ese nombre y distinto tamano: nunca se pisa.
+    if (dstSize >= 0) {
+      return res.json({ ok: false, motivo: 'ya hay un archivo distinto llamado «' + nombre + '» en la carpeta del servidor: renombra uno de los dos' });
+    }
     const t0 = Date.now();
     const origen = buscarVideoEnDisco(nombre, size);
     if (!origen) return res.json({ ok: false, motivo: 'no encontrado en el disco' });
