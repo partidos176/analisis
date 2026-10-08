@@ -34,6 +34,7 @@ import devianImg from './jugadores/devian.png';
 import denissonImg from './jugadores/denisson.png';
 import braisImg from './jugadores/brais.png';
 import acoidanImg from './jugadores/acoidan.png';
+import jousepImg from './jugadores/jousep.png';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
@@ -78,11 +79,11 @@ const fotosCadetes = {
   DENISSON: denissonImg,
   BRAIS: braisImg,
   ACOIDAN: acoidanImg,
+  JOUSEP: jousepImg,
 };
 
 // La hoja ALINEACION tambien pinta a los cadetes (entran con
 // addCadeteToAlineacion), asi que ahi hay que mirar tambien en fotosCadetes.
-const fotoDeJugador = (n) => (jugadoresData[n] && jugadoresData[n].foto) || fotosCadetes[n] || null;
 
 const LEGACY_NAME_MAP = { 'JUAN': 'JUANDA', 'JUAN ': 'JUANDA' };
 const normalizePlayerName = (raw) => {
@@ -90,6 +91,24 @@ const normalizePlayerName = (raw) => {
   const n = String(raw).trim().toUpperCase();
   return LEGACY_NAME_MAP[n] || n;
 };
+
+// Busqueda de foto de cadete tolerante a tildes, mayusculas y demas
+// palabras del nombre (la hoja CADETES puede tener 'ACOIDAN' y el dato
+// llegar como 'Acoidan' o 'ACOIDÁN').
+const claveFoto = (n) => normalizePlayerName(n).normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+const mapaFotosCadetes = {};
+Object.keys(fotosCadetes).forEach(k => { mapaFotosCadetes[claveFoto(k)] = fotosCadetes[k]; });
+const fotoCadete = (n) => {
+  const directa = fotosCadetes[normalizePlayerName(n)];
+  if (directa) return directa;
+  const c = claveFoto(n);
+  if (!c) return null;
+  if (mapaFotosCadetes[c]) return mapaFotosCadetes[c];
+  if (c.length < 5) return null;
+  const k = Object.keys(mapaFotosCadetes).find(kk => c.includes(kk) || kk.includes(c));
+  return k ? mapaFotosCadetes[k] : null;
+};
+const fotoDeJugador = (n) => (jugadoresData[n] && jugadoresData[n].foto) || fotoCadete(n) || null;
 
 const dedupePlayers = (list) => {
   const seen = new Set();
@@ -4668,9 +4687,12 @@ const minutosPorJornada = [];
                         if (r) rows.push({ gol: golDelJugador({ golesList }), md: Number(currentMatch.matchday) || 0, label: 'J' + currentMatch.matchday + ' — ' + (currentMatch.homeTeam || '') + ' vs ' + (currentMatch.awayTeam || ''), ...r });
                       }
                       rows.sort((a, b) => a.md - b.md);
-                      if (rows.length === 0) return <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Sin convocatorias como titular o suplente</span>;
+                      const fotoSrc = fotoCadete(norm);
                       return (
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem', flexWrap: 'wrap' }}>
+                        {rows.length === 0 ? (
+                          <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Sin convocatorias como titular o suplente</span>
+                        ) : (
                         <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem', width: 'auto' }}>
                           <thead>
                             <tr>
@@ -4691,9 +4713,10 @@ const minutosPorJornada = [];
                             ))}
                           </tbody>
                         </table>
-                        {fotosCadetes[norm] && (
+                        )}
+                        {fotoSrc && (
                           <img
-                            src={fotosCadetes[norm]}
+                            src={fotoSrc}
                             alt={norm}
                             draggable={false}
                             style={{ width: '170px', height: '220px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-subtle)', flexShrink: 0 }}
