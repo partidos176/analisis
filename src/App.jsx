@@ -423,7 +423,15 @@ export default function App() {
       return parsed && typeof parsed === 'object' ? parsed : {};
     } catch { return {}; }
   });
-  const [menuJugadorIdx, setMenuJugadorIdx] = useState(null);
+  // Hoja ALINEACION: foto seleccionada y desplegable de cajetines { idx, x, y }
+  const [fotoSel, setFotoSel] = useState(null);
+  const [menuFoto, setMenuFoto] = useState(null);
+  useEffect(() => {
+    if (!menuFoto) return;
+    const cerrar = () => setMenuFoto(null);
+    document.addEventListener('click', cerrar);
+    return () => document.removeEventListener('click', cerrar);
+  }, [menuFoto]);
   const [draggingMapIdx, setDraggingMapIdx] = useState(null);
   const campoRef = useRef(null);
   const dragMovedRefGlobal = useRef(false);
@@ -455,6 +463,8 @@ export default function App() {
     // limpia deshacer al cambiar de partido
     undoSnapshotRef.current = null;
     prevPlayersRef.current = JSON.parse(JSON.stringify(players));
+    setFotoSel(null);
+    setMenuFoto(null);
     forceHistUpdate(v => v + 1);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentMatch?.id]);
@@ -547,7 +557,14 @@ export default function App() {
       dragMovedRefGlobal.current = true;
       setPlayers(prev => {
         const copy = [...prev];
-        if (copy[draggingMapIdx]) copy[draggingMapIdx] = { ...copy[draggingMapIdx], mapX: nx, mapY: ny };
+        const cur = copy[draggingMapIdx];
+        if (!cur || !cur.name) return prev;
+        const next = { ...cur, mapX: nx, mapY: ny };
+        // Arrastrando desde la plantilla, al mover se promueve a titular
+        // (asi funciona tambien con el dedo en pantalla; al soltar sobre un
+        // cajetin manda el drop y se queda en ese cajetin).
+        if (cur.status === '-' && copy.filter(q => q.status === 'titular').length < 11) next.status = 'titular';
+        copy[draggingMapIdx] = next;
         return copy;
       });
     };
@@ -8740,6 +8757,7 @@ const minutosPorJornada = [];
                     const handleBenchDrop = (e) => handleZoneDrop(e, 'suplente');
                     const removePlayer = (realIdx) => {
                       if (realIdx == null) return;
+                      if (fotoSel === realIdx) setFotoSel(null);
                       setPlayers(prev => {
                         const copy = [...prev];
                         const cur = copy[realIdx];
@@ -8790,39 +8808,7 @@ const minutosPorJornada = [];
                           draggable={!!p.name && p.status !== 'no convocado'}
                           onDragStart={(e) => handleDragStart(e, p.idx)}
                           onDragEnd={() => { nativeDragRef.current = false; setDraggingMapIdx(null); }}
-                          onClick={() => {
-                            if (dragMovedRefGlobal.current) return;
-                            if (!p.name) return;
-                            const realIdx = p.idx;
-                            if (realIdx == null) return;
-                            setPlayers(prev => {
-                              const copy = [...prev];
-                              const cur = copy[realIdx];
-                              let next = 'titular';
-                              if (cur.status === 'titular') next = 'suplente';
-                              else if (cur.status === 'suplente') next = '-';
-                              else if (cur.status === 'no convocado') next = '-';
-                              else {
-                                const titCount = copy.filter(q => q.status === 'titular').length;
-                                next = titCount < 11 ? 'titular' : 'suplente';
-                              }
-                              copy[realIdx] = { ...cur, status: next };
-                              return copy;
-                            });
-                          }}
-                          onDoubleClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const realIdx = p.idx;
-                            if (realIdx == null) return;
-                            setPlayers(prev => {
-                              const copy = [...prev];
-                              const cur = copy[realIdx];
-                              if (cur.status === 'no convocado') copy[realIdx] = { ...cur, status: '-' };
-                              else copy[realIdx] = { ...cur, status: 'no convocado' };
-                              return copy;
-                            });
-                          }}
+                          onClick={(e) => clickFoto(e, p.idx)}
                           onMouseDown={(e) => {
                             if (!p.name || p.status === 'no convocado') return;
                             e.stopPropagation();
@@ -8868,6 +8854,8 @@ const minutosPorJornada = [];
                             flexShrink: 0,
                             background: '#0f172a',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                            outline: fotoSel === p.idx ? '3px solid #ffffff' : 'none',
+                            outlineOffset: 2,
                             ...extraStyle
                           }}
                         >
@@ -8886,6 +8874,8 @@ const minutosPorJornada = [];
                     const handleCampoClick = (e) => {
                       if (draggingMapIdx != null) return;
                       if (dragMovedRefGlobal.current) return;
+                      setFotoSel(null);
+                      setMenuFoto(null);
                       const titularesCount = titulares.length;
                       if (titularesCount >= 11) return;
                       const idxDisponible = players.findIndex(p => p.name && (p.status === '-' || p.status === 'division honor' || p.status === 'tenerife c' || p.status === 'lesion' || !p.status));
@@ -8930,13 +8920,46 @@ const minutosPorJornada = [];
                         }
                         return copy;
                       });
-                      setMenuJugadorIdx(null);
+                      setMenuFoto(null);
+                    };
+
+                    // Clic sobre una foto de la hoja ALINEACION: el primero la
+                    // selecciona y el segundo (sobre la seleccionada) abre el
+                    // desplegable de cajetines.
+                    const clickFoto = (e, idx) => {
+                      if (dragMovedRefGlobal.current) return;
+                      if (idx == null || !players[idx] || !players[idx].name) return;
+                      e.stopPropagation();
+                      if (fotoSel === idx) {
+                        const r = e.currentTarget.getBoundingClientRect();
+                        setMenuFoto({
+                          idx,
+                          x: Math.min(r.left, window.innerWidth - 175),
+                          y: Math.min(r.bottom + 6, window.innerHeight - 205)
+                        });
+                      } else {
+                        setMenuFoto(null);
+                        setFotoSel(idx);
+                      }
                     };
 
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '1rem', position: 'relative' }}>
                         {/* Imagen fija arriba-izquierda (no desplaza nada) */}
                         <img src={campoRefImg} alt="campo" style={{ position: 'absolute', top: '1rem', left: '1rem', width: '600px', borderRadius: 8, pointerEvents: 'none' }} />
+
+                        {menuFoto && (
+                          <div
+                            className="no-export"
+                            style={{ position: 'fixed', left: menuFoto.x, top: menuFoto.y, zIndex: 60, display: 'flex', flexDirection: 'column', gap: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 6, boxShadow: '0 6px 18px rgba(0,0,0,0.5)', minWidth: 150 }}
+                            onClick={(e) => e.stopPropagation()}
+                            onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                          >
+                            {opcionesEstado.map(o => (
+                              <button key={o.id} onClick={() => aplicarEstado(menuFoto.idx, o.id)} style={{ background: o.color, color: o.color === '#000000' ? '#ffffff' : '#0f172a', border: 'none', borderRadius: 6, padding: '0.35rem 0.6rem', fontWeight: 900, fontSize: '0.7rem', cursor: 'pointer', letterSpacing: '0.04em', whiteSpace: 'nowrap', textAlign: 'left' }}>{o.label}</button>
+                            ))}
+                          </div>
+                        )}
 
 
                         <div className="mapa-tactico-layout" style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
@@ -8978,28 +9001,7 @@ const minutosPorJornada = [];
                               return (
                                 <div
                                   key={p.idx}
-                                  onClick={(e) => {
-                                    if (dragMovedRefGlobal.current) return;
-                                    e.stopPropagation();
-                                    setPlayers(prev => {
-                                      const copy = [...prev];
-                                      const cur = copy[p.idx];
-                                      if (cur.status === 'titular') {
-                                        copy[p.idx] = { ...cur, status: '-', mapX: undefined, mapY: undefined };
-                                      }
-                                      return copy;
-                                    });
-                                  }}
-                                  onDoubleClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setPlayers(prev => {
-                                      const copy = [...prev];
-                                      const cur = copy[p.idx];
-                                      copy[p.idx] = { ...cur, status: cur.status === 'no convocado' ? '-' : 'no convocado' };
-                                      return copy;
-                                    });
-                                  }}
+                                  onClick={(e) => clickFoto(e, p.idx)}
                                   draggable={!isNoConvocado}
                                   onDragStart={(e) => handleDragStart(e, p.idx)}
                                   onDragEnd={() => { nativeDragRef.current = false; setDraggingMapIdx(null); }}
@@ -9024,9 +9026,11 @@ const minutosPorJornada = [];
                                     zIndex: draggingMapIdx === p.idx ? 10 : 2,
                                     touchAction: 'none',
                                     userSelect: 'none',
-                                    cursor: draggingMapIdx === p.idx ? 'grabbing' : 'grab'
+                                    cursor: draggingMapIdx === p.idx ? 'grabbing' : 'grab',
+                                    outline: fotoSel === p.idx ? '3px solid #ffffff' : 'none',
+                                    outlineOffset: 2
                                   }}
-                                  title={`${p.name} — arrastra libremente por el campo o al banquillo · click: quitar (vuelve a la plantilla) · doble click: no convocado`}
+                                  title={`${p.name} — arrastra libremente por el campo o al banquillo · 1er clic: seleccionar · 2º clic: elegir cajetín`}
                                 >
                                   <div style={{
                                      width: 100,
@@ -9126,21 +9130,10 @@ const minutosPorJornada = [];
                               const isTit = p.status === 'titular';
                               const isSup = p.status === 'suplente';
                               const isNo = p.status === 'no convocado';
-                              const menuAbierto = menuJugadorIdx === idx;
                               return (
                                 <div key={p.name + '_' + idx} style={{ position: 'relative' }}>
                                   <div
-                                  onClick={() => { if (dragMovedRefGlobal.current) return; setMenuJugadorIdx(prev => prev === idx ? null : idx); }}
-                                  onDoubleClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setPlayers(prev => {
-                                      const copy = [...prev];
-                                      const cur = copy[idx];
-                                      copy[idx] = { ...cur, status: cur.status === 'no convocado' ? '-' : 'no convocado' };
-                                      return copy;
-                                    });
-                                  }}
+                                  onClick={(e) => clickFoto(e, idx)}
                                   draggable={!!p.name && !isNo}
                                   onDragStart={(e) => handleDragStart(e, idx)}
                                   onDragEnd={() => { nativeDragRef.current = false; setDraggingMapIdx(null); }}
@@ -9148,60 +9141,15 @@ const minutosPorJornada = [];
                                     if (!p.name || isNo) return;
                                     e.stopPropagation();
                                     dragMovedRefGlobal.current = false;
-                                    const rect = campoRef.current?.getBoundingClientRect();
-                                    if (rect) {
-                                      const nx = Math.max(6, Math.min(94, ((e.clientX - rect.left) / rect.width) * 100));
-                                      const ny = Math.max(6, Math.min(94, ((e.clientY - rect.top) / rect.height) * 100));
-                                      setPlayers(prev => {
-                                        const copy = [...prev];
-                                        const titCount = copy.filter(q => q.status === 'titular').length;
-                                        if (titCount >= 11 && copy[idx].status !== 'titular') return prev;
-                                        copy[idx] = { ...copy[idx], status: copy[idx].status !== 'titular' ? 'titular' : copy[idx].status, mapX: nx, mapY: ny };
-                                        return copy;
-                                      });
-                                    } else {
-                                      if (p.status !== 'titular') {
-                                        setPlayers(prev => {
-                                          const copy = [...prev];
-                                          const titCount = copy.filter(q => q.status === 'titular').length;
-                                          if (titCount >= 11) return prev;
-                                          copy[idx] = { ...copy[idx], status: 'titular' };
-                                          return copy;
-                                        });
-                                      }
-                                    }
                                     setDraggingMapIdx(idx);
                                   }}
                                   onTouchStart={(e) => {
                                     if (!p.name || isNo) return;
                                     e.stopPropagation();
                                     dragMovedRefGlobal.current = false;
-                                    const rect = campoRef.current?.getBoundingClientRect();
-                                    const touch = e.touches[0];
-                                    if (rect && touch) {
-                                      const nx = Math.max(6, Math.min(94, ((touch.clientX - rect.left) / rect.width) * 100));
-                                      const ny = Math.max(6, Math.min(94, ((touch.clientY - rect.top) / rect.height) * 100));
-                                      setPlayers(prev => {
-                                        const copy = [...prev];
-                                        const titCount = copy.filter(q => q.status === 'titular').length;
-                                        if (titCount >= 11 && copy[idx].status !== 'titular') return prev;
-                                        copy[idx] = { ...copy[idx], status: copy[idx].status !== 'titular' ? 'titular' : copy[idx].status, mapX: nx, mapY: ny };
-                                        return copy;
-                                      });
-                                    } else {
-                                      if (p.status !== 'titular') {
-                                        setPlayers(prev => {
-                                          const copy = [...prev];
-                                          const titCount = copy.filter(q => q.status === 'titular').length;
-                                          if (titCount >= 11) return prev;
-                                          copy[idx] = { ...copy[idx], status: 'titular' };
-                                          return copy;
-                                        });
-                                      }
-                                    }
                                     setDraggingMapIdx(idx);
                                   }}
-                                  title={`${p.name} — click para elegir estado (titular, suplente, lesión, no convocado, Div. Honor)`}
+                                  title={`${p.name} — 1er clic: seleccionar · 2º clic: elegir cajetín (titular, suplente, lesión, no convocado, Div. Honor)`}
                                    style={{
                                     width: 90,
                                     height: 90,
@@ -9211,23 +9159,15 @@ const minutosPorJornada = [];
                                     position: 'relative',
                                     cursor: 'pointer',
                                     background: '#0f172a',
-                                    boxShadow: isTit || isSup ? '0 2px 8px rgba(0,0,0,0.35)' : 'none'
+                                    boxShadow: isTit || isSup ? '0 2px 8px rgba(0,0,0,0.35)' : 'none',
+                                    outline: fotoSel === idx ? '3px solid #ffffff' : 'none',
+                                    outlineOffset: 2
                                   }}
                                 >
                                   {foto ? <img src={foto} alt={p.name} draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: esCadeteGlobal(p.name) ? '#ef4444' : '#94a3b8' }}>{p.name.slice(0, 2)}</div>}
                                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: isTit ? '#38bdf8' : isSup ? '#f59e0b' : p.status === 'lesion' ? '#ef4444' : p.status === 'division honor' ? '#8b5cf6' : p.status === 'tenerife c' ? '#06b6d4' : isNo ? '#e2e8f0' : 'rgba(15,23,42,0.88)', color: (p.status === 'lesion' || p.status === 'division honor' || (!isTit && !isSup && !isNo)) ? '#ffffff' : '#0f172a', fontWeight: 900, fontSize: 11, textAlign: 'center', padding: '1px 0', lineHeight: 1 }}>{p.name.slice(0, 12)}</div>
                                   <XBtn idx={idx} />
                                   </div>
-                                   {menuAbierto && (
-                                    <>
-                                      <div className="no-export" style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setMenuJugadorIdx(null)} />
-                                      <div className="no-export" style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: 6, zIndex: 50, display: 'flex', flexDirection: 'column', gap: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 6, boxShadow: '0 6px 18px rgba(0,0,0,0.5)', minWidth: 140 }}>
-                                       {opcionesEstado.map(o => (
-                                         <button key={o.id} onClick={() => aplicarEstado(idx, o.id)} style={{ background: o.color, color: o.color === '#000000' ? '#ffffff' : '#0f172a', border: 'none', borderRadius: 6, padding: '0.35rem 0.6rem', fontWeight: 900, fontSize: '0.7rem', cursor: 'pointer', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>{o.label}</button>
-                                       ))}
-                                     </div>
-                                   </>
-                                 )}
                                 </div>
                               );
                             })}
