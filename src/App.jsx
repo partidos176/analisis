@@ -9048,7 +9048,7 @@ const minutosPorJornada = [];
                           </div>
                           </div>
                           {/* Columna derecha: zonas + plantilla (a la derecha del campo) */}
-                          <div className="mapa-derecha" style={{ flex: '0 0 300px', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem', marginLeft: '-9rem', position: 'relative', zIndex: 3 }}>
+                          <div className="mapa-derecha" style={{ flex: '0 0 300px', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem', marginLeft: '-9rem', position: 'relative', zIndex: 0 }}>
                             {/* Cajetín bajo el campo: suplentes */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
