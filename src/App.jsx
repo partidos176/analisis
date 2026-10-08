@@ -33,6 +33,7 @@ import campoRefImg from './jugadores/campo_ref.jpg';
 import devianImg from './jugadores/devian.png';
 import denissonImg from './jugadores/denisson.png';
 import braisImg from './jugadores/brais.png';
+import acoidanImg from './jugadores/acoidan.png';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
@@ -76,6 +77,7 @@ const fotosCadetes = {
   DEVIAN: devianImg,
   DENISSON: denissonImg,
   BRAIS: braisImg,
+  ACOIDAN: acoidanImg,
 };
 
 // La hoja ALINEACION tambien pinta a los cadetes (entran con
