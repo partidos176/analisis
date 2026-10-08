@@ -3919,7 +3919,7 @@ const minutosPorJornada = [];
                                 <Label value="MINUTOS" angle={-90} position="insideLeft" offset={20} style={{ fill: '#94a3b8', fontSize: '0.8rem', fontFamily: 'var(--font-mono)', textAnchor: 'middle' }} />
                               </YAxis>
                               <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#ffffff' }} formatter={(value) => [`${Math.round(value / 60)} min`, 'Minutos']} />
-                              <Line type="monotone" dataKey="minutos" stroke="#ffffff" strokeWidth={3} dot={{ fill: '#ffffff', r: 4 }} activeDot={{ r: 6 }} />
+                              <Line type="monotone" dataKey="minutos" stroke="#e2e8f0" strokeWidth={3} dot={{ fill: '#e2e8f0', r: 4 }} activeDot={{ r: 6 }} />
                             </LineChart>
                           </ResponsiveContainer>
                         </div>
