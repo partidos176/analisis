@@ -8731,7 +8731,9 @@ const minutosPorJornada = [];
                         const copy = [...prev];
                         const cur = copy[idx];
                         if (!cur || !cur.name) return prev;
-                        copy[idx] = { ...cur, status: targetStatus };
+                        // Al caer en un cajetin se queda ahi: fuera del campo,
+                        // sin posicion en el mapa.
+                        copy[idx] = { ...cur, status: targetStatus, mapX: undefined, mapY: undefined };
                         return copy;
                       });
                     };
@@ -9046,7 +9048,7 @@ const minutosPorJornada = [];
                           </div>
                           </div>
                           {/* Columna derecha: zonas + plantilla (a la derecha del campo) */}
-                          <div className="mapa-derecha" style={{ flex: '0 0 300px', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem', marginLeft: '-9rem' }}>
+                          <div className="mapa-derecha" style={{ flex: '0 0 300px', minWidth: 170, display: 'flex', flexDirection: 'column', gap: '0.9rem', marginLeft: '-9rem', position: 'relative', zIndex: 3 }}>
                             {/* Cajetín bajo el campo: suplentes */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.6rem', width: '100%' }}>
                             {[
