@@ -11,3 +11,4 @@ dist/
 
 # Logs de arranque y del servidor.
 *.log
+*.err
