@@ -206,6 +206,7 @@ const totalesTabsDef = [
   { id: 'resumengoles', label: 'TOTAL GOLES' },
   { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
   { id: 'totalporcentaje', label: 'TOTAL %' },
+  { id: 'periodoaccion', label: 'PERIODO/ACCION' },
   { id: 'tiempojugado', label: 'TOTAL JUGADO' },
   { id: 'minutosjugados', label: 'MINUTOS JORNADA' },
   { id: 'jugadores', label: 'DATOS JUGADOR' },
@@ -363,6 +364,7 @@ export default function App() {
   const [partidoPorcentaje, setPartidoPorcentaje] = useState('');
   const [equipoPorcentaje, setEquipoPorcentaje] = useState('');
   const [accionPorcentaje, setAccionPorcentaje] = useState('');
+  const [partidoPeriodoAccion, setPartidoPeriodoAccion] = useState('');
   const [filtroJornada, setFiltroJornada] = useState('');
   const [filtroRol, setFiltroRol] = useState('');
   const [filtroEncuentro, setFiltroEncuentro] = useState('');
@@ -3484,6 +3486,149 @@ export default function App() {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+              {totalesTab === 'periodoaccion' && (
+                <div style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  minHeight: '400px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.5rem'
+                }}>
+                  {(() => {
+                    const rangos = [[0, 15], [16, 30], [31, 45], [46, 60], [61, 75], [76, 90]];
+                    const propias = ACCIONES_TOTALES.filter(a => !a.startsWith('RIVAL '));
+                    const rivales = ACCIONES_TOTALES.filter(a => a.startsWith('RIVAL '));
+                    const minutode = (t) => {
+                      if (!t) return null;
+                      const p = String(t).split(':').map(Number);
+                      if (p.length < 2 || isNaN(p[0])) return null;
+                      return p[0];
+                    };
+                    const contar = (al, filtro) => {
+                      const res = {};
+                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
+                      [...logArr].reverse().forEach(entry => {
+                        if (!entry) return;
+                        if (isPeriodMarker(entry.name)) return;
+                        if (entry.type === 'finalizacion') return;
+                        if (!filtro.includes(entry.name)) return;
+                        const min = minutode(entry.time);
+                        res[entry.name] = res[entry.name] || {};
+                        if (min != null) res[entry.name][min] = (res[entry.name][min] || 0) + 1;
+                        else res[entry.name]['sin'] = (res[entry.name]['sin'] || 0) + 1;
+                      });
+                      return res;
+                    };
+                    const sumarEn = (destino, origen) => {
+                      Object.keys(origen).forEach(k => {
+                        destino[k] = destino[k] || {};
+                        Object.keys(origen[k]).forEach(min => {
+                          destino[k][min] = (destino[k][min] || 0) + origen[k][min];
+                        });
+                      });
+                    };
+                    const porMinuto = {};
+                    const porMinutoRival = {};
+                    const listaPartidos = [];
+                    matches.forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      listaPartidos.push(m);
+                      if (partidoPeriodoAccion && m.id !== partidoPeriodoAccion) return;
+                      sumarEn(porMinuto, contar(m.actionLog, propias));
+                      sumarEn(porMinutoRival, contar(m.actionLog, rivales));
+                    });
+                    if (currentMatch) {
+                      listaPartidos.push(currentMatch);
+                      if (!partidoPeriodoAccion || partidoPeriodoAccion === currentMatch.id) {
+                        sumarEn(porMinuto, contar(actionLog, propias));
+                        sumarEn(porMinutoRival, contar(actionLog, rivales));
+                      }
+                    }
+                    const cols = propias.filter(a => Object.keys(porMinuto[a] || {}).length > 0);
+                    const colsRival = rivales.filter(a => Object.keys(porMinutoRival[a] || {}).length > 0);
+                    const pintarTabla = (titulo, colorTitulo, colsT, datos) => {
+                      if (!colsT.length) return null;
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+                          <span style={{ color: colorTitulo, fontWeight: 800, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{titulo}</span>
+                          <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', overflowX: 'auto' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', flexShrink: 0 }}>
+                              <span style={{ color: '#facc15', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>PARTIDO</span>
+                              <select
+                                className="input-control"
+                                value={partidoPeriodoAccion}
+                                onChange={(e) => setPartidoPeriodoAccion(e.target.value)}
+                                style={{ background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.7rem', fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', maxWidth: '220px' }}
+                              >
+                                <option value="">TODOS</option>
+                                {listaPartidos.filter(m => m.matchday != null && m.matchday !== '').slice().sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
+                                  <option key={m.id} value={m.id}>
+                                    {`J${m.matchday} ${m.homeTeam || ''} - ${m.awayTeam || ''}`}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <table style={{ borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+                              <thead>
+                                <tr>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.55rem 0.8rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase' }}>PERIODO</th>
+                                  {colsT.map(a => (
+                                    <th key={a} style={{ border: '1px solid var(--border-subtle)', padding: '0.55rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', fontSize: '0.8rem', lineHeight: 1.15 }}>
+                                      {a.split(' ').map((w, i) => (
+                                        <div key={i}>{w}</div>
+                                      ))}
+                                    </th>
+                                  ))}
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.55rem 0.5rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {rangos.map(([d, h]) => {
+                                  const filaTot = {};
+                                  colsT.forEach(a => {
+                                    let s = 0;
+                                    Object.keys(datos[a] || {}).forEach(min => {
+                                      const mNum = Number(min);
+                                      if (mNum >= d && mNum <= h) s += datos[a][min];
+                                    });
+                                    filaTot[a] = s;
+                                  });
+                                  const totalFila = colsT.reduce((s, a) => s + filaTot[a], 0);
+                                  return (
+                                    <tr key={`${titulo}-${d}-${h}`}>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap', textAlign: 'center' }}>{d}-{h}</td>
+                                      {colsT.map(a => (
+                                        <td key={a} style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.65rem', textAlign: 'center', color: filaTot[a] > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filaTot[a] || ''}</td>
+                                      ))}
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.5rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalFila || '-'}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    };
+                    if (!cols.length && !colsRival.length) {
+                      return (
+                        <div style={{ textAlign: 'center', color: '#94a3b8', fontWeight: 700, fontSize: '0.95rem' }}>
+                          Sin acciones registradas. Abre un partido y registra acciones (TIRO, CENTRO...).
+                        </div>
+                      );
+                    }
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
+                        {pintarTabla('ACCIONES PROPIAS', '#ffffff', cols, porMinuto)}
+                        {pintarTabla('ACCIONES RIVAL', '#ef4444', colsRival, porMinutoRival)}
                       </div>
                     );
                   })()}
