@@ -365,6 +365,7 @@ export default function App() {
   const [equipoPorcentaje, setEquipoPorcentaje] = useState('');
   const [accionPorcentaje, setAccionPorcentaje] = useState('');
   const [partidoPeriodoAccion, setPartidoPeriodoAccion] = useState('');
+  const [partidoPeriodoRival, setPartidoPeriodoRival] = useState('');
   const [filtroJornada, setFiltroJornada] = useState('');
   const [filtroRol, setFiltroRol] = useState('');
   const [filtroEncuentro, setFiltroEncuentro] = useState('');
@@ -3541,14 +3542,19 @@ export default function App() {
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
                       listaPartidos.push(m);
-                      if (partidoPeriodoAccion && m.id !== partidoPeriodoAccion) return;
-                      sumarEn(porMinuto, contar(m.actionLog, propias));
-                      sumarEn(porMinutoRival, contar(m.actionLog, rivales));
+                      if (!partidoPeriodoAccion || m.id === partidoPeriodoAccion) {
+                        sumarEn(porMinuto, contar(m.actionLog, propias));
+                      }
+                      if (!partidoPeriodoRival || m.id === partidoPeriodoRival) {
+                        sumarEn(porMinutoRival, contar(m.actionLog, rivales));
+                      }
                     });
                     if (currentMatch) {
                       listaPartidos.push(currentMatch);
                       if (!partidoPeriodoAccion || partidoPeriodoAccion === currentMatch.id) {
                         sumarEn(porMinuto, contar(actionLog, propias));
+                      }
+                      if (!partidoPeriodoRival || partidoPeriodoRival === currentMatch.id) {
                         sumarEn(porMinutoRival, contar(actionLog, rivales));
                       }
                     }
@@ -3564,8 +3570,8 @@ export default function App() {
                               <span style={{ color: '#facc15', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>PARTIDO</span>
                               <select
                                 className="input-control"
-                                value={partidoPeriodoAccion}
-                                onChange={(e) => setPartidoPeriodoAccion(e.target.value)}
+                                value={titulo === 'ACCIONES PROPIAS' ? partidoPeriodoAccion : partidoPeriodoRival}
+                                onChange={(e) => titulo === 'ACCIONES PROPIAS' ? setPartidoPeriodoAccion(e.target.value) : setPartidoPeriodoRival(e.target.value)}
                                 style={{ background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.7rem', fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', maxWidth: '220px' }}
                               >
                                 <option value="">TODOS</option>
