@@ -4225,13 +4225,21 @@ const minutosPorJornada = [];
                             const mDur = selMatch.timerSeconds || 0;
                             const mMin = calcMatchMinutes(pl, selMatch.sustituciones, mDur);
                             const rolOrder = { titular: 0, suplente: 1, lesion: 2, 'division honor': 3, 'tenerife c': 4, 'no convocado': 5 };
-                            const jornadaFilas = Object.entries(mMin).sort((a, b) => {
-                              const sa = pl.find(p => p && p.name === a[0]);
-                              const sb = pl.find(p => p && p.name === b[0]);
-                              const ra = rolOrder[sa ? sa.status : 'no convocado'] ?? 5;
-                              const rb = rolOrder[sb ? sb.status : 'no convocado'] ?? 5;
-                              return ra - rb || b[1] - a[1];
-                            });
+                            // Solo los convocados de ese partido: titulares y suplentes.
+                            const convocadoDe = (n) => pl.find(p => p && normalizePlayerName(p.name) === normalizePlayerName(n));
+                            const jornadaFilas = Object.entries(mMin)
+                              .filter(([n]) => {
+                                const e = convocadoDe(n);
+                                return !!e && (e.status === 'titular' || e.status === 'suplente');
+                              })
+                              .sort((a, b) => {
+                                const sa = convocadoDe(a[0]);
+                                const sb = convocadoDe(b[0]);
+                                const ra = rolOrder[sa ? sa.status : 'no convocado'] ?? 5;
+                                const rb = rolOrder[sb ? sb.status : 'no convocado'] ?? 5;
+                                return ra - rb || b[1] - a[1];
+                              });
+                            if (jornadaFilas.length === 0) return <span style={{ color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic' }}>Sin convocatorias (titulares o suplentes) en este partido</span>;
                             return (
                             <table style={{ width: 'auto', margin: '0 auto', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
                                 <thead>
