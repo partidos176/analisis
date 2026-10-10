@@ -1508,13 +1508,52 @@ export default function App() {
   // Autoguardado cada 5 minutos: copia local (localStorage) + carpeta elegida + servidor
   const buildPayloadRef = useRef();
   buildPayloadRef.current = buildMatchPayload;
+  const idbSet = (key, val) => new Promise((res) => {
+    try {
+      const rq = indexedDB.open('ft_autosave', 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+      rq.onsuccess = () => { const tx = rq.result.transaction('kv', 'readwrite'); tx.objectStore('kv').put(val, key); tx.oncomplete = () => { rq.result.close(); res(true); }; };
+      rq.onerror = () => res(false);
+    } catch (_) { res(false); }
+  });
+  const idbGet = (key) => new Promise((res) => {
+    try {
+      const rq = indexedDB.open('ft_autosave', 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+      rq.onsuccess = () => { const tx = rq.result.transaction('kv', 'readonly'); const g = tx.objectStore('kv').get(key); g.onsuccess = () => { rq.result.close(); res(g.result || null); }; g.onerror = () => { rq.result.close(); res(null); }; };
+      rq.onerror = () => res(null);
+    } catch (_) { res(null); }
+  });
+  const restaurarCarpeta = async () => {
+    const handle = await idbGet('dir');
+    if (!handle) return;
+    try {
+      let perm = await handle.queryPermission({ mode: 'readwrite' });
+      if (perm === 'granted') { autoDirRef.current = handle; setAutoDirOk(true); }
+    } catch (_) {}
+  };
+  useEffect(() => { restaurarCarpeta(); }, []);
   const elegirCarpetaAuto = async () => {
+    if (!window.showDirectoryPicker) {
+      alert('Tu navegador no permite elegir carpeta automática. Usa Chrome o Edge en el equipo donde grabes.');
+      return;
+    }
     try {
       const dir = await window.showDirectoryPicker({ mode: 'readwrite' });
       autoDirRef.current = dir;
       setAutoDirOk(true);
+      await idbSet('dir', dir);
       alert('Carpeta elegida. El .json del partido se guardará ahí cada 5 minutos.');
-    } catch (_) { /* cancelado */ }
+    } catch (e) { if (e && e.name !== 'AbortError') alert('No se pudo abrir la carpeta: ' + (e.message || e)); }
+  };
+  const reactivarCarpeta = async () => {
+    const handle = autoDirRef.current || await idbGet('dir');
+    if (!handle) { elegirCarpetaAuto(); return; }
+    try {
+      const perm = await handle.requestPermission({ mode: 'readwrite' });
+      if (perm === 'granted') { autoDirRef.current = handle; setAutoDirOk(true); }
+      else alert('Permiso denegado.');
+    } catch (e) { alert('No se pudo reactivar: ' + (e.message || e)); }
   };
   const nextAutoName = (matchId, hm, am, md) => {
     let n = 1;
@@ -6576,8 +6615,8 @@ const minutosPorJornada = [];
             EXPORTAR
           </button>
           <button
-            onClick={elegirCarpetaAuto}
-            title="Elige una carpeta: el .json del partido se guarda ahí solo cada 5 minutos"
+            onClick={autoDirOk ? reactivarCarpeta : elegirCarpetaAuto}
+            title="Elige una carpeta: el .json del partido se guarda ahí solo cada 5 minutos (Chrome/Edge)"
             style={{ background: autoDirOk ? '#16a34a' : '#0ea5e9', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.55rem 1.3rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.04em' }}
           >
             {autoDirOk ? 'AUTO OK' : 'AUTO CADA 5\''}
