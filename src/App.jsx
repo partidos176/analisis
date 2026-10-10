@@ -1523,7 +1523,11 @@ export default function App() {
       let perm = await dir.queryPermission({ mode: 'readwrite' });
       if (perm !== 'granted') perm = await dir.requestPermission({ mode: 'readwrite' });
       if (perm !== 'granted') return;
-      const nombre = 'partido_' + String(matchId).replace(/[^\w-]/g, '_') + '.json';
+      let n = 1;
+      try { n = (parseInt(localStorage.getItem('ft_autocount_' + matchId), 10) || 0) + 1; localStorage.setItem('ft_autocount_' + matchId, String(n)); } catch (_) {}
+      const j = md ? 'j' + md : '';
+      const base = `${n}+${j} ${hm || ''}vs${am || ''}`.replace(/[\\/:*?"<>|]/g, '_').trim();
+      const nombre = base + '.json';
       const fh = await dir.getFileHandle(nombre, { create: true });
       const writable = await fh.createWritable();
       const entry = {
