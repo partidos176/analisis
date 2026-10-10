@@ -3688,7 +3688,7 @@ export default function App() {
                     </select>
                   </div>
                   </div>
-                  {equipoPorcentaje && accionPorcentaje && (() => {
+                  {accionPorcentaje && (() => {
                     const finalsOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'PENAL + GOL RIVAL', 'GOL RIVAL', 'INFRACCION'];
                     const res = {};
                     const contar = (al) => {
@@ -3710,11 +3710,12 @@ export default function App() {
                     if (currentMatch && pasaJornada(currentMatch)) contar(actionLog);
                     const data = finalsOrder.filter(f => f !== 'OCASION' && res[f] > 0).map(f => ({ name: f, v: res[f] }));
                     const total = data.reduce((s, d) => s + d.v, 0);
-                    const coloresBase = ['#38bdf8', '#f87171', '#facc15', '#4ade80', '#c084fc', '#fb923c', '#22d3ee', '#f472b6', '#a3e635', '#fde047', '#34d399', '#60a5fa', '#e879f9', '#94a3b8', '#ef4444'];
-                    const colores = data.map((_, i) => {
-                      if (i < coloresBase.length) return coloresBase[i];
-                      const h = (i * 137) % 360;
-                      return `hsl(${h}, 80%, 55%)`;
+                    // Cada color con el siguiente en tono claro/oscuro alternado
+                    const colores = data.map((d, idx) => {
+                      const i = finalsOrder.indexOf(d.name);
+                      const matiz = (i * 24) % 360;
+                      const luz = idx % 2 === 0 ? 38 : 72;
+                      return `hsl(${matiz}, 90%, ${luz}%)`;
                     });
                     if (!total) {
                       return (
