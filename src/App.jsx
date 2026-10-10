@@ -1503,6 +1503,33 @@ export default function App() {
   useEffect(() => { setGolCount(golesList.filter(esGolPropio).length); }, [golesList]);
   useEffect(() => { setGolRivalCount(golesRivalList.length); }, [golesRivalList]);
 
+  // Autoguardado cada 5 minutos: copia local (localStorage) + archivo .json en el servidor
+  useEffect(() => {
+    if (!currentMatch || !currentMatch.id) return;
+    const iv = setInterval(() => {
+      try {
+        const payload = buildMatchPayload();
+        const entry = {
+          app: 'futboltotal-copia-partido', version: 1,
+          savedAt: Date.now(),
+          matchId: currentMatch.id,
+          homeTeam: currentMatch.homeTeam, awayTeam: currentMatch.awayTeam, matchday: currentMatch.matchday,
+          payload
+        };
+        localStorage.setItem(`ft_copia_${currentMatch.id}`, JSON.stringify(entry));
+        localStorage.setItem(`ft_copia_${currentMatch.id}_meta`, JSON.stringify({ savedAt: entry.savedAt }));
+        if (SERVER_URL) {
+          fetch(SERVER_URL + '/api/guardar-partido', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ matchId: currentMatch.id, homeTeam: currentMatch.homeTeam, awayTeam: currentMatch.awayTeam, matchday: currentMatch.matchday, payload })
+          }).catch(() => {});
+        }
+      } catch (_) { /* sin espacio local: se ignora */ }
+    }, 5 * 60 * 1000);
+    return () => clearInterval(iv);
+  }, [currentMatch, SERVER_URL]);
+
   const generarTodosLosCortes = async () => {
     if (!videoFile) {
       setCorteError('Selecciona primero el archivo de vídeo');

@@ -810,6 +810,31 @@ app.post('/api/montaje', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
+
+// Autoguardado de partido: escribe/actualiza un .json en disco cada vez que la web lo pide
+const COPIAS_DIR = path.join(os.homedir(), 'Documents', 'FutbolCopias');
+fs.mkdirSync(COPIAS_DIR, { recursive: true });
+
+app.post('/api/guardar-partido', (req, res) => {
+  try {
+    const { matchId, homeTeam, awayTeam, matchday, payload } = req.body || {};
+    if (!matchId || !payload) return res.status(400).json({ error: 'Faltan matchId o payload' });
+    const safe = String(matchId).replace(/[^\w-]/g, '_');
+    const file = path.join(COPIAS_DIR, `${safe}.json`);
+    const entry = {
+      app: 'futboltotal-copia-partido', version: 1,
+      savedAt: Date.now(),
+      matchId, homeTeam: homeTeam || '', awayTeam: awayTeam || '', matchday: matchday || null,
+      payload
+    };
+    fs.writeFileSync(file, JSON.stringify(entry, null, 2), 'utf8');
+    res.json({ ok: true, file });
+  } catch (err) {
+    console.error('[GuardarPartido] Error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor de cortes escuchando en http://0.0.0.0:${PORT}`);
   console.log(`ffmpeg: ${ffmpegPath}`);
