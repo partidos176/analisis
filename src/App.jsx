@@ -206,13 +206,12 @@ const totalesTabsDef = [
   { id: 'resumengoles', label: 'TOTAL GOLES' },
   { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
   { id: 'totalporcentaje', label: 'TOTAL %' },
-  { id: 'periodoaccion', label: 'PERIODO/ACCION' },
+  { id: 'periodoaccion', label: 'PERIODO/ACCIÓN' },
   { id: 'tiempojugado', label: 'TOTAL JUGADO' },
   { id: 'minutosjugados', label: 'MINUTOS JORNADA' },
   { id: 'jugadores', label: 'DATOS JUGADOR' },
   { id: 'posesion', label: 'TOTAL POSESIÓN' },
-  { id: 'cadetes', label: 'CADETES' },
-  { id: 'prueba', label: 'PRUEBA' }
+  { id: 'cadetes', label: 'CADETES' }
 ];
 
 export default function App() {
@@ -220,13 +219,6 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [vista, setVista] = useState('menu');
   const [timelineVideo, setTimelineVideo] = useState(null);
-  const [pruebaVideo, setPruebaVideo] = useState(null);
-  const [pruebaSeconds, setPruebaSeconds] = useState(0);
-  const [pruebaRunning, setPruebaRunning] = useState(false);
-  const [pruebaLog, setPruebaLog] = useState([]);
-  const [pruebaAviso, setPruebaAviso] = useState(false);
-  const [pruebaSpeed, setPruebaSpeed] = useState(1);
-  const pruebaVideoRef = useRef(null);
   const [timelineTime, setTimelineTime] = useState(0);
   const [fin1Time, setFin1Time] = useState(null);
   const [fin1EndTime, setFin1EndTime] = useState(null);
@@ -237,15 +229,6 @@ export default function App() {
   const [showAllRows1, setShowAllRows1] = useState(false);
   const [showAllRows2, setShowAllRows2] = useState(false);
   const timelineVideoUrl = useMemo(() => timelineVideo ? URL.createObjectURL(timelineVideo) : null, [timelineVideo]);
-  const pruebaVideoUrl = useMemo(() => pruebaVideo ? URL.createObjectURL(pruebaVideo) : null, [pruebaVideo]);
-  useEffect(() => {
-    if (!pruebaRunning) return;
-    const id = setInterval(() => setPruebaSeconds(s => s + 1), 1000 / pruebaSpeed);
-    return () => clearInterval(id);
-  }, [pruebaRunning, pruebaSpeed]);
-  useEffect(() => {
-    if (pruebaVideoRef.current) pruebaVideoRef.current.playbackRate = pruebaSpeed;
-  }, [pruebaSpeed, pruebaVideoUrl]);
   const timelineVideoRef = useRef(null);
 
   useEffect(() => {
@@ -3653,26 +3636,6 @@ export default function App() {
                 }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', justifyContent: 'center' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
-                    <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em', alignSelf: 'stretch', textAlign: 'center' }}>EQUIPO</span>
-                    <select
-                      className="input-control"
-                      value={equipoPorcentaje}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setEquipoPorcentaje(v);
-                        const pjOk = !partidoPorcentaje || matchesDelEquipo(v).some(m => m.id === partidoPorcentaje);
-                        if (!pjOk) setPartidoPorcentaje('');
-                        if (accionPorcentaje && !accionesParaEquipo(v, pjOk ? partidoPorcentaje : '').includes(accionPorcentaje)) setAccionPorcentaje('');
-                      }}
-                      style={{ width: 'fit-content', maxWidth: '100%', background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.6rem 0.9rem', fontWeight: 800, fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
-                    >
-                      <option value="">— Selecciona un equipo —</option>
-                      {[...new Set(matches.flatMap(m => [m.homeTeam, m.awayTeam]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')).map(t => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
                     <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em', alignSelf: 'stretch', textAlign: 'center' }}>ACCIONES</span>
                     <select
                       className="input-control"
@@ -3681,9 +3644,19 @@ export default function App() {
                       style={{ width: 'fit-content', maxWidth: '100%', background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.6rem 0.9rem', fontWeight: 800, fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
                     >
                       <option value="">— Selecciona una acción —</option>
-                      {accionesParaEquipo(equipoPorcentaje, partidoPorcentaje).map(a => (
+                      {(() => {
+                        const usadas = new Set();
+                        matches.forEach(m => {
+                          if (currentMatch && m.id === currentMatch.id) return;
+                          const logArr = Array.isArray(m.actionLog) ? m.actionLog : (m.actionLog ? Object.values(m.actionLog) : []);
+                          logArr.forEach(e => { if (e && e.type === 'accion' && !isPeriodMarker(e.name)) usadas.add(e.name); });
+                        });
+                        const logArr = Array.isArray(actionLog) ? actionLog : [];
+                        logArr.forEach(e => { if (e && e.type === 'accion' && !isPeriodMarker(e.name)) usadas.add(e.name); });
+                        return ACCIONES_TOTALES.filter(a => usadas.has(a)).map(a => (
                           <option key={a} value={a}>{a}</option>
-                        ))}
+                        ));
+                      })()}
                     </select>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
@@ -3694,12 +3667,12 @@ export default function App() {
                       onChange={(e) => {
                         const v = e.target.value;
                         setPartidoPorcentaje(v);
-                        if (accionPorcentaje && !accionesParaEquipo(equipoPorcentaje, v).includes(accionPorcentaje)) setAccionPorcentaje('');
+                        if (accionPorcentaje && !accionesParaEquipo('', v).includes(accionPorcentaje)) setAccionPorcentaje('');
                       }}
                       style={{ width: 'fit-content', maxWidth: '100%', background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.6rem 0.9rem', fontWeight: 800, fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
                     >
                       <option value="">TODAS</option>
-                      {matchesDelEquipo(equipoPorcentaje).slice().sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => {
+                      {matchesDelEquipo('').filter(m => m.matchday != null && m.matchday !== '').slice().sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => {
                         const homeIsTenerife = m.homeTeam && m.homeTeam.toUpperCase().includes('TENERIFE');
                         const awayIsTenerife = m.awayTeam && m.awayTeam.toUpperCase().includes('TENERIFE');
                         const golesTenerife = (m.golesList || []).filter(esGolPropio).length;
@@ -3727,21 +3700,26 @@ export default function App() {
                         else if (entry.type === 'finalizacion' && ultimaAccion === accionPorcentaje) res[entry.name] = (res[entry.name] || 0) + 1;
                       });
                     };
-                    const esDelEquipo = (m) => m.homeTeam === equipoPorcentaje || m.awayTeam === equipoPorcentaje;
+                    const esDelEquipo = (m) => true;
                     const pasaJornada = (m) => !partidoPorcentaje || m.id === partidoPorcentaje;
-                    matchesDelEquipo(equipoPorcentaje).forEach(m => {
+                    matchesDelEquipo('').forEach(m => {
                       if (!pasaJornada(m)) return;
                       if (currentMatch && m.id === currentMatch.id) return;
                       contar(m.actionLog);
                     });
-                    if (currentMatch && esDelEquipo(currentMatch) && pasaJornada(currentMatch)) contar(actionLog);
+                    if (currentMatch && pasaJornada(currentMatch)) contar(actionLog);
                     const data = finalsOrder.filter(f => f !== 'OCASION' && res[f] > 0).map(f => ({ name: f, v: res[f] }));
                     const total = data.reduce((s, d) => s + d.v, 0);
-                    const colores = ['#38bdf8', '#f87171', '#facc15', '#4ade80', '#c084fc', '#fb923c', '#22d3ee', '#f472b6', '#a3e635', '#fde047', '#34d399', '#60a5fa', '#e879f9', '#94a3b8', '#ef4444'];
+                    const coloresBase = ['#38bdf8', '#f87171', '#facc15', '#4ade80', '#c084fc', '#fb923c', '#22d3ee', '#f472b6', '#a3e635', '#fde047', '#34d399', '#60a5fa', '#e879f9', '#94a3b8', '#ef4444'];
+                    const colores = data.map((_, i) => {
+                      if (i < coloresBase.length) return coloresBase[i];
+                      const h = (i * 137) % 360;
+                      return `hsl(${h}, 80%, 55%)`;
+                    });
                     if (!total) {
                       return (
                         <div style={{ textAlign: 'center', color: '#94a3b8', fontWeight: 700, fontSize: '0.95rem' }}>
-                          Sin registros de {accionPorcentaje} para {equipoPorcentaje}.
+                          Sin registros de {accionPorcentaje}.
                         </div>
                       );
                     }
@@ -3756,9 +3734,9 @@ export default function App() {
                       const mid = (a0 + a1) / 2;
                       const large = frac > 0.5 ? 1 : 0;
                       let path, fillRule;
-                      if (frac >= 1) {
-                        path = `M ${cx - R} ${cy} A ${R} ${R} 0 1 1 ${cx + R} ${cy} A ${R} ${R} 0 1 1 ${cx - R} ${cy} Z M ${cx - rIn} ${cy} A ${rIn} ${rIn} 0 1 1 ${cx + rIn} ${cy} A ${rIn} ${rIn} 0 1 1 ${cx - rIn} ${cy} Z`;
-                        fillRule = 'evenodd';
+                      if (frac >= 0.999) {
+                        path = `M ${cx - R} ${cy} A ${R} ${R} 0 1 1 ${cx + R} ${cy} A ${R} ${R} 0 1 1 ${cx - R} ${cy} Z`;
+                        fillRule = 'nonzero';
                       } else {
                         const [ox0, oy0] = pt(R, a0);
                         const [ox1, oy1] = pt(R, a1);
@@ -3769,31 +3747,30 @@ export default function App() {
                       const [px, py] = pt(R + 8, mid);
                       const [qx, qy] = pt(R + 42, mid);
                       const der = Math.cos(mid) >= 0 ? 1 : -1;
-                      const labelX = cx + der * 215;
+                      const labelX = Math.max(90, Math.min(670, cx + der * 215));
                       const [mx, my] = pt((R + rIn) / 2, mid);
-                      return { ...d, color: colores[i % colores.length], path, fillRule, pct: (frac * 100).toFixed(1), frac, px, py, qx, qy, der, labelX, mx, my };
+                      return { ...d, color: colores[i], path, fillRule, pct: (frac * 100).toFixed(1), frac, px, py, qx, qy, der, labelX, mx, my };
                     });
                     return (
                       <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <svg viewBox="0 0 760 430" style={{ width: '100%', maxWidth: '760px', height: 'auto' }}>
+                        <svg viewBox="0 0 760 430" style={{ width: '100%', maxWidth: '760px', height: 'auto', overflow: 'visible' }}>
                           {arcs.map(a => <path key={a.name} d={a.path} fill={a.color} fillRule={a.fillRule} stroke="#0f172a" strokeWidth="2" />)}
-                          {arcs.map(a => a.frac >= 0.06 && (
-                            <text key={`p-${a.name}`} x={a.mx} y={a.my} textAnchor="middle" dominantBaseline="middle" style={{ fill: '#ffffff', fontWeight: 800, fontSize: '16px' }}>{a.pct}%</text>
+                          {arcs.map(a => (
+                            <text key={`p-${a.name}`} x={a.mx} y={a.my} textAnchor="middle" dominantBaseline="middle" style={{ fill: '#ffffff', fontWeight: 800, fontSize: '13px', paintOrder: 'stroke', stroke: '#0f172a', strokeWidth: 3 }}>{a.pct}%</text>
                           ))}
-{arcs.map(a => (
-                              <g key={`l-${a.name}`} style={{ stroke: a.color, strokeWidth: 1.5, strokeDasharray: '4 4', fill: 'none' }}>
-                                <line x1={a.px} y1={a.py} x2={a.qx} y2={a.qy} />
-                                <line x1={a.qx} y1={a.qy} x2={a.labelX} y2={a.qy} />
-                                <circle cx={a.labelX} cy={a.qy} r="4.5" fill={a.color} stroke="none" />
-                              </g>
-                            ))}
-                            {arcs.map(a => (
-                              <g key={`t-${a.name}`}>
-                                <text x={a.labelX + a.der * 12} y={a.qy - 3} textAnchor={a.der > 0 ? 'start' : 'end'} style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.name}</text>
-                                <text x={a.labelX + a.der * 12} y={a.qy + 15} textAnchor="middle" style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.v}</text>
-                              </g>
-                            ))}
-                          <circle cx={cx} cy={cy} r={rIn - 3} fill="#0f172a" stroke="#0f172a" strokeWidth="3" />
+                          {arcs.map(a => (
+                            <g key={`l-${a.name}`} style={{ stroke: a.color, strokeWidth: 1.5, strokeDasharray: '4 4', fill: 'none' }}>
+                              <line x1={a.px} y1={a.py} x2={a.qx} y2={a.qy} />
+                              <line x1={a.qx} y1={a.qy} x2={a.labelX} y2={a.qy} />
+                              <circle cx={a.labelX} cy={a.qy} r="4.5" fill={a.color} stroke="none" />
+                            </g>
+                          ))}
+                          {arcs.map(a => (
+                            <g key={`t-${a.name}`}>
+                              <text x={a.labelX + a.der * 12} y={a.qy - 3} textAnchor={a.der > 0 ? 'start' : 'end'} style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.name}</text>
+                              <text x={a.labelX + a.der * 12} y={a.qy + 15} textAnchor="middle" style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.v}<tspan style={{ fill: '#ffffff' }}> ({a.pct}%)</tspan></text>
+                            </g>
+                          ))}
                         </svg>
                         <div style={{ textAlign: 'center', marginTop: '2.5rem', fontWeight: 800, fontSize: '1.2rem', color: '#ffffff', textDecoration: 'underline' }}>
                           TOTAL: {total}
@@ -5093,131 +5070,6 @@ const minutosPorJornada = [];
                       })()}
                      </div>
                     </div>
-                  </div>
-                </div>
-              )}
-              {totalesTab === 'prueba' && (
-                <div style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '2rem',
-                  minHeight: '400px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1.5rem',
-                  alignItems: 'center'
-                }}>
-                  <label style={{ background: '#0284c7', color: '#ffffff', borderRadius: '8px', padding: '0.6rem 1.5rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Insertar video
-                    <input type="file" accept="video/*" hidden onChange={(e) => setPruebaVideo(e.target.files[0] || null)} />
-                  </label>
-                  <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
-                  {pruebaVideoUrl && (
-                    <video ref={pruebaVideoRef} src={pruebaVideoUrl} controls onPlay={() => setPruebaRunning(true)} onPause={() => setPruebaRunning(false)} onEnded={() => setPruebaRunning(false)} style={{ flex: '1 1 480px', maxWidth: '800px', width: '100%', borderRadius: '8px', background: '#000' }} />
-                  )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', flex: '1 1 280px', maxWidth: '360px', width: '100%' }}>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '2rem', color: '#ffffff' }}>
-                      {String(Math.floor(pruebaSeconds / 60)).padStart(2, '0')}:{String(pruebaSeconds % 60).padStart(2, '0')}
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                      <button onClick={() => { const order = [1, 1.5, 2, 3, 4, 0.5]; setPruebaSpeed(order[(order.indexOf(pruebaSpeed) + 1) % order.length]); }} style={{ background: '#7c3aed', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>Velocidad {pruebaSpeed}x</button>
-                      <button onClick={() => { setPruebaRunning(false); setPruebaSeconds(0); setPruebaLog([]); }} style={{ background: '#475569', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>Reiniciar</button>
-                      <button onClick={async () => {
-                        const toSecs = (t) => (typeof t === 'number' ? t : (() => { const p = String(t || '0:0').split(':').map(Number); return (p[0] || 0) * 60 + (p[1] || 0); })());
-                        const fmtT = (s) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0');
-                        let own = 0, riv = 0, opS = null, orS = null;
-                        pruebaLog.forEach(e => {
-                          const s = toSecs(e.time);
-                          if (e.name === 'ON PROPIO') { if (opS === null) opS = s; }
-                          else if (e.name === 'OFF PROPIO' && opS !== null) { own += Math.max(0, s - opS); opS = null; }
-                          else if (e.name === 'ON RIVAL') { if (orS === null) orS = s; }
-                          else if (e.name === 'OFF RIVAL' && orS !== null) { riv += Math.max(0, s - orS); orS = null; }
-                        });
-                        if (opS !== null) own += Math.max(0, pruebaSeconds - opS);
-                        if (orS !== null) riv += Math.max(0, pruebaSeconds - orS);
-                        const tot = Math.max(1, pruebaSeconds);
-                        const pc = (s) => Math.round((s / tot) * 100);
-                        const XLSX = await import('xlsx');
-                        const wb = XLSX.utils.book_new();
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([
-                          { CONCEPTO: 'TIEMPO TOTAL', VALOR: fmtT(pruebaSeconds) },
-                          { CONCEPTO: 'ON PROPIO', VALOR: pruebaLog.filter(e => e.name === 'ON PROPIO').length },
-                          { CONCEPTO: 'OFF PROPIO', VALOR: pruebaLog.filter(e => e.name === 'OFF PROPIO').length },
-                          { CONCEPTO: 'ON RIVAL', VALOR: pruebaLog.filter(e => e.name === 'ON RIVAL').length },
-                          { CONCEPTO: 'OFF RIVAL', VALOR: pruebaLog.filter(e => e.name === 'OFF RIVAL').length },
-                          { CONCEPTO: 'TIEMPO PROPIO', VALOR: fmtT(own) },
-                          { CONCEPTO: 'TIEMPO RIVAL', VALOR: fmtT(riv) },
-                          { CONCEPTO: 'TIEMPO NEUTRO', VALOR: fmtT(Math.max(0, tot - own - riv)) },
-                          { CONCEPTO: '% PROPIO', VALOR: pc(own) },
-                          { CONCEPTO: '% RIVAL', VALOR: pc(riv) },
-                          { CONCEPTO: '% NEUTRO', VALOR: pc(Math.max(0, tot - own - riv)) }
-                        ]), 'Resumen');
-                        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pruebaLog.map(e => ({ nombre: e.name, tiempo: fmtT(toSecs(e.time)) }))), 'Marcas');
-                        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                        const blob = new Blob([wbout], { type: 'application/octet-stream' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'prueba_posesion.xlsx';
-                        a.click();
-                        URL.revokeObjectURL(url);
-                      }} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.85rem', cursor: 'pointer', textTransform: 'uppercase' }}>Exportar Excel</button>
-                    </div>
-                    {(() => {
-                      const pOn = pruebaLog.filter(e => e.name === 'ON PROPIO').length;
-                      const pOff = pruebaLog.filter(e => e.name === 'OFF PROPIO').length;
-                      const rOn = pruebaLog.filter(e => e.name === 'ON RIVAL').length;
-                      const rOff = pruebaLog.filter(e => e.name === 'OFF RIVAL').length;
-                      const avisa = () => { setPruebaAviso(true); setTimeout(() => setPruebaAviso(false), 2500); };
-                      const marca = (name) => {
-                        if (name === 'ON PROPIO' && (rOn !== rOff || pOn > pOff)) return avisa();
-                        if (name === 'OFF PROPIO' && pOff >= pOn) return avisa();
-                        if (name === 'ON RIVAL' && (pOn !== pOff || rOn > rOff)) return avisa();
-                        if (name === 'OFF RIVAL' && rOff >= rOn) return avisa();
-                        const first = pruebaLog.length === 0 && (name === 'ON PROPIO' || name === 'ON RIVAL');
-                        setPruebaLog(prev => [...prev, { name, time: first ? 0 : pruebaSeconds }]);
-                      };
-                      const toSecs = (t) => {
-                        if (typeof t === 'number') return t;
-                        const p = String(t || '0:0').split(':').map(Number);
-                        return (p[0] || 0) * 60 + (p[1] || 0);
-                      };
-                      let own = 0, riv = 0, opS = null, orS = null;
-                      pruebaLog.forEach(e => {
-                        const s = toSecs(e.time);
-                        if (e.name === 'ON PROPIO') { if (opS === null) opS = s; }
-                        else if (e.name === 'OFF PROPIO' && opS !== null) { own += Math.max(0, s - opS); opS = null; }
-                        else if (e.name === 'ON RIVAL') { if (orS === null) orS = s; }
-                        else if (e.name === 'OFF RIVAL' && orS !== null) { riv += Math.max(0, s - orS); orS = null; }
-                      });
-                      if (opS !== null) own += Math.max(0, pruebaSeconds - opS);
-                      if (orS !== null) riv += Math.max(0, pruebaSeconds - orS);
-                      const tot = Math.max(1, pruebaSeconds);
-                      const pc = (s) => Math.round((s / tot) * 100);
-                      const btn = (bg) => ({ background: bg, color: '#ffffff', border: 'none', borderRadius: '50%', width: '75px', height: '75px', fontWeight: 900, fontSize: '0.8rem', cursor: 'pointer', textTransform: 'uppercase' });
-                      return (
-                        <>
-                          {pruebaAviso && (<div style={{ color: '#ef4444', fontWeight: 800, textTransform: 'uppercase' }}>Iguala antes</div>)}
-                          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                              <button onClick={() => marca('ON PROPIO')} style={btn('#f97316')}>ON<br />Propio<br />{pOn}</button>
-                              <button onClick={() => marca('ON RIVAL')} style={btn('#ef4444')}>ON<br />Rival<br />{rOn}</button>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                              <button onClick={() => marca('OFF PROPIO')} style={btn('#f97316')}>OFF<br />Propio<br />{pOff}</button>
-                              <button onClick={() => marca('OFF RIVAL')} style={btn('#ef4444')}>OFF<br />Rival<br />{rOff}</button>
-                            </div>
-                          </div>
-                          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem', fontFamily: 'var(--font-mono)' }}>
-                            <span style={{ color: '#22c55e' }}>PROPIO {pc(own)}%</span>
-                            <span style={{ color: '#ef4444' }}>RIVAL {pc(riv)}%</span>
-                            <span style={{ color: '#f59e0b' }}>NEUTRO {pc(Math.max(0, tot - own - riv))}%</span>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
                   </div>
                 </div>
               )}
