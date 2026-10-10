@@ -817,10 +817,10 @@ fs.mkdirSync(COPIAS_DIR, { recursive: true });
 
 app.post('/api/guardar-partido', (req, res) => {
   try {
-    const { matchId, homeTeam, awayTeam, matchday, payload } = req.body || {};
+    const { matchId, homeTeam, awayTeam, matchday, payload, filename } = req.body || {};
     if (!matchId || !payload) return res.status(400).json({ error: 'Faltan matchId o payload' });
-    const safe = String(matchId).replace(/[^\w-]/g, '_');
-    const file = path.join(COPIAS_DIR, `${safe}.json`);
+    const safe = (filename && String(filename).replace(/[\\/:*?"<>|]/g, '_')) || String(matchId).replace(/[^\w-]/g, '_');
+    const file = path.join(COPIAS_DIR, safe.endsWith('.json') ? safe : safe + '.json');
     const entry = {
       app: 'futboltotal-copia-partido', version: 1,
       savedAt: Date.now(),

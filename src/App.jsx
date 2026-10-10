@@ -1516,29 +1516,42 @@ export default function App() {
       alert('Carpeta elegida. El .json del partido se guardará ahí cada 5 minutos.');
     } catch (_) { /* cancelado */ }
   };
+  const nextAutoName = (matchId, hm, am, md) => {
+    let n = 1;
+    try { n = (parseInt(localStorage.getItem('ft_autocount_' + matchId), 10) || 0) + 1; localStorage.setItem('ft_autocount_' + matchId, String(n)); } catch (_) {}
+    const j = md ? 'j' + md : '';
+    return `${n}+${j} ${hm || ''}vs${am || ''}`.replace(/[\\/:*?"<>|]/g, '_').trim() + '.json';
+  };
   const escribirAuto = async (matchId, hm, am, md) => {
+    const nombre = nextAutoName(matchId, hm, am, md);
     const dir = autoDirRef.current;
-    if (!dir) return;
-    try {
-      let perm = await dir.queryPermission({ mode: 'readwrite' });
-      if (perm !== 'granted') perm = await dir.requestPermission({ mode: 'readwrite' });
-      if (perm !== 'granted') return;
-      let n = 1;
-      try { n = (parseInt(localStorage.getItem('ft_autocount_' + matchId), 10) || 0) + 1; localStorage.setItem('ft_autocount_' + matchId, String(n)); } catch (_) {}
-      const j = md ? 'j' + md : '';
-      const base = `${n}+${j} ${hm || ''}vs${am || ''}`.replace(/[\\/:*?"<>|]/g, '_').trim();
-      const nombre = base + '.json';
-      const fh = await dir.getFileHandle(nombre, { create: true });
-      const writable = await fh.createWritable();
-      const entry = {
-        app: 'futboltotal-copia-partido', version: 1,
-        savedAt: Date.now(),
-        matchId, homeTeam: hm || '', awayTeam: am || '', matchday: md || null,
-        payload: buildPayloadRef.current()
-      };
-      await writable.write(JSON.stringify(entry, null, 2));
-      await writable.close();
-    } catch (_) { /* carpeta no disponible */ }
+    if (dir) {
+      try {
+        let perm = await dir.queryPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') perm = await dir.requestPermission({ mode: 'readwrite' });
+        if (perm === 'granted') {
+          const fh = await dir.getFileHandle(nombre, { create: true });
+          const writable = await fh.createWritable();
+          const entry = {
+            app: 'futboltotal-copia-partido', version: 1,
+            savedAt: Date.now(),
+            matchId, homeTeam: hm || '', awayTeam: am || '', matchday: md || null,
+            payload: buildPayloadRef.current()
+          };
+          await writable.write(JSON.stringify(entry, null, 2));
+          await writable.close();
+        }
+      } catch (_) { /* carpeta no disponible */ }
+    }
+    if (SERVER_URL) {
+      try {
+        await fetch(SERVER_URL + '/api/guardar-partido', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ matchId, homeTeam: hm, awayTeam: am, matchday: md, filename: nombre, payload: buildPayloadRef.current() })
+        });
+      } catch (_) { /* servidor no disponible */ }
+    }
   };
   useEffect(() => {
     const matchId = currentMatch && currentMatch.id;
@@ -1556,13 +1569,6 @@ export default function App() {
         localStorage.setItem(`ft_copia_${matchId}`, JSON.stringify(entry));
         localStorage.setItem(`ft_copia_${matchId}_meta`, JSON.stringify({ savedAt: entry.savedAt }));
         escribirAuto(matchId, currentMatch.homeTeam, currentMatch.awayTeam, currentMatch.matchday);
-        if (SERVER_URL) {
-          fetch(SERVER_URL + '/api/guardar-partido', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ matchId, homeTeam: currentMatch.homeTeam, awayTeam: currentMatch.awayTeam, matchday: currentMatch.matchday, payload })
-          }).catch(() => {});
-        }
       } catch (_) { /* sin espacio local: se ignora */ }
     };
     guardar();
