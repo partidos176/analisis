@@ -614,6 +614,8 @@ export default function App() {
   const [igualarAviso, setIgualarAviso] = useState(false);
   const [fin2Aviso, setFin2Aviso] = useState(false);
   const [copiaLocalOk, setCopiaLocalOk] = useState(false);
+  const autoDirRef = useRef(null);
+  const [autoDirOk, setAutoDirOk] = useState(false);
   const [editingTimer, setEditingTimer] = useState(false);
   const [timerEditMin, setTimerEditMin] = useState('');
   const [timerEditSec, setTimerEditSec] = useState('');
@@ -1503,13 +1505,41 @@ export default function App() {
   useEffect(() => { setGolCount(golesList.filter(esGolPropio).length); }, [golesList]);
   useEffect(() => { setGolRivalCount(golesRivalList.length); }, [golesRivalList]);
 
-  // Autoguardado cada 5 minutos: copia local (localStorage) + archivo .json en el servidor
+  // Autoguardado cada 5 minutos: copia local (localStorage) + carpeta elegida + servidor
   const buildPayloadRef = useRef();
   buildPayloadRef.current = buildMatchPayload;
+  const elegirCarpetaAuto = async () => {
+    try {
+      const dir = await window.showDirectoryPicker({ mode: 'readwrite' });
+      autoDirRef.current = dir;
+      setAutoDirOk(true);
+      alert('Carpeta elegida. El .json del partido se guardará ahí cada 5 minutos.');
+    } catch (_) { /* cancelado */ }
+  };
+  const escribirAuto = async (matchId, hm, am, md) => {
+    const dir = autoDirRef.current;
+    if (!dir) return;
+    try {
+      let perm = await dir.queryPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') perm = await dir.requestPermission({ mode: 'readwrite' });
+      if (perm !== 'granted') return;
+      const nombre = 'partido_' + String(matchId).replace(/[^\w-]/g, '_') + '.json';
+      const fh = await dir.getFileHandle(nombre, { create: true });
+      const writable = await fh.createWritable();
+      const entry = {
+        app: 'futboltotal-copia-partido', version: 1,
+        savedAt: Date.now(),
+        matchId, homeTeam: hm || '', awayTeam: am || '', matchday: md || null,
+        payload: buildPayloadRef.current()
+      };
+      await writable.write(JSON.stringify(entry, null, 2));
+      await writable.close();
+    } catch (_) { /* carpeta no disponible */ }
+  };
   useEffect(() => {
     const matchId = currentMatch && currentMatch.id;
     if (!matchId) return;
-    const iv = setInterval(() => {
+    const guardar = () => {
       try {
         const payload = buildPayloadRef.current();
         const entry = {
@@ -1521,6 +1551,7 @@ export default function App() {
         };
         localStorage.setItem(`ft_copia_${matchId}`, JSON.stringify(entry));
         localStorage.setItem(`ft_copia_${matchId}_meta`, JSON.stringify({ savedAt: entry.savedAt }));
+        escribirAuto(matchId, currentMatch.homeTeam, currentMatch.awayTeam, currentMatch.matchday);
         if (SERVER_URL) {
           fetch(SERVER_URL + '/api/guardar-partido', {
             method: 'POST',
@@ -1529,7 +1560,9 @@ export default function App() {
           }).catch(() => {});
         }
       } catch (_) { /* sin espacio local: se ignora */ }
-    }, 5 * 60 * 1000);
+    };
+    guardar();
+    const iv = setInterval(guardar, 5 * 60 * 1000);
     return () => clearInterval(iv);
   }, [currentMatch && currentMatch.id, SERVER_URL]);
 
@@ -6531,6 +6564,13 @@ const minutosPorJornada = [];
             style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.55rem 1.3rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.04em' }}
           >
             EXPORTAR
+          </button>
+          <button
+            onClick={elegirCarpetaAuto}
+            title="Elige una carpeta: el .json del partido se guarda ahí solo cada 5 minutos"
+            style={{ background: autoDirOk ? '#16a34a' : '#0ea5e9', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.55rem 1.3rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.04em' }}
+          >
+            {autoDirOk ? 'AUTO OK' : 'AUTO CADA 5\''}
           </button>
           {copiaLocalOk && (
             <span style={{ background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.9rem', padding: '0.35rem 0.6rem', borderRadius: '8px' }}>
