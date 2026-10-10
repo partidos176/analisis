@@ -1525,6 +1525,7 @@ export default function App() {
     } catch (_) { res(null); }
   });
   const restaurarCarpeta = async () => {
+    try { if (localStorage.getItem('ft_autodownload') === '1') setAutoDirOk(true); } catch (_) {}
     const handle = await idbGet('dir');
     if (!handle) return;
     try {
@@ -1535,7 +1536,9 @@ export default function App() {
   useEffect(() => { restaurarCarpeta(); }, []);
   const elegirCarpetaAuto = async () => {
     if (!window.showDirectoryPicker) {
-      alert('Tu navegador no permite elegir carpeta automática. Usa Chrome o Edge en el equipo donde grabes.');
+      setAutoDirOk(true);
+      try { localStorage.setItem('ft_autodownload', '1'); } catch (_) {}
+      alert('Tu navegador no permite elegir carpeta. Se activa el autoguardado por descarga: cada 5 minutos se descargará el .json a tu carpeta de Descargas.');
       return;
     }
     try {
@@ -1561,6 +1564,23 @@ export default function App() {
     const j = md ? 'j' + md : '';
     return `${n}+${j} ${hm || ''}vs${am || ''}`.replace(/[\\/:*?"<>|]/g, '_').trim() + '.json';
   };
+  const descargarAuto = (nombre, matchId, hm, am, md) => {
+    try {
+      const entry = {
+        app: 'futboltotal-copia-partido', version: 1,
+        savedAt: Date.now(),
+        matchId, homeTeam: hm || '', awayTeam: am || '', matchday: md || null,
+        payload: buildPayloadRef.current()
+      };
+      const blob = new Blob([JSON.stringify(entry, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nombre;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch (_) {}
+  };
   const escribirAuto = async (matchId, hm, am, md) => {
     const nombre = nextAutoName(matchId, hm, am, md);
     const dir = autoDirRef.current;
@@ -1579,6 +1599,7 @@ export default function App() {
           };
           await writable.write(JSON.stringify(entry, null, 2));
           await writable.close();
+          return;
         }
       } catch (_) { /* carpeta no disponible */ }
     }
@@ -1589,8 +1610,10 @@ export default function App() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ matchId, homeTeam: hm, awayTeam: am, matchday: md, filename: nombre, payload: buildPayloadRef.current() })
         });
+        return;
       } catch (_) { /* servidor no disponible */ }
     }
+    descargarAuto(nombre, matchId, hm, am, md);
   };
   useEffect(() => {
     const matchId = currentMatch && currentMatch.id;
