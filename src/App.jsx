@@ -1504,31 +1504,34 @@ export default function App() {
   useEffect(() => { setGolRivalCount(golesRivalList.length); }, [golesRivalList]);
 
   // Autoguardado cada 5 minutos: copia local (localStorage) + archivo .json en el servidor
+  const buildPayloadRef = useRef();
+  buildPayloadRef.current = buildMatchPayload;
   useEffect(() => {
-    if (!currentMatch || !currentMatch.id) return;
+    const matchId = currentMatch && currentMatch.id;
+    if (!matchId) return;
     const iv = setInterval(() => {
       try {
-        const payload = buildMatchPayload();
+        const payload = buildPayloadRef.current();
         const entry = {
           app: 'futboltotal-copia-partido', version: 1,
           savedAt: Date.now(),
-          matchId: currentMatch.id,
+          matchId,
           homeTeam: currentMatch.homeTeam, awayTeam: currentMatch.awayTeam, matchday: currentMatch.matchday,
           payload
         };
-        localStorage.setItem(`ft_copia_${currentMatch.id}`, JSON.stringify(entry));
-        localStorage.setItem(`ft_copia_${currentMatch.id}_meta`, JSON.stringify({ savedAt: entry.savedAt }));
+        localStorage.setItem(`ft_copia_${matchId}`, JSON.stringify(entry));
+        localStorage.setItem(`ft_copia_${matchId}_meta`, JSON.stringify({ savedAt: entry.savedAt }));
         if (SERVER_URL) {
           fetch(SERVER_URL + '/api/guardar-partido', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ matchId: currentMatch.id, homeTeam: currentMatch.homeTeam, awayTeam: currentMatch.awayTeam, matchday: currentMatch.matchday, payload })
+            body: JSON.stringify({ matchId, homeTeam: currentMatch.homeTeam, awayTeam: currentMatch.awayTeam, matchday: currentMatch.matchday, payload })
           }).catch(() => {});
         }
       } catch (_) { /* sin espacio local: se ignora */ }
     }, 5 * 60 * 1000);
     return () => clearInterval(iv);
-  }, [currentMatch, SERVER_URL]);
+  }, [currentMatch && currentMatch.id, SERVER_URL]);
 
   const generarTodosLosCortes = async () => {
     if (!videoFile) {
