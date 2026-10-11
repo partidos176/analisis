@@ -7453,7 +7453,7 @@ const minutosPorJornada = [];
                               recomputeCountersFromLog(newLog);
                             }}
                             onClick={(ev) => ev.stopPropagation()}
-                            style={{ background: '#22c55e', color: '#000', border: 'none', borderRadius: '4px', width: '20px', height: '18px', cursor: 'pointer', fontWeight: 900, fontSize: '0.7rem', padding: 0, lineHeight: '18px', textAlign: 'center' }}
+                            style={{ background: '#f59e0b', color: '#000', border: 'none', borderRadius: '4px', width: '20px', height: '18px', cursor: 'pointer', fontWeight: 900, fontSize: '0.7rem', padding: 0, lineHeight: '18px', textAlign: 'center' }}
                           >
                             <option value="">+</option>
                             <option value="OCASION">OCASION</option>
@@ -7470,8 +7470,31 @@ const minutosPorJornada = [];
                             <option value="INFRACCION">INFRACCION</option>
                           </select>
                         ) : (
-                          <span style={{ fontFamily: 'var(--font-mono)', color: entry.name.includes('RIVAL') ? '#ef4444' : '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>
-                            {entry.time}
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                            <span style={{ fontFamily: 'var(--font-mono)', color: entry.name.includes('RIVAL') ? '#ef4444' : '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>
+                              {entry.time}
+                            </span>
+                            {entry.type === 'accion' && (
+                              <select
+                                value=""
+                                onChange={(ev) => {
+                                  const nuevo = ev.target.value;
+                                  if (!nuevo || nuevo === entry.name) return;
+                                  const idx = actionLog.findIndex(a => a === entry);
+                                  if (idx < 0) return;
+                                  const newLog = actionLog.map((a, i) => i === idx ? { ...a, name: nuevo } : a);
+                                  setActionLog(newLog);
+                                  recomputeCountersFromLog(newLog);
+                                }}
+                                onClick={(ev) => ev.stopPropagation()}
+                                style={{ background: '#ffffff', color: '#000', border: 'none', borderRadius: '4px', width: '20px', height: '18px', cursor: 'pointer', fontWeight: 900, fontSize: '0.7rem', padding: 0, lineHeight: '18px', textAlign: 'center' }}
+                              >
+                                <option value="">A</option>
+                                {ACCIONES_TOTALES.filter(a => a !== entry.name).map(a => (
+                                  <option key={a} value={a}>{a}</option>
+                                ))}
+                              </select>
+                            )}
                           </span>
                         )}
                       </div>
@@ -7542,6 +7565,27 @@ const minutosPorJornada = [];
                             }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', cursor: 'pointer', gap: '0.5rem' }}>
                               <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', minWidth: '20px' }}>{idx + 1}</span>
                               <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#ffffff', fontWeight: 600, fontSize: '0.8rem', flex: 1 }}>{filtroAccion === '__varios__' ? 'VARIOS ' + (idx + 1) : e.name}</span>
+                              {filtroAccion !== '__varios__' && (
+                                <select
+                                  value=""
+                                  onChange={(ev) => {
+                                    const nuevo = ev.target.value;
+                                    if (!nuevo || nuevo === e.name) return;
+                                    const idx = actionLog.findIndex(a => a === e);
+                                    if (idx < 0) return;
+                                    const newLog = actionLog.map((a, i) => i === idx ? { ...a, name: nuevo } : a);
+                                    setActionLog(newLog);
+                                    recomputeCountersFromLog(newLog);
+                                  }}
+                                  onClick={(ev) => ev.stopPropagation()}
+                                  style={{ background: '#ffffff', color: '#000', border: 'none', borderRadius: '4px', width: '20px', height: '18px', cursor: 'pointer', fontWeight: 900, fontSize: '0.7rem', padding: 0, lineHeight: '18px', textAlign: 'center' }}
+                                >
+                                  <option value="">A</option>
+                                  {ACCIONES_TOTALES.filter(a => a !== e.name).map(a => (
+                                    <option key={a} value={a}>{a}</option>
+                                  ))}
+                                </select>
+                              )}
                               {finalizacion && filtroAccion !== '__varios__' && (
                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', flexWrap: 'wrap' }}>
                                   {allFinalizaciones.reverse().map((fi, fiIdx) => (
@@ -7559,7 +7603,7 @@ const minutosPorJornada = [];
                                       recomputeCountersFromLog(newLog);
                                     }}
                                     onClick={(ev) => ev.stopPropagation()}
-                                    style={{ background: '#22c55e', color: '#000', border: 'none', borderRadius: '4px', width: '20px', height: '18px', cursor: 'pointer', fontWeight: 900, fontSize: '0.7rem', padding: 0, lineHeight: '18px', textAlign: 'center' }}
+                                    style={{ background: '#f59e0b', color: '#000', border: 'none', borderRadius: '4px', width: '20px', height: '18px', cursor: 'pointer', fontWeight: 900, fontSize: '0.7rem', padding: 0, lineHeight: '18px', textAlign: 'center' }}
                                   >
                                     <option value="">+</option>
                                     <option value="OCASION">OCASION</option>
