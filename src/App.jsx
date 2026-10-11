@@ -632,6 +632,15 @@ export default function App() {
   const [videoUrl, setVideoUrl] = useState(null);
   const [videoTimeOffset, setVideoTimeOffset] = useState(null);
   const [videoTimeOffset2, setVideoTimeOffset2] = useState(null);
+  // Los offsets de sincronización se guardan por nombre de vídeo para que al
+  // volver a entrar en la app solo haya que cargar el vídeo: no hace falta
+  // volver a pulsar «Sincroniza 1ª parte» ni lo de 2ª.
+  useEffect(() => {
+    if (!videoFileName) return;
+    try {
+      localStorage.setItem('ft_video_offsets_' + videoFileName, JSON.stringify({ off1: videoTimeOffset, off2: videoTimeOffset2 }));
+    } catch (_) {}
+  }, [videoTimeOffset, videoTimeOffset2, videoFileName]);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const videoRef = useRef(null);
   const contenedorVideoRef = useRef(null);
@@ -6977,7 +6986,7 @@ const minutosPorJornada = [];
                         </span>
                       </div>
                       <button
-                        onClick={() => { if (videoRef.current) { videoRef.current.pause(); } setVideoUrl(null); setVideoFile(null); setVideoFileName(''); setVideoTimeOffset(null); setVideoTimeOffset2(null); setAccionSeleccionada(null); setPreviewVideoUrl(null); }}
+                        onClick={() => { if (videoRef.current) { videoRef.current.pause(); } setVideoUrl(null); setVideoFile(null); setVideoFileName(''); setAccionSeleccionada(null); setPreviewVideoUrl(null); }}
                         style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(239,68,68,0.85)', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', fontWeight: 900, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, zIndex: 10 }}
                       >×</button>
                       </div>
@@ -7310,8 +7319,15 @@ const minutosPorJornada = [];
                             setVideoUploaded(false);
                             comprobarCacheServidor(safeFile, file.name);
                             setVideoUrl(URL.createObjectURL(safeFile));
-                            setVideoTimeOffset(null);
-                            setVideoTimeOffset2(null);
+                            // Restaurar offsets guardados de esta sesión anterior
+                            try {
+                              const guardado = JSON.parse(localStorage.getItem('ft_video_offsets_' + file.name) || 'null');
+                              setVideoTimeOffset(guardado && guardado.off1 != null ? guardado.off1 : null);
+                              setVideoTimeOffset2(guardado && guardado.off2 != null ? guardado.off2 : null);
+                            } catch (_) {
+                              setVideoTimeOffset(null);
+                              setVideoTimeOffset2(null);
+                            }
                             setAccionSeleccionada(null);
                             setPreviewVideoUrl(null);
                             setPreviewNombres([]);
