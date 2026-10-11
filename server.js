@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import cors from 'cors';
 import archiver from 'archiver';
-import { execFile } from 'child_process';
+import { execFile, execFileSync } from 'child_process';
 import { promisify } from 'util';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
@@ -516,6 +516,18 @@ const parametrosCodificacion = (out, hilos) => [
 
 const rutaRecurso = (id, ext) => path.join(RECURSOS_DIR, id + '.' + (ext || 'bin'));
 
+const ffprobeDurationSync = (file) => {
+  try {
+    const r = execFileSync(ffmpegPath, ['-i', file], { timeout: 10000, windowsHide: true, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    return null;
+  } catch (e) {
+    const m = String((e && e.stderr) || '').match(/Duration:\s*(\d+):(\d+):([\d.]+)/);
+    if (!m) return null;
+    const d = (+m[1]) * 3600 + (+m[2]) * 60 + parseFloat(m[3]);
+    return Number.isFinite(d) ? d : null;
+  }
+};
+
 // Traduce un tramo del plan a los argumentos de entrada de ffmpeg, y devuelve
 // su duracion. Un tramo puede ser del video fuente, de un clip subido (las
 // animaciones, que el navegador genera y el servidor no tiene) o de una imagen.
@@ -554,10 +566,16 @@ const recortarTramo = async (t, i, dir, ancho, alto, hilos, fuente) => {
   if (!(dur > 0.02)) throw new Error('tramo ' + i + ': duracion invalida');
   const out = path.join(dir, 'seg-' + i + '.mp4');
   const ffmpegArgs = [...args, '-vf', filtroRotulo(t.nombre, ancho, alto), ...parametrosCodificacion(out, hilos)];
-  const t0 = Date.now();
-  await execFileAsync(ffmpegPath, ffmpegArgs, { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
-  console.log('[Montaje] tramo ' + i + ' (' + (t.tipo || 'fuente') + ', ' + dur.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
-  return out;
+  for (let intento = 1; intento <= 3; intento++) {
+    const t0 = Date.now();
+    await execFileAsync(ffmpegPath, ffmpegArgs, { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+    if (segmentoValido(out)) {
+      console.log('[Montaje] tramo ' + i + ' (' + (t.tipo || 'fuente') + ', ' + dur.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
+      return out;
+    }
+    console.log('[Montaje] tramo ' + i + ': intento ' + intento + ' invalido, reintentando...');
+  }
+  throw new Error('tramo ' + i + ': fallo tras 3 intentos');
 };
 
 // ---- Fundidos (transiciones) ---------------------------------------------
@@ -587,32 +605,37 @@ const MODELO_XFADE = {
   wipe: 'wipeleft',
 };
 
+const TAMANO_MINIMO_SEG = 1000;
+
+const segmentoValido = (fichero) => {
+  try { return fs.statSync(fichero).size > TAMANO_MINIMO_SEG; } catch (_) { return false; }
+};
+
 const construirFundido = async (t, i, dir, ancho, alto, hilos, fuente) => {
   const d = Number(t.dur);
   if (!(d > 0.05)) throw new Error('fundido ' + i + ': duracion invalida');
   const a = entradaOperando(t.a, d, fuente);
   const b = entradaOperando(t.b, d, fuente);
   const out = path.join(dir, 'seg-' + i + '.mp4');
-  // scale+pad deja los dos operandos con la misma caja; fps y format son
-  // necesarios porque el filtro blend exige que coincidan.
   const caja = 'scale=' + ancho + ':' + alto + ':force_original_aspect_ratio=decrease'
     + ',pad=' + ancho + ':' + alto + ':(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,format=yuv420p';
   const dnum = d.toFixed(4);
-  // xfade y no blend con all_expr: la formula de blend se evalua pixel a pixel
-  // y un fundido de 2 s tardaba 9,8 s. Con xfade, que es codigo nativo, el mismo
-  // fundido tarda 4,1 s: 2,4 veces menos, y con 25 transiciones la diferencia
-  // es de minutos.
   const modelo = String(t.modelo || 'crossfade');
   const xfade = MODELO_XFADE[modelo] || 'fade';
   if (!MODELO_XFADE[modelo]) console.log('[Fundido] modelo desconocido: ' + modelo + ', se usa fundido cruzado');
-  const fc = "[0:v]" + caja + '[a];[1:v]' + caja + '[b];'
-    + '[a][b]xfade=transition=' + xfade + ':duration=' + dnum + ':offset=0[v]';
-  const t0 = Date.now();
-  await execFileAsync(ffmpegPath, [...a.args, ...b.args,
-    '-filter_complex', fc, '-map', '[v]', '-t', dnum,
-    ...parametrosCodificacion(out, hilos)], { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
-  console.log('[Fundido] ' + i + ': ' + modelo + ' -> ' + xfade + ' (' + d.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
-  return out;
+  const fc = "[0:v]" + caja + "[a];[1:v]" + caja + "[b];[a][b]xfade=transition=" + xfade + ":duration=" + dnum + ":offset=0[v]";
+  for (let intento = 1; intento <= 3; intento++) {
+    const t0 = Date.now();
+    await execFileAsync(ffmpegPath, [...a.args, ...b.args,
+      '-filter_complex', fc, '-map', '[v]', '-t', dnum,
+      ...parametrosCodificacion(out, hilos)], { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+    if (segmentoValido(out)) {
+      console.log('[Fundido] ' + i + ': ' + modelo + ' -> ' + xfade + ' (' + d.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
+      return out;
+    }
+    console.log('[Fundido] ' + i + ': intento ' + intento + ' invalido, reintentando...');
+  }
+  throw new Error('fundido ' + i + ': fallo tras 3 intentos');
 };
 
 // Ejecuta una tarea por hueco, con un limite de cuantas corren a la vez.
@@ -760,12 +783,26 @@ app.post('/api/montaje', async (req, res) => {
       return res.status(409).json({ error: 'sin-fuente', detalle: 'El servidor no tiene el video fuente (ni en la carpeta videos ni en la cache)' });
     }
     console.log('[Montaje] fuente: ' + (fuente || '(ninguna, solo recursos)'));
+    if (fuente && origen && origen.nombre) {
+      const baseFuente = path.basename(fuente);
+      if (baseFuente.toLowerCase() !== path.basename(String(origen.nombre)).toLowerCase()) {
+        console.log('[Montaje] AVISO: la fuente resuelta (' + baseFuente + ') NO coincide con el origen pedido (' + origen.nombre + ')');
+      }
+      try {
+        const stF = fs.statSync(fuente);
+        if (Number(origen.size) && stF.size !== Number(origen.size)) {
+          console.log('[Montaje] AVISO: tamano fuente (' + stF.size + ') NO coincide con el origen (' + origen.size + ')');
+        }
+      } catch (_) {}
+    }
+    const durFuente = (() => { try { return ffprobeDurationSync(fuente); } catch (_) { return null; } })();
+    if (durFuente != null) console.log('[Montaje] duracion fuente: ' + durFuente.toFixed(1) + ' s');
 
     dir = path.join(tmpBase, 'montaje-' + Date.now());
     fs.mkdirSync(dir, { recursive: true });
     const tIni = Date.now();
     const nucleos = Math.max(1, ((os.cpus() || []).length || 4));
-    const enParalelo = Math.max(1, Math.min(4, Math.floor(nucleos / 2) + 1));
+    const enParalelo = Math.max(1, Math.min(2, Math.floor(nucleos / 2) + 1));
     // Un solo tramo no se puede paralelizar, asi que en vez de wasted los
     // nucleos se le dan a ese proceso: 15 s de un tramo tardaban 8,8 s usando un
     // unico hilo. Con varios tramos, el reparto es al reves.
@@ -786,8 +823,26 @@ app.post('/api/montaje', async (req, res) => {
     const lista = path.join(dir, 'lista.txt');
     fs.writeFileSync(lista, ficheros.map((f) => "file '" + f.replace(/\\/g, '/') + "'").join('\n'), 'utf8');
     const outPath = path.join(dir, 'montaje.mp4');
-    await execFileAsync(ffmpegPath, ['-f', 'concat', '-safe', '0', '-i', lista, '-c', 'copy', '-movflags', '+faststart', '-y', outPath],
+    // Recodificar al concatenar en vez de -c copy: los tramos de fundido
+    // (xfade) generan headers H.264 ligeramente distintos a los tramos
+    // normales, y concat -c copy los descarta en silencio, dejando un
+    // archivo mucho mas corto de lo planificado.
+    await execFileAsync(ffmpegPath, ['-f', 'concat', '-safe', '0', '-i', lista,
+      '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20',
+      '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-y', outPath],
       { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+
+    const durReal = ffprobeDurationSync(outPath);
+    if (durReal != null) console.log('[Montaje] duracion real salida: ' + durReal.toFixed(1) + ' s (plan: ' + total.toFixed(1) + ' s)');
+    if (durReal != null && total > 0 && durReal < total * 0.5) {
+      console.log('[Montaje] AVISO: la salida dura menos de la mitad del plan. Tramos:');
+      for (let fi = 0; fi < ficheros.length; fi++) {
+        try {
+          const d = ffprobeDurationSync(ficheros[fi]);
+          console.log('  seg-' + fi + ': ' + (d != null ? d.toFixed(2) + ' s' : '?') + ' tipo=' + (limpio[fi] && limpio[fi].tipo));
+        } catch (_) {}
+      }
+    }
 
     const tam = fs.statSync(outPath).size;
     const ms = Date.now() - tIni;
@@ -801,11 +856,15 @@ app.post('/api/montaje', async (req, res) => {
     res.setHeader('X-Montaje-Tramos', String(limpio.length));
     res.setHeader('X-Montaje-Contenido', total.toFixed(2));
     fs.createReadStream(outPath).pipe(res);
-    res.on('finish', () => { setTimeout(() => rmrf(dir), 2000); });
+    if (process.env.MONTAJE_KEEP_DIR) {
+      console.log('[Montaje] KEEP_DIR: ' + dir);
+    } else {
+      res.on('finish', () => { setTimeout(() => rmrf(dir), 2000); });
+    }
   } catch (err) {
     console.error('[Montaje] Error:', err.message);
     res.status(500).json({ error: 'Error componiendo el montaje: ' + err.message });
-    if (dir) rmrf(dir);
+    if (dir && !process.env.MONTAJE_KEEP_DIR) rmrf(dir);
   }
 });
 
