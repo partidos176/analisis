@@ -7040,8 +7040,7 @@ const minutosPorJornada = [];
                               accionesConTiempo.forEach((e, i) => {
                                 const parts = String(e.time).split(':').map(Number);
                                 const secs = (parts[0] || 0) * 60 + (parts[1] || 0);
-                                const offset = offsetParaPeriodo(periodoDeAccion(e));
-                                const videoSecs = Math.max(0, secs + offset);
+                                const videoSecs = Math.max(0, secs);
                                 const duracion = 10;
                                 numCorte++;
                                 const accionIdx = actionLog.findIndex(a => a === e);
