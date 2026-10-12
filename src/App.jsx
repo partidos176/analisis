@@ -8878,8 +8878,8 @@ const minutosPorJornada = [];
                     const rows = [];
                     if (vals.length > 0) {
                       rows.push({ ...vals[0], total: false });
-                      rows.push({ label: '0-15 min', real: 0, efec: 0, own: 0, rival: 0, neutro: 0, total: false, sub: true });
-                      filasBloques.filter(b => b.ini < 2700).forEach(b => rows.push(b));
+                      rows.push({ ...filasBloques[0], label: '0-15 min' });
+                      filasBloques.filter(b => b.ini > 0 && b.ini < 2700).forEach(b => rows.push(b));
                       if (vals.length > 1) {
                         rows.push({ ...vals[1], total: false });
                         filasBloques.filter(b => b.ini >= 2700).forEach(b => rows.push(b));
