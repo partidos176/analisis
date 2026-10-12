@@ -8878,12 +8878,13 @@ const minutosPorJornada = [];
                     const rows = [];
                     if (vals.length > 0) {
                       rows.push({ ...vals[0], total: false });
-                      filasBloques.filter(b => b.ini < 1800).forEach(b => rows.push(b));
+                      rows.push({ label: 'TEST SUBFILA', real: 0, efec: 0, own: 0, rival: 0, neutro: 0, total: false, sub: true });
+                      filasBloques.filter(b => b.ini < 2700).forEach(b => rows.push(b));
                       if (vals.length > 1) {
                         rows.push({ ...vals[1], total: false });
-                        filasBloques.filter(b => b.ini >= 1800).forEach(b => rows.push(b));
+                        filasBloques.filter(b => b.ini >= 2700).forEach(b => rows.push(b));
                       } else {
-                        filasBloques.filter(b => b.ini >= 1800).forEach(b => rows.push(b));
+                        filasBloques.filter(b => b.ini >= 2700).forEach(b => rows.push(b));
                       }
                     } else {
                       filasBloques.forEach(b => rows.push(b));
