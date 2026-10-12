@@ -8871,7 +8871,7 @@ const minutosPorJornada = [];
                     const filasBloques = bloques.map(b => {
                       const o = solape(ownInt, b.ini, b.fin);
                       const r = solape(rivInt, b.ini, b.fin);
-                      const real = Math.min(b.fin, finMatch) - b.ini;
+                      const real = Math.max(0, Math.min(b.fin, finMatch) - b.ini);
                       const efec = o + r;
                       return { label: b.label, real, efec, own: o, rival: r, neutro: Math.max(0, real - efec), total: false, sub: true };
                     });
