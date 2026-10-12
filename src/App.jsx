@@ -196,7 +196,7 @@ const matchTabs = [
   { id: 'goles', label: 'GOLES' },
   { id: 'sustituciones', label: 'SUSTITUCIONES' },
   { id: 'datos', label: 'DATOS' },
-  { id: 'posesion', label: 'POSESION' },
+  { id: 'posesion', label: 'POSESIÓN' },
   { id: 'videos', label: 'VIDEOS' },
   { id: 'vario', label: 'NOTA DE VOZ' }
 ];
