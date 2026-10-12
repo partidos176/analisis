@@ -8877,9 +8877,19 @@ const minutosPorJornada = [];
                     });
                     const rows = [];
                     if (vals.length > 0) {
+                      const finPrimera = vals[0].real;
+                      const mkBloque = (label, ini, fin) => {
+                        const f = Math.min(fin, finPrimera);
+                        const o = solape(ownInt, ini, f);
+                        const r = solape(rivInt, ini, f);
+                        const real = Math.max(0, f - ini);
+                        const efec = o + r;
+                        return { label, real, efec, own: o, rival: r, neutro: Math.max(0, real - efec), total: false, sub: true };
+                      };
                       rows.push({ ...vals[0], total: false });
-                      rows.push({ ...filasBloques[0], label: '0-15 min' });
-                      filasBloques.filter(b => b.ini > 0 && b.ini < 2700).forEach(b => rows.push(b));
+                      rows.push(mkBloque('0-15 min', 0, 900));
+                      rows.push(mkBloque('16-30 min', 900, 1800));
+                      if (finPrimera > 1800) rows.push(mkBloque('31-' + Math.round(finPrimera / 60) + ' min', 1800, finPrimera));
                       if (vals.length > 1) {
                         rows.push({ ...vals[1], total: false });
                         filasBloques.filter(b => b.ini >= 2700).forEach(b => rows.push(b));
