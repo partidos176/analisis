@@ -8902,6 +8902,8 @@ const minutosPorJornada = [];
                           return { label, real, efec, own: o, rival: r, neutro: Math.max(0, real - efec), total: false, sub: true };
                         };
                         rows.push(mkBloque2('45-60 min', finPrimera, finPrimera + 900));
+                        rows.push(mkBloque2('60-75 min', finPrimera + 900, finPrimera + 1800));
+                        rows.push(mkBloque2('75-90 min', finPrimera + 1800, finPrimera + 2700));
                       }
                     } else {
                       filasBloques.forEach(b => rows.push(b));
