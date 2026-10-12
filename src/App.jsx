@@ -4726,15 +4726,18 @@ const minutosPorJornada = [];
                             <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>Periodo</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#38bdf8' }}>Posesión propia</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#ef4444' }}>Posesión rival</th>
                             </tr>
                           </thead>
                           <tbody>
                             {datos.map((b, i) => {
                               const efec = (b.ownSecs + b.rivalSecs) > 0 ? Math.round((b.ownSecs / (b.ownSecs + b.rivalSecs)) * 100) : 0;
+                              const efecR = 100 - efec;
                               return (
                                 <tr key={b.label} style={{ background: i % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{b.label}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{efec}%</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{efecR}%</td>
                                 </tr>
                               );
                             })}
@@ -8835,7 +8838,6 @@ const minutosPorJornada = [];
                   {(() => {
                     const fmt = (s) => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
                     const filas = ['1ª PARTE', '2ª PARTE'].map(l => rws.find(r => r.label === l)).filter(Boolean);
-                    if (filas.length === 0) return null;
                     const vals = filas.map(p => {
                       const real = p.periodoTotal;
                       const efec = p.ownSecs + p.rivalSecs;
@@ -8845,7 +8847,48 @@ const minutosPorJornada = [];
                     const totEfec = vals.reduce((s, v) => s + v.efec, 0);
                     const totOwn = vals.reduce((s, v) => s + v.own, 0);
                     const totRival = vals.reduce((s, v) => s + v.rival, 0);
-                    const rows = [...vals.map(v => ({ ...v, total: false })), { label: 'TOTAL', real: totReal, efec: totEfec, own: totOwn, rival: totRival, neutro: Math.max(0, totReal - totEfec), total: true }];
+                    const bloques = [
+                      { label: '0-15', ini: 0, fin: 900 },
+                      { label: '16-30', ini: 900, fin: 1800 },
+                      { label: '31-45', ini: 1800, fin: 2700 },
+                      { label: '46-60', ini: 2700, fin: 3600 },
+                      { label: '61-75', ini: 3600, fin: 4500 },
+                      { label: '76-90', ini: 4500, fin: 5400 },
+                    ];
+                    const eventos2 = log.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).sort((a, b) => a.secs - b.secs);
+                    let ownStart2 = null, rivStart2 = null;
+                    const ownInt = [], rivInt = [];
+                    eventos2.forEach(e => {
+                      if (e.name === 'ON PROPIO') ownStart2 = e.secs;
+                      else if (e.name === 'OFF PROPIO' && ownStart2 !== null) { ownInt.push([ownStart2, e.secs]); ownStart2 = null; }
+                      else if (e.name === 'ON RIVAL') rivStart2 = e.secs;
+                      else if (e.name === 'OFF RIVAL' && rivStart2 !== null) { rivInt.push([rivStart2, e.secs]); rivStart2 = null; }
+                    });
+                    const finMatch = timerSeconds || 5400;
+                    if (ownStart2 !== null) ownInt.push([ownStart2, finMatch]);
+                    if (rivStart2 !== null) rivInt.push([rivStart2, finMatch]);
+                    const solape = (intervals, bIni, bFin) => { let s = 0; intervals.forEach(([a, b]) => { s += Math.max(0, Math.min(b, bFin) - Math.max(a, bIni)); }); return s; };
+                    const filasBloques = bloques.map(b => {
+                      const o = solape(ownInt, b.ini, b.fin);
+                      const r = solape(rivInt, b.ini, b.fin);
+                      const real = Math.min(b.fin, finMatch) - b.ini;
+                      const efec = o + r;
+                      return { label: b.label, real, efec, own: o, rival: r, neutro: Math.max(0, real - efec), total: false, sub: true };
+                    });
+                    const rows = [];
+                    if (vals.length > 0) {
+                      rows.push({ ...vals[0], total: false });
+                      filasBloques.filter(b => b.ini < 1800).forEach(b => rows.push(b));
+                      if (vals.length > 1) {
+                        rows.push({ ...vals[1], total: false });
+                        filasBloques.filter(b => b.ini >= 1800).forEach(b => rows.push(b));
+                      } else {
+                        filasBloques.filter(b => b.ini >= 1800).forEach(b => rows.push(b));
+                      }
+                    } else {
+                      filasBloques.forEach(b => rows.push(b));
+                    }
+                    rows.push({ label: 'TOTAL', real: totReal, efec: totEfec, own: totOwn, rival: totRival, neutro: Math.max(0, totReal - totEfec), total: true });
                     return (
                       <div style={{ width: '100%' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -8861,13 +8904,13 @@ const minutosPorJornada = [];
                           </thead>
                           <tbody>
                             {rows.map((r, i) => (
-                              <tr key={i} style={r.total ? { background: 'rgba(251,191,36,0.15)' } : {}}>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem' }}>{r.label}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ff6ec7', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.real)}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.efec)}<br />({r.real > 0 ? Math.round((r.efec / r.real) * 100) : 0}%)</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{fmt(r.neutro)}<br />({r.real > 0 ? Math.round((r.neutro / r.real) * 100) : 0}%)</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? Math.round((r.own / r.efec) * 100) : 0}%</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: r.total ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' }}>{r.efec > 0 ? Math.round((r.rival / r.efec) * 100) : 0}%</td>
+                              <tr key={i} style={r.total ? { background: 'rgba(251,191,36,0.15)' } : r.sub ? { background: 'rgba(34,197,94,0.08)' } : {}}>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem 0.3rem 1.6rem' : '0.5rem 0.8rem', textAlign: 'center', color: r.sub ? '#94a3b8' : '#ffffff', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.label}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#ff6ec7', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{fmt(r.real)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{fmt(r.efec)}<br />({r.real > 0 ? Math.round((r.efec / r.real) * 100) : 0}%)</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{fmt(r.neutro)}<br />({r.real > 0 ? Math.round((r.neutro / r.real) * 100) : 0}%)</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.own / r.efec) * 100) : 0}%</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#ef4444', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.rival / r.efec) * 100) : 0}%</td>
                               </tr>
                             ))}
                           </tbody>
