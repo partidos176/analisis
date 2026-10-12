@@ -8888,8 +8888,8 @@ const minutosPorJornada = [];
                       };
                       rows.push({ ...vals[0], total: false });
                       rows.push(mkBloque('0-15 min', 0, 900));
-                      rows.push(mkBloque('16-30 min', 900, 1800));
-                      if (finPrimera > 1800) rows.push(mkBloque('31-45 min', 1800, finPrimera));
+                      rows.push(mkBloque('15-30 min', 900, 1800));
+                      if (finPrimera > 1800) rows.push(mkBloque('30-45 min', 1800, finPrimera));
                       if (vals.length > 1) {
                         rows.push({ ...vals[1], total: false });
                         const finSegunda = finMatch;
