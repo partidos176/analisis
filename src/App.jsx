@@ -8892,9 +8892,16 @@ const minutosPorJornada = [];
                       if (finPrimera > 1800) rows.push(mkBloque('31-' + Math.round(finPrimera / 60) + ' min', 1800, finPrimera));
                       if (vals.length > 1) {
                         rows.push({ ...vals[1], total: false });
-                        filasBloques.filter(b => b.ini >= 2700).forEach(b => rows.push(b));
-                      } else {
-                        filasBloques.filter(b => b.ini >= 2700).forEach(b => rows.push(b));
+                        const finSegunda = finMatch;
+                        const mkBloque2 = (label, ini, fin) => {
+                          const f = Math.min(fin, finSegunda);
+                          const o = solape(ownInt, ini, f);
+                          const r = solape(rivInt, ini, f);
+                          const real = Math.max(0, f - ini);
+                          const efec = o + r;
+                          return { label, real, efec, own: o, rival: r, neutro: Math.max(0, real - efec), total: false, sub: true };
+                        };
+                        rows.push(mkBloque2('45-55 min', finPrimera, finPrimera + 600));
                       }
                     } else {
                       filasBloques.forEach(b => rows.push(b));
