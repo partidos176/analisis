@@ -2471,61 +2471,6 @@ export default function App() {
                     </tbody>
                     </table>
                   </div>
-                  {(() => {
-                    // Tabla de posesión propia por bloques de 15 minutos.
-                    const bloques = [
-                      { label: '0-15', ini: 0, fin: 900 },
-                      { label: '16-30', ini: 900, fin: 1800 },
-                      { label: '31-45', ini: 1800, fin: 2700 },
-                      { label: '46-60', ini: 2700, fin: 3600 },
-                      { label: '61-75', ini: 3600, fin: 4500 },
-                      { label: '76-90', ini: 4500, fin: 5400 },
-                    ];
-                    const datos = bloques.map(b => ({ ...b, ownSecs: 0, rivalSecs: 0 }));
-                    selectedIds.forEach(id => {
-                      const m = matches.find(x => x.id === id);
-                      if (!m) return;
-                      const log = normalizeArray(m.actionLog || []);
-                      const eventos = log.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).sort((a, b) => a.secs - b.secs);
-                      let ownStart = null, rivStart = null;
-                      const ownInt = [], rivInt = [];
-                      eventos.forEach(e => {
-                        if (e.name === 'ON PROPIO') ownStart = e.secs;
-                        else if (e.name === 'OFF PROPIO' && ownStart !== null) { ownInt.push([ownStart, e.secs]); ownStart = null; }
-                        else if (e.name === 'ON RIVAL') rivStart = e.secs;
-                        else if (e.name === 'OFF RIVAL' && rivStart !== null) { rivInt.push([rivStart, e.secs]); rivStart = null; }
-                      });
-                      const finMatch = m.timerSeconds || 5400;
-                      if (ownStart !== null) ownInt.push([ownStart, finMatch]);
-                      if (rivStart !== null) rivInt.push([rivStart, finMatch]);
-                      const solape = (intervals, bIni, bFin) => { let s = 0; intervals.forEach(([a, b]) => { s += Math.max(0, Math.min(b, bFin) - Math.max(a, bIni)); }); return s; };
-                      datos.forEach(b => { b.ownSecs += solape(ownInt, b.ini, b.fin); b.rivalSecs += solape(rivInt, b.ini, b.fin); });
-                    });
-                    if (selectedIds.length === 0) return null;
-                    return (
-                      <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto', marginTop: '1rem' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                          <thead>
-                            <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>Periodo</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#38bdf8' }}>Posesión propia</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {datos.map((b, i) => {
-                              const efec = (b.ownSecs + b.rivalSecs) > 0 ? Math.round((b.ownSecs / (b.ownSecs + b.rivalSecs)) * 100) : 0;
-                              return (
-                                <tr key={b.label} style={{ background: i % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{b.label}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{efec}%</td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })()}
                 <div style={{ flex: 1 }}>
                   <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', textDecoration: 'underline' }}>
                     2ª PARTE
@@ -4743,6 +4688,61 @@ const minutosPorJornada = [];
                       </tbody>
                     </table>
                   </div>
+                  {(() => {
+                    // Tabla de posesión propia por bloques de 15 minutos.
+                    const bloques = [
+                      { label: '0-15', ini: 0, fin: 900 },
+                      { label: '16-30', ini: 900, fin: 1800 },
+                      { label: '31-45', ini: 1800, fin: 2700 },
+                      { label: '46-60', ini: 2700, fin: 3600 },
+                      { label: '61-75', ini: 3600, fin: 4500 },
+                      { label: '76-90', ini: 4500, fin: 5400 },
+                    ];
+                    const datos = bloques.map(b => ({ ...b, ownSecs: 0, rivalSecs: 0 }));
+                    selectedIds.forEach(id => {
+                      const m = matches.find(x => x.id === id);
+                      if (!m) return;
+                      const log = normalizeArray(m.actionLog || []);
+                      const eventos = log.filter(e => e && e.time && (e.name === 'ON PROPIO' || e.name === 'OFF PROPIO' || e.name === 'ON RIVAL' || e.name === 'OFF RIVAL')).map(e => ({ ...e, secs: parseTime(e.time) })).sort((a, b) => a.secs - b.secs);
+                      let ownStart = null, rivStart = null;
+                      const ownInt = [], rivInt = [];
+                      eventos.forEach(e => {
+                        if (e.name === 'ON PROPIO') ownStart = e.secs;
+                        else if (e.name === 'OFF PROPIO' && ownStart !== null) { ownInt.push([ownStart, e.secs]); ownStart = null; }
+                        else if (e.name === 'ON RIVAL') rivStart = e.secs;
+                        else if (e.name === 'OFF RIVAL' && rivStart !== null) { rivInt.push([rivStart, e.secs]); rivStart = null; }
+                      });
+                      const finMatch = m.timerSeconds || 5400;
+                      if (ownStart !== null) ownInt.push([ownStart, finMatch]);
+                      if (rivStart !== null) rivInt.push([rivStart, finMatch]);
+                      const solape = (intervals, bIni, bFin) => { let s = 0; intervals.forEach(([a, b]) => { s += Math.max(0, Math.min(b, bFin) - Math.max(a, bIni)); }); return s; };
+                      datos.forEach(b => { b.ownSecs += solape(ownInt, b.ini, b.fin); b.rivalSecs += solape(rivInt, b.ini, b.fin); });
+                    });
+                    if (selectedIds.length === 0) return null;
+                    return (
+                      <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto', marginTop: '1rem' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                          <thead>
+                            <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'left', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase' }}>Periodo</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', color: '#38bdf8' }}>Posesión propia</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {datos.map((b, i) => {
+                              const efec = (b.ownSecs + b.rivalSecs) > 0 ? Math.round((b.ownSecs / (b.ownSecs + b.rivalSecs)) * 100) : 0;
+                              return (
+                                <tr key={b.label} style={{ background: i % 2 === 0 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'left', color: '#ffffff', fontWeight: 700, fontSize: '0.9rem' }}>{b.label}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.8rem', textAlign: 'center', color: '#38bdf8', fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-mono)' }}>{efec}%</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                   {(() => {
                     const chartData = matches
                       .filter(m => m.matchday)
