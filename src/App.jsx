@@ -197,7 +197,7 @@ const matchTabs = [
   { id: 'sustituciones', label: 'SUSTITUCIONES' },
   { id: 'datos', label: 'DATOS' },
   { id: 'posesion', label: 'POSESIÓN' },
-  { id: 'videos', label: 'VIDEOS' },
+  { id: 'videos', label: 'VÍDEOS' },
   { id: 'vario', label: 'NOTA DE VOZ' }
 ];
 
