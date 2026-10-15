@@ -1881,7 +1881,7 @@ export default function App() {
   const confirmarCampoTiro = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const mx = Math.min(67.5, Math.max(0.5, ((e.clientX - rect.left) / rect.width) * 68));
-    const my = Math.min(52, Math.max(0.5, ((e.clientY - rect.top) / rect.height) * 52.5));
+    const my = Math.min(34.5, Math.max(0.5, ((e.clientY - rect.top) / rect.height) * 35));
     const x = Math.round(mx * 100) / 100;
     const y = Math.round(my * 100) / 100;
     const p = pendingTiro;
@@ -9005,14 +9005,14 @@ const minutosPorJornada = [];
                 const num = (v) => (Number.isFinite(v) ? v : 0);
                 const own = [
                   { label: 'Tiro desde el área', n: num(tiroAreaCount), w: PESO.area },
-                  { label: 'Tiro frontal (borde del área)', n: num(tiroFrontalCount), w: PESO.frontal },
+                  { label: 'Tiro frontal', n: num(tiroFrontalCount), w: PESO.frontal },
                   { label: 'Tiro desde la derecha', n: num(tiroDerechaCount), w: PESO.derecha },
                   { label: 'Tiro desde la izquierda', n: num(tiroIzquierdaCount), w: PESO.izquierda },
                   { label: 'Penalti', n: num(penalGolCount) + num(penalFueraCount), w: PESO.penal },
                 ];
                 const riv = [
                   { label: 'Tiro desde el área', n: num(rivalTiroAreaCount), w: PESO.area },
-                  { label: 'Tiro frontal (borde del área)', n: num(rivalTiroFrontalCount), w: PESO.frontal },
+                  { label: 'Tiro frontal', n: num(rivalTiroFrontalCount), w: PESO.frontal },
                   { label: 'Tiro desde la derecha', n: num(rivalTiroDerechaCount), w: PESO.derecha },
                   { label: 'Tiro desde la izquierda', n: num(rivalTiroIzquierdaCount), w: PESO.izquierda },
                   { label: 'Penalti', n: num(penalGolRivalCount), w: PESO.penal },
@@ -9057,37 +9057,28 @@ const minutosPorJornada = [];
                       <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>xG · {nRivalCampo} tiros · {rivGoals} goles</span>
                     </div>
                   </div>
-                  <div style={{ color: '#94a3b8', fontSize: '0.72rem', textAlign: 'center', marginTop: '-0.9rem' }}>
-                    xG calculado desde las ubicaciones marcadas en el campo (distancia y ángulo a portería) · remate de cabeza ×0,7
-                  </div>
-
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                     <span style={{ color: '#cbd5e1', fontWeight: 700, fontSize: '0.8rem' }}>TIROS MARCADOS EN VIVO DESDE ACCIONES</span>
                     <button onClick={clearShots} style={{ border: 'none', borderRadius: '8px', padding: '0.35rem 0.9rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer', color: '#ffffff', background: '#64748b' }}>Borrar todo</button>
                   </div>
 
                   <svg
-                    viewBox="0 0 680 525"
+                    viewBox="0 0 680 350"
                     style={{ width: '100%', maxWidth: '560px', display: 'block', borderRadius: '10px', background: '#14532d' }}
                   >
-                    <rect x="4" y="4" width="672" height="517" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                    <line x1="4" y1="521" x2="676" y2="521" stroke="#e2e8f0" strokeWidth="3" />
+                    <rect x="4" y="4" width="672" height="342" fill="none" stroke="#e2e8f0" strokeWidth="3" />
                     <rect x="138.4" y="4" width="403.2" height="161" fill="none" stroke="#e2e8f0" strokeWidth="3" />
                     <rect x="248.4" y="4" width="183.2" height="51" fill="none" stroke="#e2e8f0" strokeWidth="3" />
                     <circle cx="340" cy="110" r="3.5" fill="#e2e8f0" />
                     <path d="M 274 165 A 91.5 91.5 0 0 0 406 165" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                    <path d="M 248.5 521 A 91.5 91.5 0 0 0 431.5 521" fill="none" stroke="#e2e8f0" strokeWidth="3" />
                     <rect x="303.4" y="0" width="73.2" height="14" fill="none" stroke="#ffffff" strokeWidth="4" />
                     {shots.map((s, i) => (
                       <g key={s.id}>
-                        <circle cx={s.x * 10} cy={s.y * 10} r="15" fill={s.equipo === 'propio' ? '#38bdf8' : '#f87171'} stroke="#0b1220" strokeWidth="3" />
-                        <text x={s.x * 10} y={s.y * 10 + 5} textAnchor="middle" fontSize="16" fontWeight="900" fill="#0b1220">{i + 1}</text>
+                        <circle cx={s.x * 10} cy={Math.min(345, s.y * 10)} r="15" fill={s.equipo === 'propio' ? '#38bdf8' : '#f87171'} stroke="#0b1220" strokeWidth="3" />
+                        <text x={s.x * 10} y={Math.min(345, s.y * 10) + 5} textAnchor="middle" fontSize="16" fontWeight="900" fill="#0b1220">{i + 1}</text>
                       </g>
                     ))}
                   </svg>
-                  <div style={{ color: '#94a3b8', fontSize: '0.72rem', textAlign: 'center', marginTop: '-0.9rem' }}>
-                    Los tiros se marcan en vivo desde ACCIONES (al pulsar TIRO se abre este campo). Aquí puedes consultarlos y borrarlos.
-                  </div>
 
                   {shots.length > 0 && (
                     <div style={{ width: '100%', overflowX: 'auto' }}>
@@ -9829,17 +9820,15 @@ const minutosPorJornada = [];
                 </div>
               )}
               <svg
-                viewBox="0 0 680 525"
+                viewBox="0 0 680 350"
                 onClick={confirmarCampoTiro}
                 style={{ width: '100%', maxWidth: '560px', display: 'block', cursor: 'crosshair', borderRadius: '10px', background: '#14532d' }}
               >
-                <rect x="4" y="4" width="672" height="517" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                <line x1="4" y1="521" x2="676" y2="521" stroke="#e2e8f0" strokeWidth="3" />
+                <rect x="4" y="4" width="672" height="342" fill="none" stroke="#e2e8f0" strokeWidth="3" />
                 <rect x="138.4" y="4" width="403.2" height="161" fill="none" stroke="#e2e8f0" strokeWidth="3" />
                 <rect x="248.4" y="4" width="183.2" height="51" fill="none" stroke="#e2e8f0" strokeWidth="3" />
                 <circle cx="340" cy="110" r="3.5" fill="#e2e8f0" />
                 <path d="M 274 165 A 91.5 91.5 0 0 0 406 165" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                <path d="M 248.5 521 A 91.5 91.5 0 0 0 431.5 521" fill="none" stroke="#e2e8f0" strokeWidth="3" />
                 <rect x="303.4" y="0" width="73.2" height="14" fill="none" stroke="#ffffff" strokeWidth="4" />
               </svg>
               <button onClick={cancelarCampoTiro} style={{ background: '#334155', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', cursor: 'pointer' }}>Cancelar (no registrar)</button>
