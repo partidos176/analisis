@@ -4216,7 +4216,7 @@ const minutosPorJornada = [];
                     )}
                     </div>
                     {jugadorSeleccionado && (
-                      <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', display: 'block', marginTop: '0.4rem' }}>
+                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', display: 'block', marginTop: '0.4rem' }}>
                         xG: {(xgPerPlayer[jugadorSeleccionado] || 0).toFixed(2).replace('.', ',')}
                       </span>
                     )}
