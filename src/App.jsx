@@ -197,7 +197,6 @@ const matchTabs = [
   { id: 'sustituciones', label: 'SUSTITUCIONES' },
   { id: 'datos', label: 'DATOS' },
   { id: 'posesion', label: 'POSESIÓN' },
-  { id: 'xg', label: 'XG' },
   { id: 'videos', label: 'VÍDEOS' },
   { id: 'vario', label: 'NOTA DE VOZ' }
 ];
@@ -596,13 +595,6 @@ export default function App() {
   const [timerInterval, setTimerInterval] = useState(null);
   const [actionLog, setActionLog] = useState([]);
   const [sustituciones, setSustituciones] = useState([]);
-  const [xgShots, setXgShots] = useState([]);
-  const [remateTiro, setRemateTiro] = useState('pie');
-  const [jugadorTiro, setJugadorTiro] = useState('');
-  const [pendingTiro, setPendingTiro] = useState(null);
-  const [showCampoTiro, setShowCampoTiro] = useState(false);
-  const [faltaJugadorWarning, setFaltaJugadorWarning] = useState(false);
-  const [pendingXg, setPendingXg] = useState(null);
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
@@ -1058,7 +1050,6 @@ export default function App() {
     setTimerRunning(false);
     setActionLog([]);
     setSustituciones([]);
-    setXgShots([]);
     setFromRival(false);
     setPeriodo('1ª PARTE');
   };
@@ -1226,7 +1217,6 @@ export default function App() {
     setTimerRunning(match.timerRunning ?? false);
     setActionLog(normalizeArray(match.actionLog));
     setSustituciones(normalizeArray(match.sustituciones));
-    setXgShots(normalizeArray(match.xgShots));
     if (!keepCurrent) setCurrentMatch(match);
   };
 
@@ -1294,8 +1284,7 @@ export default function App() {
       timerSeconds,
       timerRunning,
       actionLog,
-      sustituciones,
-      xgShots
+      sustituciones
     });
 
   const saveMatchData = async (id) => {
@@ -1507,7 +1496,7 @@ export default function App() {
       penalFueraCount,
       penalGolCount,
       penalGolRivalCount,
-      saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones, xgShots]);
+      saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
   useEffect(() => { setGolCount(golesList.filter(esGolPropio).length); }, [golesList]);
   useEffect(() => { setGolRivalCount(golesRivalList.length); }, [golesRivalList]);
 
@@ -1852,81 +1841,6 @@ export default function App() {
     setActionLog(prev => [{ name, time: formatTime(timerSeconds), type }, ...prev]);
     return true;
   };
-
-  // Cálculo de xG a partir de la ubicación (distancia y ángulo a portería),
-  // con penalización del 30% para los remates de cabeza.
-  const XG_PESO_CABEZA = 0.7;
-  const computeXgTiro = (x, y, remate) => {
-    const GX = 34, PH = 3.66;
-    const dist = Math.sqrt((x - GX) * (x - GX) + y * y);
-    const a1 = Math.atan2(-y, (GX - PH) - x);
-    const a2 = Math.atan2(-y, (GX + PH) - x);
-    let d = Math.abs(a1 - a2);
-    if (d > Math.PI) d = 2 * Math.PI - d;
-    const angle = (d * 180) / Math.PI;
-    const base = 1 / (1 + Math.exp(-(-0.64 - 0.15 * dist + 0.028 * angle)));
-    return { dist, angle, xg: base * (String(remate).toLowerCase() === 'cabeza' ? XG_PESO_CABEZA : 1) };
-  };
-
-  // Finalizaciones que, tras registrarse, abren el campo para marcar el xG.
-  const XG_FINALIZACIONES = ['FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'GOL', 'GOL RIVAL'];
-
-  // Al pulsar un tiro/centro se registra la acción y se abre FINALIZACIONES.
-  // El campo xG se abrirá después, según la finalización elegida.
-  const iniciarTiro = (name, esRival, aplicar) => {
-    if (!timerRunning) {
-      setContadorWarning(true);
-      setTimeout(() => setContadorWarning(false), 2500);
-      return;
-    }
-    if (logAction(name)) {
-      aplicar();
-      setPendingXg({ accion: name, esRival });
-      setActiveTab('finalizaciones');
-    }
-  };
-
-  // Tras pulsar una finalización: si venimos de un TIRO, siempre se abre el
-  // campo xG; si venimos de un CENTRO, solo para las finalizaciones de xG.
-  const finalizarConXg = (nombreFin, tabDestino) => {
-    const esCentro = pendingXg && /CENTRO/.test(pendingXg.accion || '');
-    const hayXg = pendingXg && (esCentro ? XG_FINALIZACIONES.includes(nombreFin) : true);
-    if (hayXg) {
-      setPendingTiro({ name: pendingXg.accion || nombreFin, esRival: !!pendingXg.esRival, soloXg: true, tabDestino });
-      setShowCampoTiro(true);
-    } else {
-      setActiveTab(tabDestino);
-    }
-    setPendingXg(null);
-  };
-
-  const confirmarCampoTiro = (e) => {
-    const p = pendingTiro;
-    if (!p) return;
-    if (!p.esRival && !jugadorTiro) {
-      setFaltaJugadorWarning(true);
-      setTimeout(() => setFaltaJugadorWarning(false), 2500);
-      return;
-    }
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mx = Math.min(67.5, Math.max(0.5, ((e.clientX - rect.left) / rect.width) * 68));
-    const my = Math.min(34.5, Math.max(0.5, ((e.clientY - rect.top) / rect.height) * 35));
-    const x = Math.round(mx * 100) / 100;
-    const y = Math.round(my * 100) / 100;
-    setShowCampoTiro(false);
-    setPendingTiro(null);
-    setXgShots(prev => [...prev, { id: 'xg' + Date.now() + '_' + Math.floor(Math.random() * 100000), equipo: p.esRival ? 'rival' : 'propio', jugador: p.esRival ? '' : jugadorTiro, x, y, remate: remateTiro, minuto: formatTime(timerSeconds) }]);
-    setRemateTiro('pie');
-    setJugadorTiro('');
-    if (p.soloXg) {
-      setActiveTab(p.tabDestino || 'acciones');
-    } else if (logAction(p.name)) {
-      p.aplicar();
-      setActiveTab('finalizaciones');
-    }
-  };
-
-  const cancelarCampoTiro = () => { setShowCampoTiro(false); setPendingTiro(null); };
 
   const decrementCounter = (name) => {
     const map = {
@@ -3991,22 +3905,6 @@ export default function App() {
                       contarGoles(m.golesList);
                     });
                     contarGoles(golesList);
-                    const xgPerPlayer = {};
-                    const xgPiePerPlayer = {};
-                    const xgCabezaPerPlayer = {};
-                    const acumularXg = (sh) => {
-                      const arr = Array.isArray(sh) ? sh : (sh ? Object.values(sh) : []);
-                      arr.forEach(s => {
-                        if (s && s.jugador && s.tipo !== 'centro') {
-                          const xg = computeXgTiro(s.x, s.y, s.remate).xg;
-                          xgPerPlayer[s.jugador] = (xgPerPlayer[s.jugador] || 0) + xg;
-                          if (String(s.remate).toLowerCase() === 'cabeza') xgCabezaPerPlayer[s.jugador] = (xgCabezaPerPlayer[s.jugador] || 0) + xg;
-                          else xgPiePerPlayer[s.jugador] = (xgPiePerPlayer[s.jugador] || 0) + xg;
-                        }
-                      });
-                    };
-                    matches.forEach(m => { if (currentMatch && m.id === currentMatch.id) return; acumularXg(m.xgShots); });
-                    acumularXg(xgShots);
                     const golesAccion = {};
                     const derivarAcciones = (al) => {
                       const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
@@ -4239,11 +4137,6 @@ const minutosPorJornada = [];
                       </span>
                     )}
                     </div>
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', display: 'block', marginTop: '0.4rem' }}>
-                        xG: {(xgPerPlayer[jugadorSeleccionado] || 0).toFixed(2).replace('.', ',')}
-                      </span>
-                    )}
                     </div>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginLeft: '9rem' }}>
@@ -5318,7 +5211,7 @@ const minutosPorJornada = [];
               justifyContent: 'center',
               gap: '2rem'
             }}>
-              {activeTab !== 'resumengoles' && activeTab !== 'resumenacciones' && activeTab !== 'tiempojugado' && activeTab !== 'videos' && activeTab !== 'posesion' && activeTab !== 'xg' && activeTab !== 'jugadores' && (
+              {activeTab !== 'resumengoles' && activeTab !== 'resumenacciones' && activeTab !== 'tiempojugado' && activeTab !== 'videos' && activeTab !== 'posesion' && activeTab !== 'jugadores' && (
               <>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.homeTeam}</span>
@@ -5335,8 +5228,8 @@ const minutosPorJornada = [];
               </div>
               </>
               )}
-              <span style={{ fontSize: ['videos', 'posesion', 'xg'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
-                {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : activeTab === 'xg' ? 'GOLES ESPERADOS (xG)' : `JORNADA ${currentMatch.matchday}`}
+              <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
+                {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : `JORNADA ${currentMatch.matchday}`}
               </span>
               {activeTab === 'acciones' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
@@ -5585,10 +5478,13 @@ const minutosPorJornada = [];
                   alignItems: 'flex-start'
                 }}>
                   <button
-                    onClick={() => iniciarTiro('TIRO AREA', false, () => {
-                      setFromRival(false);
-                      setTiroAreaCount(tiroAreaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('TIRO AREA')) {
+                        setFromRival(false);
+                        setTiroAreaCount(tiroAreaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -5619,10 +5515,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('TIRO DERECHA', false, () => {
-                      setFromRival(false);
-                      setTiroDerechaCount(tiroDerechaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('TIRO DERECHA')) {
+                        setFromRival(false);
+                        setTiroDerechaCount(tiroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -5653,10 +5552,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('TIRO IZQUIERDA', false, () => {
-                      setFromRival(false);
-                      setTiroIzquierdaCount(tiroIzquierdaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('TIRO IZQUIERDA')) {
+                        setFromRival(false);
+                        setTiroIzquierdaCount(tiroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -5687,10 +5589,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('TIRO FRONTAL', false, () => {
-                      setFromRival(false);
-                      setTiroFrontalCount(tiroFrontalCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('TIRO FRONTAL')) {
+                        setFromRival(false);
+                        setTiroFrontalCount(tiroFrontalCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -5832,10 +5737,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('CENTRO DERECHA', false, () => {
-                      setFromRival(false);
-                      setCentroDerechaCount(centroDerechaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('CENTRO DERECHA')) {
+                        setFromRival(false);
+                        setCentroDerechaCount(centroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -5866,10 +5774,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('CENTRO IZQUIERDA', false, () => {
-                      setFromRival(false);
-                      setCentroIzquierdaCount(centroIzquierdaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('CENTRO IZQUIERDA')) {
+                        setFromRival(false);
+                        setCentroIzquierdaCount(centroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -5982,10 +5893,13 @@ const minutosPorJornada = [];
                   alignItems: 'flex-start'
                 }}>
                   <button
-                    onClick={() => iniciarTiro('RIVAL TIRO AREA', true, () => {
-                      setFromRival(true);
-                      setRivalTiroAreaCount(rivalTiroAreaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('RIVAL TIRO AREA')) {
+                        setFromRival(true);
+                        setRivalTiroAreaCount(rivalTiroAreaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -6016,10 +5930,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('RIVAL TIRO DERECHA', true, () => {
-                      setFromRival(true);
-                      setRivalTiroDerechaCount(rivalTiroDerechaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('RIVAL TIRO DERECHA')) {
+                        setFromRival(true);
+                        setRivalTiroDerechaCount(rivalTiroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -6050,10 +5967,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('RIVAL TIRO IZQUIERDA', true, () => {
-                      setFromRival(true);
-                      setRivalTiroIzquierdaCount(rivalTiroIzquierdaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('RIVAL TIRO IZQUIERDA')) {
+                        setFromRival(true);
+                        setRivalTiroIzquierdaCount(rivalTiroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -6084,10 +6004,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('RIVAL TIRO FRONTAL', true, () => {
-                      setFromRival(true);
-                      setRivalTiroFrontalCount(rivalTiroFrontalCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('RIVAL TIRO FRONTAL')) {
+                        setFromRival(true);
+                        setRivalTiroFrontalCount(rivalTiroFrontalCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -6229,10 +6152,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('RIVAL CENTRO DERECHA', true, () => {
-                      setFromRival(true);
-                      setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('RIVAL CENTRO DERECHA')) {
+                        setFromRival(true);
+                        setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -6263,10 +6189,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => iniciarTiro('RIVAL CENTRO IZQUIERDA', true, () => {
-                      setFromRival(true);
-                      setRivalCentroIzquierdaCount(rivalCentroIzquierdaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('RIVAL CENTRO IZQUIERDA')) {
+                        setFromRival(true);
+                        setRivalCentroIzquierdaCount(rivalCentroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -8141,35 +8070,35 @@ const minutosPorJornada = [];
                     {/* Columna izquierda */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
-                        onClick={() => { if (logAction('FUERA', 'finalizacion')) { setFueraCount(fueraCount + 1); finalizarConXg('FUERA', 'acciones'); } }}
+                        onClick={() => { if (logAction('FUERA', 'finalizacion')) { setFueraCount(fueraCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>FUERA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{fueraCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('BLOCAJE', 'finalizacion')) { setBlocajeCount(blocajeCount + 1); finalizarConXg('BLOCAJE', 'acciones'); } }}
+                        onClick={() => { if (logAction('BLOCAJE', 'finalizacion')) { setBlocajeCount(blocajeCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>BLOCAJE</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{blocajeCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('FINAL+BLOCA', 'finalizacion')) { setFinalBocaCount(finalBocaCount + 1); finalizarConXg('FINAL+BLOCA', 'acciones'); } }}
+                        onClick={() => { if (logAction('FINAL+BLOCA', 'finalizacion')) { setFinalBocaCount(finalBocaCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>FINAL+BLOCA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{finalBocaCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('FINAL+DESP', 'finalizacion')) { setFinalDespCount(finalDespCount + 1); finalizarConXg('FINAL+DESP', 'acciones'); } }}
+                        onClick={() => { if (logAction('FINAL+DESP', 'finalizacion')) { setFinalDespCount(finalDespCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>FINAL+DESP</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{finalDespCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('FINAL+FUERA', 'finalizacion')) { setFinalFueraCount(finalFueraCount + 1); finalizarConXg('FINAL+FUERA', 'acciones'); } }}
+                        onClick={() => { if (logAction('FINAL+FUERA', 'finalizacion')) { setFinalFueraCount(finalFueraCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>FINAL+FUERA</span>
@@ -8179,7 +8108,7 @@ const minutosPorJornada = [];
                     {/* Columna central: OCASION + volver */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
-                        onClick={() => { if (logAction('OCASION', 'finalizacion')) { setOcasionCount(ocasionCount + 1); finalizarConXg('OCASION', 'finalizaciones'); } }}
+                        onClick={() => { if (logAction('OCASION', 'finalizacion')) setOcasionCount(ocasionCount + 1); }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#f97316', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>OCASION</span>
@@ -8198,7 +8127,6 @@ const minutosPorJornada = [];
                           const newLog = actionLog.slice(1);
                           setActionLog(newLog);
                           recomputeCountersFromLog(newLog);
-                          setPendingXg(null);
                           setActiveTab('acciones');
                         }}
                         title="Eliminar última acción cargada"
@@ -8207,14 +8135,14 @@ const minutosPorJornada = [];
                         <span>&#8629;</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('DESPEJE PORTERO', 'finalizacion')) { setDespejePorteroCount(despejePorteroCount + 1); finalizarConXg('DESPEJE PORTERO', 'acciones'); } }}
+                        onClick={() => { if (logAction('DESPEJE PORTERO', 'finalizacion')) { setDespejePorteroCount(despejePorteroCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>DESPEJE PORTERO</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{despejePorteroCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('DESPEJE DEFENSA', 'finalizacion')) { setDespejeDefensaCount(despejeDefensaCount + 1); finalizarConXg('DESPEJE DEFENSA', 'acciones'); } }}
+                        onClick={() => { if (logAction('DESPEJE DEFENSA', 'finalizacion')) { setDespejeDefensaCount(despejeDefensaCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>DESPEJE DEFENSA</span>
@@ -8224,28 +8152,28 @@ const minutosPorJornada = [];
                     {/* Columna derecha */}
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
-                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: lastAccionRef.current, team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL'); finalizarConXg('GOL', 'goles'); } }}
+                        onClick={() => { if (logAction('GOL', 'finalizacion')) { setGolCount(prev => prev + 1); setGolesList(prev => [...prev, { name: '', tipo: '', name2: '', accion: lastAccionRef.current, team: 'home', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL'); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { accion: lastAccionRef.current, periodo, minuto: Math.floor(timerSeconds / 60) }]); setGolesList(prev => [...prev, { name: 'RIVAL', tipo: '', name2: '', accion: lastAccionRef.current, team: 'away', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL RIVAL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL RIVAL'); finalizarConXg('GOL RIVAL', 'goles'); } }}
+                        onClick={() => { if (logAction('GOL RIVAL', 'finalizacion')) { setGolRivalCount(prev => prev + 1); setGolesRivalList(prev => [...prev, { accion: lastAccionRef.current, periodo, minuto: Math.floor(timerSeconds / 60) }]); setGolesList(prev => [...prev, { name: 'RIVAL', tipo: '', name2: '', accion: lastAccionRef.current, team: 'away', periodo, minuto: Math.floor(timerSeconds / 60) }]); setActionLog(prev => { const golEntry = prev[0]; const rest = prev.slice(1); return [{ name: 'ORIGEN GOL RIVAL', time: golEntry ? golEntry.time : formatTime(timerSeconds), type: 'origengol' }, golEntry, ...rest]; }); setLastGoalType('GOL RIVAL'); setActiveTab('goles'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>GOL RIVAL</span>
                         <span style={{ background: '#ffffff', color: '#ef4444', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{golRivalCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('PENAL + FUERA', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalFueraCount(penalFueraCount + 1); finalizarConXg('PENAL + FUERA', 'acciones'); } }}
+                        onClick={() => { if (logAction('PENAL + FUERA', 'finalizacion')) { setPenalCount(penalCount + 1); setPenalFueraCount(penalFueraCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>PENAL + FUERA</span>
                         <span style={{ background: '#ffffff', color: '#16a34a', fontWeight: 900, fontSize: '1rem', padding: '0.2rem 0.7rem', borderRadius: '8px', minWidth: '30px', textAlign: 'center' }}>{penalFueraCount}</span>
                       </button>
                       <button
-                        onClick={() => { if (logAction('INFRACCION', 'finalizacion')) { setInfraccionCount(infraccionCount + 1); finalizarConXg('INFRACCION', 'acciones'); } }}
+                        onClick={() => { if (logAction('INFRACCION', 'finalizacion')) { setInfraccionCount(infraccionCount + 1); setActiveTab('acciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>INFRACCION</span>
@@ -9013,108 +8941,6 @@ const minutosPorJornada = [];
                 </div>
                 );
               })()}
-                  {activeTab === 'xg' && (() => {
-                const ownGoals = Array.isArray(golesList) ? golesList.filter(esGolPropio).length : 0;
-                const rivGoals = Array.isArray(golesRivalList) ? golesRivalList.length : 0;
-                const isHomeTfe = (currentMatch?.homeTeam || '').toUpperCase().includes('TENERIFE');
-                const teamInfo = (currentMatch?.homeTeam || '') + ' vs ' + (currentMatch?.awayTeam || '');
-                const ownName = isHomeTfe ? (currentMatch?.homeTeam || 'TENERIFE') : (currentMatch?.awayTeam || 'RIVAL');
-                const rivName = isHomeTfe ? (currentMatch?.awayTeam || 'RIVAL') : (currentMatch?.homeTeam || 'TENERIFE');
-                const fmt = (v) => v.toFixed(2).replace('.', ',');
-                const hBorder = '1px solid var(--border-subtle)';
-                const th = { border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, fontSize: '0.85rem' };
-                const td = (color, bold) => ({ border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color, fontWeight: bold ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' });
-                const tdl = (color, bold) => ({ ...td(color, bold), textAlign: 'left' });
-                const shots = (Array.isArray(xgShots) ? xgShots : []).filter(s => s.tipo !== 'centro').map(s => ({ ...s, ...computeXgTiro(s.x, s.y, s.remate) }));
-                const xgPropioCampo = shots.filter(s => s.equipo === 'propio').reduce((a, s) => a + s.xg, 0);
-                const xgRivalCampo = shots.filter(s => s.equipo === 'rival').reduce((a, s) => a + s.xg, 0);
-                const nPropioCampo = shots.filter(s => s.equipo === 'propio').length;
-                const nRivalCampo = shots.filter(s => s.equipo === 'rival').length;
-                const delShot = (id) => setXgShots(prev => prev.filter(s => s.id !== id));
-                const clearShots = () => setXgShots([]);
-                return (
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ffffff' }}>
-                    JORNADA {currentMatch?.matchday || '?'} — {teamInfo}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                      <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>{ownName}</span>
-                      <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '2.4rem', fontFamily: 'var(--font-mono)' }}>{fmt(xgPropioCampo)}</span>
-                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>xG · {nPropioCampo} tiros · {ownGoals} goles</span>
-                    </div>
-                    <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.2rem' }}>vs</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                      <span style={{ color: '#f87171', fontWeight: 900, fontSize: '0.9rem' }}>{rivName}</span>
-                      <span style={{ color: '#f87171', fontWeight: 900, fontSize: '2.4rem', fontFamily: 'var(--font-mono)' }}>{fmt(xgRivalCampo)}</span>
-                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>xG · {nRivalCampo} tiros · {rivGoals} goles</span>
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                    <span style={{ color: '#cbd5e1', fontWeight: 700, fontSize: '0.8rem' }}>TIROS MARCADOS EN VIVO DESDE ACCIONES</span>
-                    <button onClick={clearShots} style={{ border: 'none', borderRadius: '8px', padding: '0.35rem 0.9rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer', color: '#ffffff', background: '#64748b' }}>Borrar todo</button>
-                  </div>
-
-                  <svg
-                    viewBox="0 0 680 350"
-                    style={{ width: '100%', maxWidth: '560px', display: 'block', borderRadius: '10px', background: '#14532d' }}
-                  >
-                    <rect x="4" y="4" width="672" height="342" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                    <rect x="138.4" y="4" width="403.2" height="161" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                    <rect x="248.4" y="4" width="183.2" height="51" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                    <circle cx="340" cy="110" r="3.5" fill="#e2e8f0" />
-                    <path d="M 274 165 A 91.5 91.5 0 0 0 406 165" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                    <rect x="303.4" y="0" width="73.2" height="14" fill="none" stroke="#ffffff" strokeWidth="4" />
-                    {shots.map((s, i) => (
-                      <g key={s.id}>
-                        <circle cx={s.x * 10} cy={Math.min(345, s.y * 10)} r="15" fill={s.equipo === 'propio' ? '#38bdf8' : '#f87171'} stroke="#0b1220" strokeWidth="3" />
-                        <text x={s.x * 10} y={Math.min(345, s.y * 10) + 5} textAnchor="middle" fontSize="16" fontWeight="900" fill="#0b1220">{i + 1}</text>
-                      </g>
-                    ))}
-                  </svg>
-
-                  {shots.length > 0 && (
-                    <div style={{ width: '100%', overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', maxWidth: '660px', margin: '0 auto' }}>
-                        <thead>
-                          <tr>
-                            <th style={{ ...th, textAlign: 'left' }}>#</th>
-                            <th style={{ ...th, textAlign: 'left' }}>MIN</th>
-                            <th style={{ ...th, textAlign: 'left' }}>EQUIPO</th>
-                            <th style={{ ...th, textAlign: 'left' }}>JUGADOR</th>
-                            <th style={th}>REMATE</th>
-                            <th style={th}>DISTANCIA (m)</th>
-                            <th style={th}>ÁNGULO (°)</th>
-                            <th style={th}>xG</th>
-                            <th style={th}></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {shots.map((s, i) => (
-                            <tr key={s.id}>
-                              <td style={tdl('#94a3b8', false)}>{i + 1}</td>
-                              <td style={tdl('#94a3b8', false)}>{s.minuto || '—'}</td>
-                              <td style={tdl(s.equipo === 'propio' ? '#38bdf8' : '#f87171', true)}>{s.equipo === 'propio' ? ownName : rivName}</td>
-                              <td style={tdl('#cbd5e1', false)}>{s.jugador || '—'}</td>
-                              <td style={td(s.remate === 'cabeza' ? '#eab308' : '#cbd5e1', s.remate === 'cabeza')}>{s.remate === 'cabeza' ? 'CABEZA' : 'PIE'}</td>
-                              <td style={td('#cbd5e1', false)}>{s.dist.toFixed(1).replace('.', ',')}</td>
-                              <td style={td('#cbd5e1', false)}>{s.angle.toFixed(1).replace('.', ',')}</td>
-                              <td style={td(s.equipo === 'propio' ? '#38bdf8' : '#f87171', true)}>{s.xg.toFixed(2).replace('.', ',')}</td>
-                              <td style={td('#ef4444', false)}><button onClick={() => delShot(s.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 900 }}>✕</button></td>
-                            </tr>
-                          ))}
-                          <tr>
-                            <td colSpan={7} style={tdl('#ffffff', true)}>TOTAL ({shots.length} tiros)</td>
-                            <td style={td('#ffffff', true)}>{fmt(xgPropioCampo + xgRivalCampo)}</td>
-                            <td></td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-                );
-              })()}
                   {activeTab === 'alineacion' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', width: '100%', position: 'relative' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.6rem', position: 'absolute', top: 0, right: 0, zIndex: 5 }}>
@@ -9743,63 +9569,6 @@ const minutosPorJornada = [];
               )}
             </div>
         </main>
-        {showCampoTiro && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.82)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', width: '100%', maxWidth: '620px', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ color: '#ffffff', fontWeight: 800, fontSize: '1rem', textAlign: 'center' }}>
-                ¿DÓNDE SE PRODUJO {pendingTiro ? pendingTiro.name : 'EL TIRO'}?
-              </div>
-              <div style={{ color: '#94a3b8', fontSize: '0.78rem', textAlign: 'center' }}>
-                Pincha el punto del campo ({pendingTiro && pendingTiro.esRival ? 'rival' : 'propio'}). Se registrará el tiro con su minuto y su xG.
-              </div>
-              {faltaJugadorWarning && (
-                <div style={{ background: '#dc2626', color: '#ffffff', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 1.2rem', borderRadius: '8px', animation: 'blink 0.5s infinite' }}>
-                  SELECCIONA UN JUGADOR ANTES DE MARCAR
-                </div>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <span style={{ color: '#cbd5e1', fontWeight: 700, fontSize: '0.8rem' }}>REMATE:</span>
-                {[['pie', 'PIE'], ['cabeza', 'CABEZA']].map(([v, l]) => (
-                  <button
-                    key={v}
-                    onClick={() => setRemateTiro(v)}
-                    style={{ border: 'none', borderRadius: '8px', padding: '0.35rem 1rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer', color: '#0b1220', background: remateTiro === v ? '#eab308' : '#334155' }}
-                  >
-                    {l}
-                  </button>
-                ))}
-              </div>
-              {!(pendingTiro && pendingTiro.esRival) && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                  <span style={{ color: '#cbd5e1', fontWeight: 700, fontSize: '0.8rem' }}>JUGADOR:</span>
-                  <select
-                    value={jugadorTiro}
-                    onChange={(e) => setJugadorTiro(e.target.value)}
-                    style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', padding: '0.3rem 0.5rem', minWidth: '180px', cursor: 'pointer' }}
-                  >
-                    <option value="">-</option>
-                    {jugadoresEnCancha(Math.floor(timerSeconds / 60), players, sustituciones).sort().map(n => (
-                      <option key={n} value={n}>{n}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              <svg
-                viewBox="0 0 680 350"
-                onClick={confirmarCampoTiro}
-                style={{ width: '100%', maxWidth: '560px', display: 'block', cursor: 'crosshair', borderRadius: '10px', background: '#14532d' }}
-              >
-                <rect x="4" y="4" width="672" height="342" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                <rect x="138.4" y="4" width="403.2" height="161" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                <rect x="248.4" y="4" width="183.2" height="51" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                <circle cx="340" cy="110" r="3.5" fill="#e2e8f0" />
-                <path d="M 274 165 A 91.5 91.5 0 0 0 406 165" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                <rect x="303.4" y="0" width="73.2" height="14" fill="none" stroke="#ffffff" strokeWidth="4" />
-              </svg>
-              <button onClick={cancelarCampoTiro} style={{ background: '#334155', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.8rem', color: '#ffffff', cursor: 'pointer' }}>Cancelar (no registrar)</button>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
