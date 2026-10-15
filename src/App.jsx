@@ -4243,11 +4243,6 @@ const minutosPorJornada = [];
                         PENAL: {golPenalPerPlayer[jugadorSeleccionado] || 0}
                       </span>
                     )}
-                    {jugadorSeleccionado && (
-                      <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', marginLeft: '9rem' }}>
-                        xG PIE: {(xgPiePerPlayer[jugadorSeleccionado] || 0).toFixed(2).replace('.', ',')} · xG CABEZA: {(xgCabezaPerPlayer[jugadorSeleccionado] || 0).toFixed(2).replace('.', ',')} · xG CENTROS: {(xgCentroPerPlayer[jugadorSeleccionado] || 0).toFixed(2).replace('.', ',')}
-                      </span>
-                    )}
                     </div>
                     {jugadorSeleccionado && (
                       <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1.1rem', fontFamily: 'var(--font-mono)' }}>
