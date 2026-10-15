@@ -601,6 +601,7 @@ export default function App() {
   const [jugadorTiro, setJugadorTiro] = useState('');
   const [pendingTiro, setPendingTiro] = useState(null);
   const [showCampoTiro, setShowCampoTiro] = useState(false);
+  const [faltaJugadorWarning, setFaltaJugadorWarning] = useState(false);
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
@@ -1880,15 +1881,20 @@ export default function App() {
   };
 
   const confirmarCampoTiro = (e) => {
+    const p = pendingTiro;
+    if (!p) return;
+    if (!p.esRival && !jugadorTiro) {
+      setFaltaJugadorWarning(true);
+      setTimeout(() => setFaltaJugadorWarning(false), 2500);
+      return;
+    }
     const rect = e.currentTarget.getBoundingClientRect();
     const mx = Math.min(67.5, Math.max(0.5, ((e.clientX - rect.left) / rect.width) * 68));
     const my = Math.min(34.5, Math.max(0.5, ((e.clientY - rect.top) / rect.height) * 35));
     const x = Math.round(mx * 100) / 100;
     const y = Math.round(my * 100) / 100;
-    const p = pendingTiro;
     setShowCampoTiro(false);
     setPendingTiro(null);
-    if (!p) return;
     if (logAction(p.name)) {
       p.aplicar();
       const esCentro = /CENTRO/.test(p.name);
@@ -9780,6 +9786,11 @@ const minutosPorJornada = [];
                   ? `Pincha el punto desde el que se centra (${pendingTiro.esRival ? 'rival' : 'propio'}). Se registrará el centro con su minuto y su xG.`
                   : `Pincha el punto del campo (${pendingTiro && pendingTiro.esRival ? 'rival' : 'propio'}). Se registrará el tiro con su minuto y su xG.`}
               </div>
+              {faltaJugadorWarning && (
+                <div style={{ background: '#dc2626', color: '#ffffff', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 1.2rem', borderRadius: '8px', animation: 'blink 0.5s infinite' }}>
+                  SELECCIONA UN JUGADOR ANTES DE MARCAR
+                </div>
+              )}
               {!(pendingTiro && /CENTRO/.test(pendingTiro.name)) && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                 <span style={{ color: '#cbd5e1', fontWeight: 700, fontSize: '0.8rem' }}>REMATE:</span>
