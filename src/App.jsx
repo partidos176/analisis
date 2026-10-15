@@ -596,6 +596,8 @@ export default function App() {
   const [timerInterval, setTimerInterval] = useState(null);
   const [actionLog, setActionLog] = useState([]);
   const [sustituciones, setSustituciones] = useState([]);
+  const [xgShots, setXgShots] = useState([]);
+  const [xgEquipo, setXgEquipo] = useState('propio');
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
@@ -1051,6 +1053,7 @@ export default function App() {
     setTimerRunning(false);
     setActionLog([]);
     setSustituciones([]);
+    setXgShots([]);
     setFromRival(false);
     setPeriodo('1ª PARTE');
   };
@@ -1218,6 +1221,7 @@ export default function App() {
     setTimerRunning(match.timerRunning ?? false);
     setActionLog(normalizeArray(match.actionLog));
     setSustituciones(normalizeArray(match.sustituciones));
+    setXgShots(normalizeArray(match.xgShots));
     if (!keepCurrent) setCurrentMatch(match);
   };
 
@@ -1285,7 +1289,8 @@ export default function App() {
       timerSeconds,
       timerRunning,
       actionLog,
-      sustituciones
+      sustituciones,
+      xgShots
     });
 
   const saveMatchData = async (id) => {
@@ -1497,7 +1502,7 @@ export default function App() {
       penalFueraCount,
       penalGolCount,
       penalGolRivalCount,
-      saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
+      saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones, xgShots]);
   useEffect(() => { setGolCount(golesList.filter(esGolPropio).length); }, [golesList]);
   useEffect(() => { setGolRivalCount(golesRivalList.length); }, [golesRivalList]);
 
@@ -8974,6 +8979,30 @@ const minutosPorJornada = [];
                 const th = { border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, fontSize: '0.85rem' };
                 const td = (color, bold) => ({ border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color, fontWeight: bold ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' });
                 const tdl = (color, bold) => ({ ...td(color, bold), textAlign: 'left' });
+                const computeXg = (x, y) => {
+                  const GX = 34, PH = 3.66;
+                  const dist = Math.sqrt((x - GX) * (x - GX) + y * y);
+                  const a1 = Math.atan2(-y, (GX - PH) - x);
+                  const a2 = Math.atan2(-y, (GX + PH) - x);
+                  let d = Math.abs(a1 - a2);
+                  if (d > Math.PI) d = 2 * Math.PI - d;
+                  const angle = (d * 180) / Math.PI;
+                  const xg = 1 / (1 + Math.exp(-(-0.64 - 0.15 * dist + 0.028 * angle)));
+                  return { dist, angle, xg };
+                };
+                const shots = (Array.isArray(xgShots) ? xgShots : []).map(s => ({ ...s, ...computeXg(s.x, s.y) }));
+                const xgPropioCampo = shots.filter(s => s.equipo === 'propio').reduce((a, s) => a + s.xg, 0);
+                const xgRivalCampo = shots.filter(s => s.equipo === 'rival').reduce((a, s) => a + s.xg, 0);
+                const nPropioCampo = shots.filter(s => s.equipo === 'propio').length;
+                const nRivalCampo = shots.filter(s => s.equipo === 'rival').length;
+                const addShot = (e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const mx = Math.min(67.5, Math.max(0.5, ((e.clientX - rect.left) / rect.width) * 68));
+                  const my = Math.min(52, Math.max(0.5, ((e.clientY - rect.top) / rect.height) * 52.5));
+                  setXgShots(prev => [...prev, { id: 'xg' + Date.now() + '_' + Math.floor(Math.random() * 100000), equipo: xgEquipo, x: Math.round(mx * 100) / 100, y: Math.round(my * 100) / 100 }]);
+                };
+                const delShot = (id) => setXgShots(prev => prev.filter(s => s.id !== id));
+                const clearShots = () => setXgShots([]);
                 return (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
                   <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ffffff' }}>
@@ -8982,15 +9011,89 @@ const minutosPorJornada = [];
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
                       <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>{ownName}</span>
-                      <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '2.4rem', fontFamily: 'var(--font-mono)' }}>{fmt(ownXg)}</span>
-                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>xG · {ownShots} tiros · {ownGoals} goles</span>
+                      <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '2.4rem', fontFamily: 'var(--font-mono)' }}>{fmt(xgPropioCampo)}</span>
+                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>xG · {nPropioCampo} tiros · {ownGoals} goles</span>
                     </div>
                     <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.2rem' }}>vs</span>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
                       <span style={{ color: '#f87171', fontWeight: 900, fontSize: '0.9rem' }}>{rivName}</span>
-                      <span style={{ color: '#f87171', fontWeight: 900, fontSize: '2.4rem', fontFamily: 'var(--font-mono)' }}>{fmt(rivXg)}</span>
-                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>xG · {rivShots} tiros · {rivGoals} goles</span>
+                      <span style={{ color: '#f87171', fontWeight: 900, fontSize: '2.4rem', fontFamily: 'var(--font-mono)' }}>{fmt(xgRivalCampo)}</span>
+                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>xG · {nRivalCampo} tiros · {rivGoals} goles</span>
                     </div>
+                  </div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.72rem', textAlign: 'center', marginTop: '-0.9rem' }}>
+                    xG calculado desde las ubicaciones marcadas en el campo (distancia y ángulo a portería)
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                    <span style={{ color: '#cbd5e1', fontWeight: 700, fontSize: '0.8rem' }}>MARCAR TIRO DE:</span>
+                    {['propio', 'rival'].map(eq => (
+                      <button
+                        key={eq}
+                        onClick={() => setXgEquipo(eq)}
+                        style={{ border: 'none', borderRadius: '8px', padding: '0.35rem 0.9rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer', color: '#0b1220', background: xgEquipo === eq ? (eq === 'propio' ? '#38bdf8' : '#f87171') : '#334155' }}
+                      >
+                        {eq === 'propio' ? ownName : rivName}
+                      </button>
+                    ))}
+                    <button onClick={clearShots} style={{ border: 'none', borderRadius: '8px', padding: '0.35rem 0.9rem', fontFamily: 'Inter, sans-serif', fontWeight: 800, fontSize: '0.78rem', cursor: 'pointer', color: '#ffffff', background: '#64748b' }}>Borrar todo</button>
+                  </div>
+
+                  <svg
+                    viewBox="0 0 680 525"
+                    onClick={addShot}
+                    style={{ width: '100%', maxWidth: '560px', display: 'block', cursor: 'crosshair', borderRadius: '10px', background: '#14532d' }}
+                  >
+                    <rect x="4" y="4" width="672" height="517" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                    <line x1="4" y1="521" x2="676" y2="521" stroke="#e2e8f0" strokeWidth="3" />
+                    <rect x="138.4" y="4" width="403.2" height="161" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                    <rect x="248.4" y="4" width="183.2" height="51" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                    <circle cx="340" cy="110" r="3.5" fill="#e2e8f0" />
+                    <path d="M 274 165 A 91.5 91.5 0 0 0 406 165" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                    <path d="M 248.5 521 A 91.5 91.5 0 0 0 431.5 521" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                    <rect x="303.4" y="0" width="73.2" height="14" fill="none" stroke="#ffffff" strokeWidth="4" />
+                    {shots.map((s, i) => (
+                      <g key={s.id}>
+                        <circle cx={s.x * 10} cy={s.y * 10} r="15" fill={s.equipo === 'propio' ? '#38bdf8' : '#f87171'} stroke="#0b1220" strokeWidth="3" />
+                        <text x={s.x * 10} y={s.y * 10 + 5} textAnchor="middle" fontSize="16" fontWeight="900" fill="#0b1220">{i + 1}</text>
+                      </g>
+                    ))}
+                  </svg>
+                  <div style={{ color: '#94a3b8', fontSize: '0.72rem', textAlign: 'center', marginTop: '-0.9rem' }}>
+                    Pincha en el campo dónde se produjo el tiro — un clic = un tiro (los penaltis no se marcan aquí)
+                  </div>
+
+                  {shots.length > 0 && (
+                    <div style={{ width: '100%', overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', maxWidth: '660px', margin: '0 auto' }}>
+                        <thead>
+                          <tr>
+                            <th style={{ ...th, textAlign: 'left' }}>#</th>
+                            <th style={{ ...th, textAlign: 'left' }}>EQUIPO</th>
+                            <th style={th}>DISTANCIA (m)</th>
+                            <th style={th}>ÁNGULO (°)</th>
+                            <th style={th}>xG</th>
+                            <th style={th}></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {shots.map((s, i) => (
+                            <tr key={s.id}>
+                              <td style={tdl('#94a3b8', false)}>{i + 1}</td>
+                              <td style={tdl(s.equipo === 'propio' ? '#38bdf8' : '#f87171', true)}>{s.equipo === 'propio' ? ownName : rivName}</td>
+                              <td style={td('#cbd5e1', false)}>{s.dist.toFixed(1).replace('.', ',')}</td>
+                              <td style={td('#cbd5e1', false)}>{s.angle.toFixed(1).replace('.', ',')}</td>
+                              <td style={td(s.equipo === 'propio' ? '#38bdf8' : '#f87171', true)}>{s.xg.toFixed(2).replace('.', ',')}</td>
+                              <td style={td('#ef4444', false)}><button onClick={() => delShot(s.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 900 }}>✕</button></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#ffffff', marginTop: '0.5rem' }}>
+                    DESGLOSE POR TIPO DE TIRO (botones de ACCIONES)
                   </div>
                   <div style={{ width: '100%', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', maxWidth: '660px', margin: '0 auto' }}>
@@ -9024,7 +9127,7 @@ const minutosPorJornada = [];
                     </table>
                   </div>
                   <div style={{ color: '#94a3b8', fontSize: '0.72rem', textAlign: 'center' }}>
-                    Valor xG por tiro — área 0,10 · frontal 0,05 · laterales 0,03 · penalti 0,76
+                    Estimación por tipo — área 0,10 · frontal 0,05 · laterales 0,03 · penalti 0,76
                   </div>
                 </div>
                 );
