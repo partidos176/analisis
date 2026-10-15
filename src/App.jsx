@@ -197,6 +197,7 @@ const matchTabs = [
   { id: 'sustituciones', label: 'SUSTITUCIONES' },
   { id: 'datos', label: 'DATOS' },
   { id: 'posesion', label: 'POSESIÓN' },
+  { id: 'xg', label: 'XG' },
   { id: 'videos', label: 'VÍDEOS' },
   { id: 'vario', label: 'NOTA DE VOZ' }
 ];
@@ -5211,7 +5212,7 @@ const minutosPorJornada = [];
               justifyContent: 'center',
               gap: '2rem'
             }}>
-              {activeTab !== 'resumengoles' && activeTab !== 'resumenacciones' && activeTab !== 'tiempojugado' && activeTab !== 'videos' && activeTab !== 'posesion' && activeTab !== 'jugadores' && (
+              {activeTab !== 'resumengoles' && activeTab !== 'resumenacciones' && activeTab !== 'tiempojugado' && activeTab !== 'videos' && activeTab !== 'posesion' && activeTab !== 'xg' && activeTab !== 'jugadores' && (
               <>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.homeTeam && currentMatch.homeTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.homeTeam}</span>
@@ -5228,8 +5229,8 @@ const minutosPorJornada = [];
               </div>
               </>
               )}
-              <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
-                {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : `JORNADA ${currentMatch.matchday}`}
+              <span style={{ fontSize: ['videos', 'posesion', 'xg'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
+                {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : activeTab === 'xg' ? 'GOLES ESPERADOS (xG)' : `JORNADA ${currentMatch.matchday}`}
               </span>
               {activeTab === 'acciones' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
@@ -8938,6 +8939,93 @@ const minutosPorJornada = [];
                       </div>
                     );
                   })()}
+                </div>
+                );
+              })()}
+                  {activeTab === 'xg' && (() => {
+                const PESO = { area: 0.10, frontal: 0.05, derecha: 0.03, izquierda: 0.03, penal: 0.76 };
+                const num = (v) => (Number.isFinite(v) ? v : 0);
+                const own = [
+                  { label: 'Tiro desde el área', n: num(tiroAreaCount), w: PESO.area },
+                  { label: 'Tiro frontal (borde del área)', n: num(tiroFrontalCount), w: PESO.frontal },
+                  { label: 'Tiro desde la derecha', n: num(tiroDerechaCount), w: PESO.derecha },
+                  { label: 'Tiro desde la izquierda', n: num(tiroIzquierdaCount), w: PESO.izquierda },
+                  { label: 'Penalti', n: num(penalGolCount) + num(penalFueraCount), w: PESO.penal },
+                ];
+                const riv = [
+                  { label: 'Tiro desde el área', n: num(rivalTiroAreaCount), w: PESO.area },
+                  { label: 'Tiro frontal (borde del área)', n: num(rivalTiroFrontalCount), w: PESO.frontal },
+                  { label: 'Tiro desde la derecha', n: num(rivalTiroDerechaCount), w: PESO.derecha },
+                  { label: 'Tiro desde la izquierda', n: num(rivalTiroIzquierdaCount), w: PESO.izquierda },
+                  { label: 'Penalti', n: num(penalGolRivalCount), w: PESO.penal },
+                ];
+                const ownXg = own.reduce((s, r) => s + r.n * r.w, 0);
+                const rivXg = riv.reduce((s, r) => s + r.n * r.w, 0);
+                const ownShots = own.reduce((s, r) => s + r.n, 0);
+                const rivShots = riv.reduce((s, r) => s + r.n, 0);
+                const ownGoals = Array.isArray(golesList) ? golesList.filter(esGolPropio).length : 0;
+                const rivGoals = Array.isArray(golesRivalList) ? golesRivalList.length : 0;
+                const isHomeTfe = (currentMatch?.homeTeam || '').toUpperCase().includes('TENERIFE');
+                const teamInfo = (currentMatch?.homeTeam || '') + ' vs ' + (currentMatch?.awayTeam || '');
+                const ownName = isHomeTfe ? (currentMatch?.homeTeam || 'TENERIFE') : (currentMatch?.awayTeam || 'RIVAL');
+                const rivName = isHomeTfe ? (currentMatch?.awayTeam || 'RIVAL') : (currentMatch?.homeTeam || 'TENERIFE');
+                const fmt = (v) => v.toFixed(2).replace('.', ',');
+                const hBorder = '1px solid var(--border-subtle)';
+                const th = { border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, fontSize: '0.85rem' };
+                const td = (color, bold) => ({ border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color, fontWeight: bold ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' });
+                const tdl = (color, bold) => ({ ...td(color, bold), textAlign: 'left' });
+                return (
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ffffff' }}>
+                    JORNADA {currentMatch?.matchday || '?'} — {teamInfo}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+                      <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '0.9rem' }}>{ownName}</span>
+                      <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '2.4rem', fontFamily: 'var(--font-mono)' }}>{fmt(ownXg)}</span>
+                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>xG · {ownShots} tiros · {ownGoals} goles</span>
+                    </div>
+                    <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1.2rem' }}>vs</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+                      <span style={{ color: '#f87171', fontWeight: 900, fontSize: '0.9rem' }}>{rivName}</span>
+                      <span style={{ color: '#f87171', fontWeight: 900, fontSize: '2.4rem', fontFamily: 'var(--font-mono)' }}>{fmt(rivXg)}</span>
+                      <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>xG · {rivShots} tiros · {rivGoals} goles</span>
+                    </div>
+                  </div>
+                  <div style={{ width: '100%', overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', maxWidth: '660px', margin: '0 auto' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ ...th, textAlign: 'left' }}>TIPO DE TIRO</th>
+                          <th style={{ ...th, color: '#38bdf8' }}>Nº</th>
+                          <th style={{ ...th, color: '#38bdf8' }}>xG</th>
+                          <th style={{ ...th, color: '#f87171' }}>Nº</th>
+                          <th style={{ ...th, color: '#f87171' }}>xG</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {own.map((r, i) => (
+                          <tr key={'xg' + i}>
+                            <td style={tdl('#cbd5e1', false)}>{r.label}</td>
+                            <td style={td('#38bdf8', false)}>{r.n}</td>
+                            <td style={td('#38bdf8', false)}>{fmt(r.n * r.w)}</td>
+                            <td style={td('#f87171', false)}>{riv[i].n}</td>
+                            <td style={td('#f87171', false)}>{fmt(riv[i].n * riv[i].w)}</td>
+                          </tr>
+                        ))}
+                        <tr>
+                          <td style={tdl('#ffffff', true)}>TOTAL</td>
+                          <td style={td('#38bdf8', true)}>{ownShots}</td>
+                          <td style={td('#38bdf8', true)}>{fmt(ownXg)}</td>
+                          <td style={td('#f87171', true)}>{rivShots}</td>
+                          <td style={td('#f87171', true)}>{fmt(rivXg)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.72rem', textAlign: 'center' }}>
+                    Valor xG por tiro — área 0,10 · frontal 0,05 · laterales 0,03 · penalti 0,76
+                  </div>
                 </div>
                 );
               })()}
