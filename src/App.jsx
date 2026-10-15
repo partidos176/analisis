@@ -3973,7 +3973,7 @@ export default function App() {
                       arr.forEach(s => {
                         if (s && s.jugador) {
                           const esCentro = s.tipo === 'centro';
-                          const xg = esCentro ? XG_PESO_CENTRO : computeXgTiro(s.x, s.y, s.remate).xg;
+                          const xg = computeXgTiro(s.x, s.y, s.remate).xg;
                           xgPerPlayer[s.jugador] = (xgPerPlayer[s.jugador] || 0) + xg;
                           if (esCentro) xgCentroPerPlayer[s.jugador] = (xgCentroPerPlayer[s.jugador] || 0) + xg;
                           else if (String(s.remate).toLowerCase() === 'cabeza') xgCabezaPerPlayer[s.jugador] = (xgCabezaPerPlayer[s.jugador] || 0) + xg;
@@ -9029,10 +9029,7 @@ const minutosPorJornada = [];
                 const th = { border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, fontSize: '0.85rem' };
                 const td = (color, bold) => ({ border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color, fontWeight: bold ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' });
                 const tdl = (color, bold) => ({ ...td(color, bold), textAlign: 'left' });
-                const shots = (Array.isArray(xgShots) ? xgShots : []).map(s => {
-                  const c = computeXgTiro(s.x, s.y, s.remate);
-                  return { ...s, ...c, xg: s.tipo === 'centro' ? XG_PESO_CENTRO : c.xg };
-                });
+                const shots = (Array.isArray(xgShots) ? xgShots : []).map(s => ({ ...s, ...computeXgTiro(s.x, s.y, s.remate) }));
                 const xgPropioCampo = shots.filter(s => s.equipo === 'propio').reduce((a, s) => a + s.xg, 0);
                 const xgRivalCampo = shots.filter(s => s.equipo === 'rival').reduce((a, s) => a + s.xg, 0);
                 const nPropioCampo = shots.filter(s => s.equipo === 'propio').length;
