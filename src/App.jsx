@@ -9115,9 +9115,6 @@ const minutosPorJornada = [];
                     </div>
                   )}
 
-                  <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#ffffff', marginTop: '0.5rem' }}>
-                    DESGLOSE POR TIPO DE TIRO (botones de ACCIONES)
-                  </div>
                   <div style={{ width: '100%', overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', maxWidth: '660px', margin: '0 auto' }}>
                       <thead>
@@ -9148,9 +9145,6 @@ const minutosPorJornada = [];
                         </tr>
                       </tbody>
                     </table>
-                  </div>
-                  <div style={{ color: '#94a3b8', fontSize: '0.72rem', textAlign: 'center' }}>
-                    Estimación por tipo — área 0,10 · frontal 0,05 · laterales 0,03 · penalti 0,76
                   </div>
                 </div>
                 );
