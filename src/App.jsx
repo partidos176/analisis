@@ -9014,26 +9014,6 @@ const minutosPorJornada = [];
                 );
               })()}
                   {activeTab === 'xg' && (() => {
-                const PESO = { area: 0.10, frontal: 0.05, derecha: 0.03, izquierda: 0.03, penal: 0.76 };
-                const num = (v) => (Number.isFinite(v) ? v : 0);
-                const own = [
-                  { label: 'Tiro desde el área', n: num(tiroAreaCount), w: PESO.area },
-                  { label: 'Tiro frontal', n: num(tiroFrontalCount), w: PESO.frontal },
-                  { label: 'Tiro desde la derecha', n: num(tiroDerechaCount), w: PESO.derecha },
-                  { label: 'Tiro desde la izquierda', n: num(tiroIzquierdaCount), w: PESO.izquierda },
-                  { label: 'Penalti', n: num(penalGolCount) + num(penalFueraCount), w: PESO.penal },
-                ];
-                const riv = [
-                  { label: 'Tiro desde el área', n: num(rivalTiroAreaCount), w: PESO.area },
-                  { label: 'Tiro frontal', n: num(rivalTiroFrontalCount), w: PESO.frontal },
-                  { label: 'Tiro desde la derecha', n: num(rivalTiroDerechaCount), w: PESO.derecha },
-                  { label: 'Tiro desde la izquierda', n: num(rivalTiroIzquierdaCount), w: PESO.izquierda },
-                  { label: 'Penalti', n: num(penalGolRivalCount), w: PESO.penal },
-                ];
-                const ownXg = own.reduce((s, r) => s + r.n * r.w, 0);
-                const rivXg = riv.reduce((s, r) => s + r.n * r.w, 0);
-                const ownShots = own.reduce((s, r) => s + r.n, 0);
-                const rivShots = riv.reduce((s, r) => s + r.n, 0);
                 const ownGoals = Array.isArray(golesList) ? golesList.filter(esGolPropio).length : 0;
                 const rivGoals = Array.isArray(golesRivalList) ? golesRivalList.length : 0;
                 const isHomeTfe = (currentMatch?.homeTeam || '').toUpperCase().includes('TENERIFE');
@@ -9123,42 +9103,15 @@ const minutosPorJornada = [];
                               <td style={td('#ef4444', false)}><button onClick={() => delShot(s.id)} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 900 }}>✕</button></td>
                             </tr>
                           ))}
+                          <tr>
+                            <td colSpan={7} style={tdl('#ffffff', true)}>TOTAL ({shots.length} tiros)</td>
+                            <td style={td('#ffffff', true)}>{fmt(xgPropioCampo + xgRivalCampo)}</td>
+                            <td></td>
+                          </tr>
                         </tbody>
                       </table>
                     </div>
                   )}
-
-                  <div style={{ width: '100%', overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', maxWidth: '660px', margin: '0 auto' }}>
-                      <thead>
-                        <tr>
-                          <th style={{ ...th, textAlign: 'left' }}>TIPO DE TIRO</th>
-                          <th style={{ ...th, color: '#38bdf8' }}>Nº</th>
-                          <th style={{ ...th, color: '#38bdf8' }}>xG</th>
-                          <th style={{ ...th, color: '#f87171' }}>Nº</th>
-                          <th style={{ ...th, color: '#f87171' }}>xG</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {own.map((r, i) => (
-                          <tr key={'xg' + i}>
-                            <td style={tdl('#cbd5e1', false)}>{r.label}</td>
-                            <td style={td('#38bdf8', false)}>{r.n}</td>
-                            <td style={td('#38bdf8', false)}>{fmt(r.n * r.w)}</td>
-                            <td style={td('#f87171', false)}>{riv[i].n}</td>
-                            <td style={td('#f87171', false)}>{fmt(riv[i].n * riv[i].w)}</td>
-                          </tr>
-                        ))}
-                        <tr>
-                          <td style={tdl('#ffffff', true)}>TOTAL</td>
-                          <td style={td('#38bdf8', true)}>{ownShots}</td>
-                          <td style={td('#38bdf8', true)}>{fmt(ownXg)}</td>
-                          <td style={td('#f87171', true)}>{rivShots}</td>
-                          <td style={td('#f87171', true)}>{fmt(rivXg)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
                 </div>
                 );
               })()}
