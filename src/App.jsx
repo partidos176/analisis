@@ -1855,7 +1855,6 @@ export default function App() {
   // Cálculo de xG a partir de la ubicación (distancia y ángulo a portería),
   // con penalización del 30% para los remates de cabeza.
   const XG_PESO_CABEZA = 0.7;
-  const XG_PESO_CENTRO = 0.04;
   const computeXgTiro = (x, y, remate) => {
     const GX = 34, PH = 3.66;
     const dist = Math.sqrt((x - GX) * (x - GX) + y * y);
@@ -1897,8 +1896,7 @@ export default function App() {
     setPendingTiro(null);
     if (logAction(p.name)) {
       p.aplicar();
-      const esCentro = /CENTRO/.test(p.name);
-      setXgShots(prev => [...prev, { id: 'xg' + Date.now() + '_' + Math.floor(Math.random() * 100000), equipo: p.esRival ? 'rival' : 'propio', tipo: esCentro ? 'centro' : 'tiro', jugador: p.esRival ? '' : jugadorTiro, x, y, remate: esCentro ? '' : remateTiro, minuto: formatTime(timerSeconds) }]);
+      setXgShots(prev => [...prev, { id: 'xg' + Date.now() + '_' + Math.floor(Math.random() * 100000), equipo: p.esRival ? 'rival' : 'propio', jugador: p.esRival ? '' : jugadorTiro, x, y, remate: remateTiro, minuto: formatTime(timerSeconds) }]);
       setRemateTiro('pie');
       setJugadorTiro('');
       setActiveTab('finalizaciones');
@@ -3973,16 +3971,13 @@ export default function App() {
                     const xgPerPlayer = {};
                     const xgPiePerPlayer = {};
                     const xgCabezaPerPlayer = {};
-                    const xgCentroPerPlayer = {};
                     const acumularXg = (sh) => {
                       const arr = Array.isArray(sh) ? sh : (sh ? Object.values(sh) : []);
                       arr.forEach(s => {
-                        if (s && s.jugador) {
-                          const esCentro = s.tipo === 'centro';
+                        if (s && s.jugador && s.tipo !== 'centro') {
                           const xg = computeXgTiro(s.x, s.y, s.remate).xg;
                           xgPerPlayer[s.jugador] = (xgPerPlayer[s.jugador] || 0) + xg;
-                          if (esCentro) xgCentroPerPlayer[s.jugador] = (xgCentroPerPlayer[s.jugador] || 0) + xg;
-                          else if (String(s.remate).toLowerCase() === 'cabeza') xgCabezaPerPlayer[s.jugador] = (xgCabezaPerPlayer[s.jugador] || 0) + xg;
+                          if (String(s.remate).toLowerCase() === 'cabeza') xgCabezaPerPlayer[s.jugador] = (xgCabezaPerPlayer[s.jugador] || 0) + xg;
                           else xgPiePerPlayer[s.jugador] = (xgPiePerPlayer[s.jugador] || 0) + xg;
                         }
                       });
@@ -5814,10 +5809,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => abrirCampoTiro('CENTRO DERECHA', false, () => {
-                      setFromRival(false);
-                      setCentroDerechaCount(centroDerechaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('CENTRO DERECHA')) {
+                        setFromRival(false);
+                        setCentroDerechaCount(centroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -5848,10 +5846,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => abrirCampoTiro('CENTRO IZQUIERDA', false, () => {
-                      setFromRival(false);
-                      setCentroIzquierdaCount(centroIzquierdaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('CENTRO IZQUIERDA')) {
+                        setFromRival(false);
+                        setCentroIzquierdaCount(centroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -6211,10 +6212,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => abrirCampoTiro('RIVAL CENTRO DERECHA', true, () => {
-                      setFromRival(true);
-                      setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('RIVAL CENTRO DERECHA')) {
+                        setFromRival(true);
+                        setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -6245,10 +6249,13 @@ const minutosPorJornada = [];
                     </span>
                   </button>
                   <button
-                    onClick={() => abrirCampoTiro('RIVAL CENTRO IZQUIERDA', true, () => {
-                      setFromRival(true);
-                      setRivalCentroIzquierdaCount(rivalCentroIzquierdaCount + 1);
-                    })}
+                    onClick={() => {
+                      if (logAction('RIVAL CENTRO IZQUIERDA')) {
+                        setFromRival(true);
+                        setRivalCentroIzquierdaCount(rivalCentroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -9003,8 +9010,6 @@ const minutosPorJornada = [];
                   { label: 'Tiro desde la derecha', n: num(tiroDerechaCount), w: PESO.derecha },
                   { label: 'Tiro desde la izquierda', n: num(tiroIzquierdaCount), w: PESO.izquierda },
                   { label: 'Penalti', n: num(penalGolCount) + num(penalFueraCount), w: PESO.penal },
-                  { label: 'Centro desde la derecha', n: num(centroDerechaCount), w: XG_PESO_CENTRO },
-                  { label: 'Centro desde la izquierda', n: num(centroIzquierdaCount), w: XG_PESO_CENTRO },
                 ];
                 const riv = [
                   { label: 'Tiro desde el área', n: num(rivalTiroAreaCount), w: PESO.area },
@@ -9012,8 +9017,6 @@ const minutosPorJornada = [];
                   { label: 'Tiro desde la derecha', n: num(rivalTiroDerechaCount), w: PESO.derecha },
                   { label: 'Tiro desde la izquierda', n: num(rivalTiroIzquierdaCount), w: PESO.izquierda },
                   { label: 'Penalti', n: num(penalGolRivalCount), w: PESO.penal },
-                  { label: 'Centro desde la derecha', n: num(rivalCentroDerechaCount), w: XG_PESO_CENTRO },
-                  { label: 'Centro desde la izquierda', n: num(rivalCentroIzquierdaCount), w: XG_PESO_CENTRO },
                 ];
                 const ownXg = own.reduce((s, r) => s + r.n * r.w, 0);
                 const rivXg = riv.reduce((s, r) => s + r.n * r.w, 0);
@@ -9030,7 +9033,7 @@ const minutosPorJornada = [];
                 const th = { border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, fontSize: '0.85rem' };
                 const td = (color, bold) => ({ border: hBorder, padding: '0.5rem 0.8rem', textAlign: 'center', color, fontWeight: bold ? 900 : 700, fontSize: '0.9rem', fontFamily: 'var(--font-mono)' });
                 const tdl = (color, bold) => ({ ...td(color, bold), textAlign: 'left' });
-                const shots = (Array.isArray(xgShots) ? xgShots : []).map(s => ({ ...s, ...computeXgTiro(s.x, s.y, s.remate) }));
+                const shots = (Array.isArray(xgShots) ? xgShots : []).filter(s => s.tipo !== 'centro').map(s => ({ ...s, ...computeXgTiro(s.x, s.y, s.remate) }));
                 const xgPropioCampo = shots.filter(s => s.equipo === 'propio').reduce((a, s) => a + s.xg, 0);
                 const xgRivalCampo = shots.filter(s => s.equipo === 'rival').reduce((a, s) => a + s.xg, 0);
                 const nPropioCampo = shots.filter(s => s.equipo === 'propio').length;
@@ -9072,7 +9075,7 @@ const minutosPorJornada = [];
                     <rect x="303.4" y="0" width="73.2" height="14" fill="none" stroke="#ffffff" strokeWidth="4" />
                     {shots.map((s, i) => (
                       <g key={s.id}>
-                        <circle cx={s.x * 10} cy={Math.min(345, s.y * 10)} r="15" fill={s.equipo === 'propio' ? '#38bdf8' : '#f87171'} stroke={s.tipo === 'centro' ? '#a78bfa' : '#0b1220'} strokeWidth={s.tipo === 'centro' ? '6' : '3'} />
+                        <circle cx={s.x * 10} cy={Math.min(345, s.y * 10)} r="15" fill={s.equipo === 'propio' ? '#38bdf8' : '#f87171'} stroke="#0b1220" strokeWidth="3" />
                         <text x={s.x * 10} y={Math.min(345, s.y * 10) + 5} textAnchor="middle" fontSize="16" fontWeight="900" fill="#0b1220">{i + 1}</text>
                       </g>
                     ))}
@@ -9101,7 +9104,7 @@ const minutosPorJornada = [];
                               <td style={tdl('#94a3b8', false)}>{s.minuto || '—'}</td>
                               <td style={tdl(s.equipo === 'propio' ? '#38bdf8' : '#f87171', true)}>{s.equipo === 'propio' ? ownName : rivName}</td>
                               <td style={tdl('#cbd5e1', false)}>{s.jugador || '—'}</td>
-                              <td style={td(s.tipo === 'centro' ? '#a78bfa' : (s.remate === 'cabeza' ? '#eab308' : '#cbd5e1'), s.remate === 'cabeza' || s.tipo === 'centro')}>{s.tipo === 'centro' ? 'CENTRO' : (s.remate === 'cabeza' ? 'CABEZA' : 'PIE')}</td>
+                              <td style={td(s.remate === 'cabeza' ? '#eab308' : '#cbd5e1', s.remate === 'cabeza')}>{s.remate === 'cabeza' ? 'CABEZA' : 'PIE'}</td>
                               <td style={td('#cbd5e1', false)}>{s.dist.toFixed(1).replace('.', ',')}</td>
                               <td style={td('#cbd5e1', false)}>{s.angle.toFixed(1).replace('.', ',')}</td>
                               <td style={td(s.equipo === 'propio' ? '#38bdf8' : '#f87171', true)}>{s.xg.toFixed(2).replace('.', ',')}</td>
@@ -9782,16 +9785,13 @@ const minutosPorJornada = [];
                 ¿DÓNDE SE PRODUJO {pendingTiro ? pendingTiro.name : 'EL TIRO'}?
               </div>
               <div style={{ color: '#94a3b8', fontSize: '0.78rem', textAlign: 'center' }}>
-                {pendingTiro && /CENTRO/.test(pendingTiro.name)
-                  ? `Pincha el punto desde el que se centra (${pendingTiro.esRival ? 'rival' : 'propio'}). Se registrará el centro con su minuto y su xG.`
-                  : `Pincha el punto del campo (${pendingTiro && pendingTiro.esRival ? 'rival' : 'propio'}). Se registrará el tiro con su minuto y su xG.`}
+                Pincha el punto del campo ({pendingTiro && pendingTiro.esRival ? 'rival' : 'propio'}). Se registrará el tiro con su minuto y su xG.
               </div>
               {faltaJugadorWarning && (
                 <div style={{ background: '#dc2626', color: '#ffffff', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 1.2rem', borderRadius: '8px', animation: 'blink 0.5s infinite' }}>
                   SELECCIONA UN JUGADOR ANTES DE MARCAR
                 </div>
               )}
-              {!(pendingTiro && /CENTRO/.test(pendingTiro.name)) && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                 <span style={{ color: '#cbd5e1', fontWeight: 700, fontSize: '0.8rem' }}>REMATE:</span>
                 {[['pie', 'PIE'], ['cabeza', 'CABEZA']].map(([v, l]) => (
@@ -9804,7 +9804,6 @@ const minutosPorJornada = [];
                   </button>
                 ))}
               </div>
-              )}
               {!(pendingTiro && pendingTiro.esRival) && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                   <span style={{ color: '#cbd5e1', fontWeight: 700, fontSize: '0.8rem' }}>JUGADOR:</span>
