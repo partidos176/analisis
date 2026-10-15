@@ -9811,7 +9811,7 @@ const minutosPorJornada = [];
                     style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '8px', color: '#ffffff', fontWeight: 700, fontSize: '0.85rem', padding: '0.3rem 0.5rem', minWidth: '180px', cursor: 'pointer' }}
                   >
                     <option value="">-</option>
-                    {[...new Set((Array.isArray(players) ? players : []).map(pl => pl && pl.name).filter(Boolean))].sort().map(n => (
+                    {jugadoresEnCancha(Math.floor(timerSeconds / 60), players, sustituciones).sort().map(n => (
                       <option key={n} value={n}>{n}</option>
                     ))}
                   </select>
