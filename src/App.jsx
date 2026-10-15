@@ -4214,12 +4214,12 @@ const minutosPorJornada = [];
                         TOTAL DE GOLES: {golCountPerPlayer[jugadorSeleccionado] || 0}
                       </span>
                     )}
+                    </div>
                     {jugadorSeleccionado && (
-                      <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', marginLeft: '9rem' }}>
+                      <span style={{ color: '#38bdf8', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', display: 'block', marginTop: '0.4rem' }}>
                         xG: {(xgPerPlayer[jugadorSeleccionado] || 0).toFixed(2).replace('.', ',')}
                       </span>
                     )}
-                    </div>
                     </div>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginLeft: '9rem' }}>
