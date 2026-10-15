@@ -1886,10 +1886,11 @@ export default function App() {
     }
   };
 
-  // Tras pulsar una finalización: si es de las que dan xG y venimos de un
-  // tiro/centro, abrimos el campo; si no, vamos a la pestaña destino.
+  // Tras pulsar una finalización: si venimos de un TIRO, siempre se abre el
+  // campo xG; si venimos de un CENTRO, solo para las finalizaciones de xG.
   const finalizarConXg = (nombreFin, tabDestino) => {
-    const hayXg = pendingXg && XG_FINALIZACIONES.includes(nombreFin);
+    const esCentro = pendingXg && /CENTRO/.test(pendingXg.accion || '');
+    const hayXg = pendingXg && (esCentro ? XG_FINALIZACIONES.includes(nombreFin) : true);
     if (hayXg) {
       setPendingTiro({ name: pendingXg.accion || nombreFin, esRival: !!pendingXg.esRival, soloXg: true, tabDestino });
       setShowCampoTiro(true);
@@ -8178,7 +8179,7 @@ const minutosPorJornada = [];
                     {/* Columna central: OCASION + volver */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                       <button
-                        onClick={() => { if (logAction('OCASION', 'finalizacion')) { setOcasionCount(ocasionCount + 1); setPendingXg(null); } }}
+                        onClick={() => { if (logAction('OCASION', 'finalizacion')) { setOcasionCount(ocasionCount + 1); finalizarConXg('OCASION', 'finalizaciones'); } }}
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', background: '#f97316', color: '#ffffff', fontWeight: 900, fontSize: '0.95rem', padding: '0.8rem 1.5rem', borderRadius: '12px', minWidth: 'fit-content', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                       >
                         <span>OCASION</span>
