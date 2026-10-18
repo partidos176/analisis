@@ -694,7 +694,7 @@ export default function App() {
   const [generandoAccion, setGenerandoAccion] = useState(null);
   const [progresoAccion, setProgresoAccion] = useState({});
   const [trailPointsPorCorte, setTrailPointsPorCorte] = useState({});
-  const [variosIndex, setVariosIndex] = useState(-1);
+  const [variosItems, setVariosItems] = useState([]);
   const [variosBaseTimes, setVariosBaseTimes] = useState({});
   const [grabandoAudio, setGrabandoAudio] = useState(false);
   const [audiosVario, setAudiosVario] = useState([]);
@@ -1166,6 +1166,8 @@ export default function App() {
       prev.forEach(g => { if (g && g.url) URL.revokeObjectURL(g.url); });
       return [];
     });
+    setVariosItems([]);
+    setVariosBaseTimes({});
   }, [videoUrl]);
 
   const videosPorPartidoRef = useRef({});
@@ -7232,7 +7234,7 @@ const minutosPorJornada = [];
 
                   <select
                     value={filtroAccion}
-                    onChange={(e) => { const isSelectingVarios = e.target.value === '__varios__'; const wasVarios = filtroAccion === '__varios__'; setFiltroAccion(e.target.value); if (isSelectingVarios && !wasVarios) { const nextIdx = variosIndex + 1; setVariosIndex(nextIdx); const allActions = actionLog.filter(item => item && item.time && item.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'].includes(item.name)).sort((a, b) => { const pa = String(a.time).split(':').map(Number); const pb = String(b.time).split(':').map(Number); return (pa[0] * 60 + pa[1]) - (pb[0] * 60 + pb[1]); }); if (nextIdx - 1 < allActions.length && videoRef.current) { const key = allActions[nextIdx - 1].name + '_' + allActions[nextIdx - 1].time; const offset = offsetParaPeriodo(periodoDeAccion(allActions[nextIdx - 1])); setVariosBaseTimes(prev => Object.assign({}, prev, { [key]: Math.max(0, Math.floor(videoCurrentTime - offset) - 2) })); } } }}
+                    onChange={(e) => { const isSelectingVarios = e.target.value === '__varios__'; const wasVarios = filtroAccion === '__varios__'; setFiltroAccion(e.target.value); if (isSelectingVarios && !wasVarios) { setVariosItems(prev => prev.length ? prev : ['v' + Date.now() + '_0']); } }}
                     style={{
                       padding: '0.4rem 0.8rem',
                       borderRadius: '8px',
@@ -7491,8 +7493,8 @@ const minutosPorJornada = [];
                         const pb = String(b.time).split(':').map(Number);
                         return (pb[0] * 60 + pb[1]) - (pa[0] * 60 + pa[1]);
                       });
-                      const accionesFiltradas = filtroAccion === '__varios__' ? allAccionesFiltradas.slice(0, variosIndex + 1) : allAccionesFiltradas;
-                      if (accionesFiltradas.length === 0) return null;
+                      const accionesFiltradas = filtroAccion === '__varios__' ? variosItems.map(id => ({ __varioId: id })) : allAccionesFiltradas;
+                      if (accionesFiltradas.length === 0 && filtroAccion !== '__varios__') return null;
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.5rem', padding: '0.5rem', borderRadius: '8px', background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -7501,24 +7503,24 @@ const minutosPorJornada = [];
                             </span>
                             {filtroAccion === '__varios__' && (
                               <button
-                                onClick={() => setVariosIndex(prev => prev + 1)}
-                                disabled={variosIndex + 1 >= allAccionesFiltradas.length}
-                                title="Añade otra fila VARIOS para generar otro corte"
-                                style={{ background: variosIndex + 1 >= allAccionesFiltradas.length ? '#475569' : '#0ea5e9', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: variosIndex + 1 >= allAccionesFiltradas.length ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}
+                                onClick={() => setVariosItems(prev => [...prev, 'v' + Date.now() + '_' + prev.length])}
+                                title="Añade otro corte VARIOS en la posición actual del vídeo"
+                                style={{ background: '#0ea5e9', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}
                               >
                                 + Añadir vario
                               </button>
                             )}
                           </div>
                           {accionesFiltradas.map((e, idx) => {
-                            const offset = offsetParaPeriodo(periodoDeAccion(e));
+                            const esVario = filtroAccion === '__varios__';
+                            const actionKey = esVario ? e.__varioId : e.name + '_' + e.time;
+                            const offset = esVario ? 0 : offsetParaPeriodo(periodoDeAccion(e));
                             const parts = String(e.time).split(':').map(Number);
-                            const actionKey = e.name + '_' + e.time;
                             const previewAccion = cortesGenerados.find(c => c.key === actionKey) || null;
                             let baseTime;
-                            if (filtroAccion === '__varios__') {
+                            if (esVario) {
                               if (variosBaseTimes[actionKey] == null) {
-                                baseTime = Math.max(0, Math.floor(videoCurrentTime - offset) - 2);
+                                baseTime = Math.max(0, Math.floor(videoCurrentTime) - 2);
                                 setVariosBaseTimes(prev => Object.assign({}, prev, { [actionKey]: baseTime }));
                               } else {
                                 baseTime = variosBaseTimes[actionKey];
@@ -7541,7 +7543,7 @@ const minutosPorJornada = [];
                             };
                             const irAVideo = (seg) => {
                               const vid = videoPrincipal();
-                              if (vid && e.time) vid.currentTime = Math.max(0, seg + offset);
+                              if (vid) vid.currentTime = Math.max(0, seg + offset);
                             };
                             const commitInicio = (txt) => {
                               const V = aSegs(txt);
@@ -7566,15 +7568,8 @@ const minutosPorJornada = [];
                             <React.Fragment key={idx}>
                             <div onClick={() => {
                               const vid = videoPrincipal();
-                              if (vid && e.time) {
-                                if (filtroAccion === '__varios__') {
-                                  const offset = offsetParaPeriodo(periodoDeAccion(e));
-                                  vid.currentTime = Math.max(0, secs + offset);
-                                } else {
-                                   const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
-                                   vid.currentTime = Math.max(0, secs + offsetSecs);
-                                 }
-
+                              if (vid) {
+                                vid.currentTime = Math.max(0, secs + offset);
                               }
                             }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', cursor: 'pointer', gap: '0.5rem' }}>
                               <span style={{ color: '#94a3b8', fontWeight: 700, fontSize: '0.7rem', fontFamily: 'var(--font-mono)', minWidth: '20px' }}>{idx + 1}</span>
@@ -7726,12 +7721,12 @@ const minutosPorJornada = [];
                                   setCorteError('El vídeo supera 1 GB y el corte en navegador no tiene memoria suficiente. Inicia el servidor local (node server.js) o comprímelo en la pestaña de vídeo.');
                                   return;
                                 }
-                                const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
+                                const offsetSecs = esVario ? 0 : offsetParaPeriodo(periodoDeAccion(e));
                                 const parts = String(e.time).split(':').map(Number);
                                 const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
                                 const ajusteInicio = ajusteAcciones[actionKey] || 0;
                                 const ajusteFinVal = ajusteAccionesFin[actionKey] || 0;
-                                const totalSecs = filtroAccion === '__varios__'
+                                const totalSecs = esVario
                                   ? Math.max(0, Math.floor(baseTime + ajusteInicio) + offsetSecs)
                                   : Math.max(0, actionSecs + offsetSecs - 2 + ajusteInicio);
                                 const finSecs = totalSecs + 5 + ajusteFinVal;
@@ -7814,7 +7809,7 @@ const minutosPorJornada = [];
                                   setTrailPointsPorCorte(prev => ({ ...prev, [actionKey]: trailDataCorte }));
                                                                  }).catch(err => { console.error('[Generar] error corte:', err); setCorteError(err.message || 'Error al generar el vídeo'); }).finally(() => { setGenerandoAccion(null); setProgresoAccion(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); });
                               }} title={'Generar corte de esta acción'} style={{ background: generandoAccion === actionKey ? `linear-gradient(90deg, #16a34a ${(progresoAccion[actionKey] || 0)}%, #eab308 ${(progresoAccion[actionKey] || 0)}%)` : '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap', minWidth: '70px', textAlign: 'center' }}>{generandoAccion === actionKey ? (progresoAccion[actionKey] != null ? progresoAccion[actionKey] + '%' : '...') : 'Generar'}</button>
-                              {filtroAccion === '__varios__' && <button onClick={(ev) => { ev.stopPropagation(); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[e.name + '_' + e.time]; return copy; }); setVariosIndex(prev => Math.max(0, prev - 1)); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
+                              {esVario && <button onClick={(ev) => { ev.stopPropagation(); borrarCorte(actionKey); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); setVariosItems(prev => prev.filter(id => id !== e.__varioId)); setAccionSeleccionada(null); }} title={'Quitar este corte de VARIOS'} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
                             </div>
                             {previewAccion && previewAccion.key === actionKey && (
                               <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.3rem', paddingLeft: '0.5rem' }}>
@@ -7839,24 +7834,6 @@ const minutosPorJornada = [];
                       );
                     })()}
                   </div>
-                  {cortesGenerados.length > 0 && (
-                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.6rem', padding: '0.6rem', borderRadius: '8px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                        <span style={{ color: '#22c55e', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cortes generados ({cortesGenerados.length})</span>
-                        <div style={{ display: 'flex', gap: '0.4rem' }}>
-                          <button onClick={descargarCortesTodos} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.3rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>Descargar todos (zip)</button>
-                          <button onClick={borrarCortesTodos} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.3rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>Borrar todos</button>
-                        </div>
-                      </div>
-                      {cortesGenerados.map((gen) => (
-                        <div key={gen.key} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', padding: '0.25rem 0.5rem' }}>
-                          <span style={{ color: '#e2e8f0', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gen.name}</span>
-                          <button onClick={() => descargarCorte(gen)} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase' }}>Descargar</button>
-                          <button onClick={() => borrarCorte(gen.key)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase' }}>Borrar</button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                   {accionSeleccionada && videoUrl && (
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
                       <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase' }}>
