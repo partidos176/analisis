@@ -643,6 +643,7 @@ export default function App() {
   }, [videoTimeOffset, videoTimeOffset2, videoFileName]);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const videoRef = useRef(null);
+  const previewVideoRef = useRef(null);
   const contenedorVideoRef = useRef(null);
   const [fsActivo, setFsActivo] = useState(false);
   const [corteSegundos, setCorteSegundos] = useState(15);
@@ -1104,6 +1105,15 @@ export default function App() {
       return Math.floor(videoTimeOffset2);
     }
     return offsetParaPeriodo('2ª PARTE');
+  };
+
+  // Devuelve siempre el <video> principal (el de la hoja VÍDEOS), no la vista
+  // previa de la accion seleccionada. Asi pulsar un tiempo siempre mueve la
+  // barra correcta aunque el ref compartido haya quedado a null.
+  const videoPrincipal = () => {
+    const v = typeof document !== 'undefined' ? document.querySelector('#video-container video') : null;
+    if (v) return v;
+    return (videoRef.current && videoRef.current.isConnected) ? videoRef.current : null;
   };
 
   const videosPorPartidoRef = useRef({});
@@ -7636,13 +7646,14 @@ const minutosPorJornada = [];
                             return (
                             <React.Fragment key={idx}>
                             <div onClick={() => {
-                              if (videoRef.current && e.time) {
+                              const vid = videoPrincipal();
+                              if (vid && e.time) {
                                 if (filtroAccion === '__varios__') {
                                   const offset = offsetParaPeriodo(periodoDeAccion(e));
-                                  videoRef.current.currentTime = Math.max(0, secs + offset);
+                                  vid.currentTime = Math.max(0, secs + offset);
                                 } else {
                                    const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
-                                   videoRef.current.currentTime = Math.max(0, secs + offsetSecs);
+                                   vid.currentTime = Math.max(0, secs + offsetSecs);
                                  }
 
                               }
@@ -7711,11 +7722,12 @@ const minutosPorJornada = [];
                                   ev.stopPropagation();
                                   setAjusteAcciones(prev => {
                                     const newVal = (prev[actionKey] || 0) - 1;
-                                    if (videoRef.current && e.time) {
+                                    const vidAjuste = videoPrincipal();
+                                    if (vidAjuste && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
                                       const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
-                                      videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
+                                      vidAjuste.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
                                   });
@@ -7725,11 +7737,12 @@ const minutosPorJornada = [];
                                   ev.stopPropagation();
                                   setAjusteAcciones(prev => {
                                     const newVal = (prev[actionKey] || 0) + 1;
-                                    if (videoRef.current && e.time) {
+                                    const vidAjuste = videoPrincipal();
+                                    if (vidAjuste && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
                                       const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
-                                      videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
+                                      vidAjuste.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
                                   });
@@ -7741,12 +7754,13 @@ const minutosPorJornada = [];
                                   ev.stopPropagation();
                                   setAjusteAccionesFin(prev => {
                                     const newVal = (prev[actionKey] || 0) - 1;
-                                    if (videoRef.current && e.time) {
+                                    const vidAjuste = videoPrincipal();
+                                    if (vidAjuste && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
                                       const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                       const inicioAjuste = ajusteAcciones[actionKey] || 0;
-                                      videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
+                                      vidAjuste.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
                                   });
@@ -7756,12 +7770,13 @@ const minutosPorJornada = [];
                                   ev.stopPropagation();
                                   setAjusteAccionesFin(prev => {
                                     const newVal = (prev[actionKey] || 0) + 1;
-                                    if (videoRef.current && e.time) {
+                                    const vidAjuste = videoPrincipal();
+                                    if (vidAjuste && e.time) {
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
                                       const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                       const inicioAjuste = ajusteAcciones[actionKey] || 0;
-                                      videoRef.current.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
+                                      vidAjuste.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
                                   });
@@ -7917,7 +7932,7 @@ const minutosPorJornada = [];
                         {accionSeleccionada.name} — {accionSeleccionada.time}
                       </span>
                       <video
-                        ref={videoRef}
+                        ref={previewVideoRef}
                         src={videoUrl}
                         controls
                         onTimeUpdate={(e) => setVideoCurrentTime(e.target.currentTime)}
@@ -7943,7 +7958,7 @@ const minutosPorJornada = [];
                           <button onClick={() => {
                             const v = Math.max(0, corteInicio - 1);
                             setCorteInicio(v);
-                            if (videoRef.current) videoRef.current.currentTime = v;
+                            if (previewVideoRef.current) previewVideoRef.current.currentTime = v;
                           }} style={{ background: '#f97316', color: '#fff', fontWeight: 900, fontSize: '0.8rem', padding: '0.3rem 0.6rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>-</button>
                           <span style={{ color: '#64748b', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
                             Inicio: {Math.floor(corteInicio / 60)}:{String(corteInicio % 60).padStart(2, '0')}
@@ -7951,7 +7966,7 @@ const minutosPorJornada = [];
                           <button onClick={() => {
                             const v = corteInicio + 1;
                             setCorteInicio(v);
-                            if (videoRef.current) videoRef.current.currentTime = v;
+                            if (previewVideoRef.current) previewVideoRef.current.currentTime = v;
                           }} style={{ background: '#22c55e', color: '#fff', fontWeight: 900, fontSize: '0.8rem', padding: '0.3rem 0.6rem', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>+</button>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
