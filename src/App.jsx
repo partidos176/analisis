@@ -198,7 +198,7 @@ const matchTabs = [
   { id: 'datos', label: 'DATOS' },
   { id: 'posesion', label: 'POSESIÓN' },
   { id: 'videos', label: 'VÍDEOS' },
-  { id: 'vario', label: 'NOTA DE VOZ' }
+  { id: 'vario', label: 'NOTA VOZ' }
 ];
 
 const totalesTabsDef = [
@@ -599,8 +599,6 @@ export default function App() {
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
   const [fin2Aviso, setFin2Aviso] = useState(false);
-  const [copiaLocalOk, setCopiaLocalOk] = useState(false);
-  const [avisoAutoExport, setAvisoAutoExport] = useState('');
   const autoDirRef = useRef(null);
   const [autoDirOk, setAutoDirOk] = useState(false);
   const [editingTimer, setEditingTimer] = useState(false);
@@ -619,10 +617,6 @@ export default function App() {
   }, [posesionDropdownOpen]);
   const [dataLoadedId, setDataLoadedId] = useState(null);
 
-  useEffect(() => {
-    setCopiaLocalOk(false);
-    setAvisoAutoExport('');
-  }, [currentMatch?.id]);
   const [saveError, setSaveError] = useState('');
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
   const fichaJugadorRef = useRef(null);
@@ -1375,7 +1369,6 @@ export default function App() {
   // A. Copia local del partido (funciona sin conexión): localStorage + descarga JSON
   const guardarCopiaLocal = (silencioso = false) => {
     if (!currentMatch) { if (!silencioso) alert('No hay partido abierto para guardar'); return; }
-    setCopiaLocalOk(false);
     try {
       const payload = buildMatchPayload();
       const entry = {
@@ -1399,7 +1392,6 @@ export default function App() {
       a.download = `datos J${currentMatch.matchday || '?'}_${currentMatch.homeTeam || ''}_vs_${currentMatch.awayTeam || ''}.json`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
-      setCopiaLocalOk(true);
       if (!silencioso) alert('Copia local guardada (' + new Date(entry.savedAt).toLocaleString() + ')');
     } catch (err) {
       if (!silencioso) alert('No se pudo guardar la copia: ' + (err?.message || err));
@@ -1583,9 +1575,6 @@ export default function App() {
     if (!timerRunning || !currentMatch) return;
     if (timerSeconds === prev + 1 && timerSeconds > 0 && timerSeconds % 900 === 0) {
       guardarCopiaLocal(true);
-      const mm = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
-      const ss = String(timerSeconds % 60).padStart(2, '0');
-      setAvisoAutoExport(`${mm}:${ss}`);
     }
   }, [timerSeconds, timerRunning, currentMatch]);
 
@@ -6789,45 +6778,37 @@ const minutosPorJornada = [];
                   minWidth: '280px'
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', position: 'relative', top: '1.8rem' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.4rem', flexWrap: 'nowrap', position: 'relative', top: '1.8rem' }}>
           <button
             onClick={() => guardarCopiaLocal()}
             title="Guarda una copia del partido en este dispositivo (funciona sin internet)"
-            style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.55rem 1.3rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.04em' }}
+            style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.45rem 0.7rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}
           >
             EXPORTAR
           </button>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.3rem' }}>
+            <button
+              onClick={toggleGrabarAudio}
+              style={{ background: grabandoAudio ? '#ef4444' : '#a855f7', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.45rem 0.7rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.04em' }}
+            >
+              {grabandoAudio ? '■ PARAR' : 'NOTA VOZ'}
+            </button>
+            <button
+              onClick={autoDirOk ? reactivarCarpeta : elegirCarpetaAuto}
+              title="Elige una carpeta: el .json del partido se guarda ahí solo cada 5 minutos (Chrome/Edge)"
+              style={{ background: autoDirOk ? '#16a34a' : '#0ea5e9', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.45rem 0.7rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}
+            >
+              {autoDirOk ? 'AUTO OK' : 'AUTO CADA 5\''}
+            </button>
+          </div>
           <button
-            onClick={autoDirOk ? reactivarCarpeta : elegirCarpetaAuto}
-            title="Elige una carpeta: el .json del partido se guarda ahí solo cada 5 minutos (Chrome/Edge)"
-            style={{ background: autoDirOk ? '#16a34a' : '#0ea5e9', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.55rem 1.3rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.04em' }}
+            onClick={recuperarCopiaArchivo}
+            title="Restaura una copia local desde un archivo .json (funciona sin internet)"
+            style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.45rem 0.7rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}
           >
-            {autoDirOk ? 'AUTO OK' : 'AUTO CADA 5\''}
+            IMPORTAR
           </button>
-          {copiaLocalOk && (
-            <span style={{ background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.9rem', padding: '0.35rem 0.6rem', borderRadius: '8px' }}>
-              OK COPIA
-            </span>
-          )}
-          {avisoAutoExport && (
-            <span title="Copia exportada automáticamente al llegar a este minuto" style={{ background: '#0ea5e9', color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', padding: '0.3rem 0.6rem', borderRadius: '8px', whiteSpace: 'nowrap' }}>
-              AUTO {avisoAutoExport}
-            </span>
-          )}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'stretch' }}>
-                        <button
-                          onClick={toggleGrabarAudio}
-                          style={{ background: grabandoAudio ? '#ef4444' : '#a855f7', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.7rem 1.8rem', fontWeight: 800, fontSize: '1.05rem', cursor: 'pointer', letterSpacing: '0.04em', position: 'relative', top: '-1.6rem', left: '-6rem' }}>
-                          {grabandoAudio ? '■ PARAR' : 'NOTA DE VOZ'}
-                        </button>
-                      <button
-                        onClick={recuperarCopiaArchivo}
-                        title="Restaura una copia local desde un archivo .json (funciona sin internet)"
-                        style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.5rem 1.2rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', letterSpacing: '0.04em' }}>
-                        IMPORTAR
-                      </button>
-                      </div>
                     </div>
                   <button
                     onClick={() => {
