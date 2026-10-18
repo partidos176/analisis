@@ -7636,6 +7636,27 @@ const minutosPorJornada = [];
                             const ss = String(Math.max(0, secs) % 60).padStart(2, '0');
                             const finMm = String(Math.floor(Math.max(0, finSecs) / 60)).padStart(2, '0');
                             const finSs = String(Math.max(0, finSecs) % 60).padStart(2, '0');
+                            const aSegs = (txt) => {
+                              const m = String(txt).match(/(\d{1,3})\s*:?\s*(\d{0,2})/);
+                              if (!m) return null;
+                              return Number(m[1] || 0) * 60 + Number(m[2] || 0);
+                            };
+                            const irAVideo = (seg) => {
+                              const vid = videoPrincipal();
+                              if (vid && e.time) vid.currentTime = Math.max(0, seg + offset);
+                            };
+                            const commitInicio = (txt) => {
+                              const V = aSegs(txt);
+                              if (V == null) return;
+                              setAjusteAcciones(prev => Object.assign({}, prev, { [actionKey]: V - baseTime }));
+                              irAVideo(V);
+                            };
+                            const commitFin = (txt) => {
+                              const V = aSegs(txt);
+                              if (V == null) return;
+                              setAjusteAccionesFin(prev => Object.assign({}, prev, { [actionKey]: V - (secs + 5) }));
+                              irAVideo(V);
+                            };
                             const actionIdx = actionLog.findIndex(a => a === e);
                             let finalizacion = null;
                             const allFinalizaciones = [];
@@ -7727,12 +7748,21 @@ const minutosPorJornada = [];
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
                                       const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
-                                      vidAjuste.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
+                                      vidAjuste.currentTime = Math.max(0, Math.floor(baseTime + newVal) + offsetSecs);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
                                   });
                                 }} style={{ background: '#1e293b', color: '#22c55e', border: '1px solid #334155', borderRadius: '4px', width: '20px', height: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</button>
-                                <span style={{ color: '#22c55e', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', minWidth: '40px', textAlign: 'center' }}>{mm}:{ss}</span>
+                                <input
+                                  type="text"
+                                  defaultValue={mm + ':' + ss}
+                                  key={'ini_' + actionKey + '_' + mm + ':' + ss}
+                                  onClick={(ev) => ev.stopPropagation()}
+                                  onKeyDown={(ev) => { if (ev.key === 'Enter') ev.currentTarget.blur(); }}
+                                  onBlur={(ev) => commitInicio(ev.target.value)}
+                                  title="Inicio del corte (mm:ss). Escribe y pulsa Enter."
+                                  style={{ width: '54px', background: '#0f172a', color: '#22c55e', border: '1px solid #334155', borderRadius: '4px', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', textAlign: 'center', padding: '1px 2px' }}
+                                />
                                 <button onClick={(ev) => {
                                   ev.stopPropagation();
                                   setAjusteAcciones(prev => {
@@ -7742,7 +7772,7 @@ const minutosPorJornada = [];
                                       const baseParts = String(e.time).split(':').map(Number);
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
                                       const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
-                                      vidAjuste.currentTime = Math.max(0, baseSecs + offsetSecs + newVal);
+                                      vidAjuste.currentTime = Math.max(0, Math.floor(baseTime + newVal) + offsetSecs);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
                                   });
@@ -7760,12 +7790,21 @@ const minutosPorJornada = [];
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
                                       const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                       const inicioAjuste = ajusteAcciones[actionKey] || 0;
-                                      vidAjuste.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
+                                      vidAjuste.currentTime = Math.max(0, Math.floor(baseTime + inicioAjuste) + offsetSecs + 5 + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
                                   });
                                 }} style={{ background: '#1e293b', color: '#ef4444', border: '1px solid #334155', borderRadius: '4px', width: '20px', height: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</button>
-                                <span style={{ color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', minWidth: '40px', textAlign: 'center' }}>{finMm}:{finSs}</span>
+                                <input
+                                  type="text"
+                                  defaultValue={finMm + ':' + finSs}
+                                  key={'fin_' + actionKey + '_' + finMm + ':' + finSs}
+                                  onClick={(ev) => ev.stopPropagation()}
+                                  onKeyDown={(ev) => { if (ev.key === 'Enter') ev.currentTarget.blur(); }}
+                                  onBlur={(ev) => commitFin(ev.target.value)}
+                                  title="Fin del corte (mm:ss). Escribe y pulsa Enter."
+                                  style={{ width: '54px', background: '#0f172a', color: '#ef4444', border: '1px solid #334155', borderRadius: '4px', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', textAlign: 'center', padding: '1px 2px' }}
+                                />
                                 <button onClick={(ev) => {
                                   ev.stopPropagation();
                                   setAjusteAccionesFin(prev => {
@@ -7776,7 +7815,7 @@ const minutosPorJornada = [];
                                       const baseSecs = (baseParts[0] || 0) * 60 + (baseParts[1] || 0);
                                       const offsetSecs = offsetParaPeriodo(periodoDeAccion(e));
                                       const inicioAjuste = ajusteAcciones[actionKey] || 0;
-                                      vidAjuste.currentTime = Math.max(0, baseSecs + offsetSecs + inicioAjuste + 5 + newVal);
+                                      vidAjuste.currentTime = Math.max(0, Math.floor(baseTime + inicioAjuste) + offsetSecs + 5 + newVal);
                                     }
                                     return Object.assign({}, prev, { [actionKey]: newVal });
                                   });
