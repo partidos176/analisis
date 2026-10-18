@@ -599,8 +599,6 @@ export default function App() {
   const [contadorWarning, setContadorWarning] = useState(false);
   const [igualarAviso, setIgualarAviso] = useState(false);
   const [fin2Aviso, setFin2Aviso] = useState(false);
-  const autoDirRef = useRef(null);
-  const [autoDirOk, setAutoDirOk] = useState(false);
   const [editingTimer, setEditingTimer] = useState(false);
   const [timerEditMin, setTimerEditMin] = useState('');
   const [timerEditSec, setTimerEditSec] = useState('');
@@ -1578,116 +1576,9 @@ export default function App() {
     }
   }, [timerSeconds, timerRunning, currentMatch]);
 
-  // Autoguardado cada 5 minutos: copia local (localStorage) + carpeta elegida + servidor
+  // Autoguardado cada 5 minutos: solo copia interna en el navegador (localStorage). No genera ficheros.
   const buildPayloadRef = useRef();
   buildPayloadRef.current = buildMatchPayload;
-  const idbSet = (key, val) => new Promise((res) => {
-    try {
-      const rq = indexedDB.open('ft_autosave', 1);
-      rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
-      rq.onsuccess = () => { const tx = rq.result.transaction('kv', 'readwrite'); tx.objectStore('kv').put(val, key); tx.oncomplete = () => { rq.result.close(); res(true); }; };
-      rq.onerror = () => res(false);
-    } catch (_) { res(false); }
-  });
-  const idbGet = (key) => new Promise((res) => {
-    try {
-      const rq = indexedDB.open('ft_autosave', 1);
-      rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
-      rq.onsuccess = () => { const tx = rq.result.transaction('kv', 'readonly'); const g = tx.objectStore('kv').get(key); g.onsuccess = () => { rq.result.close(); res(g.result || null); }; g.onerror = () => { rq.result.close(); res(null); }; };
-      rq.onerror = () => res(null);
-    } catch (_) { res(null); }
-  });
-  const restaurarCarpeta = async () => {
-    try { if (localStorage.getItem('ft_autodownload') === '1') setAutoDirOk(true); } catch (_) {}
-    const handle = await idbGet('dir');
-    if (!handle) return;
-    try {
-      let perm = await handle.queryPermission({ mode: 'readwrite' });
-      if (perm === 'granted') { autoDirRef.current = handle; setAutoDirOk(true); }
-    } catch (_) {}
-  };
-  useEffect(() => { restaurarCarpeta(); }, []);
-  const elegirCarpetaAuto = async () => {
-    if (!window.showDirectoryPicker) {
-      setAutoDirOk(true);
-      try { localStorage.setItem('ft_autodownload', '1'); } catch (_) {}
-      alert('Tu navegador no permite elegir carpeta. Se activa el autoguardado por descarga: cada 5 minutos se descargará el .json a tu carpeta de Descargas.');
-      return;
-    }
-    try {
-      const dir = await window.showDirectoryPicker({ mode: 'readwrite' });
-      autoDirRef.current = dir;
-      setAutoDirOk(true);
-      await idbSet('dir', dir);
-      alert('Carpeta elegida. El .json del partido se guardará ahí cada 5 minutos.');
-    } catch (e) { if (e && e.name !== 'AbortError') alert('No se pudo abrir la carpeta: ' + (e.message || e)); }
-  };
-  const reactivarCarpeta = async () => {
-    const handle = autoDirRef.current || await idbGet('dir');
-    if (!handle) { elegirCarpetaAuto(); return; }
-    try {
-      const perm = await handle.requestPermission({ mode: 'readwrite' });
-      if (perm === 'granted') { autoDirRef.current = handle; setAutoDirOk(true); }
-      else alert('Permiso denegado.');
-    } catch (e) { alert('No se pudo reactivar: ' + (e.message || e)); }
-  };
-  const nextAutoName = (matchId, hm, am, md) => {
-    let n = 1;
-    try { n = (parseInt(localStorage.getItem('ft_autocount_' + matchId), 10) || 0) + 1; localStorage.setItem('ft_autocount_' + matchId, String(n)); } catch (_) {}
-    const j = md ? 'j' + md : '';
-    return `${n}+${j} ${hm || ''}vs${am || ''}`.replace(/[\\/:*?"<>|]/g, '_').trim() + '.json';
-  };
-  const descargarAuto = (nombre, matchId, hm, am, md) => {
-    try {
-      const entry = {
-        app: 'futboltotal-copia-partido', version: 1,
-        savedAt: Date.now(),
-        matchId, homeTeam: hm || '', awayTeam: am || '', matchday: md || null,
-        payload: buildPayloadRef.current()
-      };
-      const blob = new Blob([JSON.stringify(entry, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = nombre;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-    } catch (_) {}
-  };
-  const escribirAuto = async (matchId, hm, am, md) => {
-    const nombre = nextAutoName(matchId, hm, am, md);
-    const dir = autoDirRef.current;
-    if (dir) {
-      try {
-        let perm = await dir.queryPermission({ mode: 'readwrite' });
-        if (perm !== 'granted') perm = await dir.requestPermission({ mode: 'readwrite' });
-        if (perm === 'granted') {
-          const fh = await dir.getFileHandle(nombre, { create: true });
-          const writable = await fh.createWritable();
-          const entry = {
-            app: 'futboltotal-copia-partido', version: 1,
-            savedAt: Date.now(),
-            matchId, homeTeam: hm || '', awayTeam: am || '', matchday: md || null,
-            payload: buildPayloadRef.current()
-          };
-          await writable.write(JSON.stringify(entry, null, 2));
-          await writable.close();
-          return;
-        }
-      } catch (_) { /* carpeta no disponible */ }
-    }
-    if (SERVER_URL) {
-      try {
-        await fetch(SERVER_URL + '/api/guardar-partido', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ matchId, homeTeam: hm, awayTeam: am, matchday: md, filename: nombre, payload: buildPayloadRef.current() })
-        });
-        return;
-      } catch (_) { /* servidor no disponible */ }
-    }
-    descargarAuto(nombre, matchId, hm, am, md);
-  };
   useEffect(() => {
     const matchId = currentMatch && currentMatch.id;
     if (!matchId) return;
@@ -1703,13 +1594,12 @@ export default function App() {
         };
         localStorage.setItem(`ft_copia_${matchId}`, JSON.stringify(entry));
         localStorage.setItem(`ft_copia_${matchId}_meta`, JSON.stringify({ savedAt: entry.savedAt }));
-        escribirAuto(matchId, currentMatch.homeTeam, currentMatch.awayTeam, currentMatch.matchday);
       } catch (_) { /* sin espacio local: se ignora */ }
     };
     guardar();
     const iv = setInterval(guardar, 5 * 60 * 1000);
     return () => clearInterval(iv);
-  }, [currentMatch && currentMatch.id, SERVER_URL]);
+  }, [currentMatch && currentMatch.id]);
 
   const generarTodosLosCortes = async () => {
     if (!videoFile) {
@@ -6793,13 +6683,6 @@ const minutosPorJornada = [];
             >
               {grabandoAudio ? '■ PARAR' : 'NOTA VOZ'}
             </button>
-            <button
-              onClick={autoDirOk ? reactivarCarpeta : elegirCarpetaAuto}
-              title="Elige una carpeta: el .json del partido se guarda ahí solo cada 5 minutos (Chrome/Edge)"
-              style={{ background: autoDirOk ? '#16a34a' : '#0ea5e9', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.45rem 0.7rem', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.02em' }}
-            >
-              {autoDirOk ? 'AUTO OK' : 'AUTO CADA 5\''}
-            </button>
           </div>
           <button
             onClick={recuperarCopiaArchivo}
@@ -6834,6 +6717,7 @@ const minutosPorJornada = [];
                       width: '48px',
                       height: '48px',
                       alignSelf: 'center',
+                      marginTop: '1.6rem',
                       cursor: 'pointer',
                       border: 'none',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
@@ -6864,66 +6748,6 @@ const minutosPorJornada = [];
                   <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
                     Acciones
                   </span>
-                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: '#f59e0b', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.3rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-                    IMPORTAR TIMELINE
-                    <input type="file" accept=".json" style={{ display: 'none' }} onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = (ev) => {
-                        try {
-                          const data = JSON.parse(ev.target.result);
-                          if (data.partes && Array.isArray(data.partes)) {
-                            const mapTimelineAction = (a, parte) => {
-                              if (a === 'INICIO 1ª PARTE') return '1ª PARTE';
-                              if (a === 'INICIO 2ª PARTE') return '2ª PARTE';
-                              if (a === 'FIN 1ª PARTE' || a === 'FIN 2ª PARTE') return parte === '2ª PARTE' ? 'FIN 2ª PARTE' : 'FIN 1ª PARTE';
-                              return a;
-                            };
-                            const parseMinuto = (t) => {
-                              const p = String(t || '').split(':').map(Number);
-                              if (p.length < 2 || isNaN(p[0])) return 0;
-                              return (p[0] || 0);
-                            };
-                            const newEntries = [];
-                            const newGoles = [];
-                            const newGolesRival = [];
-                            data.partes.forEach(row => {
-                              const mappedAccion = mapTimelineAction(row.accion, row.parte);
-                              const t = row.tiempoMatch || '--:--';
-                              if (row.accion && row.accion !== '') {
-                                newEntries.push({ name: mappedAccion, time: t, type: 'accion' });
-                              }
-                              if (row.finalizacion && row.finalizacion !== '' && row.finalizacion !== '-') {
-                                newEntries.push({ name: row.finalizacion, time: t, type: 'finalizacion' });
-                                const min = parseMinuto(t);
-                                const per = row.parte || periodo;
-                                const origen = row.origen || row.procedencia || mappedAccion;
-                                if (row.finalizacion === 'GOL') {
-                                  newGoles.push({ name: '', tipo: '', name2: '', accion: origen, team: 'home', periodo: per, minuto: min });
-                                } else if (row.finalizacion === 'GOL RIVAL') {
-                                  newGolesRival.push({ accion: origen, periodo: per, minuto: min });
-                                } else if (row.finalizacion === 'PENAL + GOL') {
-                                  newGoles.push({ name: '', tipo: 'PENAL', name2: '', accion: 'PENAL', team: 'home', periodo: per, minuto: min });
-                                } else if (row.finalizacion === 'PENAL + GOL RIVAL') {
-                                  newGolesRival.push({ accion: 'PENAL', periodo: per, minuto: min });
-                                }
-                              }
-                            });
-                            const merged = [...newEntries.reverse(), ...actionLog];
-                            setActionLog(merged);
-                            recomputeCountersFromLog(merged);
-                            if (newGoles.length > 0) setGolesList(prev => [...prev, ...newGoles.reverse()]);
-                            if (newGolesRival.length > 0) setGolesRivalList(prev => [...prev, ...newGolesRival.reverse()]);
-                          }
-                        } catch (err) {
-                          console.error('Error al importar:', err);
-                        }
-                      };
-                      reader.readAsText(file);
-                      e.target.value = '';
-                    }} />
-                  </label>
                   {actionLog.length === 0 && (
                     <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
                       Sin acciones aún
