@@ -600,6 +600,7 @@ export default function App() {
   const [igualarAviso, setIgualarAviso] = useState(false);
   const [fin2Aviso, setFin2Aviso] = useState(false);
   const [copiaLocalOk, setCopiaLocalOk] = useState(false);
+  const [avisoAutoExport, setAvisoAutoExport] = useState('');
   const autoDirRef = useRef(null);
   const [autoDirOk, setAutoDirOk] = useState(false);
   const [editingTimer, setEditingTimer] = useState(false);
@@ -620,6 +621,7 @@ export default function App() {
 
   useEffect(() => {
     setCopiaLocalOk(false);
+    setAvisoAutoExport('');
   }, [currentMatch?.id]);
   const [saveError, setSaveError] = useState('');
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
@@ -1371,8 +1373,8 @@ export default function App() {
   };
 
   // A. Copia local del partido (funciona sin conexión): localStorage + descarga JSON
-  const guardarCopiaLocal = () => {
-    if (!currentMatch) { alert('No hay partido abierto para guardar'); return; }
+  const guardarCopiaLocal = (silencioso = false) => {
+    if (!currentMatch) { if (!silencioso) alert('No hay partido abierto para guardar'); return; }
     setCopiaLocalOk(false);
     try {
       const payload = buildMatchPayload();
@@ -1388,7 +1390,7 @@ export default function App() {
         localStorage.setItem(`ft_copia_${currentMatch.id}`, raw);
         localStorage.setItem(`ft_copia_${currentMatch.id}_meta`, JSON.stringify({ savedAt: entry.savedAt }));
       } catch {
-        alert('Copia generada, pero no cupo en el almacenamiento local: conserva el archivo descargado.');
+        if (!silencioso) alert('Copia generada, pero no cupo en el almacenamiento local: conserva el archivo descargado.');
       }
       const blob = new Blob([raw], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -1398,9 +1400,10 @@ export default function App() {
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 5000);
       setCopiaLocalOk(true);
-      alert('Copia local guardada (' + new Date(entry.savedAt).toLocaleString() + ')');
+      if (!silencioso) alert('Copia local guardada (' + new Date(entry.savedAt).toLocaleString() + ')');
     } catch (err) {
-      alert('No se pudo guardar la copia: ' + (err?.message || err));
+      if (!silencioso) alert('No se pudo guardar la copia: ' + (err?.message || err));
+      else console.error('Error en la copia local automática:', err);
     }
   };
 
@@ -1569,6 +1572,22 @@ export default function App() {
       saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
   useEffect(() => { setGolCount(golesList.filter(esGolPropio).length); }, [golesList]);
   useEffect(() => { setGolRivalCount(golesRivalList.length); }, [golesRivalList]);
+
+  // Auto-exportar (botón EXPORTAR de la hoja ACCIONES) al alcanzar cada 15:00 de partido:
+  // 15:00, 30:00, 45:00, 60:00, 75:00 y 90:00. Se hace en silencio (sin popup) para no
+  // congelar el contador, que avanza por setInterval.
+  const prevTimerRef = useRef(timerSeconds);
+  useEffect(() => {
+    const prev = prevTimerRef.current;
+    prevTimerRef.current = timerSeconds;
+    if (!timerRunning || !currentMatch) return;
+    if (timerSeconds === prev + 1 && timerSeconds > 0 && timerSeconds % 900 === 0) {
+      guardarCopiaLocal(true);
+      const mm = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+      const ss = String(timerSeconds % 60).padStart(2, '0');
+      setAvisoAutoExport(`${mm}:${ss}`);
+    }
+  }, [timerSeconds, timerRunning, currentMatch]);
 
   // Autoguardado cada 5 minutos: copia local (localStorage) + carpeta elegida + servidor
   const buildPayloadRef = useRef();
@@ -6772,7 +6791,7 @@ const minutosPorJornada = [];
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', position: 'relative', top: '1.8rem' }}>
           <button
-            onClick={guardarCopiaLocal}
+            onClick={() => guardarCopiaLocal()}
             title="Guarda una copia del partido en este dispositivo (funciona sin internet)"
             style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.55rem 1.3rem', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', whiteSpace: 'nowrap', letterSpacing: '0.04em' }}
           >
@@ -6788,6 +6807,11 @@ const minutosPorJornada = [];
           {copiaLocalOk && (
             <span style={{ background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '0.9rem', padding: '0.35rem 0.6rem', borderRadius: '8px' }}>
               OK COPIA
+            </span>
+          )}
+          {avisoAutoExport && (
+            <span title="Copia exportada automáticamente al llegar a este minuto" style={{ background: '#0ea5e9', color: '#ffffff', fontWeight: 800, fontSize: '0.8rem', padding: '0.3rem 0.6rem', borderRadius: '8px', whiteSpace: 'nowrap' }}>
+              AUTO {avisoAutoExport}
             </span>
           )}
         </div>
