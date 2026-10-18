@@ -7499,6 +7499,16 @@ const minutosPorJornada = [];
                             <span style={{ color: filtroAccion === '__varios__' ? '#ef4444' : '#38bdf8', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                               {filtroAccion === '__varios__' ? 'VARIOS' : filtroAccion} — {accionesFiltradas.length} {accionesFiltradas.length === 1 ? 'acción' : 'acciones'}
                             </span>
+                            {filtroAccion === '__varios__' && (
+                              <button
+                                onClick={() => setVariosIndex(prev => prev + 1)}
+                                disabled={variosIndex + 1 >= allAccionesFiltradas.length}
+                                title="Añade otra fila VARIOS para generar otro corte"
+                                style={{ background: variosIndex + 1 >= allAccionesFiltradas.length ? '#475569' : '#0ea5e9', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: variosIndex + 1 >= allAccionesFiltradas.length ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}
+                              >
+                                + Añadir vario
+                              </button>
+                            )}
                           </div>
                           {accionesFiltradas.map((e, idx) => {
                             const offset = offsetParaPeriodo(periodoDeAccion(e));
