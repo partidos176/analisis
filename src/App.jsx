@@ -1284,7 +1284,9 @@ export default function App() {
       timerSeconds,
       timerRunning,
       actionLog,
-      sustituciones
+      sustituciones,
+      videoTimeOffset,
+      videoTimeOffset2
     });
 
   const saveMatchData = async (id) => {
@@ -7107,7 +7109,7 @@ const minutosPorJornada = [];
                               accionesConTiempo.forEach((e, i) => {
                                 const parts = String(e.time).split(':').map(Number);
                                 const secs = (parts[0] || 0) * 60 + (parts[1] || 0);
-                                const videoSecs = Math.max(0, secs);
+                                const videoSecs = Math.max(0, offsetParaPeriodo(periodoDeAccion(e)) + secs);
                                 const duracion = 10;
                                 numCorte++;
                                 const accionIdx = actionLog.findIndex(a => a === e);
