@@ -1075,6 +1075,7 @@ export default function App() {
     });
   };
   const periodoDeAccion = (entry) => {
+    if (entry && entry.periodo) return entry.periodo;
     let periodo = '1ª PARTE';
     const crono = [...actionLog].reverse();
     for (const e of crono) {
@@ -1099,6 +1100,16 @@ export default function App() {
       return Math.floor(videoTimeOffset2);
     }
     return offsetParaPeriodo('2ª PARTE');
+  };
+  const periodoParaVideo = (v) => {
+    if (videoTimeOffset == null || videoTimeOffset2 == null) return '1ª PARTE';
+    const fin1 = [...actionLog].reverse().find((e) => e && (e.name === 'FIN 1ª PARTE' || e.name === 'FIN'));
+    if (fin1 && fin1.time) {
+      const p = String(fin1.time).split(':').map(Number);
+      const limite = ((p[0] || 0) * 60 + (p[1] || 0)) + Math.floor(videoTimeOffset);
+      if (v < limite) return '1ª PARTE';
+    }
+    return '2ª PARTE';
   };
 
   // Devuelve siempre el <video> principal (el de la hoja VÍDEOS), no la vista
@@ -6824,7 +6835,7 @@ const minutosPorJornada = [];
                       >
                         {(entry.type === 'finalizacion'
                           ? ['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION']
-                          : ['INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE','FIN','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS']
+                          : ['INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE','FIN','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS','VARIOS']
                         ).map((op) => (
                           <option key={op} value={op} style={{ background: '#1e293b', color: '#ffffff' }}>{op}</option>
                         ))}
@@ -7247,7 +7258,7 @@ const minutosPorJornada = [];
                   >
                     <option value="" style={{ color: '#ffffff' }}>Todas las acciones</option>
                     <option value="__varios__" style={{ color: '#ef4444' }}>VARIOS</option>
-                    {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name)).map(e => e.name))].map(name => (
+                    {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL', 'VARIOS'].includes(e.name)).map(e => e.name))].map(name => (
                       <option key={name} value={name}>{name}</option>
                     ))}
                   </select>
@@ -7807,9 +7818,17 @@ const minutosPorJornada = [];
                                   const trailDataCorte = { points: trailSnapshot, videoTimeOffset: videoTimeSnapshot, cutStartSecs: totalSecs, duration: duracion };
                                   setCortesGenerados(prev => [...prev.filter(c => c.key !== actionKey), { key: actionKey, name: videoName, url: url, blob: blob, trail: trailDataCorte }]);
                                   setTrailPointsPorCorte(prev => ({ ...prev, [actionKey]: trailDataCorte }));
+                                  if (esVario) {
+                                    const per = periodoParaVideo(totalSecs);
+                                    const off = offsetParaPeriodo(per);
+                                    const matchSec = Math.max(0, Math.floor(totalSecs - off));
+                                    const tmm = String(Math.floor(matchSec / 60)).padStart(2, '0');
+                                    const tss = String(matchSec % 60).padStart(2, '0');
+                                    setActionLog(prev => [{ name: 'VARIOS', time: tmm + ':' + tss, type: 'accion', periodo: per, varioId: e.__varioId }, ...prev.filter(x => !(x && x.varioId === e.__varioId))]);
+                                  }
                                                                  }).catch(err => { console.error('[Generar] error corte:', err); setCorteError(err.message || 'Error al generar el vídeo'); }).finally(() => { setGenerandoAccion(null); setProgresoAccion(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); });
                               }} title={'Generar corte de esta acción'} style={{ background: generandoAccion === actionKey ? `linear-gradient(90deg, #16a34a ${(progresoAccion[actionKey] || 0)}%, #eab308 ${(progresoAccion[actionKey] || 0)}%)` : '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap', minWidth: '70px', textAlign: 'center' }}>{generandoAccion === actionKey ? (progresoAccion[actionKey] != null ? progresoAccion[actionKey] + '%' : '...') : 'Generar'}</button>
-                              {esVario && <button onClick={(ev) => { ev.stopPropagation(); borrarCorte(actionKey); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); setVariosItems(prev => prev.filter(id => id !== e.__varioId)); setAccionSeleccionada(null); }} title={'Quitar este corte de VARIOS'} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
+                              {esVario && <button onClick={(ev) => { ev.stopPropagation(); borrarCorte(actionKey); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); setVariosItems(prev => prev.filter(id => id !== e.__varioId)); setActionLog(prev => prev.filter(x => !(x && x.varioId === e.__varioId))); setAccionSeleccionada(null); }} title={'Quitar este corte de VARIOS'} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
                             </div>
                             {previewAccion && previewAccion.key === actionKey && (
                               <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.3rem', paddingLeft: '0.5rem' }}>
