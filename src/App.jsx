@@ -7109,7 +7109,7 @@ const minutosPorJornada = [];
                               accionesConTiempo.forEach((e, i) => {
                                 const parts = String(e.time).split(':').map(Number);
                                 const secs = (parts[0] || 0) * 60 + (parts[1] || 0);
-                                const videoSecs = Math.max(0, offsetParaPeriodo(periodoDeAccion(e)) + secs);
+                                const videoSecs = Math.max(0, secs);
                                 const duracion = 10;
                                 numCorte++;
                                 const accionIdx = actionLog.findIndex(a => a === e);
@@ -7151,10 +7151,19 @@ const minutosPorJornada = [];
                                 nombreCortes[String(ini)] = f.concepto;
                                 accionCortes[String(ini)] = f.accion;
                               });
+                              const seg2 = (() => {
+                                const m = actionLog.find(x => x && x.name === '2ª PARTE' && x.time);
+                                if (!m) return null;
+                                const p = String(m.time).split(':').map(Number);
+                                return (p[0] || 0) * 60 + (p[1] || 0);
+                              })();
                               const exportData = {
                                 app: 'tratamiento-dibujos',
                                 version: 5,
                                 guardado: new Date().toISOString(),
+                                videoTimeOffset,
+                                videoTimeOffset2,
+                                segundaParteDesde: seg2,
                                 cortes: { cortes, duracionCortes, nombreCortes, accionCortes, cortesEditados: {} },
                                 filas: ordenadas
                               };
