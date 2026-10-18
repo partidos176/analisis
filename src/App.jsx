@@ -696,7 +696,7 @@ export default function App() {
   const [generandoPreview, setGenerandoPreview] = useState(false);
   const [ajusteAcciones, setAjusteAcciones] = useState({});
   const [ajusteAccionesFin, setAjusteAccionesFin] = useState({});
-  const [previewAccion, setPreviewAccion] = useState(null);
+  const [cortesGenerados, setCortesGenerados] = useState([]);
   const [generandoAccion, setGenerandoAccion] = useState(null);
   const [progresoAccion, setProgresoAccion] = useState({});
   const [trailPointsPorCorte, setTrailPointsPorCorte] = useState({});
@@ -1115,6 +1115,64 @@ export default function App() {
     if (v) return v;
     return (videoRef.current && videoRef.current.isConnected) ? videoRef.current : null;
   };
+
+  // Cortes generados (se guardan para no perderlos al generar el siguiente).
+  const descargarCorte = async (gen) => {
+    if (!gen || !gen.blob) return;
+    let blob = gen.blob;
+    const trailData = gen.trail;
+    if (trailData && trailData.points && trailData.points.length >= 2) {
+      try { blob = await compositeVideoWithOverlay(gen.blob, trailData); } catch (_) {}
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = gen.name + (blob.type.includes('webm') ? '.webm' : '.mp4');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  };
+  const borrarCorte = (key) => {
+    const it = cortesGenerados.find(c => c.key === key);
+    if (it && it.url) URL.revokeObjectURL(it.url);
+    setCortesGenerados(prev => prev.filter(c => c.key !== key));
+  };
+  const borrarCortesTodos = () => {
+    cortesGenerados.forEach(g => { if (g && g.url) URL.revokeObjectURL(g.url); });
+    setCortesGenerados([]);
+  };
+  const descargarCortesTodos = async () => {
+    if (!cortesGenerados.length) return;
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      for (const gen of cortesGenerados) {
+        let blob = gen.blob;
+        if (gen.trail && gen.trail.points && gen.trail.points.length >= 2) {
+          try { blob = await compositeVideoWithOverlay(gen.blob, gen.trail); } catch (_) {}
+        }
+        zip.file(gen.name + (blob.type.includes('webm') ? '.webm' : '.mp4'), blob);
+      }
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cortes_varios.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
+    } catch (e) { setCorteError('No se pudieron empaquetar los cortes: ' + (e && e.message ? e.message : e)); }
+  };
+
+  // Al cambiar o quitar el vídeo se descartan los cortes generados (dejan de ser válidos).
+  useEffect(() => {
+    setCortesGenerados(prev => {
+      prev.forEach(g => { if (g && g.url) URL.revokeObjectURL(g.url); });
+      return [];
+    });
+  }, [videoUrl]);
 
   const videosPorPartidoRef = useRef({});
 
@@ -7617,6 +7675,7 @@ const minutosPorJornada = [];
                             const offset = offsetParaPeriodo(periodoDeAccion(e));
                             const parts = String(e.time).split(':').map(Number);
                             const actionKey = e.name + '_' + e.time;
+                            const previewAccion = cortesGenerados.find(c => c.key === actionKey) || null;
                             let baseTime;
                             if (filtroAccion === '__varios__') {
                               if (variosBaseTimes[actionKey] == null) {
@@ -7843,7 +7902,6 @@ const minutosPorJornada = [];
                                 const adjustedTime = mm + ':' + ss;
                                 setGenerandoAccion(actionKey);
                                 setProgresoAccion(prev => ({ ...prev, [actionKey]: 0 }));
-                                setPreviewAccion(null);
                                 const trailSnapshot = trailPoints.map(p => ({ ...p }));
                                 const videoTimeSnapshot = videoRef.current ? videoRef.current.currentTime : 0;
                                 const videoTimeOffsetSnapshot = videoTimeOffset;
@@ -7909,10 +7967,12 @@ const minutosPorJornada = [];
                                     URL.revokeObjectURL(testUrl);
                                   };
                                   testVid.onerror = () => { console.error('[Corte] Error al cargar vídeo para diagnóstico'); URL.revokeObjectURL(testUrl); };
-                                  if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url);
+                                  const anterior = cortesGenerados.find(c => c.key === actionKey);
+                                  if (anterior && anterior.url) URL.revokeObjectURL(anterior.url);
                                   const url = URL.createObjectURL(blob);
-                                  setPreviewAccion({ url: url, name: videoName, key: actionKey, blob: blob });
-                                  setTrailPointsPorCorte(prev => ({ ...prev, [actionKey]: { points: trailSnapshot, videoTimeOffset: videoTimeSnapshot, cutStartSecs: totalSecs, duration: duracion } }));
+                                  const trailDataCorte = { points: trailSnapshot, videoTimeOffset: videoTimeSnapshot, cutStartSecs: totalSecs, duration: duracion };
+                                  setCortesGenerados(prev => [...prev.filter(c => c.key !== actionKey), { key: actionKey, name: videoName, url: url, blob: blob, trail: trailDataCorte }]);
+                                  setTrailPointsPorCorte(prev => ({ ...prev, [actionKey]: trailDataCorte }));
                                                                  }).catch(err => { console.error('[Generar] error corte:', err); setCorteError(err.message || 'Error al generar el vídeo'); }).finally(() => { setGenerandoAccion(null); setProgresoAccion(prev => { const copy = Object.assign({}, prev); delete copy[actionKey]; return copy; }); });
                               }} title={'Generar corte de esta acción'} style={{ background: generandoAccion === actionKey ? `linear-gradient(90deg, #16a34a ${(progresoAccion[actionKey] || 0)}%, #eab308 ${(progresoAccion[actionKey] || 0)}%)` : '#eab308', color: '#000000', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap', minWidth: '70px', textAlign: 'center' }}>{generandoAccion === actionKey ? (progresoAccion[actionKey] != null ? progresoAccion[actionKey] + '%' : '...') : 'Generar'}</button>
                               {filtroAccion === '__varios__' && <button onClick={(ev) => { ev.stopPropagation(); setVariosBaseTimes(prev => { const copy = Object.assign({}, prev); delete copy[e.name + '_' + e.time]; return copy; }); setVariosIndex(prev => Math.max(0, prev - 1)); setAccionSeleccionada(null); }} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>&#10005;</button>}
@@ -7928,34 +7988,8 @@ const minutosPorJornada = [];
                                   />
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '1.5rem' }}>
-                                  <button onClick={async () => {
-                                    if (!previewAccion || !previewAccion.blob) return;
-                                    const trailData = trailPointsPorCorte[previewAccion.key];
-                                    console.log('[DEBUG Descargar] trailData:', trailData);
-                                    console.log('[DEBUG Descargar] all trailPointsPorCorte keys:', Object.keys(trailPointsPorCorte));
-                                    console.log('[DEBUG Descargar] previewAccion.key:', previewAccion.key);
-                                    console.log('[DEBUG Descargar] blob size:', previewAccion.blob.size, 'type:', previewAccion.blob.type);
-                                    let blob = previewAccion.blob;
-                                    if (trailData && trailData.points && trailData.points.length >= 2) {
-                                      console.log('[DEBUG Descargar] Componiendo con', trailData.points.length, 'trail points, cutStartSecs:', trailData.cutStartSecs, 'duration:', trailData.duration);
-                                      console.log('[DEBUG Descargar] Primeros 3 points:', trailData.points.slice(0, 3));
-                                      try {
-                                        blob = await compositeVideoWithOverlay(previewAccion.blob, trailData);
-                                        console.log('[DEBUG Descargar] Composición OK, blob size:', blob.size, 'type:', blob.type);
-                                      } catch (e) { console.error('Composición fallida, descargando sin overlay:', e); }
-                                    } else {
-                                      console.log('[DEBUG Descargar] Sin trail data suficiente, descargando raw');
-                                    }
-                                    const url = URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = previewAccion.name + (blob.type.includes('webm') ? '.webm' : '.mp4');
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    document.body.removeChild(a);
-                                    setTimeout(() => URL.revokeObjectURL(url), 3000);
-                                  }} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Descargar</button>
-                                  <button onClick={() => { if (previewAccion && previewAccion.url) URL.revokeObjectURL(previewAccion.url); setPreviewAccion(null); }} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Borrar</button>
+                                  <button onClick={() => descargarCorte(previewAccion)} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Descargar</button>
+                                  <button onClick={() => borrarCorte(actionKey)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.7rem 1.3rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>Borrar</button>
                                 </div>
                               </div>
                             )}
@@ -7966,7 +8000,24 @@ const minutosPorJornada = [];
                       );
                     })()}
                   </div>
-                  {/* Vista previa del corte seleccionado */}
+                  {cortesGenerados.length > 0 && (
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.6rem', padding: '0.6rem', borderRadius: '8px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                        <span style={{ color: '#22c55e', fontWeight: 800, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cortes generados ({cortesGenerados.length})</span>
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          <button onClick={descargarCortesTodos} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.3rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>Descargar todos (zip)</button>
+                          <button onClick={borrarCortesTodos} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.3rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase' }}>Borrar todos</button>
+                        </div>
+                      </div>
+                      {cortesGenerados.map((gen) => (
+                        <div key={gen.key} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px', padding: '0.25rem 0.5rem' }}>
+                          <span style={{ color: '#e2e8f0', fontWeight: 700, fontSize: '0.75rem', fontFamily: 'var(--font-mono)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gen.name}</span>
+                          <button onClick={() => descargarCorte(gen)} style={{ background: '#22c55e', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase' }}>Descargar</button>
+                          <button onClick={() => borrarCorte(gen.key)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '4px', padding: '0.2rem 0.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.65rem', textTransform: 'uppercase' }}>Borrar</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   {accionSeleccionada && videoUrl && (
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
                       <span style={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase' }}>
