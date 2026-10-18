@@ -7833,7 +7833,9 @@ const minutosPorJornada = [];
                                 const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
                                 const ajusteInicio = ajusteAcciones[actionKey] || 0;
                                 const ajusteFinVal = ajusteAccionesFin[actionKey] || 0;
-                                const totalSecs = Math.max(0, actionSecs + offsetSecs - 2 + ajusteInicio);
+                                const totalSecs = filtroAccion === '__varios__'
+                                  ? Math.max(0, Math.floor(baseTime + ajusteInicio) + offsetSecs)
+                                  : Math.max(0, actionSecs + offsetSecs - 2 + ajusteInicio);
                                 const finSecs = totalSecs + 5 + ajusteFinVal;
                                 const duracion = Math.max(1, finSecs - totalSecs);
                                 const mm = String(Math.floor(totalSecs / 60)).padStart(2, '0');
