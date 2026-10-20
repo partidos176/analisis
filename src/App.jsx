@@ -3704,6 +3704,51 @@ export default function App() {
                     </select>
                   </div>
                   </div>
+                  {finalizacionPorcentaje && !accionPorcentaje && (() => {
+                    const contarPorEquipo = (al) => {
+                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
+                      let propia = 0, rival = 0;
+                      logArr.forEach(entry => {
+                        if (!entry || entry.type !== 'finalizacion') return;
+                        if (entry.name === finalizacionPorcentaje) propia++;
+                        else if (entry.name === finalizacionPorcentaje + ' RIVAL' || (entry.name.endsWith(' RIVAL') && entry.name.replace(' RIVAL', '') === finalizacionPorcentaje)) rival++;
+                      });
+                      return { propia, rival };
+                    };
+                    let totalPropia = 0, totalRival = 0;
+                    matchesDelEquipo('').forEach(m => {
+                      if (currentMatch && m.id === currentMatch.id) return;
+                      const c = contarPorEquipo(m.actionLog);
+                      totalPropia += c.propia;
+                      totalRival += c.rival;
+                    });
+                    if (currentMatch) {
+                      const c = contarPorEquipo(actionLog);
+                      totalPropia += c.propia;
+                      totalRival += c.rival;
+                    }
+                    return (
+                      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '1rem' }}>
+                        <div style={{ fontWeight: 800, fontSize: '1rem', color: '#ffffff', marginBottom: '0.75rem' }}>
+                          FINALIZACIÓN: {finalizacionPorcentaje}
+                        </div>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                          <thead>
+                            <tr>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900 }}>PROPIO</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: 900 }}>RIVAL</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPropia}</td>
+                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalRival}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })()}
                   {accionPorcentaje && (() => {
                     const finalsOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'PENAL + GOL RIVAL', 'GOL RIVAL', 'INFRACCION'];
                     const res = {};
