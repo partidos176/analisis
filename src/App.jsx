@@ -3705,13 +3705,19 @@ export default function App() {
                   </div>
                   </div>
                   {finalizacionPorcentaje && !accionPorcentaje && (() => {
+                    const nombreBase = (n) => String(n).replace(/\s+RIVAL\s*$/i, '').trim();
+                    const esRival = (n) => /\s+RIVAL\s*$/i.test(String(n));
+                    const seleccionEsRival = esRival(finalizacionPorcentaje);
+                    const seleccionBase = nombreBase(finalizacionPorcentaje);
                     const contarPorEquipo = (al) => {
                       const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
                       let propia = 0, rival = 0;
                       logArr.forEach(entry => {
                         if (!entry || entry.type !== 'finalizacion') return;
-                        if (entry.name === finalizacionPorcentaje) propia++;
-                        else if (entry.name === finalizacionPorcentaje + ' RIVAL' || (entry.name.endsWith(' RIVAL') && entry.name.replace(' RIVAL', '') === finalizacionPorcentaje)) rival++;
+                        const nb = nombreBase(entry.name);
+                        if (nb !== seleccionBase) return;
+                        if (esRival(entry.name)) rival++;
+                        else propia++;
                       });
                       return { propia, rival };
                     };
