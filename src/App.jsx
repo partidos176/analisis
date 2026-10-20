@@ -347,6 +347,7 @@ export default function App() {
   const [partidoPorcentaje, setPartidoPorcentaje] = useState('');
   const [equipoPorcentaje, setEquipoPorcentaje] = useState('');
   const [accionPorcentaje, setAccionPorcentaje] = useState('');
+  const [finalizacionPorcentaje, setFinalizacionPorcentaje] = useState('');
   const [partidoPeriodoAccion, setPartidoPeriodoAccion] = useState('');
   const [partidoPeriodoRival, setPartidoPeriodoRival] = useState('');
   const [filtroJornada, setFiltroJornada] = useState('');
@@ -3675,6 +3676,31 @@ export default function App() {
                           </option>
                         );
                       })}
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
+                    <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em', alignSelf: 'stretch', textAlign: 'center' }}>FINALIZACIÓN</span>
+                    <select
+                      className="input-control"
+                      value={finalizacionPorcentaje}
+                      onChange={(e) => setFinalizacionPorcentaje(e.target.value)}
+                      style={{ width: 'fit-content', maxWidth: '100%', background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.6rem 0.9rem', fontWeight: 800, fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
+                    >
+                      <option value="">TODAS</option>
+                      {(() => {
+                        const usadas = new Set();
+                        const finalizacionesDef = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'GOL RIVAL', 'PENAL + FUERA', 'PENAL + GOL', 'PENAL + GOL RIVAL', 'INFRACCION'];
+                        matches.forEach(m => {
+                          if (currentMatch && m.id === currentMatch.id) return;
+                          const logArr = Array.isArray(m.actionLog) ? m.actionLog : (m.actionLog ? Object.values(m.actionLog) : []);
+                          logArr.forEach(e => { if (e && e.type === 'finalizacion' && finalizacionesDef.includes(e.name)) usadas.add(e.name); });
+                        });
+                        const logArr = Array.isArray(actionLog) ? actionLog : [];
+                        logArr.forEach(e => { if (e && e.type === 'finalizacion' && finalizacionesDef.includes(e.name)) usadas.add(e.name); });
+                        return finalizacionesDef.filter(f => usadas.has(f)).map(f => (
+                          <option key={f} value={f}>{f}</option>
+                        ));
+                      })()}
                     </select>
                   </div>
                   </div>
@@ -8635,8 +8661,12 @@ const minutosPorJornada = [];
                         matriz[ultimaAccion][entry.name] += 1;
                       }
                     });
-                    const filas = acciones.filter(a => finalizaciones.some(f => matriz[a][f] > 0));
-                    const cols = finalizaciones.filter(f => acciones.some(a => matriz[a][f] > 0)).sort((a, b) => (a === 'OCASION' ? -1 : b === 'OCASION' ? 1 : 0));
+                    const filas = finalizacionPorcentaje
+                      ? acciones.filter(a => (matriz[a]?.[finalizacionPorcentaje] || 0) > 0)
+                      : acciones.filter(a => finalizaciones.some(f => matriz[a][f] > 0));
+                    const cols = finalizacionPorcentaje
+                      ? [finalizacionPorcentaje]
+                      : finalizaciones.filter(f => acciones.some(a => matriz[a][f] > 0)).sort((a, b) => (a === 'OCASION' ? -1 : b === 'OCASION' ? 1 : 0));
                     if (filas.length === 0) {
                       return (
                         <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
