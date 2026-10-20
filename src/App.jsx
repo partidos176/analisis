@@ -347,7 +347,6 @@ export default function App() {
   const [partidoPorcentaje, setPartidoPorcentaje] = useState('');
   const [equipoPorcentaje, setEquipoPorcentaje] = useState('');
   const [accionPorcentaje, setAccionPorcentaje] = useState('');
-  const [finalizacionPorcentaje, setFinalizacionPorcentaje] = useState('');
   const [partidoPeriodoAccion, setPartidoPeriodoAccion] = useState('');
   const [partidoPeriodoRival, setPartidoPeriodoRival] = useState('');
   const [filtroJornada, setFiltroJornada] = useState('');
@@ -3678,83 +3677,7 @@ export default function App() {
                       })}
                     </select>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', alignItems: 'flex-start' }}>
-                    <span style={{ color: '#facc15', fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.06em', alignSelf: 'stretch', textAlign: 'center' }}>FINALIZACIÓN</span>
-                    <select
-                      className="input-control"
-                      value={finalizacionPorcentaje}
-                      onChange={(e) => setFinalizacionPorcentaje(e.target.value)}
-                      style={{ width: 'fit-content', maxWidth: '100%', background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.6rem 0.9rem', fontWeight: 800, fontSize: '0.95rem', fontFamily: 'var(--font-mono)' }}
-                    >
-                      <option value="">TODAS</option>
-                      {(() => {
-                        const usadas = new Set();
-                        const finalizacionesDef = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'GOL RIVAL', 'PENAL + FUERA', 'PENAL + GOL', 'PENAL + GOL RIVAL', 'INFRACCION'];
-                        matches.forEach(m => {
-                          if (currentMatch && m.id === currentMatch.id) return;
-                          const logArr = Array.isArray(m.actionLog) ? m.actionLog : (m.actionLog ? Object.values(m.actionLog) : []);
-                          logArr.forEach(e => { if (e && e.type === 'finalizacion' && finalizacionesDef.includes(e.name)) usadas.add(e.name); });
-                        });
-                        const logArr = Array.isArray(actionLog) ? actionLog : [];
-                        logArr.forEach(e => { if (e && e.type === 'finalizacion' && finalizacionesDef.includes(e.name)) usadas.add(e.name); });
-                        return finalizacionesDef.filter(f => usadas.has(f)).map(f => (
-                          <option key={f} value={f}>{f}</option>
-                        ));
-                      })()}
-                    </select>
                   </div>
-                  </div>
-                  {finalizacionPorcentaje && !accionPorcentaje && (() => {
-                    const nombreBase = (n) => String(n).replace(/\s+RIVAL\s*$/i, '').trim();
-                    const esRival = (n) => /\s+RIVAL\s*$/i.test(String(n));
-                    const seleccionEsRival = esRival(finalizacionPorcentaje);
-                    const seleccionBase = nombreBase(finalizacionPorcentaje);
-                    const contarPorEquipo = (al) => {
-                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
-                      let propia = 0, rival = 0;
-                      logArr.forEach(entry => {
-                        if (!entry || entry.type !== 'finalizacion') return;
-                        const nb = nombreBase(entry.name);
-                        if (nb !== seleccionBase) return;
-                        if (esRival(entry.name)) rival++;
-                        else propia++;
-                      });
-                      return { propia, rival };
-                    };
-                    let totalPropia = 0, totalRival = 0;
-                    matchesDelEquipo('').forEach(m => {
-                      if (currentMatch && m.id === currentMatch.id) return;
-                      const c = contarPorEquipo(m.actionLog);
-                      totalPropia += c.propia;
-                      totalRival += c.rival;
-                    });
-                    if (currentMatch) {
-                      const c = contarPorEquipo(actionLog);
-                      totalPropia += c.propia;
-                      totalRival += c.rival;
-                    }
-                    return (
-                      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '1.5rem', marginBottom: '1rem' }}>
-                        <div style={{ fontWeight: 800, fontSize: '1rem', color: '#ffffff', marginBottom: '0.75rem' }}>
-                          FINALIZACIÓN: {finalizacionPorcentaje}
-                        </div>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                          <thead>
-                            <tr>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900 }}>PROPIO</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: 900 }}>RIVAL</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPropia}</td>
-                              <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalRival}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })()}
                   {accionPorcentaje && (() => {
                     const finalsOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'PENAL + GOL RIVAL', 'GOL RIVAL', 'INFRACCION'];
                     const res = {};
@@ -8712,12 +8635,8 @@ const minutosPorJornada = [];
                         matriz[ultimaAccion][entry.name] += 1;
                       }
                     });
-                    const filas = finalizacionPorcentaje
-                      ? acciones.filter(a => (matriz[a]?.[finalizacionPorcentaje] || 0) > 0)
-                      : acciones.filter(a => finalizaciones.some(f => matriz[a][f] > 0));
-                    const cols = finalizacionPorcentaje
-                      ? [finalizacionPorcentaje]
-                      : finalizaciones.filter(f => acciones.some(a => matriz[a][f] > 0)).sort((a, b) => (a === 'OCASION' ? -1 : b === 'OCASION' ? 1 : 0));
+                    const filas = acciones.filter(a => finalizaciones.some(f => matriz[a][f] > 0));
+                    const cols = finalizaciones.filter(f => acciones.some(a => matriz[a][f] > 0)).sort((a, b) => (a === 'OCASION' ? -1 : b === 'OCASION' ? 1 : 0));
                     if (filas.length === 0) {
                       return (
                         <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
