@@ -205,12 +205,12 @@ const totalesTabsDef = [
   { id: 'totalresultados', label: 'TOTAL RESULTADOS' },
   { id: 'resumengoles', label: 'TOTAL GOLES' },
   { id: 'resumenacciones', label: 'TOTAL ACCIONES' },
-  { id: 'totalporcentaje', label: 'TOTAL %' },
   { id: 'periodoaccion', label: 'PERIODO/ACCIÓN' },
+  { id: 'totalporcentaje', label: 'TOTAL %' },
+  { id: 'posesion', label: 'TOTAL POSESIÓN' },
   { id: 'tiempojugado', label: 'TOTAL JUGADO' },
   { id: 'minutosjugados', label: 'MINUTOS JORNADA' },
   { id: 'jugadores', label: 'DATOS JUGADOR' },
-  { id: 'posesion', label: 'TOTAL POSESIÓN' },
   { id: 'cadetes', label: 'CADETES' }
 ];
 
@@ -3758,8 +3758,9 @@ export default function App() {
                           ))}
                           {arcs.map(a => (
                             <g key={`t-${a.name}`}>
-                              <text x={a.labelX + a.der * 12} y={a.qy - 3} textAnchor={a.der > 0 ? 'start' : 'end'} style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.name}</text>
-                              <text x={a.labelX + a.der * 12} y={a.qy + 15} textAnchor="middle" style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.v}<tspan style={{ fill: '#ffffff' }}> ({a.pct}%)</tspan></text>
+                              <text x={a.labelX + a.der * 12} y={a.qy - 11} textAnchor={a.der > 0 ? 'start' : 'end'} style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.name}</text>
+                              <text x={a.labelX + a.der * 12} y={a.qy + 6} textAnchor="middle" style={{ fill: a.color, fontWeight: 800, fontSize: '15px' }}>{a.v}</text>
+                              <text x={a.labelX + a.der * 12} y={a.qy + 22} textAnchor="middle" style={{ fill: '#ffffff', fontWeight: 800, fontSize: '14px' }}>({a.pct}%)</text>
                             </g>
                           ))}
                         </svg>
