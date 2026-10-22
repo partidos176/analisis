@@ -13,7 +13,7 @@
     "deploy": "npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
-    "@ffmpeg/core": "0.12.6",
+    "@ffmpeg/core": "0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@tensorflow-models/coco-ssd": "^2.2.3",

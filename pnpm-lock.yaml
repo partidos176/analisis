@@ -167,8 +167,8 @@ importers:
   .:
     dependencies:
       '@ffmpeg/core':
-        specifier: 0.12.6
-        version: 0.12.6
+        specifier: 0.12.10
+        version: 0.12.10
       '@ffmpeg/ffmpeg':
         specifier: ^0.12.15
         version: 0.12.15
@@ -272,8 +272,8 @@ packages:
   '@electric-sql/pglite@0.3.16':
     resolution: {integrity: sha512-mZkZfOd9OqTMHsK+1cje8OSzfAQcpD7JmILXTl5ahdempjUDdmg4euf1biDex5/LfQIDJ3gvCu6qDgdnDxfJmA==}
 
-  '@ffmpeg/core@0.12.6':
-    resolution: {integrity: sha512-PrjWBTfGn2WVn9T7wGnzfFwChbqWeZc7tM9vvJZVRadYFUDakfzy7W0LpYC0cvvK0xT82qlBsk38lQhJ/Hps5A==}
+  '@ffmpeg/core@0.12.10':
+    resolution: {integrity: sha512-dzNplnn2Nxle2c2i2rrDhqcB19q9cglCkWnoMTDN9Q9l3PvdjZWd1HfSPjCNWc/p8Q3CT+Es9fWOR0UhAeYQZA==}
     engines: {node: '>=16.x'}
 
   '@ffmpeg/ffmpeg@0.12.15':
@@ -3492,7 +3492,7 @@ snapshots:
 
   '@electric-sql/pglite@0.3.16': {}
 
-  '@ffmpeg/core@0.12.6': {}
+  '@ffmpeg/core@0.12.10': {}
 
   '@ffmpeg/ffmpeg@0.12.15':
     dependencies:
