@@ -1,0 +1,66 @@
+name: Auto-update Node.js patch
+
+on:
+  schedule:
+    # Cada lunes a las 05:00 UTC (06:00/07:00 en Madrid según horario de verano)
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: node-auto-update
+  cancel-in-progress: false
+
+jobs:
+  update-node:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Resolve latest patched Node.js for current major
+        id: node
+        run: |
+          set -euo pipefail
+          CURRENT=$(node -p "require('./package.json').engines.node.replace(/[^0-9.]/g,'')")
+          MAJOR=${CURRENT%%.*}
+          LATEST=$(curl -fsSL https://nodejs.org/dist/index.json \
+            | jq -r --arg major "$MAJOR" '[.[] | select(.lts != false and (.version | startswith("v" + $major + ".")))][0].version' \
+            | sed 's/^v//')
+          if [ -z "$LATEST" ] || [ "$LATEST" = "null" ]; then
+            echo "No se encontró una versión LTS para la major $MAJOR" >&2
+            exit 1
+          fi
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+
+      - name: Update package.json and .nvmrc
+        if: steps.node.outputs.latest != steps.node.outputs.current
+        env:
+          LATEST: ${{ steps.node.outputs.latest }}
+        run: |
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));p.engines=p.engines||{};p.engines.node='>='+process.env.LATEST;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+          printf '%s\n' "$LATEST" > .nvmrc
+
+      - name: Commit and push
+        if: steps.node.outputs.latest != steps.node.outputs.current
+        env:
+          LATEST: ${{ steps.node.outputs.latest }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json .nvmrc
+          git commit -m "chore: update Node.js to $LATEST"
+          git push
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.node.outputs.latest }}" = "${{ steps.node.outputs.current }}" ]; then
+            echo "Node.js ya está en la última versión parcheada: ${{ steps.node.outputs.current }}"
+          else
+            echo "Node.js actualizado de ${{ steps.node.outputs.current }} a ${{ steps.node.outputs.latest }}"
+          fi
