@@ -53,7 +53,7 @@ El archivo `server.js` expone una API para trabajar con vídeos grandes sin subi
 - `POST /api/trim-webm`: recorte específico para WebM.
 - `POST /api/recurso`: subida de recursos auxiliares.
 - `GET /api/estado`: estado del servidor/caché.
-- `POST /api/montaje`: montaje final con FFmpeg (tramos, fundidos y concatenación).
+- `POST /api/montaje`: montaje final con FFmpeg (tramos, fundidos y concatenación). Los tiempos de cada tramo y de cada operando de fundido se recortan contra la duración real del fichero (las imágenes reciben `-loop 1`); si un fundido aun así no se puede componer se descarta y se entrega un corte seco en su lugar (cabecera `X-Montaje-Omitidos`) en vez de fallar el montaje entero.
 - `POST /api/guardar-partido`: autoguardado de un partido en JSON en disco.
 
 El servidor usa `ffmpeg-static`, caché en `.video-cache`, temporales en `.tmp-cortes` y una carpeta de biblioteca local configurada en `server.js`.

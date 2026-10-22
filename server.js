@@ -528,6 +528,32 @@ const ffprobeDurationSync = (file) => {
   }
 };
 
+// Duracion real de un fichero, cacheada por ruta + mtime + tamano. Devuelve
+// null cuando no se puede saber (webm de MediaRecorder, sin cabecera de
+// duracion): en ese caso NO se recorta, porque no hay un valor fiable.
+const cacheDuraciones = new Map();
+const duracionDeFicheroReal = (fichero) => {
+  try {
+    const st = fs.statSync(fichero);
+    const clave = fichero + '|' + st.mtimeMs + '|' + st.size;
+    if (cacheDuraciones.has(clave)) return cacheDuraciones.get(clave);
+    const d = ffprobeDurationSync(fichero);
+    cacheDuraciones.set(clave, d);
+    return d;
+  } catch (_) { return null; }
+};
+
+// ffmpeg -ss que cae por detras del final del fichero no falla: sale con exit 0
+// y escribe un mp4 vacio de 262 bytes. Ese caso arrastraba el montaje entero a
+// un 'fallo tras 3 intentos' y el navegador se iba al fallback lento de canvas.
+// Recortamos siempre contra la duracion real del fichero.
+const MARGEN_FINAL = 0.1;
+const dentroDelFichero = (pos, dur, durReal) => {
+  if (durReal == null) return { pos, dur };
+  const p = Math.min(Math.max(0, pos), Math.max(0, durReal - MARGEN_FINAL));
+  return { pos: p, dur: Math.min(dur, Math.max(0.02, durReal - p)) };
+};
+
 // Traduce un tramo del plan a los argumentos de entrada de ffmpeg, y devuelve
 // su duracion. Un tramo puede ser del video fuente, de un clip subido (las
 // animaciones, que el navegador genera y el servidor no tiene) o de una imagen.
@@ -542,13 +568,14 @@ const entradaTramo = (t, fuente) => {
       // mismos 30 fps que el resto de tramos.
       return { args: ['-loop', '1', '-framerate', '30', '-t', d.toFixed(3), '-i', fichero], dur: d };
     }
-    const dur = Math.max(0.05, Number(t.hasta) - Number(t.desde));
-    return { args: ['-ss', Number(t.desde).toFixed(3), '-i', fichero, '-t', dur.toFixed(3)], dur };
+    const corte = dentroDelFichero(Number(t.desde), Math.max(0.05, Number(t.hasta) - Number(t.desde)), duracionDeFicheroReal(fichero));
+    return { args: ['-ss', corte.pos.toFixed(3), '-i', fichero, '-t', corte.dur.toFixed(3)], dur: corte.dur };
   }
-  const dur = Number(t.fin) - Number(t.ini);
+  const fuentePath = fuente || cachedVideoPath;
   // -ss ANTES de -i: el salto por indice evita decodificar todo lo anterior,
   // que en un partido de 98 min seria inaceptable.
-  return { args: ['-ss', Number(t.ini).toFixed(3), '-i', fuente || cachedVideoPath, '-t', dur.toFixed(3)], dur };
+  const corte = dentroDelFichero(Number(t.ini), Number(t.fin) - Number(t.ini), duracionDeFicheroReal(fuentePath));
+  return { args: ['-ss', corte.pos.toFixed(3), '-i', fuentePath, '-t', corte.dur.toFixed(3)], dur: corte.dur };
 };
 
 const sniffExtension = (id) => {
@@ -566,16 +593,22 @@ const recortarTramo = async (t, i, dir, ancho, alto, hilos, fuente) => {
   if (!(dur > 0.02)) throw new Error('tramo ' + i + ': duracion invalida');
   const out = path.join(dir, 'seg-' + i + '.mp4');
   const ffmpegArgs = [...args, '-vf', filtroRotulo(t.nombre, ancho, alto), ...parametrosCodificacion(out, hilos)];
+  let ultimoError = '';
   for (let intento = 1; intento <= 3; intento++) {
     const t0 = Date.now();
-    await execFileAsync(ffmpegPath, ffmpegArgs, { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+    try {
+      await execFileAsync(ffmpegPath, ffmpegArgs, { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+    } catch (e) {
+      ultimoError = ' | ffmpeg: ' + String((e && e.stderr) || e.message || e).replace(/\s+/g, ' ').slice(-300);
+      break;
+    }
     if (segmentoValido(out)) {
       console.log('[Montaje] tramo ' + i + ' (' + (t.tipo || 'fuente') + ', ' + dur.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
       return out;
     }
     console.log('[Montaje] tramo ' + i + ': intento ' + intento + ' invalido, reintentando...');
   }
-  throw new Error('tramo ' + i + ': fallo tras 3 intentos');
+  throw new Error('tramo ' + i + ': fallo tras 3 intentos' + ultimoError);
 };
 
 // ---- Fundidos (transiciones) ---------------------------------------------
@@ -588,9 +621,17 @@ const entradaOperando = (o, dur, fuente) => {
   if (o.origen === 'recurso') {
     const fichero = rutaRecurso(o.id, o.ext);
     if (!fs.existsSync(fichero)) throw new Error('fundido: recurso no subido ' + o.id);
-    return { args: ['-ss', Number(o.desde).toFixed(3), '-i', fichero, '-t', dur.toFixed(3)] };
+    if (/\.(jpg|jpeg|png)$/i.test(fichero)) {
+      // Un fotograma fijo sin -loop entrega UN solo frame al xfade: el fundido
+      // salia casi vacio aunque ffmpeg no devolviera error.
+      return { args: ['-loop', '1', '-framerate', '30', '-t', dur.toFixed(3), '-i', fichero] };
+    }
+    const corte = dentroDelFichero(Number(o.desde), dur, duracionDeFicheroReal(fichero));
+    return { args: ['-ss', corte.pos.toFixed(3), '-i', fichero, '-t', corte.dur.toFixed(3)] };
   }
-  return { args: ['-ss', Number(o.ini).toFixed(3), '-i', fuente || cachedVideoPath, '-t', dur.toFixed(3)] };
+  const fuentePath = fuente || cachedVideoPath;
+  const corte = dentroDelFichero(Number(o.ini), dur, duracionDeFicheroReal(fuentePath));
+  return { args: ['-ss', corte.pos.toFixed(3), '-i', fuentePath, '-t', corte.dur.toFixed(3)] };
 };
 
 // Los modelos de transicion de la app y el nombre equivalente en xfade.
@@ -624,18 +665,24 @@ const construirFundido = async (t, i, dir, ancho, alto, hilos, fuente) => {
   const xfade = MODELO_XFADE[modelo] || 'fade';
   if (!MODELO_XFADE[modelo]) console.log('[Fundido] modelo desconocido: ' + modelo + ', se usa fundido cruzado');
   const fc = "[0:v]" + caja + "[a];[1:v]" + caja + "[b];[a][b]xfade=transition=" + xfade + ":duration=" + dnum + ":offset=0[v]";
+  let ultimoError = '';
   for (let intento = 1; intento <= 3; intento++) {
     const t0 = Date.now();
-    await execFileAsync(ffmpegPath, [...a.args, ...b.args,
-      '-filter_complex', fc, '-map', '[v]', '-t', dnum,
-      ...parametrosCodificacion(out, hilos)], { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+    try {
+      await execFileAsync(ffmpegPath, [...a.args, ...b.args,
+        '-filter_complex', fc, '-map', '[v]', '-t', dnum,
+        ...parametrosCodificacion(out, hilos)], { timeout: 600000, maxBuffer: 16 * 1024 * 1024, windowsHide: true });
+    } catch (e) {
+      ultimoError = ' | ffmpeg: ' + String((e && e.stderr) || e.message || e).replace(/\s+/g, ' ').slice(-300);
+      break;
+    }
     if (segmentoValido(out)) {
       console.log('[Fundido] ' + i + ': ' + modelo + ' -> ' + xfade + ' (' + d.toFixed(2) + 's) en ' + (Date.now() - t0) + ' ms');
       return out;
     }
     console.log('[Fundido] ' + i + ': intento ' + intento + ' invalido, reintentando...');
   }
-  throw new Error('fundido ' + i + ': fallo tras 3 intentos');
+  throw new Error('fundido ' + i + ': fallo tras 3 intentos (a=' + a.args.join(' ') + ' | b=' + b.args.join(' ') + ')' + ultimoError);
 };
 
 // Ejecuta una tarea por hueco, con un limite de cuantas corren a la vez.
@@ -813,15 +860,32 @@ app.post('/api/montaje', async (req, res) => {
       + 's de contenido, ' + ancho + 'x' + alto + ', en paralelo x' + enParalelo + ' (' + nucleos + ' nucleos)');
 
     console.log('[Montaje] ' + limpio.length + ' tramos (' + nFundidos + ' fundidos) con ' + enParalelo + ' en paralelo x ' + hilosPorProceso + ' hilos');
-    const ficheros = await enCola(limpio.length, enParalelo, (i) => (limpio[i].tipo === 'transicion'
-      ? construirFundido(limpio[i], i, dir, ancho, alto, hilosPorProceso, fuente)
-      : recortarTramo(limpio[i], i, dir, ancho, alto, hilosPorProceso, fuente)));
+    const omitidos = [];
+    // Un fundido que no se puede componer no debe tumbar el montaje entero:
+    // se descarta esa transicion (queda un corte seco) y se sigue con el resto.
+    // Los tramos normales si fallan, porque ahi se pierde contenido real.
+    const ficheros = await enCola(limpio.length, enParalelo, async (i) => {
+      try {
+        return limpio[i].tipo === 'transicion'
+          ? await construirFundido(limpio[i], i, dir, ancho, alto, hilosPorProceso, fuente)
+          : await recortarTramo(limpio[i], i, dir, ancho, alto, hilosPorProceso, fuente);
+      } catch (e) {
+        if (limpio[i].tipo !== 'transicion') throw e;
+        console.warn('[Montaje] fundido ' + i + ' descartado (corte seco en su lugar): ' + e.message);
+        omitidos.push({ i, detalle: e.message });
+        return null;
+      }
+    });
+    const tramosValidos = ficheros.filter(Boolean);
+    if (tramosValidos.length !== ficheros.length) {
+      console.warn('[Montaje] AVISO: ' + omitidos.length + ' fundido(s) descartado(s); se entregan ' + tramosValidos.length + ' de ' + ficheros.length + ' tramos');
+    }
 
     // Todos los tramos salen con los mismos parametros (mismo codec, misma
     // resolucion, mismo GOP), asi que concatenar es una copia de bits: sin una
     // segunda codificacion.
     const lista = path.join(dir, 'lista.txt');
-    fs.writeFileSync(lista, ficheros.map((f) => "file '" + f.replace(/\\/g, '/') + "'").join('\n'), 'utf8');
+    fs.writeFileSync(lista, tramosValidos.map((f) => "file '" + f.replace(/\\/g, '/') + "'").join('\n'), 'utf8');
     const outPath = path.join(dir, 'montaje.mp4');
     // Recodificar al concatenar en vez de -c copy: los tramos de fundido
     // (xfade) generan headers H.264 ligeramente distintos a los tramos
@@ -838,23 +902,24 @@ app.post('/api/montaje', async (req, res) => {
       console.log('[Montaje] AVISO: la salida dura menos de la mitad del plan. Tramos:');
       for (let fi = 0; fi < ficheros.length; fi++) {
         try {
-          const d = ffprobeDurationSync(ficheros[fi]);
-          console.log('  seg-' + fi + ': ' + (d != null ? d.toFixed(2) + ' s' : '?') + ' tipo=' + (limpio[fi] && limpio[fi].tipo));
+          const d = ficheros[fi] ? ffprobeDurationSync(ficheros[fi]) : null;
+          console.log('  seg-' + fi + ': ' + (ficheros[fi] ? (d != null ? d.toFixed(2) + ' s' : '?') : 'OMITIDO (fundido descartado)') + ' tipo=' + (limpio[fi] && limpio[fi].tipo));
         } catch (_) {}
       }
     }
 
     const tam = fs.statSync(outPath).size;
     const ms = Date.now() - tIni;
-    console.log('[Montaje] OK: ' + limpio.length + ' tramos, ' + total.toFixed(1) + 's en ' + ms
+    console.log('[Montaje] OK: ' + tramosValidos.length + '/' + limpio.length + ' tramos, ' + total.toFixed(1) + 's en ' + ms
       + ' ms (x' + (total / (ms / 1000)).toFixed(2) + '), ' + tam + ' bytes');
     res.setHeader('Content-Type', 'video/mp4');
     res.setHeader('Content-Length', tam);
     res.setHeader('Content-Disposition', 'inline; filename="montaje.mp4"');
-    res.setHeader('Access-Control-Expose-Headers', 'X-Montaje-Ms, X-Montaje-Tramos, X-Montaje-Contenido');
+    res.setHeader('Access-Control-Expose-Headers', 'X-Montaje-Ms, X-Montaje-Tramos, X-Montaje-Contenido, X-Montaje-Omitidos');
     res.setHeader('X-Montaje-Ms', String(ms));
-    res.setHeader('X-Montaje-Tramos', String(limpio.length));
+    res.setHeader('X-Montaje-Tramos', String(tramosValidos.length));
     res.setHeader('X-Montaje-Contenido', total.toFixed(2));
+    res.setHeader('X-Montaje-Omitidos', String(omitidos.length));
     fs.createReadStream(outPath).pipe(res);
     if (process.env.MONTAJE_KEEP_DIR) {
       console.log('[Montaje] KEEP_DIR: ' + dir);
