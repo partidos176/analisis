@@ -1,70 +1,110 @@
 # ⚽ FútbolTotal Análisis
 
-Plataforma profesional de **tagueo, videoanálisis táctico y scouting de fútbol en tiempo real** desarrollada con **React 19 + Vite 8** y sincronización instantánea mediante **Firebase Realtime Database**.
+Plataforma profesional de **tagueo, videoanálisis táctico y scouting de fútbol en tiempo real**. Combina un frontend **React 19 + Vite 8**, sincronización con **Firebase Realtime Database/Auth** y un **servidor local Express + FFmpeg** para corte, montaje y gestión de vídeo.
 
-Incluye un **servidor Express + FFmpeg** para corte/edición de video, caché de videos y gestión de biblioteca de videos.
-
-Diseñada para analistas tácticos, entrenadores y cuerpos técnicos que necesitan registrar eventos con la máxima rapidez durante partidos en directo o sobre sesiones de videoanálisis.
+Está pensada para analistas, entrenadores y cuerpos técnicos que registran acciones durante un partido o revisan vídeo después.
 
 ---
 
-## 📸 Funcionalidades Implementadas
+## 🧭 Vistas principales
 
-### 1. 🎛️ Matriz Táctica Pro
-- **Periodización de Partido**: Control instantáneo de 1er Tiempo, 2º Tiempo y Prórroga.
-- **Barra de Posesión en Vivo**: Estado de posesión activa con estimación porcentual automática.
-- **Fases de Inicio de Juego**: Inicio General, Corto, Largo, Combinativo, Directo.
-- **Fases Defensivas**: Defensa General, Bloque Alto, Bloque Medio, Despliegue, Presión Rival.
-- **Transiciones**: Ataque-Defensa y Defensa-Ataque con variantes.
-- **Acciones Técnicas y ABP**: Tiros, Balón Parado (ABP), modificadores de sector.
-- **Pizarra de Alineación (1-4-4-2)**: Dorsales interactivos para vincular jugadas al futbolista.
-- **Campo de Fútbol Interactivo**: Terreno de juego con cuadrantes tácticos y geolocalización por clic.
+Al iniciar sesión se accede a un menú con tres modos:
 
-### 2. ⚡ Modo Rápido
-- Interfaz simplificada de conteo directo para partidos exprés.
+- **ON LIVE**: registro de acciones en directo con pestañas por área.
+- **TOTALES**: agregados y estadísticas por partido, jornada, jugador o periodo.
+- **OFF LIVE**: análisis de vídeo con timeline, cortes y montaje.
 
-### 3. ⏱️ Cronómetro Inteligente y Atajos de Teclado
-- Cronómetro con Iniciar/Pausa, suma/resta de minutos y reinicio.
-- Atajos: `Espacio` (pausa/reanuda), `G`/`g` (gol), `S`/`s` (no posesión).
+### ON LIVE — pestañas
+| Pestaña | Contenido |
+|---|---|
+| `ALINEACION` | Alineación 1-4-4-2, dorsales y jugadores. |
+| `ACCIONES` | Registro de acciones propias/rival, tiros, faltas, centros, córners, pérdidas, transiciones, goles, penaltis, saques, infracciones y ocasiones. |
+| `FINALIZACIONES` | Finalizaciones: fuera, blocaje, final a boca, final desde dentro, despejes, etc. |
+| `GOLES` | Listado de goles propios y rivales. |
+| `SUSTITUCIONES` | Cambios de jugadores. |
+| `DATOS` | Datos del partido: equipos, jornada y metadatos. |
+| `POSESIÓN` | Posesión propia/rival y disputas. |
+| `VÍDEOS` | Carga/gestión del vídeo del partido y reproducción. |
+| `NOTA VOZ` | Notas de voz asociadas al análisis. |
 
-### 4. 📊 Dashboard Estadístico & Exportación
-- Conteo global de acciones, disparos, efectividad y transiciones.
-- Exportación a **CSV** y **JSON**, modo imprimible.
+### TOTALES — pestañas
+`TOTAL RESULTADOS`, `TOTAL GOLES`, `TOTAL ACCIONES`, `PERIODO/ACCIÓN`, `TOTAL %`, `TOTAL POSESIÓN`, `TOTAL JUGADO`, `MINUTOS JORNADA`, `DATOS JUGADOR`, `CADETES`.
 
-### 5. 🎬 Videoanálisis y Corte de Video
-- Carga de video (MP4/WebM) o URL; salto a jugadas registradas.
-- **Servidor Express + FFmpeg** para corte de clips, caché de video y gestión de biblioteca de videos local.
-- Procesamiento en cliente con FFmpeg.wasm (`@ffmpeg/ffmpeg`).
+Incluye filtros por jornada, rol, encuentro, estado al descanso, marca del primer gol y estado final.
 
-### 6. ☁️ Firebase Realtime Database + Auth
-- Sincronización multi-dispositivo en tiempo real.
-- Gestión de partidos/sesiones y autenticación de usuarios.
+### OFF LIVE
+- Timeline de acciones con filas editables y periodos (1ª parte, 2ª parte, prórroga).
+- Saltos al segundo exacto del vídeo al seleccionar una jugada.
+- Exportación de clips y montajes.
+- Composición de vídeo con overlay de tracking (`src/compositeVideo.js`).
+
+---
+
+## 🎬 Servidor local de vídeo (Express + FFmpeg)
+
+El archivo `server.js` expone una API para trabajar con vídeos grandes sin subirlos por el navegador:
+
+- `POST /api/videos/copiar`: copia un vídeo desde la biblioteca local (mismo nombre/tamaño) a la caché de trabajo.
+- `POST /api/videos/borrar`: elimina un vídeo de la caché.
+- `GET /api/cortar`: estado/consulta del servicio de corte.
+- `POST /api/upload`: subida de un vídeo completo.
+- `POST /api/upload-init` / `POST /api/upload-chunk` / `POST /api/upload-complete`: subida por fragmentos para vídeos muy grandes.
+- `POST /api/cortar`: corte de un tramo de vídeo.
+- `POST /api/trim-webm`: recorte específico para WebM.
+- `POST /api/recurso`: subida de recursos auxiliares.
+- `GET /api/estado`: estado del servidor/caché.
+- `POST /api/montaje`: montaje final con FFmpeg (tramos, fundidos y concatenación).
+- `POST /api/guardar-partido`: autoguardado de un partido en JSON en disco.
+
+El servidor usa `ffmpeg-static`, caché en `.video-cache`, temporales en `.tmp-cortes` y una carpeta de biblioteca local configurada en `server.js`.
+
+---
+
+## 📁 Estructura del proyecto
+
+```
+analisis/
+├── src/
+│   ├── App.jsx              # Aplicación principal (vistas, tagueo, totales, timeline)
+│   ├── components/Login.jsx # Autenticación Firebase
+│   ├── compositeVideo.js    # Overlay de tracking sobre vídeo
+│   ├── ffmpegCut.js         # Corte en cliente con FFmpeg.wasm
+│   ├── firebase.js          # Configuración Firebase (RTDB + Auth)
+│   ├── main.jsx
+│   └── index.css
+├── server.js                # API Express + FFmpeg
+├── vite.config.js
+├── firebase.json            # Hosting
+├── storage.rules            # Reglas de Storage
+├── pnpm-workspace.yaml      # allowBuilds de pnpm
+└── package.json
+```
 
 ---
 
 ## 🚀 Instalación y Puesta en Marcha
 
 ### Prerrequisitos
-- Node.js (versión 22.23.4 o superior)
+- Node.js **22.23.4 o superior**
 - pnpm
 
-### Pasos
-1. Instalar las dependencias del proyecto:
-   ```bash
-   pnpm install
-   ```
+### Instalación
+```bash
+pnpm install
+```
 
-2. Iniciar el servidor de desarrollo (frontend):
-   ```bash
-   pnpm dev
-   ```
+### Desarrollo
+Frontend:
+```bash
+pnpm dev
+```
 
-3. Iniciar el servidor de video (Express + FFmpeg) en otra terminal:
-   ```bash
-   pnpm server
-   ```
+Servidor de vídeo (otra terminal):
+```bash
+pnpm server
+```
 
-4. Abrir en el navegador la dirección indicada (por defecto `http://localhost:5173`).
+Abrir `http://localhost:5173`.
 
 ### Build
 ```bash
@@ -79,10 +119,19 @@ pnpm deploy
 ---
 
 ## 📦 Stack principal
-- React 19
-- Vite 8
-- Firebase (Realtime Database + Auth)
-- Express 5 + FFmpeg (servidor de video)
-- FFmpeg.wasm (`@ffmpeg/ffmpeg`, `@ffmpeg/util`)
-- TensorFlow.js + COCO-SSD (detección)
-- Recharts, Lucide, jszip, xlsx
+
+- **React 19** + **Vite 8**
+- **Firebase** Realtime Database + Auth
+- **Express 5** + **FFmpeg** (`ffmpeg-static`, `archiver`, `multer`)
+- **FFmpeg.wasm** (`@ffmpeg/ffmpeg`, `@ffmpeg/util`)
+- **TensorFlow.js** + **COCO-SSD** para detección
+- **Recharts**, **Lucide**, **jszip**, **xlsx**, **html2canvas**
+
+---
+
+## 🔐 Seguridad y mantenimiento
+
+- `engines.node` fijado a `>=22.23.4` (parche de vulnerabilidades críticas de Node.js y CA eMudhra).
+- **Dependabot** semanal para npm (patch/minor) + auto-merge cuando CI pasa.
+- Reglas de Firebase en `storage.rules`.
+- **Regla de código**: ningún componente nuevo debe superar las 500 líneas (ver `AGENTS.md`).
