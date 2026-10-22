@@ -1,6 +1,6 @@
 # ⚽ FútbolTotal Análisis
 
-Plataforma profesional de **tagueo, videoanálisis táctico y scouting de fútbol en tiempo real** desarrollada con **React 18 + Vite** y sincronización instantánea mediante **Firebase Realtime Database**.
+Plataforma profesional de **tagueo, videoanálisis táctico y scouting de fútbol en tiempo real** desarrollada con **React 19 + Vite 8** y sincronización instantánea mediante **Firebase Realtime Database**.
 
 Diseñada para analistas tácticos, entrenadores y cuerpos técnicos que necesitan registrar eventos con la máxima rapidez durante partidos en directo o sobre sesiones de videoanálisis.
 
@@ -54,21 +54,26 @@ Diseñada para analistas tácticos, entrenadores y cuerpos técnicos que necesit
 ## 🚀 Instalación y Puesta en Marcha
 
 ### Prerrequisitos
-- Node.js (versión 18 o superior)
-- npm o pnpm
+- Node.js (versión 22.23.4 o superior)
+- pnpm
 
 ### Pasos
 1. Instalar las dependencias del proyecto:
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. Iniciar el servidor de desarrollo local:
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 3. Abrir en el navegador la dirección indicada (por defecto `http://localhost:5173`).
+
+### Build
+```bash
+pnpm build
+```
 
 ---
 
