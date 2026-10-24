@@ -4098,13 +4098,13 @@ const minutosPorJornada = [];
                           borderRadius: '8px',
                           color: '#ffffff',
                           fontWeight: 800,
-                          fontSize: '0.85rem',
+                          fontSize: '0.75rem',
                           padding: '0.3rem 0.5rem',
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em',
                           fontFamily: 'inherit',
                           cursor: 'pointer',
-                          width: '150px',
+                          width: '165px',
                           textAlign: 'center'
                         }}
                       >
@@ -4143,7 +4143,7 @@ const minutosPorJornada = [];
                       </span>
                     )}
                     {jugadorSeleccionado && jugadorSeleccionado !== 'EMILIANO' && jugadorSeleccionado !== 'HECTOR' && jugadorSeleccionado !== 'L. RAMIREZ' && (
-                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', marginLeft: '9rem' }}>
+                      <span style={{ color: '#00bfff', fontWeight: 800, fontSize: '1.5rem', fontFamily: 'var(--font-mono)', marginLeft: '10rem' }}>
                         TOTAL DE GOLES: {golCountPerPlayer[jugadorSeleccionado] || 0}
                       </span>
                     )}
