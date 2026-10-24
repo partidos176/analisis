@@ -8181,8 +8181,25 @@ const minutosPorJornada = [];
                     {golesList.length === 0 && (
                       <span style={{ color: '#475569', fontSize: '0.8rem', fontStyle: 'italic' }}>Sin goles</span>
                     )}
-                    {golesList.map((g, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    {golesList.map((g, i) => {
+                      const sorted = golesList.map((gg, idx) => ({ gg, idx })).sort((a, b) => {
+                        const pa = a.gg.periodo || 0, pb = b.gg.periodo || 0;
+                        if (pa !== pb) return pa - pb;
+                        const ma = a.gg.minuto || 0, mb = b.gg.minuto || 0;
+                        if (ma !== mb) return ma - mb;
+                        return a.idx - b.idx;
+                      });
+                      const pos = sorted.findIndex(x => x.idx === i);
+                      let sh = 0, sa = 0;
+                      for (let k = 0; k <= pos; k++) {
+                        const gg = sorted[k].gg;
+                        const esRival = gg.team === 'away' || String(gg.name || '').toUpperCase() === 'RIVAL';
+                        if (esRival) sa++; else sh++;
+                      }
+                      const marcador = sh + '-' + sa;
+                      return (
+                      <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                        <span style={{ color: '#facc15', fontWeight: 900, fontSize: '0.9rem', minWidth: '36px', textAlign: 'center', marginTop: '1.1rem' }}>{marcador}</span>
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>GOLEADOR</span>
                           <select
@@ -8413,7 +8430,7 @@ const minutosPorJornada = [];
                           style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', fontWeight: 900, fontSize: '0.9rem', padding: '0.4rem 0.6rem', cursor: 'pointer', minWidth: '30px', textAlign: 'center' }}
                         >X</button>
                       </div>
-                    ))}
+                    ); })}
                   </div>
                 </div>
               )}
@@ -8428,7 +8445,7 @@ const minutosPorJornada = [];
                   flexDirection: 'column',
                   gap: '1.5rem'
                 }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1.4rem', color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                     SUSTITUCIONES
                   </span>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -8449,7 +8466,7 @@ const minutosPorJornada = [];
                         return [0, 1, 2, 3, 4].map(row => {
                         const onField = onFieldForRow(row);
                         return (
-                      <div key={row} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <div key={row} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', marginLeft: '14rem', justifyContent: 'flex-start', flexWrap: 'nowrap' }}>
                         <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '1rem', minWidth: '24px', textAlign: 'center' }}>{row + 1}</span>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>SALE</span>
@@ -8841,9 +8858,9 @@ const minutosPorJornada = [];
                         return { label, real, efec, own: o, rival: r, neutro: Math.max(0, real - efec), total: false, sub: true };
                       };
                       rows.push({ ...vals[0], total: false });
-                      rows.push(mkBloque('0-15 min', 0, 900));
-                      rows.push(mkBloque('15-30 min', 900, 1800));
-                      if (finPrimera > 1800) rows.push(mkBloque('30-45 min', 1800, finPrimera));
+                      rows.push(mkBloque('0-15 min.', 0, 900));
+                      rows.push(mkBloque('15-30 min.', 900, 1800));
+                      if (finPrimera > 1800) rows.push(mkBloque('30-45 min.', 1800, finPrimera));
                       if (vals.length > 1) {
                         rows.push({ ...vals[1], total: false });
                         const finSegunda = finMatch;
@@ -8855,9 +8872,9 @@ const minutosPorJornada = [];
                           const efec = o + r;
                           return { label, real, efec, own: o, rival: r, neutro: Math.max(0, real - efec), total: false, sub: true };
                         };
-                        rows.push(mkBloque2('45-60 min', finPrimera, finPrimera + 900));
-                        rows.push(mkBloque2('60-75 min', finPrimera + 900, finPrimera + 1800));
-                        rows.push(mkBloque2('75-90 min', finPrimera + 1800, finPrimera + 2700));
+                        rows.push(mkBloque2('45-60 min.', finPrimera, finPrimera + 900));
+                        rows.push(mkBloque2('60-75 min.', finPrimera + 900, finPrimera + 1800));
+                        rows.push(mkBloque2('75-90 min.', finPrimera + 1800, finPrimera + 2700));
                       }
                     } else {
                       filasBloques.forEach(b => rows.push(b));
