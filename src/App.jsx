@@ -4101,6 +4101,8 @@ const minutosPorJornada = [];
                           fontSize: '0.85rem',
                           padding: '0.3rem 0.5rem',
                           textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          fontFamily: 'inherit',
                           cursor: 'pointer',
                           width: '150px',
                           textAlign: 'center'
