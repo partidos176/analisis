@@ -56,7 +56,7 @@ const jugadoresData = {
   EMILIANO: { foto: emilianoImg, pos1: 'PORTERO' },
   HECTOR: { foto: hectorImg, pos1: 'PORTERO' },
   JONAS: { foto: jonasImg, pos1: 'DELANTERO' },
-  JUANDA: { foto: juandaImg, pos1: 'EXTREMO IZQUIERDO' },
+  JUANDA: { foto: juandaImg, pos1: 'LATERAL IZQUIERDO' },
   KEVIN: { foto: kevinImg, pos1: 'CENTRAL' },
   LUCAS: { foto: lucasImg, pos1: 'CENTRAL' },
   'L. RAMIREZ': { foto: lramirezImg, pos1: 'PORTERO' },
