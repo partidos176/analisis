@@ -8199,7 +8199,7 @@ const minutosPorJornada = [];
                       const marcador = sh + '-' + sa;
                       return (
                       <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                        <span style={{ color: '#facc15', fontWeight: 900, fontSize: '0.9rem', minWidth: '36px', textAlign: 'center', marginTop: '1.1rem' }}>{marcador}</span>
+                        <span style={{ color: (g.team === 'away' || String(g.name || '').toUpperCase() === 'RIVAL') ? '#ef4444' : '#ffffff', fontWeight: 900, fontSize: '0.9rem', minWidth: '36px', textAlign: 'center', marginTop: '1.5rem' }}>{marcador}</span>
                         <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                           <span style={{ color: '#64748b', fontWeight: 800, fontSize: '0.65rem', textTransform: 'uppercase', textAlign: 'center', marginBottom: '0.2rem' }}>GOLEADOR</span>
                           <select
