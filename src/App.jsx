@@ -617,6 +617,7 @@ export default function App() {
 
   const [saveError, setSaveError] = useState('');
   const [jugadorSeleccionado, setJugadorSeleccionado] = useState('');
+   const [posicionJugador, setPosicionJugador] = useState(() => { try { return JSON.parse(localStorage.getItem('posicionJugador') || '{}'); } catch { return {}; } });
   const fichaJugadorRef = useRef(null);
   const alineacionRef = useRef(null);
   const totalJugadoRef = useRef(null);
@@ -4080,10 +4081,36 @@ const minutosPorJornada = [];
                         }}
                       />
                     )}
-                    {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].pos1 && (
-                      <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '150px', textAlign: 'center' }}>
-                        {jugadoresData[jugadorSeleccionado].pos1}
-                      </span>
+                    {jugadorSeleccionado && (
+                      <select
+                        value={posicionJugador[jugadorSeleccionado] ?? jugadoresData[jugadorSeleccionado]?.pos1 ?? ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPosicionJugador(prev => {
+                            const next = { ...prev, [jugadorSeleccionado]: val };
+                            try { localStorage.setItem('posicionJugador', JSON.stringify(next)); } catch {}
+                            return next;
+                          });
+                        }}
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-subtle)',
+                          borderRadius: '8px',
+                          color: '#ffffff',
+                          fontWeight: 800,
+                          fontSize: '0.85rem',
+                          padding: '0.3rem 0.5rem',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                          width: '150px',
+                          textAlign: 'center'
+                        }}
+                      >
+                        <option value="">-</option>
+                        {['PORTERO','LATERAL DERECHO','LATERAL IZQUIERDO','CENTRAL','CENTRAL DERECHO','CENTRAL IZQUIERDO','INTERIOR DERECHO','INTERIOR IZQUIERDO','MEDIO CENTRO','DELANTERO','EXTREMO DERECHO','EXTREMO IZQUIERDO'].map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
                     )}
                     {jugadoresData[jugadorSeleccionado] && jugadoresData[jugadorSeleccionado].pos2 && (
                       <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em', width: '150px', textAlign: 'center' }}>
