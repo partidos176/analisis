@@ -1048,6 +1048,8 @@ export default function App() {
     setSustituciones([]);
     setFromRival(false);
     setPeriodo('1ª PARTE');
+    setVideoTimeOffset(null);
+    setVideoTimeOffset2(null);
   };
 
   const normalizeArray = (v) => {
@@ -1203,16 +1205,18 @@ export default function App() {
       setVideoFile(g.file);
       setVideoFileName(g.fileName || '');
       setVideoUrl(g.url);
-      setVideoTimeOffset(g.offset ?? null);
-      setVideoTimeOffset2(g.offset2 ?? null);
+      // Mantener los offsets del partido si el vídeo en memoria no tiene sync
+      if (g.offset != null) setVideoTimeOffset(g.offset);
+      if (g.offset2 != null) setVideoTimeOffset2(g.offset2);
       setVideoUploaded(false);
       if (g.file) comprobarCacheServidor(g.file, g.fileName);
     } else {
       setVideoFile(null);
       setVideoFileName('');
       setVideoUrl(null);
-      setVideoTimeOffset(null);
-      setVideoTimeOffset2(null);
+      // No se borran los offsets: ya se restauraron desde el partido en
+      // applyMatchData, así que al cargar solo el vídeo siguen visibles y no
+      // hace falta volver a sincronizar.
       setVideoUploaded(false);
     }
     setAccionSeleccionada(null);
@@ -1293,6 +1297,11 @@ export default function App() {
     setTimerRunning(match.timerRunning ?? false);
     setActionLog(normalizeArray(match.actionLog));
     setSustituciones(normalizeArray(match.sustituciones));
+    // Restaurar offsets de sincronización del vídeo guardados en el partido,
+    // para no tener que volver a sincronizar al reabrirlo: basta con cargar
+    // el vídeo y los offsets ya estarán visibles.
+    setVideoTimeOffset(match.videoTimeOffset != null ? match.videoTimeOffset : null);
+    setVideoTimeOffset2(match.videoTimeOffset2 != null ? match.videoTimeOffset2 : null);
     if (!keepCurrent) setCurrentMatch(match);
   };
 
@@ -1573,7 +1582,7 @@ export default function App() {
       penalFueraCount,
       penalGolCount,
       penalGolRivalCount,
-      saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones]);
+      saqueEsquinaFueraCount, infraccionCount, ocasionCount, golesList, golesRivalList, players, timerSeconds, timerRunning, actionLog, sustituciones, videoTimeOffset, videoTimeOffset2]);
   useEffect(() => { setGolCount(golesList.filter(esGolPropio).length); }, [golesList]);
   useEffect(() => { setGolRivalCount(golesRivalList.length); }, [golesRivalList]);
 
@@ -7328,15 +7337,17 @@ const minutosPorJornada = [];
                             setVideoUploaded(false);
                             comprobarCacheServidor(safeFile, file.name);
                             setVideoUrl(URL.createObjectURL(safeFile));
-                            // Restaurar offsets guardados de esta sesión anterior
+                            // Restaurar offsets guardados de esta sesión anterior.
+                            // Si no hay guardados para este vídeo, se mantienen los
+                            // offsets del partido (ya restaurados), de modo que solo
+                            // haya que cargar el vídeo sin volver a sincronizar.
                             try {
                               const guardado = JSON.parse(localStorage.getItem('ft_video_offsets_' + file.name) || 'null');
-                              setVideoTimeOffset(guardado && guardado.off1 != null ? guardado.off1 : null);
-                              setVideoTimeOffset2(guardado && guardado.off2 != null ? guardado.off2 : null);
-                            } catch (_) {
-                              setVideoTimeOffset(null);
-                              setVideoTimeOffset2(null);
-                            }
+                              if (guardado && (guardado.off1 != null || guardado.off2 != null)) {
+                                if (guardado.off1 != null) setVideoTimeOffset(guardado.off1);
+                                if (guardado.off2 != null) setVideoTimeOffset2(guardado.off2);
+                              }
+                            } catch (_) {}
                             setAccionSeleccionada(null);
                             setPreviewVideoUrl(null);
                             setPreviewNombres([]);
@@ -7349,6 +7360,36 @@ const minutosPorJornada = [];
                         {videoFileName ? 'Vídeo: ' + videoFileName : 'Seleccionar vídeo'}
                       </span>
                     </label>
+                  )}
+                  {!videoUrl && (videoTimeOffset !== null || videoTimeOffset2 !== null) && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', justifyContent: 'center', width: '100%', maxWidth: '900px' }}>
+                      {videoTimeOffset !== null && (
+                        <>
+                          <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
+                            Offset 1ª: {Math.floor(videoTimeOffset / 60)}:{String(Math.floor(videoTimeOffset % 60)).padStart(2, '0')}
+                          </span>
+                          <button
+                            onClick={() => setVideoTimeOffset(null)}
+                            style={{ background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.85rem', padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                          >
+                            Borrar sync 1ª
+                          </button>
+                        </>
+                      )}
+                      {videoTimeOffset2 !== null && (
+                        <>
+                          <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'var(--font-mono)' }}>
+                            Offset 2ª: {Math.floor(videoTimeOffset2 / 60)}:{String(Math.floor(videoTimeOffset2 % 60)).padStart(2, '0')}
+                          </span>
+                          <button
+                            onClick={() => setVideoTimeOffset2(null)}
+                            style={{ background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.85rem', padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                          >
+                            Borrar sync 2ª
+                          </button>
+                        </>
+                      )}
+                    </div>
                   )}
                   {videoFile && (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', width: '100%', maxWidth: '900px', order: -1 }}>

@@ -24,7 +24,7 @@ Al iniciar sesión se accede a un menú con tres modos:
 | `SUSTITUCIONES` | Cambios de jugadores. |
 | `DATOS` | Datos del partido: equipos, jornada y metadatos. |
 | `POSESIÓN` | Posesión propia/rival y disputas. |
-| `VÍDEOS` | Carga/gestión del vídeo del partido y reproducción. |
+| `VÍDEOS` | Carga/gestión del vídeo del partido y reproducción. Los offsets de sincronización se guardan por partido/vídeo, así que al reabrir basta con cargar el vídeo. |
 | `NOTA VOZ` | Notas de voz asociadas al análisis. |
 
 ### TOTALES — pestañas
