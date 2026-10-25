@@ -1064,16 +1064,42 @@ export default function App() {
   // INICIO 2ª con FIN 2ª (o FIN). Así, aunque el FIN 1ª y el INICIO 2ª
   // compartan hora (47:38), cada periodo cierra con su propio FIN y no
   // se dan duraciones de 00:01.
+  const normalizarMarcadorPeriodo = (n) => {
+    const s = String(n || '').trim().toUpperCase();
+    if (s === 'INICIO 1ª PARTE' || s === 'INICIO 1A PARTE' || s === '1A PARTE') return '1ª PARTE';
+    if (s === 'INICIO 2ª PARTE' || s === 'INICIO 2A PARTE' || s === '2A PARTE') return '2ª PARTE';
+    if (s === 'FIN 1A PARTE') return 'FIN 1ª PARTE';
+    if (s === 'FIN 2A PARTE') return 'FIN 2ª PARTE';
+    if (s === 'FIN PARTIDO') return 'FIN';
+    return n;
+  };
   const construirPeriodos = (log) => {
-    const conHora = (log || []).filter(e => e && e.time);
+    const conHora = (log || []).filter(e => e && e.time).map(e => ({ ...e, name: normalizarMarcadorPeriodo(e.name) }));
     const t = (e) => parseTime(e.time);
-    const starts = conHora.filter(e => e.name === '1ª PARTE' || e.name === '2ª PARTE').sort((a, b) => t(a) - t(b));
+    // Evita marcadores duplicados (doble clic) que generaban periodos espurios.
+    const vistos = new Set();
+    const starts = conHora
+      .filter(e => e.name === '1ª PARTE' || e.name === '2ª PARTE')
+      .filter(e => { const k = e.name + '|' + e.time; if (vistos.has(k)) return false; vistos.add(k); return true; })
+      .sort((a, b) => t(a) - t(b));
     const fins = conHora.filter(e => isFinMarker(e.name)).sort((a, b) => t(a) - t(b));
     return starts.map((s, i) => {
       const limite = i + 1 < starts.length ? t(starts[i + 1]) : Infinity;
       const prefijo = s.name === '2ª PARTE' ? 'FIN 2ª PARTE' : 'FIN 1ª PARTE';
-      const fin = fins.find(f => f.name === prefijo && t(f) >= t(s) && t(f) <= limite)
-        || fins.find(f => t(f) >= t(s) && t(f) <= limite);
+      const otroFin = s.name === '2ª PARTE' ? 'FIN 1ª PARTE' : 'FIN 2ª PARTE';
+      // Se toma el ÚLTIMO fin válido antes del siguiente periodo: así se
+      // ignoran FIN espurios (p.ej. un FIN 1ª PARTE a los 00:03) y se
+      // cierra cada parte con su propio FIN aunque compartan hora con el
+      // INICIO de la siguiente.
+      const candidatosPrefijo = fins.filter(f => f.name === prefijo && t(f) >= t(s) && t(f) <= limite);
+      const finPrefijo = candidatosPrefijo.length
+        ? candidatosPrefijo.reduce((a, b) => (t(b) > t(a) ? b : a))
+        : null;
+      const candidatosReserva = fins.filter(f => f.name !== otroFin && t(f) > t(s) && t(f) <= limite);
+      const finReserva = candidatosReserva.length
+        ? candidatosReserva.reduce((a, b) => (t(b) > t(a) ? b : a))
+        : null;
+      const fin = finPrefijo || finReserva;
       return { start: s, end: fin || null };
     });
   };
@@ -4710,15 +4736,9 @@ const minutosPorJornada = [];
                   </div>
                   {(() => {
                     // Tabla de posesión propia por bloques de 15 minutos.
-                    const bloques = [
-                      { label: '0-15', ini: 0, fin: 900 },
-                      { label: '16-30', ini: 900, fin: 1800 },
-                      { label: '31-45', ini: 1800, fin: 2700 },
-                      { label: '46-60', ini: 2700, fin: 3600 },
-                      { label: '61-75', ini: 3600, fin: 4500 },
-                      { label: '76-90', ini: 4500, fin: 5400 },
-                    ];
-                    const datos = bloques.map(b => ({ ...b, ownSecs: 0, rivalSecs: 0 }));
+                    const labels = ['0-15', '16-30', '31-45', '46-60', '61-75', '76-90'];
+                    const datosMap = {};
+                    labels.forEach(l => { datosMap[l] = { label: l, ownSecs: 0, rivalSecs: 0 }; });
                     selectedIds.forEach(id => {
                       const m = matches.find(x => x.id === id);
                       if (!m) return;
@@ -4736,8 +4756,25 @@ const minutosPorJornada = [];
                       if (ownStart !== null) ownInt.push([ownStart, finMatch]);
                       if (rivStart !== null) rivInt.push([rivStart, finMatch]);
                       const solape = (intervals, bIni, bFin) => { let s = 0; intervals.forEach(([a, b]) => { s += Math.max(0, Math.min(b, bFin) - Math.max(a, bIni)); }); return s; };
-                      datos.forEach(b => { b.ownSecs += solape(ownInt, b.ini, b.fin); b.rivalSecs += solape(rivInt, b.ini, b.fin); });
+                      const pds = construirPeriodos(log);
+                      const finPrimera = pds.length > 0 && pds[0].end ? parseTime(pds[0].end.time) : finMatch;
+                      const inicioSegunda = pds.length > 1 ? parseTime(pds[1].start.time) : finPrimera;
+                      const finSegunda = pds.length > 1 && pds[1].end ? parseTime(pds[1].end.time) : finMatch;
+                      const bloquesMatch = [
+                        { label: '0-15', ini: 0, fin: 900 },
+                        { label: '16-30', ini: 900, fin: 1800 },
+                        { label: '31-45', ini: 1800, fin: finPrimera },
+                        { label: '46-60', ini: inicioSegunda, fin: 3600 },
+                        { label: '61-75', ini: 3600, fin: 4500 },
+                        { label: '76-90', ini: 4500, fin: finSegunda },
+                      ];
+                      bloquesMatch.forEach(b => {
+                        if (b.fin <= b.ini) return;
+                        datosMap[b.label].ownSecs += solape(ownInt, b.ini, b.fin);
+                        datosMap[b.label].rivalSecs += solape(rivInt, b.ini, b.fin);
+                      });
                     });
+                    const datos = labels.map(l => ({ ...datosMap[l], ini: 0, fin: 0 }));
                     if (selectedIds.length === 0) return null;
                     return (
                       <div style={{ width: '100%', maxWidth: '700px', overflowX: 'auto', marginTop: '1rem' }}>
@@ -8935,7 +8972,8 @@ const minutosPorJornada = [];
                       if (finPrimera > 1800) rows.push(mkBloque('30-45 min.', 1800, finPrimera));
                       if (vals.length > 1) {
                         rows.push({ ...vals[1], total: false });
-                        const finSegunda = finMatch;
+                        const inicioSegunda = pds.length > 1 ? parseTime(pds[1].start.time) : finPrimera;
+                        const finSegunda = (pds.length > 1 && pds[1].end) ? parseTime(pds[1].end.time) : finMatch;
                         const mkBloque2 = (label, ini, fin) => {
                           const f = Math.min(fin, finSegunda);
                           const o = solape(ownInt, ini, f);
@@ -8944,9 +8982,9 @@ const minutosPorJornada = [];
                           const efec = o + r;
                           return { label, real, efec, own: o, rival: r, neutro: Math.max(0, real - efec), total: false, sub: true };
                         };
-                        rows.push(mkBloque2('45-60 min.', finPrimera, finPrimera + 900));
-                        rows.push(mkBloque2('60-75 min.', finPrimera + 900, finPrimera + 1800));
-                        rows.push(mkBloque2('75-90 min.', finPrimera + 1800, finPrimera + 2700));
+                        rows.push(mkBloque2('45-60 min.', inicioSegunda, 3600));
+                        rows.push(mkBloque2('60-75 min.', 3600, 4500));
+                        rows.push(mkBloque2('75-90 min.', 4500, finSegunda));
                       }
                     } else {
                       filasBloques.forEach(b => rows.push(b));
