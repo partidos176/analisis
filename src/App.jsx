@@ -2642,11 +2642,8 @@ export default function App() {
                 key={tab.id}
                 className={`tab-btn${totalesTab === tab.id ? ' active' : ''}`}
                 onClick={() => setTotalesTab(tab.id)}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.1, whiteSpace: 'normal' }}
               >
-                {tab.label.split(' ').map((word, i) => (
-                  <span key={i}>{word}</span>
-                ))}
+                {tab.label}
               </button>
             ))}
           </nav>
