@@ -7006,6 +7006,7 @@ const minutosPorJornada = [];
                             if (videoRef.current) {
                               const t = videoRef.current.currentTime;
                               setVideoTimeOffset(t);
+                              if (currentMatch && currentMatch.id) update(ref(db, `matches/${currentMatch.id}`), { videoTimeOffset: t }).catch(() => {});
                             }
                           }}
                           style={{
@@ -7030,7 +7031,7 @@ const minutosPorJornada = [];
                             Offset: {Math.floor(videoTimeOffset / 60)}:{String(Math.floor(videoTimeOffset % 60)).padStart(2, '0')}
                           </span>
                           <button
-                            onClick={() => setVideoTimeOffset(null)}
+                            onClick={() => { setVideoTimeOffset(null); if (currentMatch && currentMatch.id) update(ref(db, `matches/${currentMatch.id}`), { videoTimeOffset: null }).catch(() => {}); }}
                             style={{
                               background: '#ef4444',
                               color: '#ffffff',
@@ -7157,6 +7158,7 @@ const minutosPorJornada = [];
                                   const actionSecs = (parts[0] || 0) * 60 + (parts[1] || 0);
                                   const t = videoRef.current.currentTime;
                                   setVideoTimeOffset2(t - actionSecs);
+                                  if (currentMatch && currentMatch.id) update(ref(db, `matches/${currentMatch.id}`), { videoTimeOffset2: t - actionSecs }).catch(() => {});
                                 } else {
                                   setCorteError('Pulsa primero el botón 2ª PARTE en el cronómetro');
                                   setTimeout(() => setCorteError(''), 3000);
@@ -7185,7 +7187,7 @@ const minutosPorJornada = [];
                                 Offset: {Math.floor(videoTimeOffset2 / 60)}:{String(Math.floor(videoTimeOffset2 % 60)).padStart(2, '0')}
                               </span>
                               <button
-                                onClick={() => setVideoTimeOffset2(null)}
+                                onClick={() => { setVideoTimeOffset2(null); if (currentMatch && currentMatch.id) update(ref(db, `matches/${currentMatch.id}`), { videoTimeOffset2: null }).catch(() => {}); }}
                                 style={{
                                   background: '#ef4444',
                                   color: '#ffffff',
@@ -7369,7 +7371,7 @@ const minutosPorJornada = [];
                             Offset 1ª: {Math.floor(videoTimeOffset / 60)}:{String(Math.floor(videoTimeOffset % 60)).padStart(2, '0')}
                           </span>
                           <button
-                            onClick={() => setVideoTimeOffset(null)}
+                            onClick={() => { setVideoTimeOffset(null); if (currentMatch && currentMatch.id) update(ref(db, `matches/${currentMatch.id}`), { videoTimeOffset: null }).catch(() => {}); }}
                             style={{ background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.85rem', padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                           >
                             Borrar sync 1ª
@@ -7382,7 +7384,7 @@ const minutosPorJornada = [];
                             Offset 2ª: {Math.floor(videoTimeOffset2 / 60)}:{String(Math.floor(videoTimeOffset2 % 60)).padStart(2, '0')}
                           </span>
                           <button
-                            onClick={() => setVideoTimeOffset2(null)}
+                            onClick={() => { setVideoTimeOffset2(null); if (currentMatch && currentMatch.id) update(ref(db, `matches/${currentMatch.id}`), { videoTimeOffset2: null }).catch(() => {}); }}
                             style={{ background: '#ef4444', color: '#ffffff', fontWeight: 900, fontSize: '0.85rem', padding: '0.6rem 1rem', borderRadius: '10px', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                           >
                             Borrar sync 2ª
