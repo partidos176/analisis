@@ -2637,15 +2637,21 @@ export default function App() {
         <header className="app-header">
           <button className="btn-sm btn-secondary app-back-btn" onClick={() => setVista('menu')}>&#8592;</button>
           <nav className="app-tabs">
-            {totalesTabsDef.map((tab) => (
+            {totalesTabsDef.map((tab) => {
+              const apilar = tab.label !== 'TOTAL %' && tab.label.includes(' ');
+              return (
               <button
                 key={tab.id}
                 className={`tab-btn${totalesTab === tab.id ? ' active' : ''}`}
                 onClick={() => setTotalesTab(tab.id)}
+                style={apilar ? { display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.1, whiteSpace: 'normal' } : undefined}
               >
-                {tab.label}
+                {apilar
+                  ? tab.label.split(' ').map((word, i) => <span key={i}>{word}</span>)
+                  : tab.label}
               </button>
-            ))}
+              );
+            })}
           </nav>
           <div className="app-header-actions">
             <button
