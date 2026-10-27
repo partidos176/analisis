@@ -4450,7 +4450,7 @@ const minutosPorJornada = [];
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{totalSuplente[n] || 0}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#38bdf8', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{lesionadoCount[n]}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#f472b6', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{divHonorCount[n]}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#7c2d12', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{tenerifeCCount[n]}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#a16207', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{tenerifeCCount[n]}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{noConvocadoCount[n]}</td>
                                 </tr>
                               ))}
