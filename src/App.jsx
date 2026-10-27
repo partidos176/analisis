@@ -2664,7 +2664,7 @@ export default function App() {
             <button className="btn-sm btn-secondary" onClick={handleLogout}>Salir</button>
           </div>
         </header>
-        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: totalesTab === 'resumengoles' ? '#ffffff' : 'transparent' }}>
+        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: (totalesTab === 'resumengoles' || totalesTab === 'resumenacciones') ? '#ffffff' : 'transparent' }}>
           <div style={{ width: '100%', maxWidth: '1200px' }}>
               {totalesTab === 'totalresultados' && (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
@@ -3293,7 +3293,7 @@ export default function App() {
               )}
               {totalesTab === 'resumenacciones' && (
                 <div style={{
-                  background: 'var(--bg-card)',
+                  background: '#ffffff',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '2rem',
@@ -3385,7 +3385,7 @@ export default function App() {
                         {crucePropiasAcciones.length > 0 && crucePropiasFinalizaciones.length > 0 && (
                           <div>
                             <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ color: '#ffffff', fontWeight: 800, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES PROPIAS</span>
+                              <span style={{ color: '#000000', fontWeight: 800, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>TOTAL ACCIONES PROPIAS</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'center' }}>
                               <table style={{ borderCollapse: 'collapse', fontSize: '0.95rem' }}>
@@ -3401,7 +3401,7 @@ export default function App() {
                                 <tbody>
                                   {crucePropiasAcciones.map(a => (
                                     <tr key={a}>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#000000', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
                                       {crucePropiasFinalizaciones.map(f => (
                                         <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: (cruce[a][f] || 0) > 0 ? (f === 'OCASION' ? '#eab308' : '#39ff14') : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruce[a][f] || ''}</td>
                                       ))}
@@ -3489,13 +3489,13 @@ export default function App() {
                                 <tbody>
                                   {filasDef.map(([label, key]) => (
                                     <tr key={key}>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{label}</td>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPor(key)}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#000000', fontWeight: 700, whiteSpace: 'nowrap' }}>{label}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#000000', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{totalPor(key)}</td>
                                     </tr>
                                   ))}
                                   <tr>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasDef.reduce((s, [, key]) => s + totalPor(key), 0)}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#000000', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#000000', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasDef.reduce((s, [, key]) => s + totalPor(key), 0)}</td>
                                   </tr>
                                 </tbody>
                               </table>
