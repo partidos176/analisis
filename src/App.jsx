@@ -3409,9 +3409,9 @@ export default function App() {
                                     </tr>
                                   ))}
                                   <tr>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#000000', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {crucePropiasFinalizaciones.map(f => (
-                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasTotal[f] || '-'}</td>
+                                      <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#000000', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasTotal[f] || '-'}</td>
                                     ))}
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{crucePropiasAcciones.reduce((sum, a) => sum + (cruceRows[a] || 0), 0) || '-'}</td>
                                   </tr>
@@ -3457,13 +3457,13 @@ export default function App() {
                                     </tr>
                                   ))}
                                   <tr>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', color: '#000000', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
                                     {(() => {
                                       const golesCols = cruceRivalFinalizaciones.filter(f => f === 'GOL RIVAL' || f === 'PENAL + GOL RIVAL');
                                       const ocasionCols = cruceRivalFinalizaciones.filter(f => f === 'OCASION');
                                       const otrasCols = cruceRivalFinalizaciones.filter(f => f !== 'GOL RIVAL' && f !== 'PENAL + GOL RIVAL' && f !== 'OCASION');
                                       return [...ocasionCols, ...golesCols, ...otrasCols].map(f => (
-                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalTotal[f] || '-'}</td>
+                                        <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#000000', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalTotal[f] || '-'}</td>
                                       ));
                                     })()}
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.6rem', textAlign: 'center', color: '#831843', background: '#fbcfe8', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{cruceRivalAcciones.reduce((sum, a) => sum + (cruceRows[a] || 0), 0) || '-'}</td>
