@@ -3030,11 +3030,11 @@ export default function App() {
                             <table style={{ width: 'auto', margin: '0 auto', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                               <thead>
                                 <tr>
-<th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>PIE</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>CABEZA</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>PENAL</th>
+<th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'center', color: '#be185d', fontWeight: 800, textTransform: 'uppercase' }}>JUGADOR</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#be185d', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#be185d', fontWeight: 800, textTransform: 'uppercase' }}>PIE</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#be185d', fontWeight: 800, textTransform: 'uppercase' }}>CABEZA</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#be185d', fontWeight: 800, textTransform: 'uppercase' }}>PENAL</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -3055,8 +3055,8 @@ export default function App() {
                             <table style={{ borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                               <thead>
                                 <tr>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JUGADOR</th>
-                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#be185d', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>JUGADOR</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#be185d', fontWeight: 800, textTransform: 'uppercase' }}>TOTAL</th>
                                 </tr>
                               </thead>
                               <tbody>
