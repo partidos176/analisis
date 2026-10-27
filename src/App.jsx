@@ -5245,7 +5245,7 @@ const minutosPorJornada = [];
           </div>
         </header>
 
-        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: activeTab === 'datos' ? '#f1f5f9' : (activeTab === 'posesion' ? '#ffffff' : 'transparent') }}>
+        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: (activeTab === 'datos' || activeTab === 'posesion') ? '#ffffff' : 'transparent' }}>
           <div style={{ width: '100%', maxWidth: activeTab === 'alineacion' ? '980px' : '800px' }}>
             {saveError && (
               <div style={{
