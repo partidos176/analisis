@@ -2858,7 +2858,7 @@ export default function App() {
               )}
               {totalesTab === 'resumengoles' && (
                 <div style={{
-                  background: '#000000',
+                  background: '#ffffff',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '2rem',
@@ -3212,7 +3212,7 @@ export default function App() {
                                           y={props.y}
                                           dy={4}
                                           textAnchor={props.textAnchor}
-                                          fill="#ffffff"
+                                          fill="#000000"
                                           fontSize={14}
                                           fontWeight={700}
                                           stroke="none"
@@ -3263,14 +3263,14 @@ export default function App() {
                                       <>
                                         {filasAccionRival.map(([n, v]) => (
                                           <tr key={n}>
-                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{n.replace('RIVAL ', 'R. ')}</td>
-                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v || '-'}</td>
+                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#000000', fontWeight: 700, whiteSpace: 'nowrap' }}>{n.replace('RIVAL ', 'R. ')}</td>
+                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#000000', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v || '-'}</td>
                                           </tr>
                                         ))}
                                         {pMetaRivalCount > 0 && (
                                           <tr>
-                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META PROPIA</td>
-                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{pMetaRivalCount}</td>
+                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#000000', fontWeight: 900, whiteSpace: 'nowrap' }}>P. META PROPIA</td>
+                                            <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#000000', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{pMetaRivalCount}</td>
                                           </tr>
                                         )}
                                         <tr>
