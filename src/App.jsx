@@ -2664,7 +2664,7 @@ export default function App() {
             <button className="btn-sm btn-secondary" onClick={handleLogout}>Salir</button>
           </div>
         </header>
-        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: (totalesTab === 'resumengoles' || totalesTab === 'resumenacciones') ? '#ffffff' : 'transparent' }}>
+        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: (totalesTab === 'resumengoles' || totalesTab === 'resumenacciones' || totalesTab === 'periodoaccion') ? '#ffffff' : 'transparent' }}>
           <div style={{ width: '100%', maxWidth: '1200px' }}>
               {totalesTab === 'totalresultados' && (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
@@ -3509,7 +3509,7 @@ export default function App() {
               )}
               {totalesTab === 'periodoaccion' && (
                 <div style={{
-                  background: 'var(--bg-card)',
+                  background: '#ffffff',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '2rem',
@@ -3587,7 +3587,7 @@ export default function App() {
                                 className="input-control"
                                 value={titulo === 'ACCIONES PROPIAS' ? partidoPeriodoAccion : partidoPeriodoRival}
                                 onChange={(e) => titulo === 'ACCIONES PROPIAS' ? setPartidoPeriodoAccion(e.target.value) : setPartidoPeriodoRival(e.target.value)}
-                                style={{ background: 'var(--bg-secondary)', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.7rem', fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', maxWidth: '220px' }}
+                                style={{ background: 'var(--bg-secondary)', color: '#000000', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.7rem', fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', maxWidth: '220px' }}
                               >
                                 <option value="">TODOS</option>
                                 {listaPartidos.filter(m => m.matchday != null && m.matchday !== '').slice().sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
@@ -3625,7 +3625,7 @@ export default function App() {
                                   const totalFila = colsT.reduce((s, a) => s + filaTot[a], 0);
                                   return (
                                     <tr key={`${titulo}-${d}-${h}`}>
-                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap', textAlign: 'center' }}>{d}-{h}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', color: '#000000', fontWeight: 700, whiteSpace: 'nowrap', textAlign: 'center' }}>{d}-{h}</td>
                                       {colsT.map(a => (
                                         <td key={a} style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.65rem', textAlign: 'center', color: filaTot[a] > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filaTot[a] || ''}</td>
                                       ))}
@@ -3648,7 +3648,7 @@ export default function App() {
                     }
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
-                        {pintarTabla('ACCIONES PROPIAS', '#ffffff', cols, porMinuto)}
+                        {pintarTabla('ACCIONES PROPIAS', '#000000', cols, porMinuto)}
                         {pintarTabla('ACCIONES RIVAL', '#ef4444', colsRival, porMinutoRival)}
                       </div>
                     );
