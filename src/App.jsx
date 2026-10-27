@@ -5242,7 +5242,7 @@ const minutosPorJornada = [];
           </div>
         </header>
 
-        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: activeTab === 'datos' ? '#ffffff' : 'transparent' }}>
           <div style={{ width: '100%', maxWidth: activeTab === 'alineacion' ? '980px' : '800px' }}>
             {saveError && (
               <div style={{
@@ -5264,7 +5264,7 @@ const minutosPorJornada = [];
             )}
             {/* Info del partido */}
             <div style={{
-              background: 'var(--bg-card)',
+              background: activeTab === 'datos' ? '#ffffff' : 'var(--bg-card)',
               border: '1px solid var(--border-subtle)',
               borderRadius: 'var(--radius-lg)',
               padding: '1.5rem',
@@ -5282,7 +5282,7 @@ const minutosPorJornada = [];
                   ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.filter(esGolPropio).length}</span>
                   : <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
-              <span style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ffffff' }}>vs</span>
+              <span style={{ fontSize: '1.5rem', fontWeight: 900, color: activeTab === 'datos' ? '#000000' : '#ffffff' }}>vs</span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.awayTeam}</span>
                 {currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE')
@@ -5291,7 +5291,7 @@ const minutosPorJornada = [];
               </div>
               </>
               )}
-              <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: '#ffffff', background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
+              <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: activeTab === 'datos' ? '#000000' : '#ffffff', background: activeTab === 'datos' ? '#ffffff' : 'var(--bg-secondary)', border: activeTab === 'datos' ? '1px solid var(--border-subtle)' : 'none', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
                 {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : `JORNADA ${currentMatch.matchday}`}
               </span>
               {activeTab === 'acciones' && (
@@ -8696,7 +8696,9 @@ const minutosPorJornada = [];
                   minHeight: '400px',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '1.5rem'
+                  gap: '1.5rem',
+                  background: '#ffffff',
+                  borderRadius: '8px'
                 }}>
                   {(() => {
                     const totalPosesion = timerSeconds;
@@ -8778,11 +8780,11 @@ const minutosPorJornada = [];
                       );
                     }
                     return (
-                      <div style={{ width: '100%', marginLeft: '-2rem' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                      <div style={{ width: '100%', marginLeft: '0' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                           <thead>
                             <tr>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#f9a8d4', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'left', color: '#9d174d', fontWeight: 800, textTransform: 'uppercase' }}>ACCION</th>
                               {cols.map((f, ci) => {
                                 const renderVertical = (parts) => <>{parts.map((p, i) => <div key={i}>{p}</div>)}</>;
                                 let vertical = null;
@@ -8793,7 +8795,7 @@ const minutosPorJornada = [];
                                   vertical = f.split(' ');
                                 }
                                 return (<React.Fragment key={f}>
-                                  <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#f9a8d4', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{vertical ? renderVertical(vertical) : f}</th>
+                                  <th key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#9d174d', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', lineHeight: 1.1 }}>{vertical ? renderVertical(vertical) : f}</th>
                                   {ci === 0 && <th key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontWeight: 900, textTransform: 'uppercase' }}>TOTAL</th>}
                                 </React.Fragment>);
                               })}
@@ -8802,22 +8804,22 @@ const minutosPorJornada = [];
                           <tbody>
                             {filas.filter(a => !a.includes('RIVAL')).map(a => (
                               <tr key={a}>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#166534', fontWeight: 700, whiteSpace: 'nowrap' }}>{a}</td>
                                 {cols.map((f, ci) => (
                                   <React.Fragment key={f}>
-                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
-                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>}
+                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#000000', fontFamily: 'var(--font-mono)', fontSize: '1.0rem', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontSize: '1.0rem', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>}
                                   </React.Fragment>
                                 ))}
                               </tr>
                             ))}
                             {filas.some(a => !a.includes('RIVAL')) && (
                               <tr>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL PROPIO</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#000000', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL PROPIO</td>
                                 {cols.map((f, ci) => (
                                   <React.Fragment key={f}>
-                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
-                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>}
+                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#000000', background: '#f97316', fontFamily: 'var(--font-mono)', fontSize: '1.0rem', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#000000', background: '#f97316', fontFamily: 'var(--font-mono)', fontSize: '1.0rem', fontWeight: 900 }}>{filas.filter(a => !a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>}
                                   </React.Fragment>
                                 ))}
                               </tr>
@@ -8827,19 +8829,19 @@ const minutosPorJornada = [];
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ef4444', fontWeight: 700, whiteSpace: 'nowrap' }}>{a.replace('RIVAL ', 'R. ')}</td>
                                 {cols.map((f, ci) => (
                                   <React.Fragment key={f}>
-                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ef4444', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
-                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>}
+                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: f === 'OCASION' ? '#eab308' : '#ef4444', fontFamily: 'var(--font-mono)', fontSize: '1.0rem', fontWeight: 900 }}>{matriz[a][f] > 0 ? matriz[a][f] : ''}</td>
+                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontSize: '1.0rem', fontWeight: 900, background: 'rgba(56,189,248,0.08)' }}>{cols.reduce((sum, f) => sum + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0) || '-'}</td>}
                                   </React.Fragment>
                                 ))}
                               </tr>
                             ))}
                             {filas.some(a => a.includes('RIVAL')) && (
                               <tr>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#ffffff', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL RIVAL</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#000000', background: '#f97316', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL RIVAL</td>
                                 {cols.map((f, ci) => (
                                   <React.Fragment key={f}>
-                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
-                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#ffffff', background: '#f97316', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>}
+                                    <td key={f} style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#000000', background: '#f97316', fontFamily: 'var(--font-mono)', fontSize: '1.0rem', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + (matriz[a][f] || 0), 0) || ''}</td>
+                                    {ci === 0 && <td key="total" style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#000000', background: '#f97316', fontFamily: 'var(--font-mono)', fontSize: '1.0rem', fontWeight: 900 }}>{filas.filter(a => a.includes('RIVAL')).reduce((sum, a) => sum + cols.reduce((s, f) => s + (f === 'OCASION' ? 0 : (matriz[a][f] || 0)), 0), 0) || '-'}</td>}
                                   </React.Fragment>
                                 ))}
                               </tr>
