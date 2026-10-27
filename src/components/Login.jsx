@@ -78,24 +78,6 @@ export default function Login() {
         </form>
 
 
-        <button
-          type="button"
-          onClick={() => window.open('https://partidos176.web.app/', '_blank')}
-          style={{
-            marginTop: '1rem',
-            background: '#10b981',
-            color: '#ffffff',
-            fontWeight: 800,
-            fontSize: '1rem',
-            padding: '0.6rem 1.5rem',
-            borderRadius: 'var(--radius-full)',
-            border: 'none',
-            cursor: 'pointer',
-            letterSpacing: '0.05em'
-          }}
-        >
-          ON
-        </button>
       </div>
     </div>
   );
