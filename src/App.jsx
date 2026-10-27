@@ -3587,7 +3587,7 @@ export default function App() {
                                 className="input-control"
                                 value={titulo === 'ACCIONES PROPIAS' ? partidoPeriodoAccion : partidoPeriodoRival}
                                 onChange={(e) => titulo === 'ACCIONES PROPIAS' ? setPartidoPeriodoAccion(e.target.value) : setPartidoPeriodoRival(e.target.value)}
-                                style={{ background: 'var(--bg-secondary)', color: '#000000', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.7rem', fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', maxWidth: '220px' }}
+                                style={{ background: '#ffffff', color: '#000000', border: '1px solid var(--border-subtle)', borderRadius: '8px', padding: '0.5rem 0.7rem', fontWeight: 800, fontSize: '0.85rem', fontFamily: 'var(--font-mono)', maxWidth: '220px' }}
                               >
                                 <option value="">TODOS</option>
                                 {listaPartidos.filter(m => m.matchday != null && m.matchday !== '').slice().sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
