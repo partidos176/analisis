@@ -2664,7 +2664,7 @@ export default function App() {
             <button className="btn-sm btn-secondary" onClick={handleLogout}>Salir</button>
           </div>
         </header>
-        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: (totalesTab === 'resumengoles' || totalesTab === 'resumenacciones' || totalesTab === 'periodoaccion') ? '#ffffff' : 'transparent' }}>
+        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: (totalesTab === 'resumengoles' || totalesTab === 'resumenacciones' || totalesTab === 'periodoaccion' || totalesTab === 'tiempojugado') ? '#ffffff' : 'transparent' }}>
           <div style={{ width: '100%', maxWidth: '1200px' }}>
               {totalesTab === 'totalresultados' && (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
@@ -4299,7 +4299,7 @@ const minutosPorJornada = [];
               )}
               {totalesTab === 'tiempojugado' && (
                 <div style={{
-                  background: 'var(--bg-card)',
+                  background: '#ffffff',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 'var(--radius-lg)',
                   padding: '2rem',
@@ -4443,8 +4443,8 @@ const minutosPorJornada = [];
                             <tbody>
                               {filas.map(([n, m]) => (
                                 <tr key={n}>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', color: esCadeteGlobal(n) ? '#ef4444' : '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>{n}</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#ffffff', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{formatTime(m)}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', color: esCadeteGlobal(n) ? '#ef4444' : '#000000', fontWeight: 700, fontSize: '0.95rem' }}>{n}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#000000', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{formatTime(m)}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#a78bfa', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{totalPartidosDuracion > 0 ? Math.round((m / totalPartidosDuracion) * 100) : 0}%</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{totalTitular[n] || 0}</td>
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem 0.4rem', textAlign: 'center', color: '#eab308', fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '0.95rem' }}>{totalSuplente[n] || 0}</td>
