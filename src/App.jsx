@@ -8886,7 +8886,7 @@ const minutosPorJornada = [];
                 rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
                 return (
                 <div style={{ background: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#000000', order: -1 }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: (currentMatch?.matchday === 8 && String(currentMatch?.homeTeam || '').toUpperCase().includes('TENERIFE') && String(currentMatch?.awayTeam || '').toUpperCase().includes('VICTORIA')) ? '#8B4513' : '#000000', order: -1 }}>
                     JORNADA {currentMatch?.matchday || '?'} — {teamInfo}{score}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center', order: 1, width: '100%' }}>
