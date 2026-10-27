@@ -5169,7 +5169,7 @@ const minutosPorJornada = [];
                         }}
                       >
                         <option value="">-- Seleccionar jornada --</option>
-                        {[...matches].filter(m => m.matchday).sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
+                        {[...matches].filter(m => m.matchday && (((cadetesByMatch[m.id] || []).length > 0) || (Array.isArray(m.players) ? m.players : (m.players ? Object.values(m.players) : [])).some(p => p && p.esCadete && (p.status === 'titular' || p.status === 'suplente')))).sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
                           <option key={m.id} value={m.id}>{'J' + m.matchday + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}</option>
                         ))}
                       </select>
