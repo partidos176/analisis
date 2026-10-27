@@ -3042,9 +3042,9 @@ export default function App() {
                                   <tr key={n}>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '12rem', textAlign: 'center', color: '#000000', fontWeight: 700 }}>{n}</td>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#000000', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.total || '-'}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.pie || '-'}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.cabeza || '-'}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.penal || '-'}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#1e40af', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.pie || '-'}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#1e40af', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.cabeza || '-'}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', width: '3.5rem', textAlign: 'center', color: '#1e40af', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{s.penal || '-'}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -3063,7 +3063,7 @@ export default function App() {
                                 {filasAsist.map(([n, v]) => (
                                   <tr key={n}>
                                     <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#000000', fontWeight: 700, whiteSpace: 'nowrap' }}>{n}</td>
-                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v}</td>
+                                    <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#1e40af', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{v}</td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -3088,8 +3088,8 @@ export default function App() {
                                 </tr>
                               ))}
                               <tr>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#39ff14', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramos.reduce((s, t) => s + t.value, 0) || '-'}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#1e40af', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#1e40af', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{tramos.reduce((s, t) => s + t.value, 0) || '-'}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -3121,7 +3121,7 @@ export default function App() {
                                       stroke="none"
                                     >
                                       {props.name}{' '}
-                                      <tspan fill="#39ff14" fontSize={17} fontWeight={900}>{props.value}</tspan>
+                                      <tspan fill="#1e40af" fontSize={17} fontWeight={900}>{props.value}</tspan>
                                       {' '}({pctTxt}%)
                                     </text>
                                   );
@@ -3158,8 +3158,8 @@ export default function App() {
                                   </tr>
                                 )}
                                 <tr>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#39ff14', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
-                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#39ff14', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccion.reduce((s, [, v]) => s + v, 0) + pMetaCount || '-'}</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', color: '#1e40af', fontWeight: 900, whiteSpace: 'nowrap', textTransform: 'uppercase' }}>TOTAL</td>
+                                  <td style={{ border: '1px solid var(--border-subtle)', padding: '0.4rem 0.5rem', textAlign: 'center', color: '#1e40af', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filasAccion.reduce((s, [, v]) => s + v, 0) + pMetaCount || '-'}</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -3218,7 +3218,7 @@ export default function App() {
                                           stroke="none"
                                         >
                                           {props.name}{' '}
-                                          <tspan fill="#39ff14" fontSize={17} fontWeight={900}>{props.value}</tspan>
+                                          <tspan fill="#1e40af" fontSize={17} fontWeight={900}>{props.value}</tspan>
                                           {' '}({pctTxt}%)
                                         </text>
                                       );
