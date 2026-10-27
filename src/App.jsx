@@ -5242,7 +5242,7 @@ const minutosPorJornada = [];
           </div>
         </header>
 
-        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: activeTab === 'datos' ? '#ffffff' : 'transparent' }}>
+        <main style={{ flex: 1, padding: '2rem', display: 'flex', justifyContent: 'center', background: (activeTab === 'datos' || activeTab === 'posesion') ? '#ffffff' : 'transparent' }}>
           <div style={{ width: '100%', maxWidth: activeTab === 'alineacion' ? '980px' : '800px' }}>
             {saveError && (
               <div style={{
@@ -5264,7 +5264,7 @@ const minutosPorJornada = [];
             )}
             {/* Info del partido */}
             <div style={{
-              background: activeTab === 'datos' ? '#ffffff' : 'var(--bg-card)',
+              background: (activeTab === 'datos' || activeTab === 'posesion') ? '#ffffff' : 'var(--bg-card)',
               border: '1px solid var(--border-subtle)',
               borderRadius: 'var(--radius-lg)',
               padding: '1.5rem',
@@ -5282,7 +5282,7 @@ const minutosPorJornada = [];
                   ? <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesList.filter(esGolPropio).length}</span>
                   : <span style={{ color: '#f87171', fontWeight: 900, fontSize: '1.8rem', minWidth: '36px', textAlign: 'center' }}>{golesRivalList.length}</span>}
               </div>
-              <span style={{ fontSize: '1.5rem', fontWeight: 900, color: activeTab === 'datos' ? '#000000' : '#ffffff' }}>vs</span>
+              <span style={{ fontSize: '1.5rem', fontWeight: 900, color: (activeTab === 'datos' || activeTab === 'posesion') ? '#000000' : '#ffffff' }}>vs</span>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: 900, color: currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE') ? '#38bdf8' : '#f87171' }}>{currentMatch.awayTeam}</span>
                 {currentMatch.awayTeam && currentMatch.awayTeam.toUpperCase().includes('TENERIFE')
@@ -5291,7 +5291,7 @@ const minutosPorJornada = [];
               </div>
               </>
               )}
-              <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: activeTab === 'datos' ? '#000000' : '#ffffff', background: activeTab === 'datos' ? '#ffffff' : 'var(--bg-secondary)', border: activeTab === 'datos' ? '1px solid var(--border-subtle)' : 'none', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
+              <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: (activeTab === 'datos' || activeTab === 'posesion') ? '#000000' : '#ffffff', background: (activeTab === 'datos' || activeTab === 'posesion') ? '#ffffff' : 'var(--bg-secondary)', border: (activeTab === 'datos' || activeTab === 'posesion') ? '1px solid var(--border-subtle)' : 'none', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
                 {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : `JORNADA ${currentMatch.matchday}`}
               </span>
               {activeTab === 'acciones' && (
@@ -8885,8 +8885,8 @@ const minutosPorJornada = [];
                 let tOwn = 0, tRiv = 0, tDur = 0;
                 rws.forEach(r => { tOwn += r.ownSecs; tRiv += r.rivalSecs; tDur += r.periodoTotal; });
                 return (
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#ffffff', order: -1 }}>
+                <div style={{ background: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-lg)', padding: '2rem', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#000000', order: -1 }}>
                     JORNADA {currentMatch?.matchday || '?'} — {teamInfo}{score}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center', order: 1, width: '100%' }}>
@@ -9003,7 +9003,7 @@ const minutosPorJornada = [];
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                           <thead>
                             <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ffffff', minWidth: '9rem' }}>Periodo</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#000000', minWidth: '9rem' }}>Periodo</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ff6ec7' }}>Tiempo real</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Tiempo efectivo</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Tiempo neutro</th>
@@ -9014,12 +9014,12 @@ const minutosPorJornada = [];
                           <tbody>
                             {rows.map((r, i) => (
                               <tr key={i} style={r.total ? { background: 'rgba(251,191,36,0.15)' } : r.sub ? { background: 'rgba(34,197,94,0.08)' } : {}}>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem 0.3rem 1.6rem' : '0.5rem 0.8rem', textAlign: 'center', color: r.sub ? '#94a3b8' : '#ffffff', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.label}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem 0.3rem 1.6rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#000000', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.label}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#ff6ec7', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.real)}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.efec) + (r.real > 0 ? ` (${Math.round((r.efec / r.real) * 100)}%)` : '')}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.neutro) + (r.real > 0 ? ` (${Math.round((r.neutro / r.real) * 100)}%)` : '')}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: r.sub ? '#94a3b8' : '#38bdf8', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.own / r.efec) * 100) : 0}%</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: r.sub ? '#94a3b8' : '#ef4444', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.rival / r.efec) * 100) : 0}%</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: r.sub ? '#94a3b8' : '#000000', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.own / r.efec) * 100) : 0}%</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: r.sub ? '#94a3b8' : '#000000', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.8rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.rival / r.efec) * 100) : 0}%</td>
                               </tr>
                             ))}
                           </tbody>
