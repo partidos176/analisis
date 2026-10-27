@@ -5267,7 +5267,7 @@ const minutosPorJornada = [];
             )}
             {/* Info del partido */}
             <div style={{
-              background: activeTab === 'datos' ? '#f1f5f9' : (activeTab === 'posesion' ? '#ffffff' : 'var(--bg-card)'),
+              background: activeTab === 'datos' || activeTab === 'posesion' ? '#ffffff' : 'var(--bg-card)',
               border: '1px solid var(--border-subtle)',
               borderRadius: 'var(--radius-lg)',
               padding: '1.5rem',
@@ -8700,7 +8700,7 @@ const minutosPorJornada = [];
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '1.5rem',
-                  background: '#f1f5f9',
+                  background: '#ffffff',
                   borderRadius: '8px'
                 }}>
                   {(() => {
