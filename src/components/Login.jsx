@@ -77,9 +77,6 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="login-footnote">
-          Acceso restringido. Solo usuarios autorizados.
-        </p>
 
         <button
           type="button"
