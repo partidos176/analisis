@@ -4166,8 +4166,11 @@ const minutosPorJornada = [];
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '1rem' }}>
                     {jugadorSeleccionado && (
                       <span style={{ fontWeight: 800, fontSize: '1.3rem', fontFamily: 'var(--font-mono)' }}>
-                        <span style={{ color: '#39ff14' }}>DISPUTA {formatTime(totalMinutos[jugadorSeleccionado] || 0)} MIN.</span>
-                        <span style={{ color: '#ffffff' }}> = TITULAR {formatTime(totalTitular[jugadorSeleccionado] || 0)} + SUPLENTE {formatTime(totalSuplente[jugadorSeleccionado] || 0)}</span>
+                        <span style={{ color: '#ffffff' }}>DISPUTA {formatTime(totalMinutos[jugadorSeleccionado] || 0)} MIN.</span>
+                        <span style={{ color: '#ffffff' }}> = </span>
+                        <span style={{ color: '#39ff14' }}>TITULAR {formatTime(totalTitular[jugadorSeleccionado] || 0)}</span>
+                        <span style={{ color: '#ffffff' }}> + </span>
+                        <span style={{ color: '#eab308' }}>SUPLENTE {formatTime(totalSuplente[jugadorSeleccionado] || 0)}</span>
                       </span>
                     )}
                     {jugadorSeleccionado && (
