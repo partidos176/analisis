@@ -3218,7 +3218,7 @@ export default function App() {
                                           stroke="none"
                                         >
                                           {props.name}{' '}
-                                          <tspan fill="#1e40af" fontSize={17} fontWeight={900}>{props.value}</tspan>
+                                          <tspan fill="#ef4444" fontSize={17} fontWeight={900}>{props.value}</tspan>
                                           {' '}({pctTxt}%)
                                         </text>
                                       );
