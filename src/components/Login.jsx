@@ -43,7 +43,6 @@ export default function Login() {
             FútbolTotal <span>Análisis</span>
           </h1>
           <p className="login-subtitle">Tagueo Táctico &amp; Scouting en Tiempo Real</p>
-          <p style={{ color: '#ffffff', fontSize: '1.2rem', marginTop: '0.5rem' }}>hola</p>
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
