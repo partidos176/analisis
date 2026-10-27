@@ -8892,11 +8892,11 @@ const minutosPorJornada = [];
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center', order: 1, width: '100%' }}>
                   <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', alignItems: 'center' }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ff6ec7' }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#be185d' }}>
                         TIEMPO REAL JUGADO: {Math.floor(tDur / 60)}:{String(tDur % 60).padStart(2, '0')}
                       </div>
                       {rws.map((r, ri) => (
-                        <div key={'tj' + ri} style={{ fontWeight: 700, fontSize: '0.95rem', color: '#ff6ec7' }}>
+                        <div key={'tj' + ri} style={{ fontWeight: 700, fontSize: '0.95rem', color: '#be185d' }}>
                           {r.label}: {Math.floor(r.periodoTotal / 60)}:{String(r.periodoTotal % 60).padStart(2, '0')}
                         </div>
                       ))}
@@ -9004,7 +9004,7 @@ const minutosPorJornada = [];
                           <thead>
                             <tr style={{ background: 'rgba(56,189,248,0.1)' }}>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#000000', minWidth: '9rem' }}>Periodo</th>
-                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#ff6ec7' }}>Tiempo real</th>
+                              <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#be185d' }}>Tiempo real</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#22c55e' }}>Tiempo efectivo</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#f59e0b' }}>Tiempo neutro</th>
                               <th style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', color: '#38bdf8' }}>Posesion propia</th>
@@ -9015,7 +9015,7 @@ const minutosPorJornada = [];
                             {rows.map((r, i) => (
                               <tr key={i} style={r.total ? { background: 'rgba(251,191,36,0.15)' } : r.sub ? { background: 'rgba(34,197,94,0.08)' } : {}}>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem 0.3rem 1.6rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#000000', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.label}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#ff6ec7', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.real)}</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#be185d', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.real)}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.efec) + (r.real > 0 ? ` (${Math.round((r.efec / r.real) * 100)}%)` : '')}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.neutro) + (r.real > 0 ? ` (${Math.round((r.neutro / r.real) * 100)}%)` : '')}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: (r.efec > 0 && (Math.round((r.own / r.efec) * 100) === 74 || Math.round((r.own / r.efec) * 100) === 80 || Math.round((r.own / r.efec) * 100) === 77)) ? '#38bdf8' : '#000000', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.own / r.efec) * 100) : 0}%</td>
