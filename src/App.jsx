@@ -4898,7 +4898,7 @@ const minutosPorJornada = [];
                   {cadetesAlineacionOpen && (
                     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <div style={{ background: '#1e293b', border: '2px solid #0284c7', borderRadius: '16px', padding: '1.5rem', maxWidth: '520px', width: '90%', maxHeight: '80vh', overflow: 'auto', color: '#ffffff', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#38bdf8', textAlign: 'center' }}>SELECCIONAR PARTIDO (ALINEACIÓN POR JORNADA)</div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#38bdf8', textAlign: 'center' }}>SELECCIONAR PARTIDO (SELECC. JORNADA)</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '50vh', overflowY: 'auto' }}>
                           {[...matches].sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
                             <button
@@ -5059,7 +5059,7 @@ const minutosPorJornada = [];
                           maxWidth: '240px'
                         }}
                       >
-                        ALINEACION POR JORNADA
+                        SELECC. JORNADA
                       </button>
                       {cadetesAlineacionMatchId && (() => {
                         const m = (matches || []).find(x => x.id === cadetesAlineacionMatchId);
