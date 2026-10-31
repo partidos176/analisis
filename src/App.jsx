@@ -5061,6 +5061,14 @@ const minutosPorJornada = [];
                       >
                         ALINEACION POR JORNADA
                       </button>
+                      {cadetesAlineacionMatchId && (() => {
+                        const m = (matches || []).find(x => x.id === cadetesAlineacionMatchId);
+                        return m ? (
+                          <span style={{ color: '#38bdf8', fontWeight: 900, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.04em', order: -1, flex: '1 1 100%', maxWidth: '240px' }}>
+                            {'J' + (m.matchday || '') + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}
+                          </span>
+                        ) : null;
+                      })()}
                       <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                         <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                         <span style={{ color: '#ff6ec7', fontWeight: 900, fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Datos jugador:</span>
