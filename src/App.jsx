@@ -420,6 +420,8 @@ export default function App() {
   });
   const [cadetesNewName, setCadetesNewName] = useState('');
   const [cadetesMatchId, setCadetesMatchId] = useState('');
+  const [cadetesAlineacionMatchId, setCadetesAlineacionMatchId] = useState('');
+  const [cadetesAlineacionOpen, setCadetesAlineacionOpen] = useState(false);
   const [cadetesMinutosName, setCadetesMinutosName] = useState('');
   const [cadetesDropdownOpen, setCadetesDropdownOpen] = useState(false);
   const [cadetesJornadaWarning, setCadetesJornadaWarning] = useState(false);
@@ -4893,6 +4895,52 @@ const minutosPorJornada = [];
                       JUGADOR EN ALINEACIÓN
                     </div>
                   )}
+                  {cadetesAlineacionOpen && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ background: '#1e293b', border: '2px solid #0284c7', borderRadius: '16px', padding: '1.5rem', maxWidth: '520px', width: '90%', maxHeight: '80vh', overflow: 'auto', color: '#ffffff', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#38bdf8', textAlign: 'center' }}>SELECCIONAR PARTIDO (ALINEACIÓN POR JORNADA)</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '50vh', overflowY: 'auto' }}>
+                          {[...matches].sort((a, b) => (Number(a.matchday) || 0) - (Number(b.matchday) || 0)).map(m => (
+                            <button
+                              key={m.id}
+                              onClick={() => setCadetesAlineacionMatchId(m.id)}
+                              style={{
+                                background: cadetesAlineacionMatchId === m.id ? '#0284c7' : 'var(--bg-secondary)',
+                                color: '#ffffff',
+                                fontWeight: 700,
+                                fontSize: '0.9rem',
+                                padding: '0.6rem 0.8rem',
+                                borderRadius: '8px',
+                                border: '1px solid var(--border-subtle)',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                textTransform: 'uppercase'
+                              }}
+                            >
+                              {'J' + (m.matchday || '') + ' — ' + (m.homeTeam || '') + ' vs ' + (m.awayTeam || '')}
+                            </button>
+                          ))}
+                          {(!matches || matches.length === 0) && (
+                            <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Sin partidos disponibles</span>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center', marginTop: '0.5rem' }}>
+                          <button
+                            onClick={() => setCadetesAlineacionOpen(false)}
+                            style={{ background: '#16a34a', color: '#ffffff', fontWeight: 900, fontSize: '1rem', padding: '0.7rem 1.6rem', borderRadius: '10px', border: 'none', cursor: 'pointer', textTransform: 'uppercase' }}
+                          >
+                            ACEPTAR
+                          </button>
+                          <button
+                            onClick={() => { setCadetesAlineacionOpen(false); setCadetesAlineacionMatchId(''); }}
+                            style={{ background: '#64748b', color: '#ffffff', fontWeight: 900, fontSize: '1rem', padding: '0.7rem 1.6rem', borderRadius: '10px', border: 'none', cursor: 'pointer', textTransform: 'uppercase' }}
+                          >
+                            CANCELAR
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', maxWidth: '1000px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%', maxWidth: '840px', order: 1, flexWrap: 'wrap' }}>
@@ -4964,13 +5012,14 @@ const minutosPorJornada = [];
                           if (!cadetesPlayers.includes(name)) {
                             setCadetesPlayers(prev => [...prev, name].sort());
                           }
-                          if (cadetesMatchId) {
+                          const targetMatchId = cadetesAlineacionMatchId || cadetesMatchId;
+                          if (targetMatchId) {
                             setCadetesByMatch(prev => {
-                              const cur = prev[cadetesMatchId] || [];
+                              const cur = prev[targetMatchId] || [];
                               if (cur.includes(name)) return prev;
-                              return { ...prev, [cadetesMatchId]: [...cur, name].sort() };
+                              return { ...prev, [targetMatchId]: [...cur, name].sort() };
                             });
-                            addCadeteToAlineacion(cadetesMatchId, name);
+                            addCadeteToAlineacion(targetMatchId, name);
                           } else {
                             setCadetesJornadaWarning(true);
                             setTimeout(() => setCadetesJornadaWarning(false), 2500);
@@ -4994,25 +5043,7 @@ const minutosPorJornada = [];
                         INSERTAR
                       </button>
                       <button
-                        onClick={async () => {
-                          if (!cadetesMatchId) {
-                            setCadetesJornadaWarning(true);
-                            setTimeout(() => setCadetesJornadaWarning(false), 2500);
-                            return;
-                          }
-                          let m = matches.find(x => x.id === cadetesMatchId);
-                          try {
-                            const snap = await get(ref(db, `matches/${cadetesMatchId}`));
-                            if (snap.exists()) m = { id: cadetesMatchId, ...snap.val() };
-                          } catch {}
-                          if (!m) {
-                            setCadetesJornadaWarning(true);
-                            setTimeout(() => setCadetesJornadaWarning(false), 2500);
-                            return;
-                          }
-                          setVista('analisis');
-                          handleOpenMatch(m);
-                        }}
+                        onClick={() => setCadetesAlineacionOpen(true)}
                         style={{
                           background: '#0284c7',
                           color: '#ffffff',
@@ -5028,7 +5059,7 @@ const minutosPorJornada = [];
                           maxWidth: '240px'
                         }}
                       >
-                        ALINEACIÓN
+                        ALINEACION POR JORNADA
                       </button>
                       <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                         <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
