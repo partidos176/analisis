@@ -35,7 +35,7 @@ import denissonImg from './jugadores/denisson.png';
 import braisImg from './jugadores/brais.png';
 import acoidanImg from './jugadores/acoidan.png';
 import jousepImg from './jugadores/jousep.png';
-
+import alvaroImg from './jugadores/alvaro.png';
 import { PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Label } from 'recharts';
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
@@ -80,6 +80,7 @@ const fotosCadetes = {
   BRAIS: braisImg,
   ACOIDAN: acoidanImg,
   JOUSEP: jousepImg,
+  ALVARO: alvaroImg,
 };
 
 // La hoja ALINEACION tambien pinta a los cadetes (entran con
@@ -2441,7 +2442,7 @@ export default function App() {
                               });
                             }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.1rem 0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                               <option value="">Seleccionar acción...</option>
-                              {['ON PROPIO','OFF PROPIO','ON RIVAL','OFF RIVAL','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON NEUTRO','OFF NEUTRO','PÉRDIDAS','INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE'].map(a => (
+                              {['ON PROPIO','OFF PROPIO','ON RIVAL','OFF RIVAL','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON NEUTRO','OFF NEUTRO','PÉRDIDAS','INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE'].map(a => (
                                 <option key={a} value={a}>{a}</option>
                               ))}
                             </select>
@@ -2521,7 +2522,7 @@ export default function App() {
                                 });
                               }} style={{ width: '100%', background: '#1e293b', color: '#ffffff', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.1rem 0.2rem', fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif', cursor: 'pointer' }}>
                                 <option value="">Seleccionar acción...</option>
-                                {['ON PROPIO','OFF PROPIO','ON RIVAL','OFF RIVAL','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON NEUTRO','OFF NEUTRO','PÉRDIDAS','INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE'].map(a => (
+                                {['ON PROPIO','OFF PROPIO','ON RIVAL','OFF RIVAL','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON NEUTRO','OFF NEUTRO','PÉRDIDAS','INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE'].map(a => (
                                   <option key={a} value={a}>{a}</option>
                                 ))}
                               </select>
@@ -2603,7 +2604,7 @@ export default function App() {
     );
   }
 
-  const ACCIONES_TOTALES = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA'];
+  const ACCIONES_TOTALES = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA'];
   const matchesDelEquipo = (eq) => {
     const base = matches.slice();
     if (currentMatch && !base.some(m => m.id === currentMatch.id)) base.push(currentMatch);
@@ -3327,7 +3328,7 @@ export default function App() {
                       return t;
                     };
                     const finalizacionesOrder = ['GOL', 'OCASION', 'FUERA', 'BLOCAJE', 'FINAL+BLOCA', 'FINAL+DESP', 'FINAL+FUERA', 'DESPEJE DEFENSA', 'DESPEJE PORTERO', 'SAQUE DE ESQUINA', 'PENAL + GOL', 'PENAL + FUERA', 'PENAL + GOL RIVAL', 'GOL RIVAL', 'INFRACCION'];
-                    const accionesOrder = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'];
+                    const accionesOrder = ['TIRO AREA', 'TIRO DERECHA', 'TIRO IZQUIERDA', 'TIRO FRONTAL', 'CENTRO DERECHA', 'CENTRO IZQUIERDA', 'FALTA DERECHA', 'FALTA IZQUIERDA', 'FALTA FRONTAL', 'CORNER IZQUIERDA', 'CORNER DERECHA', 'RIVAL TIRO DERECHA', 'RIVAL TIRO AREA', 'RIVAL TIRO IZQUIERDA', 'RIVAL TIRO FRONTAL', 'RIVAL CENTRO DERECHA', 'RIVAL CENTRO IZQUIERDA', 'RIVAL FALTA DERECHA', 'RIVAL FALTA IZQUIERDA', 'RIVAL FALTA FRONTAL', 'RIVAL CORNER IZQUIERDA', 'RIVAL CORNER DERECHA', 'INICIO PROPIO', 'INICIO RIVAL', 'ON RIVAL', 'OFF RIVAL', 'ON NEUTRO', 'ON PROPIO', 'OFF NEUTRO', 'OFF PROPIO', 'PÉRDIDAS'];
                     const cruce = {};
                     const cruceTotal = {};
                     const cruceRows = {};
@@ -5693,6 +5694,80 @@ const minutosPorJornada = [];
                   </button>
                   <button
                     onClick={() => {
+                      if (logAction('CENTRO DERECHA')) {
+                        setFromRival(false);
+                        setCentroDerechaCount(centroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#22c55e',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>CENTRO DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#22c55e',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {centroDerechaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (logAction('CENTRO IZQUIERDA')) {
+                        setFromRival(false);
+                        setCentroIzquierdaCount(centroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#22c55e',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>CENTRO IZQUIERDA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#22c55e',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {centroIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
                       if (logAction('FALTA DERECHA')) {
                         setFromRival(false);
                         setFaltaDerechaCount(faltaDerechaCount + 1);
@@ -5800,80 +5875,6 @@ const minutosPorJornada = [];
                       textAlign: 'center'
                     }}>
                       {faltaFrontalCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (logAction('CENTRO DERECHA')) {
-                        setFromRival(false);
-                        setCentroDerechaCount(centroDerechaCount + 1);
-                        setActiveTab('finalizaciones');
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: '#22c55e',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '0.8rem 1.5rem',
-                      borderRadius: '12px',
-                      minWidth: '250px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}
-                  >
-                    <span>CENTRO DERECHA</span>
-                    <span style={{
-                      background: '#000000',
-                      color: '#22c55e',
-                      fontWeight: 900,
-                      fontSize: '1rem',
-                      padding: '0.2rem 0.7rem',
-                      borderRadius: '8px',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {centroDerechaCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (logAction('CENTRO IZQUIERDA')) {
-                        setFromRival(false);
-                        setCentroIzquierdaCount(centroIzquierdaCount + 1);
-                        setActiveTab('finalizaciones');
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: '#22c55e',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '0.8rem 1.5rem',
-                      borderRadius: '12px',
-                      minWidth: '250px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}
-                  >
-                    <span>CENTRO IZQUIERDA</span>
-                    <span style={{
-                      background: '#000000',
-                      color: '#22c55e',
-                      fontWeight: 900,
-                      fontSize: '1rem',
-                      padding: '0.2rem 0.7rem',
-                      borderRadius: '8px',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {centroIzquierdaCount}
                     </span>
                   </button>
                   <button
@@ -6108,6 +6109,80 @@ const minutosPorJornada = [];
                   </button>
                   <button
                     onClick={() => {
+                      if (logAction('RIVAL CENTRO DERECHA')) {
+                        setFromRival(true);
+                        setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#22c55e',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>R. CENTRO DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#22c55e',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {rivalCentroDerechaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (logAction('RIVAL CENTRO IZQUIERDA')) {
+                        setFromRival(true);
+                        setRivalCentroIzquierdaCount(rivalCentroIzquierdaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#22c55e',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>R. CENTRO IZQUIERDA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#22c55e',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {rivalCentroIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
                       if (logAction('RIVAL FALTA DERECHA')) {
                         setFromRival(true);
                         setRivalFaltaDerechaCount(rivalFaltaDerechaCount + 1);
@@ -6215,80 +6290,6 @@ const minutosPorJornada = [];
                       textAlign: 'center'
                     }}>
                       {rivalFaltaFrontalCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (logAction('RIVAL CENTRO DERECHA')) {
-                        setFromRival(true);
-                        setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
-                        setActiveTab('finalizaciones');
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: '#22c55e',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '0.8rem 1.5rem',
-                      borderRadius: '12px',
-                      minWidth: '250px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}
-                  >
-                    <span>R. CENTRO DERECHA</span>
-                    <span style={{
-                      background: '#000000',
-                      color: '#22c55e',
-                      fontWeight: 900,
-                      fontSize: '1rem',
-                      padding: '0.2rem 0.7rem',
-                      borderRadius: '8px',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {rivalCentroDerechaCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (logAction('RIVAL CENTRO IZQUIERDA')) {
-                        setFromRival(true);
-                        setRivalCentroIzquierdaCount(rivalCentroIzquierdaCount + 1);
-                        setActiveTab('finalizaciones');
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: '#22c55e',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '0.8rem 1.5rem',
-                      borderRadius: '12px',
-                      minWidth: '250px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}
-                  >
-                    <span>R. CENTRO IZQUIERDA</span>
-                    <span style={{
-                      background: '#000000',
-                      color: '#22c55e',
-                      fontWeight: 900,
-                      fontSize: '1rem',
-                      padding: '0.2rem 0.7rem',
-                      borderRadius: '8px',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {rivalCentroIzquierdaCount}
                     </span>
                   </button>
                   <button
@@ -6920,7 +6921,7 @@ const minutosPorJornada = [];
                       >
                         {(entry.type === 'finalizacion'
                           ? ['OCASION','FUERA','BLOCAJE','FINAL+BLOCA','FINAL+DESP','FINAL+FUERA','DESPEJE DEFENSA','DESPEJE PORTERO','SAQUE DE ESQUINA','GOL','GOL RIVAL','PENAL + FUERA','PENAL + GOL','PENAL + GOL RIVAL','INFRACCION']
-                          : ['INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE','FIN','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS','VARIOS']
+                          : ['INICIO 1ª PARTE','FIN 1ª PARTE','INICIO 2ª PARTE','FIN 2ª PARTE','FIN','TIRO AREA','TIRO DERECHA','TIRO IZQUIERDA','TIRO FRONTAL','CENTRO DERECHA','CENTRO IZQUIERDA','FALTA DERECHA','FALTA IZQUIERDA','FALTA FRONTAL','CORNER IZQUIERDA','CORNER DERECHA','RIVAL TIRO DERECHA','RIVAL TIRO AREA','RIVAL TIRO IZQUIERDA','RIVAL TIRO FRONTAL','RIVAL CENTRO DERECHA','RIVAL CENTRO IZQUIERDA','RIVAL FALTA DERECHA','RIVAL FALTA IZQUIERDA','RIVAL FALTA FRONTAL','RIVAL CORNER IZQUIERDA','RIVAL CORNER DERECHA','INICIO PROPIO','INICIO RIVAL','ON RIVAL','ON NEUTRO','ON PROPIO','OFF RIVAL','OFF NEUTRO','OFF PROPIO','PÉRDIDAS','VARIOS']
                         ).map((op) => (
                           <option key={op} value={op} style={{ background: '#1e293b', color: '#ffffff' }}>{op}</option>
                         ))}
