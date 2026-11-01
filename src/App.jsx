@@ -356,6 +356,8 @@ export default function App() {
   const [filtroEstadoHt, setFiltroEstadoHt] = useState('');
   const [filtroMarcaPrimero, setFiltroMarcaPrimero] = useState('');
   const [filtroEstadoFinal, setFiltroEstadoFinal] = useState('');
+  const [filtroResDescanso, setFiltroResDescanso] = useState('');
+  const [filtroResFinal, setFiltroResFinal] = useState('');
   const [tiroDerechaCount, setTiroDerechaCount] = useState(0);
   const [tiroAreaCount, setTiroAreaCount] = useState(0);
   const [rivalTiroDerechaCount, setRivalTiroDerechaCount] = useState(0);
@@ -2699,9 +2701,17 @@ export default function App() {
                             </select>
                           </th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
-                            <input type="text" value={filtroEncuentro} onChange={e => setFiltroEncuentro(e.target.value)} placeholder="Buscar..." style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center' }} />
+                            <select value={filtroEncuentro} onChange={e => setFiltroEncuentro(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
+                             <option value="">Todos</option>
+                             {[...new Set(matches.filter(m => m.matchday).map(m => `${m.homeTeam || '-'} vs ${m.awayTeam || '-'}`))].sort().map(enc => <option key={enc} value={enc}>{enc}</option>)}
+                           </select>
                           </th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}></th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
+                            <select value={filtroResDescanso} onChange={e => setFiltroResDescanso(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
+                              <option value="">Todos</option>
+                              {[...new Set(matches.filter(m => m.matchday).map(m => { const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []); const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []); const hh = hg.filter(g => g && g.periodo === '1ª PARTE').length; const ah = ag.filter(g => g && g.periodo === '1ª PARTE').length; const isH = (m.homeTeam || '').toUpperCase().includes('TENERIFE'); return isH ? (hh + ' - ' + ah) : (ah + ' - ' + hh); }))].sort().map(v => <option key={v} value={v}>{v}</option>)}
+                            </select>
+                          </th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
                             <select value={filtroEstadoHt} onChange={e => setFiltroEstadoHt(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
                               <option value="">Todos</option>
@@ -2717,7 +2727,12 @@ export default function App() {
                               <option value="RIVAL">RIVAL</option>
                             </select>
                           </th>
-                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}></th>
+                          <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
+                            <select value={filtroResFinal} onChange={e => setFiltroResFinal(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
+                              <option value="">Todos</option>
+                              {[...new Set(matches.filter(m => m.matchday).map(m => { const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []); const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []); const hp = hg.length; const isH = (m.homeTeam || '').toUpperCase().includes('TENERIFE'); return isH ? (hp + ' - ' + ag.length) : (ag.length + ' - ' + hp); }))].sort().map(v => <option key={v} value={v}>{v}</option>)}
+                            </select>
+                          </th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
                             <select value={filtroEstadoFinal} onChange={e => setFiltroEstadoFinal(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
                               <option value="">Todos</option>
@@ -2755,12 +2770,18 @@ export default function App() {
                             const encuentro = `${m.homeTeam || '-'} vs ${m.awayTeam || '-'}`;
                             const resDescanso = `${homeHt} - ${awayHt}`;
                             const resFinal = `${homeGl.length} - ${awayGl.length}`;
-                            if (filtroJornada && String(m.matchday) !== filtroJornada) return null;
+                            const hayFiltro = !!(filtroJornada || filtroRol || filtroEncuentro || filtroEstadoHt || filtroMarcaPrimero || filtroEstadoFinal || filtroResDescanso || filtroResFinal);
+               if (!hayFiltro) return null;
+               if (filtroJornada && String(m.matchday) !== filtroJornada) return null;
                             if (filtroRol && rol !== filtroRol) return null;
                             if (filtroEncuentro && !encuentro.toLowerCase().includes(filtroEncuentro.toLowerCase())) return null;
                             if (filtroEstadoHt && estadoHt !== filtroEstadoHt) return null;
                             if (filtroMarcaPrimero && marcaPrimero !== filtroMarcaPrimero) return null;
                             if (filtroEstadoFinal && estadoFinal !== filtroEstadoFinal) return null;
+                             const resDescansoDisplay = isHome ? `${homeHt} - ${awayHt}` : `${awayHt} - ${homeHt}`;
+                             const resFinalDisplay = isHome ? `${homeGl.length} - ${awayGl.length}` : `${awayGl.length} - ${homeGl.length}`;
+                             if (filtroResDescanso && resDescansoDisplay !== filtroResDescanso) return null;
+                             if (filtroResFinal && resFinalDisplay !== filtroResFinal) return null;
                             return m;
                           })
                           .filter(Boolean)
