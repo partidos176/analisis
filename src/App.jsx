@@ -215,22 +215,44 @@ const totalesTabsDef = [
   { id: 'cadetes', label: 'CADETES' }
 ];
 
-// Fila de una nota: número, minuto (al pulsarlo, lleva el vídeo a ese punto),
-// bloque de texto editable y acciones. La comparten NOTA VOZ y la hoja VÍDEOS.
-const NotaVozFila = ({ nota, numero, onBorrar, onSeek, onChangeTexto }) => {
+// Fila de una nota: número, minuto ajustable (+/-) que al pulsarlo lleva el
+// vídeo a ese punto, bloque de texto editable y acciones. Comparten NOTA VOZ y VÍDEOS.
+const NotaVozFila = ({ nota, numero, onBorrar, onSeek, onChangeTexto, onChangeMinuto }) => {
   const [texto, setTexto] = React.useState((nota && nota.texto) || '');
   React.useEffect(() => { setTexto((nota && nota.texto) || ''); }, [nota && nota.id, nota && nota.texto]);
   if (!nota) return null;
   const guardar = () => { if (onChangeTexto) onChangeTexto(nota, texto); };
+  const moverMinuto = (delta) => {
+    if (!onChangeMinuto) return;
+    const p = String(nota.minuto || '0:00').split(':').map(Number);
+    const total = Math.max(0, (p[0] || 0) * 60 + (p[1] || 0) + delta);
+    const mm = Math.floor(total / 60);
+    const ss = String(total % 60).padStart(2, '0');
+    onChangeMinuto(nota, `${mm}:${ss}`);
+  };
+  const btnTiempo = (label, delta, title) => (
+    <button
+      type="button"
+      onClick={() => moverMinuto(delta)}
+      title={title}
+      style={{ background: '#334155', color: '#e2e8f0', border: 'none', borderRadius: '4px', width: '22px', height: '22px', cursor: 'pointer', fontWeight: 900, fontSize: '0.85rem', lineHeight: '22px', padding: 0, flex: '0 0 auto' }}
+    >
+      {label}
+    </button>
+  );
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: '8px', flexWrap: 'wrap' }}>
       <span title={`Nota ${numero}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', flex: '0 0 auto', borderRadius: '50%', background: '#eab308', color: '#0b1220', fontWeight: 900, fontSize: '0.85rem' }}>{numero}</span>
-      <span
-        onClick={() => onSeek && onSeek(nota)}
-        title={nota.minuto ? 'Ir al vídeo en este minuto' : ''}
-        style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center', cursor: onSeek && nota.minuto ? 'pointer' : 'default', textDecoration: onSeek && nota.minuto ? 'underline' : 'none', textUnderlineOffset: '2px' }}
-      >
-        {nota.minuto ? 'MIN ' + nota.minuto : '—'}
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', flex: '0 0 auto' }}>
+        {btnTiempo('-', -1, 'Restar 1 segundo')}
+        <span
+          onClick={() => onSeek && onSeek(nota)}
+          title={nota.minuto ? 'Ir al vídeo en este minuto' : ''}
+          style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center', cursor: onSeek && nota.minuto ? 'pointer' : 'default', textDecoration: onSeek && nota.minuto ? 'underline' : 'none', textUnderlineOffset: '2px' }}
+        >
+          {nota.minuto ? 'MIN ' + nota.minuto : '—'}
+        </span>
+        {btnTiempo('+', 1, 'Sumar 1 segundo')}
       </span>
       <textarea
         value={texto}
@@ -771,6 +793,15 @@ export default function App() {
       update(ref(db, `matches/${currentMatch.id}/audios/${nota.id}`), { texto: texto || '' }).catch((err) => console.warn('No se pudo guardar el texto de la nota:', err));
     } else {
       setAudiosVario((prev) => prev.map((x) => (x === nota ? { ...x, texto: texto || '' } : x)));
+    }
+  };
+  // Ajusta el minuto de una nota (nube si tiene id remoto; si no, solo local).
+  const guardarMinutoNota = (nota, minuto) => {
+    if (!nota) return;
+    if (nota.id && !String(nota.id).startsWith('local-') && currentMatch && currentMatch.id) {
+      update(ref(db, `matches/${currentMatch.id}/audios/${nota.id}`), { minuto: minuto || '' }).catch((err) => console.warn('No se pudo guardar el minuto de la nota:', err));
+    } else {
+      setAudiosVario((prev) => prev.map((x) => (x === nota ? { ...x, minuto: minuto || '' } : x)));
     }
   };
   // Lleva el reproductor principal al minuto de la nota (reloj del partido +
@@ -7787,7 +7818,7 @@ const minutosPorJornada = [];
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             {audiosVario.map((a, i) => (
-                              <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onSeek={irAVideoANota} onChangeTexto={guardarTextoNota} />
+                              <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onSeek={irAVideoANota} onChangeTexto={guardarTextoNota} onChangeMinuto={guardarMinutoNota} />
                             ))}
                           </div>
                         )}
@@ -8274,7 +8305,7 @@ const minutosPorJornada = [];
                       </div>
                     )}
                     {audiosVario.map((a, i) => (
-                      <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onSeek={irAVideoANota} onChangeTexto={guardarTextoNota} />
+                      <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onSeek={irAVideoANota} onChangeTexto={guardarTextoNota} onChangeMinuto={guardarMinutoNota} />
                     ))}
                   </div>
                 )}
