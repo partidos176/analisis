@@ -238,7 +238,7 @@ const NotaVozFila = ({ nota, numero, onBorrar, onSeek, onChangeTexto }) => {
         onBlur={guardar}
         placeholder="Escribe una nota…"
         rows={2}
-        style={{ flex: '0 1 320px', minWidth: '160px', maxWidth: '360px', resize: 'vertical', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.45rem 0.6rem', fontFamily: 'inherit', fontSize: '0.85rem', lineHeight: 1.35 }}
+        style={{ flex: 2, minWidth: '240px', resize: 'vertical', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.45rem 0.6rem', fontFamily: 'inherit', fontSize: '0.85rem', lineHeight: 1.35 }}
       />
       {nota.soloLocal && (
         <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.75rem' }}>Solo local</span>
