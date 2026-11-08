@@ -7365,7 +7365,7 @@ const minutosPorJornada = [];
                               })();
                               const exportData = {
                                 app: 'tratamiento-dibujos',
-                                version: 6,
+                                version: 7,
                                 guardado: new Date().toISOString(),
                                 videoTimeOffset,
                                 videoTimeOffset2,
@@ -7377,7 +7377,9 @@ const minutosPorJornada = [];
                                   minuto: a.minuto || null,
                                   texto: a.texto || '',
                                   fecha: a.fecha || null,
-                                  nombre: a.nombre || null
+                                  nombre: a.nombre || null,
+                                  tipo: a.tipo || null,
+                                  dataUrl: (a.url && !String(a.url).startsWith('blob:')) ? a.url : null
                                 }))
                               };
                               const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
