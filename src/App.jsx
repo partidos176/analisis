@@ -7365,13 +7365,20 @@ const minutosPorJornada = [];
                               })();
                               const exportData = {
                                 app: 'tratamiento-dibujos',
-                                version: 5,
+                                version: 6,
                                 guardado: new Date().toISOString(),
                                 videoTimeOffset,
                                 videoTimeOffset2,
                                 segundaParteDesde: seg2,
                                 cortes: { cortes, duracionCortes, nombreCortes, accionCortes, cortesEditados: {} },
-                                filas: ordenadas
+                                filas: ordenadas,
+                                notasVoz: audiosVario.map((a, i) => ({
+                                  numero: i + 1,
+                                  minuto: a.minuto || null,
+                                  texto: a.texto || '',
+                                  fecha: a.fecha || null,
+                                  nombre: a.nombre || null
+                                }))
                               };
                               const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
                               const base = videoFileName || 'acciones';
