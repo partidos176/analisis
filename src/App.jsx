@@ -222,7 +222,13 @@ const NotaVozFila = ({ nota, numero, onBorrar, onPlay }) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: '8px', flexWrap: 'wrap' }}>
       <span title={`Nota ${numero}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', flex: '0 0 auto', borderRadius: '50%', background: '#eab308', color: '#0b1220', fontWeight: 900, fontSize: '0.85rem' }}>{numero}</span>
-      <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center' }}>{nota.minuto ? 'MIN ' + nota.minuto : '—'}</span>
+      <span
+        onClick={() => onPlay && onPlay(nota)}
+        title={nota.minuto ? 'Ir al vídeo en este minuto y reproducir' : ''}
+        style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center', cursor: onPlay && nota.minuto ? 'pointer' : 'default', textDecoration: onPlay && nota.minuto ? 'underline' : 'none', textUnderlineOffset: '2px' }}
+      >
+        {nota.minuto ? 'MIN ' + nota.minuto : '—'}
+      </span>
       <audio controls src={nota.url} onPlay={() => onPlay && onPlay(nota)} style={{ flex: 2, minWidth: '240px' }} />
       {nota.soloLocal && (
         <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.75rem' }}>Solo local</span>
@@ -746,8 +752,9 @@ export default function App() {
     if (nota.url && String(nota.url).startsWith('blob:')) { try { URL.revokeObjectURL(nota.url); } catch (_) {} }
     setAudiosVario((prev) => prev.filter((x) => x !== nota));
   };
-  // Al reproducir una nota de voz en la hoja VÍDEOS, el vídeo salta al minuto
-  // que tiene la nota (reloj del partido + offset del periodo, igual que una acción).
+  // Lleva el reproductor principal al minuto de la nota (reloj del partido +
+  // offset del periodo) y lo reproduce. Se usa al pulsar el minuto o al dar play
+  // a la nota en la hoja VÍDEOS.
   const irAVideoANota = (nota) => {
     const vid = videoPrincipal();
     if (!vid || !nota || !nota.minuto) return;
@@ -757,7 +764,11 @@ export default function App() {
       .filter((e) => e && e.name === '2ª PARTE' && e.time)
       .map((e) => { const q = String(e.time).split(':').map(Number); return (q[0] || 0) * 60 + (q[1] || 0); });
     const periodo = inicios2.length && segs >= Math.min(...inicios2) ? '2ª PARTE' : '1ª PARTE';
-    try { vid.currentTime = Math.max(0, segs + offsetParaPeriodo(periodo)); } catch (_) { /* vídeo sin cargar */ }
+    try {
+      vid.currentTime = Math.max(0, segs + offsetParaPeriodo(periodo));
+      const playPromise = vid.play();
+      if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
+    } catch (_) { /* vídeo sin cargar */ }
   };
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
