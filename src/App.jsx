@@ -691,6 +691,8 @@ export default function App() {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerInterval, setTimerInterval] = useState(null);
+  const [contadorParteSeconds, setContadorParteSeconds] = useState(0);
+  const [contadorParteRunning, setContadorParteRunning] = useState(false);
   const [actionLog, setActionLog] = useState([]);
   const [sustituciones, setSustituciones] = useState([]);
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
@@ -2137,17 +2139,22 @@ export default function App() {
     setPeriodo('1ª PARTE');
     setTimerSeconds(0);
     setTimerRunning(true);
+    setContadorParteSeconds(0);
+    setContadorParteRunning(true);
     logAction('1ª PARTE');
   };
 
   const handleSegundaParte = () => {
     setPeriodo('2ª PARTE');
     setTimerRunning(true);
+    setContadorParteSeconds(0);
+    setContadorParteRunning(true);
     logAction('2ª PARTE');
   };
 
   const handleFin = (name = 'FIN') => {
     setTimerRunning(false);
+    setContadorParteRunning(false);
     logAction(name);
   };
 
@@ -2158,6 +2165,8 @@ export default function App() {
     setGolesList([]);
     setGolesRivalList([]);
     recomputeCountersFromLog([]);
+    setContadorParteSeconds(0);
+    setContadorParteRunning(false);
   };
 
   useEffect(() => {
@@ -2169,6 +2178,16 @@ export default function App() {
     }
     return () => clearInterval(interval);
   }, [timerRunning]);
+
+  useEffect(() => {
+    let interval = null;
+    if (contadorParteRunning) {
+      interval = setInterval(() => {
+        setContadorParteSeconds((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [contadorParteRunning]);
 
   const handleLogout = async () => {
     try {
@@ -5649,24 +5668,27 @@ const minutosPorJornada = [];
         >
           FIN 2ª PARTE
         </button>
-                    <button
-                      onClick={handleResetContador}
+                    <div
+                      title="Contador de parte (independiente)"
                       style={{
-                        background: '#64748b',
-                        color: '#ffffff',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
+                        background: '#0f172a',
+                        color: '#22c55e',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 900,
+                        fontSize: '0.95rem',
                         padding: '0.3rem 0.8rem',
                         borderRadius: 'var(--radius-full)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
                         minWidth: '80px',
                         textAlign: 'center',
-                        flex: 1
+                        flex: 1,
+                        border: '1px solid #334155',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}
                     >
-                      RESET
-                    </button>
+                      {formatTime(contadorParteSeconds)}
+                    </div>
                   </div>
                   {fin2Aviso && (
                     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
