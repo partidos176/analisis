@@ -7365,22 +7365,37 @@ const minutosPorJornada = [];
                               })();
                               const exportData = {
                                 app: 'tratamiento-dibujos',
-                                version: 7,
+                                version: 8,
                                 guardado: new Date().toISOString(),
                                 videoTimeOffset,
                                 videoTimeOffset2,
                                 segundaParteDesde: seg2,
                                 cortes: { cortes, duracionCortes, nombreCortes, accionCortes, cortesEditados: {} },
                                 filas: ordenadas,
-                                notasVoz: audiosVario.map((a, i) => ({
-                                  numero: i + 1,
-                                  minuto: a.minuto || null,
-                                  texto: a.texto || '',
-                                  fecha: a.fecha || null,
-                                  nombre: a.nombre || null,
-                                  tipo: a.tipo || null,
-                                  dataUrl: (a.url && !String(a.url).startsWith('blob:')) ? a.url : null
-                                }))
+                                notasVoz: (() => {
+                                  const notas = audiosVario.map((a, i) => {
+                                    const audio = (a.url && !String(a.url).startsWith('blob:')) ? a.url : null;
+                                    return {
+                                      numero: i + 1,
+                                      minuto: a.minuto || null,
+                                      texto: a.texto || '',
+                                      nota: a.texto || '',
+                                      fecha: a.fecha || null,
+                                      nombre: a.nombre || null,
+                                      tipo: a.tipo || null,
+                                      dataUrl: audio,
+                                      audio
+                                    };
+                                  });
+                                  return notas;
+                                })(),
+                                notas: (() => {
+                                  const notas = audiosVario.map((a, i) => {
+                                    const audio = (a.url && !String(a.url).startsWith('blob:')) ? a.url : null;
+                                    return { numero: i + 1, minuto: a.minuto || null, texto: a.texto || '', nota: a.texto || '', fecha: a.fecha || null, nombre: a.nombre || null, tipo: a.tipo || null, dataUrl: audio, audio };
+                                  });
+                                  return notas;
+                                })()
                               };
                               const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
                               const base = videoFileName || 'acciones';
