@@ -24,8 +24,8 @@ Al iniciar sesión se accede a un menú con tres modos:
 | `SUSTITUCIONES` | Cambios de jugadores. |
 | `DATOS` | Datos del partido: equipos, jornada y metadatos. |
 | `POSESIÓN` | Posesión propia/rival y disputas. |
-| `VÍDEOS` | Carga/gestión del vídeo del partido y reproducción. Los offsets de sincronización se guardan por partido/vídeo, así que al reabrir basta con cargar el vídeo. El desplegable de filtros incluye la opción `NOTAS`, que muestra todas las notas de voz con su reproductor. |
-| `NOTA VOZ` | Notas de voz asociadas al análisis, numeradas consecutivamente desde la 1 (minuto, reproductor y acciones; sin el nombre del archivo ni la etiqueta «Nube»). |
+| `VÍDEOS` | Carga/gestión del vídeo del partido y reproducción. Los offsets de sincronización se guardan por partido/vídeo, así que al reabrir basta con cargar el vídeo. El desplegable de filtros incluye la opción `NOTAS`, que muestra todas las notas con su texto editable; al pulsar el minuto, el vídeo va a ese punto en silencio. |
+| `NOTA VOZ` | Notas asociadas al análisis, numeradas consecutivamente desde la 1 (minuto, bloque de texto editable y acciones; sin nombre de archivo ni etiqueta «Nube»). El texto se guarda en el partido. |
 
 ### TOTALES — pestañas
 `TOTAL RESULTADOS`, `TOTAL GOLES`, `TOTAL ACCIONES`, `PERIODO/ACCIÓN`, `TOTAL %`, `TOTAL POSESIÓN`, `TOTAL JUGADO`, `MINUTOS JORNADA`, `DATOS JUGADOR`, `CADETES`.

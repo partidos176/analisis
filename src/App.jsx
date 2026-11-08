@@ -215,39 +215,45 @@ const totalesTabsDef = [
   { id: 'cadetes', label: 'CADETES' }
 ];
 
-// Fila de una nota de voz: número, minuto del partido, reproductor y acciones.
-// La comparten la hoja NOTA VOZ y el desplegable de la hoja VÍDEOS.
-const NotaVozFila = ({ nota, numero, onBorrar, onSeek, onPlayNota }) => {
-  const audioRef = React.useRef(null);
+// Fila de una nota: número, minuto (al pulsarlo, lleva el vídeo a ese punto),
+// bloque de texto editable y acciones. La comparten NOTA VOZ y la hoja VÍDEOS.
+const NotaVozFila = ({ nota, numero, onBorrar, onSeek, onChangeTexto }) => {
+  const [texto, setTexto] = React.useState((nota && nota.texto) || '');
+  React.useEffect(() => { setTexto((nota && nota.texto) || ''); }, [nota && nota.id, nota && nota.texto]);
   if (!nota) return null;
-  const reproducirNota = () => {
-    if (onSeek) onSeek(nota);
-    const el = audioRef.current;
-    if (el) { const p = el.play(); if (p && typeof p.catch === 'function') p.catch(() => {}); }
-  };
+  const guardar = () => { if (onChangeTexto) onChangeTexto(nota, texto); };
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: '8px', flexWrap: 'wrap' }}>
       <span title={`Nota ${numero}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', flex: '0 0 auto', borderRadius: '50%', background: '#eab308', color: '#0b1220', fontWeight: 900, fontSize: '0.85rem' }}>{numero}</span>
       <span
-        onClick={reproducirNota}
-        title={nota.minuto ? 'Ir al vídeo en este minuto y oír la nota de voz' : 'Oír la nota de voz'}
-        style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+        onClick={() => onSeek && onSeek(nota)}
+        title={nota.minuto ? 'Ir al vídeo en este minuto' : ''}
+        style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center', cursor: onSeek && nota.minuto ? 'pointer' : 'default', textDecoration: onSeek && nota.minuto ? 'underline' : 'none', textUnderlineOffset: '2px' }}
       >
         {nota.minuto ? 'MIN ' + nota.minuto : '—'}
       </span>
-      <audio ref={audioRef} controls src={nota.url} onPlay={() => { if (onSeek) onSeek(nota); if (onPlayNota) onPlayNota(nota); }} style={{ flex: 2, minWidth: '240px' }} />
+      <textarea
+        value={texto}
+        onChange={(e) => setTexto(e.target.value)}
+        onBlur={guardar}
+        placeholder="Escribe una nota…"
+        rows={2}
+        style={{ flex: 2, minWidth: '240px', resize: 'vertical', background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.45rem 0.6rem', fontFamily: 'inherit', fontSize: '0.85rem', lineHeight: 1.35 }}
+      />
       {nota.soloLocal && (
         <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.75rem' }}>Solo local</span>
       )}
       {nota.errorSubida && (
         <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.75rem' }}>{nota.errorSubida}</span>
       )}
-      <button
-        onClick={() => { const link = document.createElement('a'); link.href = nota.url; const ext = String(nota.nombre || '').match(/\.[a-z0-9]+$/i); link.download = `nota-${numero}${ext ? ext[0] : ''}`; link.click(); }}
-        style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
-      >
-        Descargar
-      </button>
+      {nota.url && (
+        <button
+          onClick={() => { const link = document.createElement('a'); link.href = nota.url; const ext = String(nota.nombre || '').match(/\.[a-z0-9]+$/i); link.download = `nota-${numero}${ext ? ext[0] : ''}`; link.click(); }}
+          style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
+        >
+          Descargar
+        </button>
+      )}
       <button
         onClick={() => onBorrar && onBorrar(nota)}
         style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
@@ -758,6 +764,15 @@ export default function App() {
     if (nota.url && String(nota.url).startsWith('blob:')) { try { URL.revokeObjectURL(nota.url); } catch (_) {} }
     setAudiosVario((prev) => prev.filter((x) => x !== nota));
   };
+  // Guarda el texto de una nota (nube si tiene id remoto; si no, solo local).
+  const guardarTextoNota = (nota, texto) => {
+    if (!nota) return;
+    if (nota.id && !String(nota.id).startsWith('local-') && currentMatch && currentMatch.id) {
+      update(ref(db, `matches/${currentMatch.id}/audios/${nota.id}`), { texto: texto || '' }).catch((err) => console.warn('No se pudo guardar el texto de la nota:', err));
+    } else {
+      setAudiosVario((prev) => prev.map((x) => (x === nota ? { ...x, texto: texto || '' } : x)));
+    }
+  };
   // Lleva el reproductor principal al minuto de la nota (reloj del partido +
   // offset del periodo) y lo reproduce en silencio, para que se vea la imagen
   // en ese punto pero solo se oiga la nota de voz.
@@ -833,10 +848,10 @@ export default function App() {
             rd.onerror = () => reject(rd.error || new Error('No se pudo leer el audio'));
             rd.readAsDataURL(finalBlob);
           });
-          await push(ref(db, `matches/${currentMatch.id}/audios`), { nombre, fecha: ts, minuto: minutoGrab, tipo, dataUrl });
+          await push(ref(db, `matches/${currentMatch.id}/audios`), { nombre, fecha: ts, minuto: minutoGrab, tipo, dataUrl, texto: '' });
         } catch (err) {
           console.error('Error guardando audio en la nube:', err);
-          setAudiosVario((prev) => [...prev, { id: 'local-' + idAud, url, nombre, fecha: ts, minuto: minutoGrab, tipo, soloLocal: true, errorSubida: 'No se pudo guardar en la nube: ' + ((err && err.message) || err) }]);
+          setAudiosVario((prev) => [...prev, { id: 'local-' + idAud, url, nombre, fecha: ts, minuto: minutoGrab, tipo, texto: '', soloLocal: true, errorSubida: 'No se pudo guardar en la nube: ' + ((err && err.message) || err) }]);
         } finally {
           setSubiendoAudio(false);
         }
@@ -965,10 +980,13 @@ export default function App() {
 
   useEffect(() => {
     const id = currentMatch && currentMatch.id;
-    if (!id) return;
+    if (!id) { setAudiosVario([]); return; }
     const audiosRef = ref(db, `matches/${id}/audios`);
     const off = onValue(audiosRef, (snap) => {
-      if (!snap.exists()) { setAudiosVario([]); return; }
+      if (!snap.exists()) {
+        setAudiosVario((prev) => prev.filter((x) => x && String(x.id || '').startsWith('local-')));
+        return;
+      }
       const val = snap.val();
       const list = Object.entries(val).map(([key, a]) => ({
         id: key,
@@ -976,9 +994,13 @@ export default function App() {
         nombre: a && a.nombre,
         fecha: a && a.fecha,
         minuto: a && a.minuto,
-        tipo: a && a.tipo
+        tipo: a && a.tipo,
+        texto: (a && a.texto) || ''
       }));
-      setAudiosVario(list);
+      setAudiosVario((prev) => {
+        const locales = prev.filter((x) => x && String(x.id || '').startsWith('local-'));
+        return [...list, ...locales];
+      });
     });
     return () => off();
   }, [currentMatch && currentMatch.id]);
@@ -7765,7 +7787,7 @@ const minutosPorJornada = [];
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             {audiosVario.map((a, i) => (
-                              <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onSeek={irAVideoANota} />
+                              <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onSeek={irAVideoANota} onChangeTexto={guardarTextoNota} />
                             ))}
                           </div>
                         )}
@@ -8252,7 +8274,7 @@ const minutosPorJornada = [];
                       </div>
                     )}
                     {audiosVario.map((a, i) => (
-                      <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} />
+                      <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onSeek={irAVideoANota} onChangeTexto={guardarTextoNota} />
                     ))}
                   </div>
                 )}
