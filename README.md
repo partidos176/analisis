@@ -18,7 +18,7 @@ Al iniciar sesión se accede a un menú con tres modos:
 | Pestaña | Contenido |
 |---|---|
 | `ALINEACION` | Alineación 1-4-4-2, dorsales y jugadores. |
-| `ACCIONES` | Registro de acciones propias/rival, tiros, faltas, centros, córners, pérdidas, transiciones, goles, penaltis, saques, infracciones y ocasiones. |
+| `ACCIONES` | Registro de acciones propias/rival, tiros, faltas, centros, córners, pérdidas, transiciones, goles, penaltis, saques, infracciones y ocasiones. Incluye un botón `PAUSE`/`CONTINUAR` bajo la jornada para detener y reanudar los dos contadores de tiempo. |
 | `FINALIZACIONES` | Finalizaciones: fuera, blocaje, final a boca, final desde dentro, despejes, etc. |
 | `GOLES` | Listado de goles propios y rivales. |
 | `SUSTITUCIONES` | Cambios de jugadores. |

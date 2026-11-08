@@ -693,6 +693,8 @@ export default function App() {
   const [timerInterval, setTimerInterval] = useState(null);
   const [contadorParteSeconds, setContadorParteSeconds] = useState(0);
   const [contadorParteRunning, setContadorParteRunning] = useState(false);
+  const [timersPausados, setTimersPausados] = useState(false);
+  const timersPrevRef = useRef({ timer: false, contador: false });
   const [actionLog, setActionLog] = useState([]);
   const [sustituciones, setSustituciones] = useState([]);
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
@@ -2141,6 +2143,7 @@ export default function App() {
     setTimerRunning(true);
     setContadorParteSeconds(0);
     setContadorParteRunning(true);
+    setTimersPausados(false);
     logAction('1ª PARTE');
   };
 
@@ -2149,12 +2152,14 @@ export default function App() {
     setTimerRunning(true);
     setContadorParteSeconds(0);
     setContadorParteRunning(true);
+    setTimersPausados(false);
     logAction('2ª PARTE');
   };
 
   const handleFin = (name = 'FIN') => {
     setTimerRunning(false);
     setContadorParteRunning(false);
+    setTimersPausados(false);
     logAction(name);
   };
 
@@ -2167,6 +2172,21 @@ export default function App() {
     recomputeCountersFromLog([]);
     setContadorParteSeconds(0);
     setContadorParteRunning(false);
+    setTimersPausados(false);
+  };
+
+  const togglePauseTimers = () => {
+    if (timersPausados) {
+      const { timer, contador } = timersPrevRef.current;
+      setTimerRunning(timer || contador ? timer : true);
+      setContadorParteRunning(timer || contador ? contador : true);
+      setTimersPausados(false);
+    } else {
+      timersPrevRef.current = { timer: timerRunning, contador: contadorParteRunning };
+      setTimerRunning(false);
+      setContadorParteRunning(false);
+      setTimersPausados(true);
+    }
   };
 
   useEffect(() => {
@@ -5523,9 +5543,32 @@ const minutosPorJornada = [];
               </div>
               </>
               )}
-              <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: (activeTab === 'datos' || activeTab === 'posesion') ? '#000000' : '#ffffff', background: (activeTab === 'datos' || activeTab === 'posesion') ? '#ffffff' : 'var(--bg-secondary)', border: (activeTab === 'datos' || activeTab === 'posesion') ? '1px solid var(--border-subtle)' : 'none', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
-                {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : `JORNADA ${currentMatch.matchday}`}
-              </span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                <span style={{ fontSize: ['videos', 'posesion'].includes(activeTab) ? '1.8rem' : '1.2rem', fontWeight: 700, color: (activeTab === 'datos' || activeTab === 'posesion') ? '#000000' : '#ffffff', background: (activeTab === 'datos' || activeTab === 'posesion') ? '#ffffff' : 'var(--bg-secondary)', border: (activeTab === 'datos' || activeTab === 'posesion') ? '1px solid var(--border-subtle)' : 'none', padding: '0.3rem 0.8rem', borderRadius: 'var(--radius-full)' }}>
+                  {activeTab === 'videos' ? 'CORTES DE VÍDEO' : activeTab === 'posesion' ? 'POSESIÓN' : `JORNADA ${currentMatch.matchday}`}
+                </span>
+                {activeTab === 'acciones' && (
+                  <button
+                    onClick={togglePauseTimers}
+                    style={{
+                      background: timersPausados ? '#16a34a' : '#f59e0b',
+                      color: '#ffffff',
+                      fontWeight: 700,
+                      fontSize: '0.75rem',
+                      padding: '0.3rem 0.8rem',
+                      borderRadius: 'var(--radius-full)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      minWidth: '80px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      border: 'none'
+                    }}
+                  >
+                    {timersPausados ? 'CONTINUAR' : 'PAUSE'}
+                  </button>
+                )}
+              </div>
               {activeTab === 'acciones' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                   {editingTimer ? (
