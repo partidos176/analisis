@@ -217,19 +217,25 @@ const totalesTabsDef = [
 
 // Fila de una nota de voz: número, minuto del partido, reproductor y acciones.
 // La comparten la hoja NOTA VOZ y el desplegable de la hoja VÍDEOS.
-const NotaVozFila = ({ nota, numero, onBorrar, onPlay }) => {
+const NotaVozFila = ({ nota, numero, onBorrar, onSeek, onPlayNota }) => {
+  const audioRef = React.useRef(null);
   if (!nota) return null;
+  const reproducirNota = () => {
+    if (onSeek) onSeek(nota);
+    const el = audioRef.current;
+    if (el) { const p = el.play(); if (p && typeof p.catch === 'function') p.catch(() => {}); }
+  };
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: '8px', flexWrap: 'wrap' }}>
       <span title={`Nota ${numero}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', flex: '0 0 auto', borderRadius: '50%', background: '#eab308', color: '#0b1220', fontWeight: 900, fontSize: '0.85rem' }}>{numero}</span>
       <span
-        onClick={() => onPlay && onPlay(nota)}
-        title={nota.minuto ? 'Ir al vídeo en este minuto y reproducir' : ''}
-        style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center', cursor: onPlay && nota.minuto ? 'pointer' : 'default', textDecoration: onPlay && nota.minuto ? 'underline' : 'none', textUnderlineOffset: '2px' }}
+        onClick={reproducirNota}
+        title={nota.minuto ? 'Ir al vídeo en este minuto y oír la nota de voz' : 'Oír la nota de voz'}
+        style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px' }}
       >
         {nota.minuto ? 'MIN ' + nota.minuto : '—'}
       </span>
-      <audio controls src={nota.url} onPlay={() => onPlay && onPlay(nota)} style={{ flex: 2, minWidth: '240px' }} />
+      <audio ref={audioRef} controls src={nota.url} onPlay={() => { if (onSeek) onSeek(nota); if (onPlayNota) onPlayNota(nota); }} style={{ flex: 2, minWidth: '240px' }} />
       {nota.soloLocal && (
         <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.75rem' }}>Solo local</span>
       )}
@@ -753,22 +759,21 @@ export default function App() {
     setAudiosVario((prev) => prev.filter((x) => x !== nota));
   };
   // Lleva el reproductor principal al minuto de la nota (reloj del partido +
-  // offset del periodo) y lo reproduce. Se usa al pulsar el minuto o al dar play
-  // a la nota en la hoja VÍDEOS.
+  // offset del periodo) sin reproducir el audio original del vídeo: se pausa y
+  // se silencia para que solo se oiga la nota de voz.
   const irAVideoANota = (nota) => {
     const vid = videoPrincipal();
-    if (!vid || !nota || !nota.minuto) return;
+    if (!vid) return;
+    try { vid.pause(); } catch (_) {}
+    try { vid.muted = true; } catch (_) {}
+    if (!nota || !nota.minuto) return;
     const p = String(nota.minuto).split(':').map(Number);
     const segs = (p[0] || 0) * 60 + (p[1] || 0);
     const inicios2 = actionLog
       .filter((e) => e && e.name === '2ª PARTE' && e.time)
       .map((e) => { const q = String(e.time).split(':').map(Number); return (q[0] || 0) * 60 + (q[1] || 0); });
     const periodo = inicios2.length && segs >= Math.min(...inicios2) ? '2ª PARTE' : '1ª PARTE';
-    try {
-      vid.currentTime = Math.max(0, segs + offsetParaPeriodo(periodo));
-      const playPromise = vid.play();
-      if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
-    } catch (_) { /* vídeo sin cargar */ }
+    try { vid.currentTime = Math.max(0, segs + offsetParaPeriodo(periodo)); } catch (_) { /* vídeo sin cargar */ }
   };
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -7756,7 +7761,7 @@ const minutosPorJornada = [];
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             {audiosVario.map((a, i) => (
-                              <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onPlay={irAVideoANota} />
+                              <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onSeek={irAVideoANota} />
                             ))}
                           </div>
                         )}
