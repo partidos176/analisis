@@ -215,6 +215,37 @@ const totalesTabsDef = [
   { id: 'cadetes', label: 'CADETES' }
 ];
 
+// Fila de una nota de voz: número, minuto del partido, reproductor y acciones.
+// La comparten la hoja NOTA VOZ y el desplegable de la hoja VÍDEOS.
+const NotaVozFila = ({ nota, numero, onBorrar, onPlay }) => {
+  if (!nota) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: '8px', flexWrap: 'wrap' }}>
+      <span title={`Nota ${numero}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', flex: '0 0 auto', borderRadius: '50%', background: '#eab308', color: '#0b1220', fontWeight: 900, fontSize: '0.85rem' }}>{numero}</span>
+      <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center' }}>{nota.minuto ? 'MIN ' + nota.minuto : '—'}</span>
+      <audio controls src={nota.url} onPlay={() => onPlay && onPlay(nota)} style={{ flex: 2, minWidth: '240px' }} />
+      {nota.soloLocal && (
+        <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.75rem' }}>Solo local</span>
+      )}
+      {nota.errorSubida && (
+        <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.75rem' }}>{nota.errorSubida}</span>
+      )}
+      <button
+        onClick={() => { const link = document.createElement('a'); link.href = nota.url; const ext = String(nota.nombre || '').match(/\.[a-z0-9]+$/i); link.download = `nota-${numero}${ext ? ext[0] : ''}`; link.click(); }}
+        style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
+      >
+        Descargar
+      </button>
+      <button
+        onClick={() => onBorrar && onBorrar(nota)}
+        style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
+      >
+        &#10005;
+      </button>
+    </div>
+  );
+};
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -705,6 +736,29 @@ export default function App() {
   const [grabandoAudio, setGrabandoAudio] = useState(false);
   const [audiosVario, setAudiosVario] = useState([]);
   const [subiendoAudio, setSubiendoAudio] = useState(false);
+  // Borra una nota de voz (de la nube si subió; si no, del almacenamiento local).
+  const borrarNotaVoz = (nota) => {
+    if (!nota) return;
+    if (nota.id && !String(nota.id).startsWith('local-') && currentMatch && currentMatch.id) {
+      remove(ref(db, `matches/${currentMatch.id}/audios/${nota.id}`)).catch((err) => console.warn('No se pudo borrar el audio:', err));
+      return;
+    }
+    if (nota.url && String(nota.url).startsWith('blob:')) { try { URL.revokeObjectURL(nota.url); } catch (_) {} }
+    setAudiosVario((prev) => prev.filter((x) => x !== nota));
+  };
+  // Al reproducir una nota de voz en la hoja VÍDEOS, el vídeo salta al minuto
+  // que tiene la nota (reloj del partido + offset del periodo, igual que una acción).
+  const irAVideoANota = (nota) => {
+    const vid = videoPrincipal();
+    if (!vid || !nota || !nota.minuto) return;
+    const p = String(nota.minuto).split(':').map(Number);
+    const segs = (p[0] || 0) * 60 + (p[1] || 0);
+    const inicios2 = actionLog
+      .filter((e) => e && e.name === '2ª PARTE' && e.time)
+      .map((e) => { const q = String(e.time).split(':').map(Number); return (q[0] || 0) * 60 + (q[1] || 0); });
+    const periodo = inicios2.length && segs >= Math.min(...inicios2) ? '2ª PARTE' : '1ª PARTE';
+    try { vid.currentTime = Math.max(0, segs + offsetParaPeriodo(periodo)); } catch (_) { /* vídeo sin cargar */ }
+  };
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const toggleGrabarAudio = async () => {
@@ -1661,7 +1715,7 @@ export default function App() {
       return;
     }
     const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'];
-    const acciones = actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && (filtroAccion === '' || e.name === filtroAccion));
+    const acciones = actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && (filtroAccion === '' || filtroAccion === '__notas__' || e.name === filtroAccion));
     if (acciones.length === 0) {
       setCorteError('No hay acciones registradas para cortar');
       return;
@@ -1793,7 +1847,7 @@ export default function App() {
       return;
     }
     const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'];
-    const acciones = actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && (filtroAccion === '' || e.name === filtroAccion));
+    const acciones = actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && (filtroAccion === '' || filtroAccion === '__notas__' || e.name === filtroAccion));
     if (acciones.length === 0) {
       setCorteError('No hay acciones para generar');
       return;
@@ -7406,6 +7460,7 @@ const minutosPorJornada = [];
                   >
                     <option value="" style={{ color: '#ffffff' }}>Todas las acciones</option>
                     <option value="__varios__" style={{ color: '#ef4444' }}>VARIOS</option>
+                    <option value="__notas__" style={{ color: '#eab308' }}>NOTAS</option>
                     {[...new Set(actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL', 'VARIOS'].includes(e.name)).map(e => e.name))].map(name => (
                       <option key={name} value={name}>{name}</option>
                     ))}
@@ -7569,7 +7624,7 @@ const minutosPorJornada = [];
                       padding: '1rem'
                     }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: '1rem', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
-                      Acciones ({actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name) && (filtroAccion === '' || e.name === filtroAccion)).length})
+                      Acciones ({actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE', 'ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name) && (filtroAccion === '' || filtroAccion === '__notas__' || e.name === filtroAccion)).length})
                     </span>
                     {actionLog.length === 0 && (
                       <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
@@ -7675,7 +7730,28 @@ const minutosPorJornada = [];
                     ))})()}
                     </div>
                     {/* Acciones seleccionadas por el filtro */}
-                    {filtroAccion && (() => {
+                    {/* Notas de voz (todas) desde el desplegable de la hoja VÍDEOS */}
+                    {filtroAccion === '__notas__' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', marginTop: '0.5rem', padding: '0.5rem', borderRadius: '8px', background: 'rgba(234, 179, 8, 0.08)', border: '1px solid rgba(234, 179, 8, 0.3)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ color: '#eab308', fontWeight: 700, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {`NOTAS — ${audiosVario.length} ${audiosVario.length === 1 ? 'nota' : 'notas'}`}
+                          </span>
+                        </div>
+                        {audiosVario.length === 0 ? (
+                          <span style={{ color: '#64748b', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}>
+                            Sin notas aún
+                          </span>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {audiosVario.map((a, i) => (
+                              <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} onPlay={irAVideoANota} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {filtroAccion && filtroAccion !== '__notas__' && (() => {
                       const excludedNames = ['1ª PARTE', '2ª PARTE', 'FIN', 'FIN 1ª PARTE', 'FIN 2ª PARTE'];
                       const allAccionesFiltradas = (filtroAccion === '__varios__'
                         ? actionLog.filter(e => e && e.time && e.type !== 'finalizacion' && !excludedNames.includes(e.name) && !['ON PROPIO', 'OFF PROPIO', 'ON RIVAL', 'OFF RIVAL'].includes(e.name))
@@ -7822,7 +7898,6 @@ const minutosPorJornada = [];
                                 </span>
                               )}
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                {filtroAccion !== '__varios__' && <span style={{ color: '#22c55e', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase' }}>inicio</span>}
                                 <button onClick={(ev) => {
                                   ev.stopPropagation();
                                   setAjusteAcciones(prev => {
@@ -7863,7 +7938,6 @@ const minutosPorJornada = [];
                                 }} style={{ background: '#1e293b', color: '#22c55e', border: '1px solid #334155', borderRadius: '4px', width: '20px', height: '20px', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                <span style={{ color: '#ef4444', fontWeight: 600, fontSize: '0.65rem', textTransform: 'uppercase' }}>fin</span>
                                 <button onClick={(ev) => {
                                   ev.stopPropagation();
                                   setAjusteAccionesFin(prev => {
@@ -8158,39 +8232,7 @@ const minutosPorJornada = [];
                       </div>
                     )}
                     {audiosVario.map((a, i) => (
-                      <div key={a.id || i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 800, fontSize: '0.85rem', color: '#38bdf8', minWidth: '54px', textAlign: 'center' }}>{a.minuto ? 'MIN ' + a.minuto : '—'}</span>
-                        <span style={{ flex: 1, fontWeight: 700, fontSize: '0.85rem', minWidth: '160px' }}>{a.nombre}</span>
-                        <audio controls src={a.url} style={{ flex: 2, minWidth: '240px' }} />
-                        {a.soloLocal ? (
-                          <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.75rem' }}>Solo local</span>
-                        ) : (
-                          <span style={{ color: '#22c55e', fontWeight: 700, fontSize: '0.75rem' }}>☁ Nube</span>
-                        )}
-                        {a.errorSubida && (
-                          <span style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.75rem' }}>{a.errorSubida}</span>
-                        )}
-                        <button
-                          onClick={() => { const link = document.createElement('a'); link.href = a.url; link.download = a.nombre; link.click(); }}
-                          style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
-                        >
-                          Descargar
-                        </button>
-                        <button
-                          onClick={() => {
-                            const objetivo = audiosVario[i];
-                            if (objetivo && objetivo.id && !String(objetivo.id).startsWith('local-') && currentMatch && currentMatch.id) {
-                              remove(ref(db, `matches/${currentMatch.id}/audios/${objetivo.id}`)).catch((err) => console.warn('No se pudo borrar el audio:', err));
-                            } else {
-                              if (objetivo && objetivo.url && String(objetivo.url).startsWith('blob:')) { try { URL.revokeObjectURL(objetivo.url); } catch (_) {} }
-                              setAudiosVario((prev) => prev.filter((_, j) => j !== i));
-                            }
-                          }}
-                          style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '0.35rem 0.7rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.7rem' }}
-                        >
-                          &#10005;
-                        </button>
-                      </div>
+                      <NotaVozFila key={a.id || i} nota={a} numero={i + 1} onBorrar={borrarNotaVoz} />
                     ))}
                   </div>
                 )}
