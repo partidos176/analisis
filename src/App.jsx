@@ -759,12 +759,11 @@ export default function App() {
     setAudiosVario((prev) => prev.filter((x) => x !== nota));
   };
   // Lleva el reproductor principal al minuto de la nota (reloj del partido +
-  // offset del periodo) sin reproducir el audio original del vídeo: se pausa y
-  // se silencia para que solo se oiga la nota de voz.
+  // offset del periodo) sin reproducir el audio original del vídeo: se silencia
+  // (sin pausar) para que solo se oiga la nota de voz.
   const irAVideoANota = (nota) => {
     const vid = videoPrincipal();
     if (!vid) return;
-    try { vid.pause(); } catch (_) {}
     try { vid.muted = true; } catch (_) {}
     if (!nota || !nota.minuto) return;
     const p = String(nota.minuto).split(':').map(Number);
