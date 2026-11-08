@@ -759,20 +759,25 @@ export default function App() {
     setAudiosVario((prev) => prev.filter((x) => x !== nota));
   };
   // Lleva el reproductor principal al minuto de la nota (reloj del partido +
-  // offset del periodo) sin reproducir el audio original del vídeo: se silencia
-  // (sin pausar) para que solo se oiga la nota de voz.
+  // offset del periodo) y lo reproduce en silencio, para que se vea la imagen
+  // en ese punto pero solo se oiga la nota de voz.
   const irAVideoANota = (nota) => {
     const vid = videoPrincipal();
     if (!vid) return;
     try { vid.muted = true; } catch (_) {}
-    if (!nota || !nota.minuto) return;
-    const p = String(nota.minuto).split(':').map(Number);
-    const segs = (p[0] || 0) * 60 + (p[1] || 0);
+    if (!nota || !nota.minuto) {
+      const p = vid.play(); if (p && typeof p.catch === 'function') p.catch(() => {});
+      return;
+    }
+    const pmin = String(nota.minuto).split(':').map(Number);
+    const segs = (pmin[0] || 0) * 60 + (pmin[1] || 0);
     const inicios2 = actionLog
       .filter((e) => e && e.name === '2ª PARTE' && e.time)
       .map((e) => { const q = String(e.time).split(':').map(Number); return (q[0] || 0) * 60 + (q[1] || 0); });
     const periodo = inicios2.length && segs >= Math.min(...inicios2) ? '2ª PARTE' : '1ª PARTE';
     try { vid.currentTime = Math.max(0, segs + offsetParaPeriodo(periodo)); } catch (_) { /* vídeo sin cargar */ }
+    const playPromise = vid.play();
+    if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
   };
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
