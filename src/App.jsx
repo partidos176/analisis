@@ -5573,25 +5573,7 @@ const minutosPorJornada = [];
                       {formatTime(timerSeconds)}
                     </span>
                   )}
-                  <button
-                    onClick={() => setTimerRunning(prev => !prev)}
-                    style={{
-                      background: timerRunning ? '#f59e0b' : '#22c55e',
-                      color: '#ffffff',
-                      fontWeight: 700,
-                      fontSize: '0.75rem',
-                      padding: '0.3rem 0.8rem',
-                      borderRadius: 'var(--radius-full)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      minWidth: '80px',
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                      border: 'none'
-                    }}
-                  >
-                    {timerRunning ? 'PAUSA' : 'REANUDAR'}
-                  </button>
+
                   <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'stretch' }}>
                     <button
                       onClick={handlePrimeraParte}
