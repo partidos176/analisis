@@ -215,13 +215,21 @@ const totalesTabsDef = [
   { id: 'cadetes', label: 'CADETES' }
 ];
 
-// Fila de una nota: número, minuto ajustable (+/-) que al pulsarlo lleva el
+// Fila de una nota: número, play de audio, minuto ajustable (+/-) que lleva el
 // vídeo a ese punto, bloque de texto editable y acciones. Comparten NOTA VOZ y VÍDEOS.
 const NotaVozFila = ({ nota, numero, onBorrar, onSeek, onChangeTexto, onChangeMinuto }) => {
   const [texto, setTexto] = React.useState((nota && nota.texto) || '');
+  const [sonando, setSonando] = React.useState(false);
+  const audioRef = React.useRef(null);
   React.useEffect(() => { setTexto((nota && nota.texto) || ''); }, [nota && nota.id, nota && nota.texto]);
   if (!nota) return null;
   const guardar = () => { if (onChangeTexto) onChangeTexto(nota, texto); };
+  const toggleAudio = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (sonando) { el.pause(); el.currentTime = 0; setSonando(false); }
+    else { const p = el.play(); if (p && typeof p.catch === 'function') p.catch(() => {}); }
+  };
   const moverMinuto = (delta) => {
     if (!onChangeMinuto) return;
     const p = String(nota.minuto || '0:00').split(':').map(Number);
@@ -243,6 +251,19 @@ const NotaVozFila = ({ nota, numero, onBorrar, onSeek, onChangeTexto, onChangeMi
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: '8px', flexWrap: 'wrap' }}>
       <span title={`Nota ${numero}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', flex: '0 0 auto', borderRadius: '50%', background: '#eab308', color: '#0b1220', fontWeight: 900, fontSize: '0.85rem' }}>{numero}</span>
+      {nota.url && (
+        <>
+          <button
+            type="button"
+            onClick={toggleAudio}
+            title={sonando ? 'Parar nota de voz' : 'Oír nota de voz'}
+            style={{ background: sonando ? '#ef4444' : '#22c55e', color: '#fff', border: 'none', borderRadius: '4px', width: '28px', height: '28px', cursor: 'pointer', fontWeight: 900, fontSize: '0.8rem', lineHeight: '28px', padding: 0, flex: '0 0 auto' }}
+          >
+            {sonando ? '■' : '▶'}
+          </button>
+          <audio ref={audioRef} src={nota.url} onPlay={() => setSonando(true)} onPause={() => setSonando(false)} onEnded={() => setSonando(false)} style={{ display: 'none' }} />
+        </>
+      )}
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', flex: '0 0 auto' }}>
         {btnTiempo('-', -1, 'Restar 1 segundo')}
         <span
