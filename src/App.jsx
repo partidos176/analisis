@@ -695,6 +695,10 @@ export default function App() {
   const [contadorParteRunning, setContadorParteRunning] = useState(false);
   const [timersPausados, setTimersPausados] = useState(false);
   const timersPrevRef = useRef({ timer: false, contador: false });
+  const timerBaseRef = useRef(0);
+  const timerStartMsRef = useRef(0);
+  const contadorBaseRef = useRef(0);
+  const contadorStartMsRef = useRef(0);
   const [actionLog, setActionLog] = useState([]);
   const [sustituciones, setSustituciones] = useState([]);
   const [resumenFiltro, setResumenFiltro] = useState('PROPIO');
@@ -1202,6 +1206,8 @@ export default function App() {
     setPlayers(defaultPlayersList());
     setTimerSeconds(0);
     setTimerRunning(false);
+    timerBaseRef.current = 0;
+    timerStartMsRef.current = 0;
     setActionLog([]);
     setSustituciones([]);
     setFromRival(false);
@@ -1479,6 +1485,10 @@ export default function App() {
     }
     setTimerSeconds(match.timerSeconds ?? 0);
     setTimerRunning(match.timerRunning ?? false);
+    if (match.timerRunning) {
+      timerBaseRef.current = match.timerSeconds ?? 0;
+      timerStartMsRef.current = Date.now();
+    }
     setActionLog(normalizeArray(match.actionLog));
     setSustituciones(normalizeArray(match.sustituciones));
     // Restaurar offsets de sincronización del vídeo guardados en el partido,
@@ -2140,8 +2150,12 @@ export default function App() {
   const handlePrimeraParte = () => {
     setPeriodo('1ª PARTE');
     setTimerSeconds(0);
+    timerBaseRef.current = 0;
+    timerStartMsRef.current = Date.now();
     setTimerRunning(true);
     setContadorParteSeconds(0);
+    contadorBaseRef.current = 0;
+    contadorStartMsRef.current = Date.now();
     setContadorParteRunning(true);
     setTimersPausados(false);
     logAction('1ª PARTE');
@@ -2149,14 +2163,27 @@ export default function App() {
 
   const handleSegundaParte = () => {
     setPeriodo('2ª PARTE');
+    timerBaseRef.current = timerSeconds;
+    timerStartMsRef.current = Date.now();
     setTimerRunning(true);
     setContadorParteSeconds(0);
+    contadorBaseRef.current = 0;
+    contadorStartMsRef.current = Date.now();
     setContadorParteRunning(true);
     setTimersPausados(false);
     logAction('2ª PARTE');
   };
 
   const handleFin = (name = 'FIN') => {
+    const now = Date.now();
+    if (timerRunning) {
+      const elapsed = Math.floor((now - timerStartMsRef.current) / 1000);
+      setTimerSeconds(timerBaseRef.current + elapsed);
+    }
+    if (contadorParteRunning) {
+      const elapsed = Math.floor((now - contadorStartMsRef.current) / 1000);
+      setContadorParteSeconds(contadorBaseRef.current + elapsed);
+    }
     setTimerRunning(false);
     setContadorParteRunning(false);
     setTimersPausados(false);
@@ -2166,11 +2193,15 @@ export default function App() {
   const handleResetContador = () => {
     if (!window.confirm('¿Seguro que quieres poner todos los contadores a cero?')) return;
     setTimerSeconds(0);
+    timerBaseRef.current = 0;
+    timerStartMsRef.current = 0;
     setActionLog([]);
     setGolesList([]);
     setGolesRivalList([]);
     recomputeCountersFromLog([]);
     setContadorParteSeconds(0);
+    contadorBaseRef.current = 0;
+    contadorStartMsRef.current = 0;
     setContadorParteRunning(false);
     setTimersPausados(false);
   };
@@ -2178,10 +2209,24 @@ export default function App() {
   const togglePauseTimers = () => {
     if (timersPausados) {
       const { timer, contador } = timersPrevRef.current;
+      // Reanudar: anclar al reloj real
+      timerBaseRef.current = timerSeconds;
+      timerStartMsRef.current = Date.now();
+      contadorBaseRef.current = contadorParteSeconds;
+      contadorStartMsRef.current = Date.now();
       setTimerRunning(timer || contador ? timer : true);
       setContadorParteRunning(timer || contador ? contador : true);
       setTimersPausados(false);
     } else {
+      const now = Date.now();
+      if (timerRunning) {
+        const elapsed = Math.floor((now - timerStartMsRef.current) / 1000);
+        setTimerSeconds(timerBaseRef.current + elapsed);
+      }
+      if (contadorParteRunning) {
+        const elapsed = Math.floor((now - contadorStartMsRef.current) / 1000);
+        setContadorParteSeconds(contadorBaseRef.current + elapsed);
+      }
       timersPrevRef.current = { timer: timerRunning, contador: contadorParteRunning };
       setTimerRunning(false);
       setContadorParteRunning(false);
@@ -2190,24 +2235,59 @@ export default function App() {
   };
 
   useEffect(() => {
-    let interval = null;
-    if (timerRunning) {
-      interval = setInterval(() => {
-        setTimerSeconds((prev) => prev + 1);
-      }, 1000);
-    }
+    if (!timerRunning) return;
+    // Anclamos el contador al reloj real para evitar deriva acumulada por
+    // setInterval (pestañas en segundo plano, renderizados pesados, etc.).
+    timerBaseRef.current = timerSeconds;
+    timerStartMsRef.current = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - timerStartMsRef.current) / 1000);
+      setTimerSeconds(timerBaseRef.current + elapsed);
+    }, 1000);
     return () => clearInterval(interval);
   }, [timerRunning]);
 
   useEffect(() => {
-    let interval = null;
-    if (contadorParteRunning) {
-      interval = setInterval(() => {
-        setContadorParteSeconds((prev) => prev + 1);
-      }, 1000);
-    }
+    if (!contadorParteRunning) return;
+    contadorBaseRef.current = contadorParteSeconds;
+    contadorStartMsRef.current = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - contadorStartMsRef.current) / 1000);
+      setContadorParteSeconds(contadorBaseRef.current + elapsed);
+    }, 1000);
     return () => clearInterval(interval);
   }, [contadorParteRunning]);
+
+  // Al volver a la pestaña (o a la ventana), recalcular al instante para
+  // compensar los ticks que el navegador haya pausado en segundo plano.
+  useEffect(() => {
+    const recalc = () => {
+      if (document.visibilityState && document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      if (timerRunning) {
+        const elapsed = Math.floor((now - timerStartMsRef.current) / 1000);
+        const val = timerBaseRef.current + elapsed;
+        setTimerSeconds(val);
+        timerBaseRef.current = val;
+        timerStartMsRef.current = now;
+      }
+      if (contadorParteRunning) {
+        const elapsed = Math.floor((now - contadorStartMsRef.current) / 1000);
+        const val = contadorBaseRef.current + elapsed;
+        setContadorParteSeconds(val);
+        contadorBaseRef.current = val;
+        contadorStartMsRef.current = now;
+      }
+    };
+    document.addEventListener('visibilitychange', recalc);
+    window.addEventListener('focus', recalc);
+    window.addEventListener('pageshow', recalc);
+    return () => {
+      document.removeEventListener('visibilitychange', recalc);
+      window.removeEventListener('focus', recalc);
+      window.removeEventListener('pageshow', recalc);
+    };
+  }, [timerRunning, contadorParteRunning]);
 
   const handleLogout = async () => {
     try {
@@ -5590,7 +5670,9 @@ const minutosPorJornada = [];
                           if (e.key === 'Enter') {
                             const m = Math.max(0, parseInt(timerEditMin) || 0);
                             const s = Math.max(0, Math.min(59, parseInt(timerEditSec) || 0));
-                            setTimerSeconds(m * 60 + s);
+                            const __et = m * 60 + s;
+                            setTimerSeconds(__et);
+                            if (timerRunning) { timerBaseRef.current = __et; timerStartMsRef.current = Date.now(); }
                             setEditingTimer(false);
                           } else if (e.key === 'Escape') {
                             setEditingTimer(false);
@@ -5611,7 +5693,9 @@ const minutosPorJornada = [];
                           if (e.key === 'Enter') {
                             const m = Math.max(0, parseInt(timerEditMin) || 0);
                             const s = Math.max(0, Math.min(59, parseInt(timerEditSec) || 0));
-                            setTimerSeconds(m * 60 + s);
+                            const __et = m * 60 + s;
+                            setTimerSeconds(__et);
+                            if (timerRunning) { timerBaseRef.current = __et; timerStartMsRef.current = Date.now(); }
                             setEditingTimer(false);
                           } else if (e.key === 'Escape') {
                             setEditingTimer(false);
@@ -5620,7 +5704,9 @@ const minutosPorJornada = [];
                         onBlur={() => {
                           const m = Math.max(0, parseInt(timerEditMin) || 0);
                           const s = Math.max(0, Math.min(59, parseInt(timerEditSec) || 0));
-                          setTimerSeconds(m * 60 + s);
+                          const __et = m * 60 + s;
+                          setTimerSeconds(__et);
+                          if (timerRunning) { timerBaseRef.current = __et; timerStartMsRef.current = Date.now(); }
                           setEditingTimer(false);
                         }}
                         style={{ width: '40px', background: 'var(--bg-primary)', border: '1px solid #38bdf8', borderRadius: '6px', color: '#38bdf8', fontWeight: 900, fontFamily: 'var(--font-mono)', fontSize: '1.4rem', textAlign: 'center', padding: '0.2rem' }}
