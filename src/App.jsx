@@ -1538,7 +1538,7 @@ export default function App() {
       finalFueraCount,
       despejeDefensaCount,
       despejePorteroCount,
-      golCount: golesList.length,
+      golCount: golesList.filter(esGolPropio).length,
       golRivalCount: golesRivalList.length,
       penalCount,
       penalFueraCount,
@@ -2897,7 +2897,7 @@ export default function App() {
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
                             <select value={filtroResDescanso} onChange={e => setFiltroResDescanso(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
                               <option value="">Todos</option>
-                              {[...new Set(matches.filter(m => m.matchday).map(m => { const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []); const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []); const hh = hg.filter(g => g && g.periodo === '1ª PARTE').length; const ah = ag.filter(g => g && g.periodo === '1ª PARTE').length; const isH = (m.homeTeam || '').toUpperCase().includes('TENERIFE'); return isH ? (hh + ' - ' + ah) : (ah + ' - ' + hh); }))].sort().map(v => <option key={v} value={v}>{v}</option>)}
+                              {[...new Set(matches.filter(m => m.matchday).map(m => { const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []); const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []); const hh = hg.filter(g => g && esGolPropio(g) && g.periodo === '1ª PARTE').length; const ah = ag.filter(g => g && g.periodo === '1ª PARTE').length; const isH = (m.homeTeam || '').toUpperCase().includes('TENERIFE'); return isH ? (hh + ' - ' + ah) : (ah + ' - ' + hh); }))].sort().map(v => <option key={v} value={v}>{v}</option>)}
                             </select>
                           </th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
@@ -2918,7 +2918,7 @@ export default function App() {
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
                             <select value={filtroResFinal} onChange={e => setFiltroResFinal(e.target.value)} style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: '6px', color: '#ffffff', fontWeight: 700, fontSize: '0.75rem', padding: '0.25rem', textAlign: 'center', cursor: 'pointer' }}>
                               <option value="">Todos</option>
-                              {[...new Set(matches.filter(m => m.matchday).map(m => { const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []); const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []); const hp = hg.length; const isH = (m.homeTeam || '').toUpperCase().includes('TENERIFE'); return isH ? (hp + ' - ' + ag.length) : (ag.length + ' - ' + hp); }))].sort().map(v => <option key={v} value={v}>{v}</option>)}
+                              {[...new Set(matches.filter(m => m.matchday).map(m => { const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []); const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []); const hp = hg.filter(esGolPropio).length; const isH = (m.homeTeam || '').toUpperCase().includes('TENERIFE'); return isH ? (hp + ' - ' + ag.length) : (ag.length + ' - ' + hp); }))].sort().map(v => <option key={v} value={v}>{v}</option>)}
                             </select>
                           </th>
                           <th style={{ border: '1px solid var(--border-subtle)', padding: '0.3rem' }}>
@@ -2937,7 +2937,7 @@ export default function App() {
                           .map(m => {
                             const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                             const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                            const homeHt = homeGl.filter(g => g && g.periodo === '1ª PARTE').length;
+                            const homeHt = homeGl.filter(g => g && esGolPropio(g) && g.periodo === '1ª PARTE').length;
                             const awayHt = awayGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
                             const marcaPrimero = (() => {
@@ -2953,11 +2953,12 @@ export default function App() {
                               return firstPropio < firstRival ? 'CD TENERIFE' : firstRival < firstPropio ? 'RIVAL' : 'Simultáneo';
                             })();
                             const estadoHt = homeHt > awayHt ? 'Victoria' : homeHt < awayHt ? 'Derrota' : 'Empate';
-                            const estadoFinal = homeGl.length > awayGl.length ? 'Victoria' : homeGl.length < awayGl.length ? 'Derrota' : 'Empate';
+                            const homeGoalsCount = homeGl.filter(esGolPropio).length;
+                             const estadoFinal = homeGoalsCount > awayGl.length ? 'Victoria' : homeGoalsCount < awayGl.length ? 'Derrota' : 'Empate';
                             const rol = isHome ? 'Local' : 'Visitante';
                             const encuentro = `${m.homeTeam || '-'} vs ${m.awayTeam || '-'}`;
                             const resDescanso = `${homeHt} - ${awayHt}`;
-                            const resFinal = `${homeGl.length} - ${awayGl.length}`;
+                            const resFinal = `${homeGoalsCount} - ${awayGl.length}`;
                             const hayFiltro = !!(filtroJornada || filtroRol || filtroEncuentro || filtroEstadoHt || filtroMarcaPrimero || filtroEstadoFinal || filtroResDescanso || filtroResFinal);
                if (!hayFiltro) return null;
                if (filtroJornada && String(m.matchday) !== filtroJornada) return null;
@@ -2967,7 +2968,7 @@ export default function App() {
                             if (filtroMarcaPrimero && marcaPrimero !== filtroMarcaPrimero) return null;
                             if (filtroEstadoFinal && estadoFinal !== filtroEstadoFinal) return null;
                              const resDescansoDisplay = isHome ? `${homeHt} - ${awayHt}` : `${awayHt} - ${homeHt}`;
-                             const resFinalDisplay = isHome ? `${homeGl.length} - ${awayGl.length}` : `${awayGl.length} - ${homeGl.length}`;
+                             const resFinalDisplay = isHome ? `${homeGoalsCount} - ${awayGl.length}` : `${awayGl.length} - ${homeGoalsCount}`;
                              if (filtroResDescanso && resDescansoDisplay !== filtroResDescanso) return null;
                              if (filtroResFinal && resFinalDisplay !== filtroResFinal) return null;
                             return m;
@@ -2977,7 +2978,7 @@ export default function App() {
                           .map((m, i) => {
                             const homeGl = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                             const awayGl = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                            const homeHt = homeGl.filter(g => g && g.periodo === '1ª PARTE').length;
+                            const homeHt = homeGl.filter(g => g && esGolPropio(g) && g.periodo === '1ª PARTE').length;
                             const awayHt = awayGl.filter(g => g && g.periodo === '1ª PARTE').length;
                             const isHome = (m.homeTeam || '').toUpperCase().includes('TENERIFE');
                             const marcaPrimero = (() => {
@@ -2993,7 +2994,8 @@ export default function App() {
                               return firstPropio < firstRival ? 'CD TENERIFE' : firstRival < firstPropio ? 'RIVAL' : 'Simultáneo';
                             })();
                             const estadoHt = homeHt > awayHt ? 'Victoria' : homeHt < awayHt ? 'Derrota' : 'Empate';
-                            const estadoFinal = homeGl.length > awayGl.length ? 'Victoria' : homeGl.length < awayGl.length ? 'Derrota' : 'Empate';
+                            const homeGoalsCount = homeGl.filter(esGolPropio).length;
+                             const estadoFinal = homeGoalsCount > awayGl.length ? 'Victoria' : homeGoalsCount < awayGl.length ? 'Derrota' : 'Empate';
                             return (
                             <tr key={m.id || i} style={{ background: i % 2 === 0 ? 'rgba(56,189,248,0.06)' : 'transparent' }}>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', color: '#ffffff', fontWeight: 800, fontSize: '0.95rem' }}>{m.matchday}</td>
@@ -3009,10 +3011,11 @@ export default function App() {
                                 {marcaPrimero}
                               </td>
                               <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 900, fontSize: '1.1rem', fontFamily: 'var(--font-mono)', color: estadoFinal === 'Victoria' ? '#22c55e' : estadoFinal === 'Derrota' ? '#ef4444' : '#f59e0b' }}>
-                                {isHome ? `${homeGl.length} - ${awayGl.length}` : `${awayGl.length} - ${homeGl.length}`}
+                                {isHome ? `${homeGoalsCount} - ${awayGl.length}` : `${awayGl.length} - ${homeGoalsCount}`}
                               </td>
                               {(() => {
-                            const estadoFinal = homeGl.length > awayGl.length ? 'Victoria' : homeGl.length < awayGl.length ? 'Derrota' : 'Empate';
+                            const homeGoalsCount = homeGl.filter(esGolPropio).length;
+                             const estadoFinal = homeGoalsCount > awayGl.length ? 'Victoria' : homeGoalsCount < awayGl.length ? 'Derrota' : 'Empate';
                                 return (
                                   <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', textAlign: 'center', fontWeight: 800, fontSize: '0.9rem', color: estadoFinal === 'Victoria' ? '#22c55e' : estadoFinal === 'Derrota' ? '#ef4444' : '#fbbf24' }}>
                                     {estadoFinal}
@@ -3032,18 +3035,18 @@ export default function App() {
                     localMatches.forEach(m => {
                       const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                       const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                      lGf += hg.length; lGc += ag.length;
-                      if (hg.length > ag.length) lVic++;
-                      else if (hg.length === ag.length) lEmp++;
+                      lGf += hg.filter(esGolPropio).length; lGc += ag.length;
+                      if (hg.filter(esGolPropio).length > ag.length) lVic++;
+                      else if (hg.filter(esGolPropio).length === ag.length) lEmp++;
                       else lDer++;
                     });
                     let vVic = 0, vEmp = 0, vDer = 0, vGf = 0, vGc = 0;
                     awayMatches.forEach(m => {
                       const hg = Array.isArray(m.golesList) ? m.golesList : (m.golesList ? Object.values(m.golesList) : []);
                       const ag = Array.isArray(m.golesRivalList) ? m.golesRivalList : (m.golesRivalList ? Object.values(m.golesRivalList) : []);
-                      vGf += hg.length; vGc += ag.length;
-                      if (hg.length > ag.length) vVic++;
-                      else if (hg.length === ag.length) vEmp++;
+                      vGf += hg.filter(esGolPropio).length; vGc += ag.length;
+                      if (hg.filter(esGolPropio).length > ag.length) vVic++;
+                      else if (hg.filter(esGolPropio).length === ag.length) vEmp++;
                       else vDer++;
                     });
                     if (localMatches.length === 0 && awayMatches.length === 0) return null;
@@ -3411,6 +3414,8 @@ export default function App() {
                                     cx="50%"
                                     cy="20%"
                                     outerRadius={90}
+                                    startAngle={90}
+                                    endAngle={450}
                                     dataKey="value"
                                     isAnimationActive={false}
                                     labelLine={{ stroke: '#605E5C', strokeWidth: 1.5 }}
@@ -3517,7 +3522,7 @@ export default function App() {
                   {(() => {
                     const live = {
                       ocasionCount, fueraCount, blocajeCount, despejeDefensaCount, despejePorteroCount,
-                      saqueEsquinaFueraCount, golCount: golesList.length, golRivalCount: golesRivalList.length, penalCount, infraccionCount,
+                      saqueEsquinaFueraCount, golCount: golesList.filter(esGolPropio).length, golRivalCount: golesRivalList.length, penalCount, infraccionCount,
                       tiroDerechaCount, tiroIzquierdaCount, tiroFrontalCount,
                       faltaDerechaCount, faltaIzquierdaCount, faltaFrontalCount,
                       centroDerechaCount, centroIzquierdaCount,
