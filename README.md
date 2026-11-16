@@ -32,6 +32,8 @@ Al iniciar sesión se accede a un menú con tres modos:
 
 Incluye filtros por jornada, rol, encuentro, estado al descanso, marca del primer gol y estado final.
 
+La pestaña `TOTAL JUGADO` permite descargar su tabla como imagen JPG (botón `↓`); la imagen se exporta con fondo blanco para coincidir con el fondo de la página.
+
 ### OFF LIVE
 - Timeline de acciones con filas editables y periodos (1ª parte, 2ª parte, prórroga).
 - Saltos al segundo exacto del vídeo al seleccionar una jugada.

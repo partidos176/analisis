@@ -4700,7 +4700,7 @@ const minutosPorJornada = [];
                             onClick={async () => {
                               if (!totalJugadoRef.current) return;
                               try {
-                                const canvas = await html2canvas(totalJugadoRef.current, { backgroundColor: '#0b0f19', scale: 2, useCORS: true });
+                                const canvas = await html2canvas(totalJugadoRef.current, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
                                 const link = document.createElement('a');
                                 link.download = `total_jugado_J${currentMatch?.matchday || '?'}_${currentMatch?.homeTeam || ''}_vs_${currentMatch?.awayTeam || ''}.jpg`;
                                 link.href = canvas.toDataURL('image/jpeg', 0.95);
