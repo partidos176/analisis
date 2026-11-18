@@ -15,12 +15,40 @@ jobs:
     steps:
       - name: Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v2
+        uses: dependabot/fetch-metadata@v3
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Enable auto-merge for Dependabot PRs
-        run: gh pr merge --squash "$PR_URL"
+        run: |
+          # Con reglas de protección en main, GitHub espera a los checks.
+          if gh pr merge --auto --squash --delete-branch "$PR_URL"; then
+            exit 0
+          fi
+
+          # Sin reglas de protección, esperamos a que pase CI antes de fusionar.
+          listo=0
+          for _ in $(seq 1 40); do
+            estados=$(gh pr checks "$PR_URL" --json state,workflow \
+              --jq '[.[] | select(.workflow == "CI") | .state] | join(",")' 2>/dev/null || true)
+            case "$estados" in
+              *FAILURE*|*CANCELLED*|*TIMED_OUT*|*ACTION_REQUIRED*|*STARTUP_FAILURE*)
+                echo "CI ha fallado; no se fusiona."
+                exit 1
+                ;;
+            esac
+            if [ -n "$estados" ] && ! printf '%s' "$estados" | grep -qE 'PENDING|QUEUED|IN_PROGRESS'; then
+              listo=1
+              break
+            fi
+            sleep 10
+          done
+          if [ "$listo" -ne 1 ]; then
+            echo "CI no ha terminado correctamente; no se fusiona."
+            exit 1
+          fi
+
+          gh pr merge --squash --delete-branch "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

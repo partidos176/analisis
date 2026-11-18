@@ -1,0 +1,72 @@
+name: Actualizar Node.js LTS
+
+on:
+  schedule:
+    # 03:00 UTC: madrugada en España (04:00/05:00 según horario de verano).
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-node
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    name: Buscar nueva LTS y actualizar main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Configurar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+          run_install: false
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+
+      - name: Actualizar .nvmrc, engines y README
+        run: node scripts/update-node-version.mjs
+
+      - name: Comprobar si hay cambios
+        id: cambios
+        run: |
+          if git diff --quiet; then
+            echo "hay=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "hay=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configurar Node.js actualizado
+        if: steps.cambios.outputs.hay == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+
+      - name: Comprobar el proyecto con la nueva versión
+        if: steps.cambios.outputs.hay == 'true'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Crear commit y subir a main
+        if: steps.cambios.outputs.hay == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .nvmrc package.json README.md
+          git add package-lock.json 2>/dev/null || true
+          git commit -m 'chore: actualizar Node.js a la última LTS'
+          git pull --rebase origin main
+          git push origin HEAD:main

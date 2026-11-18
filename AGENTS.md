@@ -13,5 +13,5 @@
 ### Tooling
 
 - Usar `pnpm` para instalar/actualizar dependencias (`pnpm install`, `pnpm update`).
-- Node.js mínimo: `>=22.23.4` (por vulnerabilidades de seguridad).
-- Dependabot actualiza dependencias semanalmente (patch/minor); las major se gestionan manualmente.
+- Node.js mínimo: el declarado en `.nvmrc` y `engines.node`, actualizado automáticamente a la última LTS por `update-node.yml`.
+- Dependabot actualiza diariamente las dependencias (patch/minor, agrupadas) y las GitHub Actions; las major se gestionan manualmente.

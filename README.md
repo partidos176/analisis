@@ -133,7 +133,12 @@ pnpm deploy
 
 ## 🔐 Seguridad y mantenimiento
 
-- `engines.node` fijado a `>=22.23.4` (parche de vulnerabilidades críticas de Node.js y CA eMudhra).
-- **Dependabot** semanal para npm (patch/minor) + auto-merge cuando CI pasa.
+- `engines.node` y `.nvmrc` los actualiza el workflow `update-node.yml` a la última LTS de Node.js (03:00 UTC diario).
+- **Dependabot** diario: npm a las 04:30 y GitHub Actions a las 05:30 (hora de Madrid), agrupado en `todas` y con `target-branch: main`. Las actualizaciones *major* se gestionan manualmente.
+- **CI** (`ci.yml`): instala con pnpm y comprueba el build; el auto-merge de Dependabot espera a que CI pase antes de fusionar.
 - Reglas de Firebase en `storage.rules`.
 - **Regla de código**: ningún componente nuevo debe superar las 500 líneas (ver `AGENTS.md`).
+
+### Cambios importantes
+
+- **2026-11-18**: calcada la configuración de `Noticias`: Dependabot diario y escalonado (también para GitHub Actions), CI con pnpm, auto-merge tras CI y `update-node.yml` + `scripts/update-node-version.mjs` para actualizar Node.js a la última LTS con commit directo a `main`.

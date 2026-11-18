@@ -1,20 +1,45 @@
 version: 2
+
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: npm
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "06:00"
-      timezone: "Europe/Madrid"
-    open-pull-requests-limit: 10
-    reviewers:
-      - "atrujimar"
+      interval: daily
+      # Con 30 minutos de separación del actualizador de Node.js (03:00 UTC)
+      # para no provocar dos despliegues de Vercel solapados.
+      time: '04:30'
+      timezone: Europe/Madrid
+    target-branch: main
+    open-pull-requests-limit: 5
     labels:
-      - "dependencies"
-      - "automated"
-    # Solo patch y minor (sin major)
+      - dependencias
+    groups:
+      todas:
+        patterns:
+          - '*'
+    # Las actualizaciones major se gestionan manualmente (ver AGENTS.md).
     ignore:
-      - dependency-name: "*"
+      - dependency-name: '*'
         update-types:
-          - "version-update:semver-major"
+          - 'version-update:semver-major'
+    commit-message:
+      prefix: 'chore(deps)'
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: daily
+      # Una hora después del PR de npm para que Vercel termine su despliegue.
+      time: '05:30'
+      timezone: Europe/Madrid
+    target-branch: main
+    open-pull-requests-limit: 5
+    labels:
+      - dependencias
+      - github-actions
+    groups:
+      todas:
+        patterns:
+          - '*'
+    commit-message:
+      prefix: 'chore(actions)'
