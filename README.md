@@ -18,12 +18,12 @@ Al iniciar sesión se accede a un menú con tres modos:
 | Pestaña | Contenido |
 |---|---|
 | `ALINEACION` | Alineación 1-4-4-2, dorsales y jugadores. |
-| `ACCIONES` | Registro de acciones propias/rival, tiros, faltas, centros, córners, pérdidas, transiciones, goles, penaltis, saques, infracciones y ocasiones. Incluye un botón `PAUSE`/`CONTINUAR` bajo la jornada para detener y reanudar los dos contadores de tiempo. |
+| `ACCIONES` | Registro de acciones propias/rival, tiros, faltas, centros, córners, pérdidas, transiciones, goles, penaltis, saques, infracciones y ocasiones. Incluye un botón `PAUSE`/`CONTINUAR` bajo la jornada para detener y reanudar los dos contadores de tiempo. Los botones laterales (tiro, centro y falta) se ordenan con `IZQUIERDA` encima de `DERECHA`, tanto en la columna propia como en la rival. |
 | `FINALIZACIONES` | Finalizaciones: fuera, blocaje, final a boca, final desde dentro, despejes, etc. |
 | `GOLES` | Listado de goles propios y rivales. |
 | `SUSTITUCIONES` | Cambios de jugadores. |
 | `DATOS` | Datos del partido: equipos, jornada y metadatos. |
-| `POSESIÓN` | Posesión propia/rival y disputas. |
+| `POSESIÓN` | Posesión propia/rival y disputas. En la tabla por minutos, los porcentajes de posesión propia y rival se muestran siempre en negro. |
 | `VÍDEOS` | Carga/gestión del vídeo del partido y reproducción. Los offsets de sincronización se guardan por partido/vídeo, así que al reabrir basta con cargar el vídeo. El desplegable de filtros incluye la opción `NOTAS`, que muestra todas las notas con su texto editable; al pulsar el minuto, el vídeo va a ese punto en silencio. |
 | `NOTA VOZ` | Notas asociadas al análisis, numeradas consecutivamente desde la 1 (reproducir audio, minuto ajustable con `+`/`-`, bloque de texto editable y acciones; sin nombre de archivo ni etiqueta «Nube»). Texto y minuto se guardan en el partido. |
 

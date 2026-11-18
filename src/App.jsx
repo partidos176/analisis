@@ -5930,43 +5930,6 @@ const minutosPorJornada = [];
                   </button>
                   <button
                     onClick={() => {
-                      if (logAction('TIRO DERECHA')) {
-                        setFromRival(false);
-                        setTiroDerechaCount(tiroDerechaCount + 1);
-                        setActiveTab('finalizaciones');
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: '#eab308',
-                      color: '#000000',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '0.8rem 1.5rem',
-                      borderRadius: '12px',
-                      minWidth: '250px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}
-                  >
-                    <span>TIRO DERECHA</span>
-                    <span style={{
-                      background: '#000000',
-                      color: '#eab308',
-                      fontWeight: 900,
-                      fontSize: '1rem',
-                      padding: '0.2rem 0.7rem',
-                      borderRadius: '8px',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {tiroDerechaCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
                       if (logAction('TIRO IZQUIERDA')) {
                         setFromRival(false);
                         setTiroIzquierdaCount(tiroIzquierdaCount + 1);
@@ -6000,6 +5963,43 @@ const minutosPorJornada = [];
                       textAlign: 'center'
                     }}>
                       {tiroIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (logAction('TIRO DERECHA')) {
+                        setFromRival(false);
+                        setTiroDerechaCount(tiroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#eab308',
+                      color: '#000000',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>TIRO DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#eab308',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {tiroDerechaCount}
                     </span>
                   </button>
                   <button
@@ -6041,43 +6041,6 @@ const minutosPorJornada = [];
                   </button>
                   <button
                     onClick={() => {
-                      if (logAction('CENTRO DERECHA')) {
-                        setFromRival(false);
-                        setCentroDerechaCount(centroDerechaCount + 1);
-                        setActiveTab('finalizaciones');
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: '#22c55e',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '0.8rem 1.5rem',
-                      borderRadius: '12px',
-                      minWidth: '250px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}
-                  >
-                    <span>CENTRO DERECHA</span>
-                    <span style={{
-                      background: '#000000',
-                      color: '#22c55e',
-                      fontWeight: 900,
-                      fontSize: '1rem',
-                      padding: '0.2rem 0.7rem',
-                      borderRadius: '8px',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {centroDerechaCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
                       if (logAction('CENTRO IZQUIERDA')) {
                         setFromRival(false);
                         setCentroIzquierdaCount(centroIzquierdaCount + 1);
@@ -6115,9 +6078,9 @@ const minutosPorJornada = [];
                   </button>
                   <button
                     onClick={() => {
-                      if (logAction('FALTA DERECHA')) {
+                      if (logAction('CENTRO DERECHA')) {
                         setFromRival(false);
-                        setFaltaDerechaCount(faltaDerechaCount + 1);
+                        setCentroDerechaCount(centroDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -6125,7 +6088,7 @@ const minutosPorJornada = [];
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      background: '#3b82f6',
+                      background: '#22c55e',
                       color: '#ffffff',
                       fontWeight: 900,
                       fontSize: '0.95rem',
@@ -6136,10 +6099,10 @@ const minutosPorJornada = [];
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>FALTA DERECHA</span>
+                    <span>CENTRO DERECHA</span>
                     <span style={{
                       background: '#000000',
-                      color: '#3b82f6',
+                      color: '#22c55e',
                       fontWeight: 900,
                       fontSize: '1rem',
                       padding: '0.2rem 0.7rem',
@@ -6147,7 +6110,7 @@ const minutosPorJornada = [];
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {faltaDerechaCount}
+                      {centroDerechaCount}
                     </span>
                   </button>
                   <button
@@ -6185,6 +6148,43 @@ const minutosPorJornada = [];
                       textAlign: 'center'
                     }}>
                       {faltaIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (logAction('FALTA DERECHA')) {
+                        setFromRival(false);
+                        setFaltaDerechaCount(faltaDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#3b82f6',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>FALTA DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#3b82f6',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {faltaDerechaCount}
                     </span>
                   </button>
                   <button
@@ -6345,43 +6345,6 @@ const minutosPorJornada = [];
                   </button>
                   <button
                     onClick={() => {
-                      if (logAction('RIVAL TIRO DERECHA')) {
-                        setFromRival(true);
-                        setRivalTiroDerechaCount(rivalTiroDerechaCount + 1);
-                        setActiveTab('finalizaciones');
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: '#eab308',
-                      color: '#000000',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '0.8rem 1.5rem',
-                      borderRadius: '12px',
-                      minWidth: '250px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}
-                  >
-                    <span>R. TIRO DERECHA</span>
-                    <span style={{
-                      background: '#000000',
-                      color: '#eab308',
-                      fontWeight: 900,
-                      fontSize: '1rem',
-                      padding: '0.2rem 0.7rem',
-                      borderRadius: '8px',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {rivalTiroDerechaCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
                       if (logAction('RIVAL TIRO IZQUIERDA')) {
                         setFromRival(true);
                         setRivalTiroIzquierdaCount(rivalTiroIzquierdaCount + 1);
@@ -6415,6 +6378,43 @@ const minutosPorJornada = [];
                       textAlign: 'center'
                     }}>
                       {rivalTiroIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (logAction('RIVAL TIRO DERECHA')) {
+                        setFromRival(true);
+                        setRivalTiroDerechaCount(rivalTiroDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#eab308',
+                      color: '#000000',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>R. TIRO DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#eab308',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {rivalTiroDerechaCount}
                     </span>
                   </button>
                   <button
@@ -6456,43 +6456,6 @@ const minutosPorJornada = [];
                   </button>
                   <button
                     onClick={() => {
-                      if (logAction('RIVAL CENTRO DERECHA')) {
-                        setFromRival(true);
-                        setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
-                        setActiveTab('finalizaciones');
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: '#22c55e',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '0.95rem',
-                      padding: '0.8rem 1.5rem',
-                      borderRadius: '12px',
-                      minWidth: '250px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}
-                  >
-                    <span>R. CENTRO DERECHA</span>
-                    <span style={{
-                      background: '#000000',
-                      color: '#22c55e',
-                      fontWeight: 900,
-                      fontSize: '1rem',
-                      padding: '0.2rem 0.7rem',
-                      borderRadius: '8px',
-                      minWidth: '30px',
-                      textAlign: 'center'
-                    }}>
-                      {rivalCentroDerechaCount}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
                       if (logAction('RIVAL CENTRO IZQUIERDA')) {
                         setFromRival(true);
                         setRivalCentroIzquierdaCount(rivalCentroIzquierdaCount + 1);
@@ -6530,9 +6493,9 @@ const minutosPorJornada = [];
                   </button>
                   <button
                     onClick={() => {
-                      if (logAction('RIVAL FALTA DERECHA')) {
+                      if (logAction('RIVAL CENTRO DERECHA')) {
                         setFromRival(true);
-                        setRivalFaltaDerechaCount(rivalFaltaDerechaCount + 1);
+                        setRivalCentroDerechaCount(rivalCentroDerechaCount + 1);
                         setActiveTab('finalizaciones');
                       }
                     }}
@@ -6540,7 +6503,7 @@ const minutosPorJornada = [];
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      background: '#3b82f6',
+                      background: '#22c55e',
                       color: '#ffffff',
                       fontWeight: 900,
                       fontSize: '0.95rem',
@@ -6551,10 +6514,10 @@ const minutosPorJornada = [];
                       letterSpacing: '0.05em'
                     }}
                   >
-                    <span>R. FALTA DERECHA</span>
+                    <span>R. CENTRO DERECHA</span>
                     <span style={{
                       background: '#000000',
-                      color: '#3b82f6',
+                      color: '#22c55e',
                       fontWeight: 900,
                       fontSize: '1rem',
                       padding: '0.2rem 0.7rem',
@@ -6562,7 +6525,7 @@ const minutosPorJornada = [];
                       minWidth: '30px',
                       textAlign: 'center'
                     }}>
-                      {rivalFaltaDerechaCount}
+                      {rivalCentroDerechaCount}
                     </span>
                   </button>
                   <button
@@ -6600,6 +6563,43 @@ const minutosPorJornada = [];
                       textAlign: 'center'
                     }}>
                       {rivalFaltaIzquierdaCount}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (logAction('RIVAL FALTA DERECHA')) {
+                        setFromRival(true);
+                        setRivalFaltaDerechaCount(rivalFaltaDerechaCount + 1);
+                        setActiveTab('finalizaciones');
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      background: '#3b82f6',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '0.95rem',
+                      padding: '0.8rem 1.5rem',
+                      borderRadius: '12px',
+                      minWidth: '250px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}
+                  >
+                    <span>R. FALTA DERECHA</span>
+                    <span style={{
+                      background: '#000000',
+                      color: '#3b82f6',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                      padding: '0.2rem 0.7rem',
+                      borderRadius: '8px',
+                      minWidth: '30px',
+                      textAlign: 'center'
+                    }}>
+                      {rivalFaltaDerechaCount}
                     </span>
                   </button>
                   <button
@@ -9381,8 +9381,8 @@ const minutosPorJornada = [];
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#6d28d9', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.real)}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#22c55e', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.efec) + (r.real > 0 ? ` (${Math.round((r.efec / r.real) * 100)}%)` : '')}</td>
                                 <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#f59e0b', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.sub ? '' : fmt(r.neutro) + (r.real > 0 ? ` (${Math.round((r.neutro / r.real) * 100)}%)` : '')}</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: (r.efec > 0 && (Math.round((r.own / r.efec) * 100) === 74 || Math.round((r.own / r.efec) * 100) === 80 || Math.round((r.own / r.efec) * 100) === 77)) ? '#38bdf8' : '#000000', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.own / r.efec) * 100) : 0}%</td>
-                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: (r.efec > 0 && (Math.round((r.rival / r.efec) * 100) === 26 || Math.round((r.rival / r.efec) * 100) === 23 || Math.round((r.rival / r.efec) * 100) === 20)) ? '#ef4444' : '#000000', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.rival / r.efec) * 100) : 0}%</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#000000', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.own / r.efec) * 100) : 0}%</td>
+                                <td style={{ border: '1px solid var(--border-subtle)', padding: r.sub ? '0.3rem 0.8rem' : '0.5rem 0.8rem', textAlign: 'center', color: '#000000', fontWeight: r.total ? 900 : r.sub ? 600 : 700, fontSize: r.sub ? '0.9rem' : '0.9rem', fontFamily: 'var(--font-mono)', fontStyle: r.sub ? 'italic' : 'normal' }}>{r.efec > 0 ? Math.round((r.rival / r.efec) * 100) : 0}%</td>
                               </tr>
                             ))}
                           </tbody>
