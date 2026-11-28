@@ -3840,6 +3840,26 @@ export default function App() {
                       });
                       return res;
                     };
+                    const contarOcasiones = (al, soloRival) => {
+                      const res = {};
+                      const logArr = Array.isArray(al) ? al : (al ? Object.values(al) : []);
+                      let ultimaAccion = '';
+                      [...logArr].reverse().forEach(entry => {
+                        if (!entry) return;
+                        if (entry.type === 'accion' && !isPeriodMarker(entry.name)) {
+                          ultimaAccion = entry.name;
+                          return;
+                        }
+                        if (entry.name !== 'OCASION') return;
+                        // Igual que en el cruce de acciones: la finalización pertenece
+                        // al equipo de la última acción registrada antes de ella.
+                        if (ultimaAccion.startsWith('RIVAL ') !== soloRival) return;
+                        const min = minutode(entry.time);
+                        if (min != null) res[min] = (res[min] || 0) + 1;
+                        else res['sin'] = (res['sin'] || 0) + 1;
+                      });
+                      return res;
+                    };
                     const sumarEn = (destino, origen) => {
                       Object.keys(origen).forEach(k => {
                         destino[k] = destino[k] || {};
@@ -3848,31 +3868,42 @@ export default function App() {
                         });
                       });
                     };
+                    const sumarMinutos = (destino, origen) => {
+                      Object.keys(origen).forEach(min => {
+                        destino[min] = (destino[min] || 0) + origen[min];
+                      });
+                    };
                     const porMinuto = {};
                     const porMinutoRival = {};
+                    const porMinutoOcasiones = {};
+                    const porMinutoOcasionesRival = {};
                     const listaPartidos = [];
                     matches.forEach(m => {
                       if (currentMatch && m.id === currentMatch.id) return;
                       listaPartidos.push(m);
                       if (!partidoPeriodoAccion || m.id === partidoPeriodoAccion) {
                         sumarEn(porMinuto, contar(m.actionLog, propias));
+                        sumarMinutos(porMinutoOcasiones, contarOcasiones(m.actionLog, false));
                       }
                       if (!partidoPeriodoRival || m.id === partidoPeriodoRival) {
                         sumarEn(porMinutoRival, contar(m.actionLog, rivales));
+                        sumarMinutos(porMinutoOcasionesRival, contarOcasiones(m.actionLog, true));
                       }
                     });
                     if (currentMatch) {
                       listaPartidos.push(currentMatch);
                       if (!partidoPeriodoAccion || partidoPeriodoAccion === currentMatch.id) {
                         sumarEn(porMinuto, contar(actionLog, propias));
+                        sumarMinutos(porMinutoOcasiones, contarOcasiones(actionLog, false));
                       }
                       if (!partidoPeriodoRival || partidoPeriodoRival === currentMatch.id) {
                         sumarEn(porMinutoRival, contar(actionLog, rivales));
+                        sumarMinutos(porMinutoOcasionesRival, contarOcasiones(actionLog, true));
                       }
                     }
                     const cols = propias.filter(a => Object.keys(porMinuto[a] || {}).length > 0);
                     const colsRival = rivales.filter(a => Object.keys(porMinutoRival[a] || {}).length > 0);
-                    const pintarTabla = (titulo, colorTitulo, colsT, datos) => {
+                    const pintarTabla = (titulo, colorTitulo, colsT, datos, ocasionesDatos) => {
                       if (!colsT.length) return null;
                       return (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
@@ -3898,6 +3929,7 @@ export default function App() {
                               <thead>
                                 <tr>
                                   <th style={{ border: '1px solid var(--border-subtle)', padding: '0.55rem 0.8rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase' }}>PERIODO</th>
+                                  <th style={{ border: '1px solid var(--border-subtle)', padding: '0.55rem 0.5rem', textAlign: 'center', color: '#eab308', fontWeight: 800, textTransform: 'uppercase' }}>OCASIONES</th>
                                   {colsT.map(a => (
                                     <th key={a} style={{ border: '1px solid var(--border-subtle)', padding: '0.55rem 0.5rem', textAlign: 'center', color: '#facc15', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap', fontSize: '0.8rem', lineHeight: 1.15 }}>
                                       {a.split(' ').map((w, i) => (
@@ -3920,9 +3952,14 @@ export default function App() {
                                     filaTot[a] = s;
                                   });
                                   const totalFila = colsT.reduce((s, a) => s + filaTot[a], 0);
+                                  const ocasionesFila = Object.keys(ocasionesDatos || {}).reduce((s, min) => {
+                                    const mNum = Number(min);
+                                    return (mNum >= d && mNum <= h) ? s + (Number(ocasionesDatos[min]) || 0) : s;
+                                  }, 0);
                                   return (
                                     <tr key={`${titulo}-${d}-${h}`}>
                                       <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.8rem', color: '#000000', fontWeight: 700, whiteSpace: 'nowrap', textAlign: 'center' }}>{d}-{h}</td>
+                                      <td style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.65rem', textAlign: 'center', color: ocasionesFila > 0 ? '#eab308' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{ocasionesFila || ''}</td>
                                       {colsT.map(a => (
                                         <td key={a} style={{ border: '1px solid var(--border-subtle)', padding: '0.5rem 0.65rem', textAlign: 'center', color: filaTot[a] > 0 ? '#39ff14' : '#475569', fontFamily: 'var(--font-mono)', fontWeight: 900 }}>{filaTot[a] || ''}</td>
                                       ))}
@@ -3945,8 +3982,8 @@ export default function App() {
                     }
                     return (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
-                        {pintarTabla('ACCIONES PROPIAS', '#000000', cols, porMinuto)}
-                        {pintarTabla('ACCIONES RIVAL', '#ef4444', colsRival, porMinutoRival)}
+                        {pintarTabla('ACCIONES PROPIAS', '#000000', cols, porMinuto, porMinutoOcasiones)}
+                        {pintarTabla('ACCIONES RIVAL', '#ef4444', colsRival, porMinutoRival, porMinutoOcasionesRival)}
                       </div>
                     );
                   })()}

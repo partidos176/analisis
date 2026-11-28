@@ -32,6 +32,8 @@ Al iniciar sesión se accede a un menú con tres modos:
 
 Incluye filtros por jornada, rol, encuentro, estado al descanso, marca del primer gol y estado final.
 
+La pestaña `PERIODO/ACCIÓN` muestra, en cada tabla (acciones propias y rivales), una columna `OCASIONES` justo después de `PERIODO` con el número de ocasiones registradas en el tramo de minutos de cada fila, respetando el filtro de partido seleccionado en cada tabla. Cada tabla cuenta solo las ocasiones de su equipo: se considera ocasión rival cuando la última acción registrada antes de ella empieza por `RIVAL ` (misma regla que el cruce acción/finalización); en caso contrario se cuenta como propia.
+
 La pestaña `TOTAL JUGADO` permite descargar su tabla como imagen JPG (botón `↓`); la imagen se exporta con fondo blanco para coincidir con el fondo de la página.
 
 ### OFF LIVE
